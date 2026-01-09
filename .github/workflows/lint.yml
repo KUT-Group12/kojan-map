@@ -1,0 +1,70 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # バックエンド（Go）のリンター
+  backend-lint:
+    name: Backend Lint (Go)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+    
+    - name: Install golangci-lint
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+        sudo mv ./bin/golangci-lint /usr/local/bin/
+    
+    - name: Run golangci-lint
+      working-directory: ./backend
+      run: golangci-lint run
+    
+    - name: Run go vet
+      working-directory: ./backend
+      run: go vet ./...
+    
+    - name: Run go fmt
+      working-directory: ./backend
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "以下のファイルがフォーマットされていません:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+  # フロントエンド（TypeScript）のリンター
+  frontend-lint:
+    name: Frontend Lint (TypeScript)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Run ESLint
+      working-directory: ./frontend
+      run: npm run lint
+    
+    - name: Run Prettier check
+      working-directory: ./frontend
+      run: npm run format:check
