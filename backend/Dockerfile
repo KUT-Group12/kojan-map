@@ -4,12 +4,18 @@ FROM golang:1.23-alpine
 # 2. 作業ディレクトリ
 WORKDIR /app
 
-# 3. 依存関係の解決 (キャッシュ活用)
+# 3. golangci-lintのインストール
+RUN wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+
+# 4. 依存関係の解決 (キャッシュ活用)
 COPY go.mod go.sum* ./
 RUN go mod download
 
-# 4. ソースコードのコピー
+# 5. ソースコードのコピー
 COPY . .
 
-# 5. 起動コマンド
+# 6. リンターの実行
+RUN ./bin/golangci-lint run
+
+# 7. 起動コマンド
 CMD ["go", "run", "main.go"]
