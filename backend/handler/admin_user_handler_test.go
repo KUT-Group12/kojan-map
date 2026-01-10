@@ -12,7 +12,7 @@ import (
 func TestAdminUserHandler_GetUsers(t *testing.T) {
 	t.Run("returns 200 OK with user list", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.GET("/api/users", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
 				"users": []interface{}{},
@@ -30,7 +30,7 @@ func TestAdminUserHandler_GetUsers(t *testing.T) {
 
 	t.Run("accepts pagination parameters", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.GET("/api/users", func(c *gin.Context) {
 			page := c.DefaultQuery("page", "1")
 			pageSize := c.DefaultQuery("pageSize", "20")
@@ -48,7 +48,7 @@ func TestAdminUserHandler_GetUsers(t *testing.T) {
 func TestAdminUserHandler_DeleteUser(t *testing.T) {
 	t.Run("returns 400 for empty user ID", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.POST("/internal/users/:userId", func(c *gin.Context) {
 			userID := c.Param("userId")
 			if userID == "" {
@@ -68,7 +68,7 @@ func TestAdminUserHandler_DeleteUser(t *testing.T) {
 
 	t.Run("returns 200 for valid user ID", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.POST("/internal/users/:userId", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"success": true})
 		})

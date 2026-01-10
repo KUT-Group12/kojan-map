@@ -12,11 +12,11 @@ import (
 func TestAdminReportHandler_GetReports(t *testing.T) {
 	t.Run("returns 200 OK with default pagination", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.GET("/api/admin/reports", func(c *gin.Context) {
 			page := c.DefaultQuery("page", "1")
 			pageSize := c.DefaultQuery("pageSize", "20")
-			
+
 			c.JSON(http.StatusOK, gin.H{
 				"reports":  []interface{}{},
 				"total":    0,
@@ -34,7 +34,7 @@ func TestAdminReportHandler_GetReports(t *testing.T) {
 
 	t.Run("accepts handled filter parameter", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.GET("/api/admin/reports", func(c *gin.Context) {
 			handled := c.Query("handled")
 			c.JSON(http.StatusOK, gin.H{"filter": handled})
@@ -51,7 +51,7 @@ func TestAdminReportHandler_GetReports(t *testing.T) {
 func TestAdminReportHandler_HandleReport(t *testing.T) {
 	t.Run("returns 400 for invalid report ID", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.PUT("/api/admin/reports/:id/handle", func(c *gin.Context) {
 			id := c.Param("id")
 			if id == "invalid" {
@@ -70,7 +70,7 @@ func TestAdminReportHandler_HandleReport(t *testing.T) {
 
 	t.Run("returns 200 for valid report ID", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.PUT("/api/admin/reports/:id/handle", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"success": true})
 		})

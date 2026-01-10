@@ -12,7 +12,7 @@ import (
 func TestAdminContactHandler_GetInquiries(t *testing.T) {
 	t.Run("returns 200 OK with inquiries list", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.GET("/internal/asks", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"asks": []interface{}{}})
 		})
@@ -28,7 +28,7 @@ func TestAdminContactHandler_GetInquiries(t *testing.T) {
 func TestAdminContactHandler_ApproveInquiry(t *testing.T) {
 	t.Run("returns 400 for invalid request ID", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.POST("/internal/requests/:requestId/approve", func(c *gin.Context) {
 			id := c.Param("requestId")
 			if id == "invalid" {
@@ -47,7 +47,7 @@ func TestAdminContactHandler_ApproveInquiry(t *testing.T) {
 
 	t.Run("returns 200 for valid request ID", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.POST("/internal/requests/:requestId/approve", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"success": true})
 		})
@@ -63,7 +63,7 @@ func TestAdminContactHandler_ApproveInquiry(t *testing.T) {
 func TestAdminContactHandler_RejectInquiry(t *testing.T) {
 	t.Run("returns 200 for valid rejection", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		router.POST("/internal/requests/:requestId/reject", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"success": true})
 		})

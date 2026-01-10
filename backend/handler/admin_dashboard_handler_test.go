@@ -17,7 +17,7 @@ func setupTestRouter() *gin.Engine {
 func TestAdminDashboardHandler_GetSummary(t *testing.T) {
 	t.Run("returns 200 OK for valid request", func(t *testing.T) {
 		router := setupTestRouter()
-		
+
 		// Mock handler that returns dummy data
 		router.GET("/api/admin/summary", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
