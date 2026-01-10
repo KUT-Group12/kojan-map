@@ -2,14 +2,38 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"kojan-map/config"
+	"kojan-map/router"
+	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "こじゃんとやまっぷ API サーバー起動中！🚀")
+	// Load configuration
+	cfg := config.Load()
+
+	// Connect to database
+	db := config.ConnectDB(cfg)
+
+	// Create Gin router
+	r := gin.Default()
+
+	// Health check endpoint
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "こじゃんとやまっぷ API サーバー起動中！🚀",
+			"status":  "healthy",
+		})
 	})
 
-	fmt.Println("Server is running on port 8080...")
-	http.ListenAndServe(":8080", nil)
+	// Setup admin routes
+	router.SetupAdminRoutes(r, db)
+
+	// Start server
+	addr := fmt.Sprintf(":%s", cfg.ServerPort)
+	log.Printf("Server is running on port %s...", cfg.ServerPort)
+	if err := r.Run(addr); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
