@@ -19,16 +19,19 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	authRepo := impl.NewAuthRepoImpl(db)
 	memberRepo := impl.NewBusinessMemberRepoImpl(db)
 	statsRepo := impl.NewStatsRepoImpl(db)
+	postRepo := impl.NewPostRepoImpl(db)
 
 	// Initialize services
 	authService := svcimpl.NewAuthServiceImpl(authRepo)
 	memberService := svcimpl.NewMemberServiceImpl(memberRepo, authRepo)
 	statsService := svcimpl.NewStatsServiceImpl(statsRepo)
+	postService := svcimpl.NewPostServiceImpl(postRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
 	memberHandler := handler.NewMemberHandler(memberService)
 	statsHandler := handler.NewStatsHandler(statsService)
+	postHandler := handler.NewPostHandler(postService)
 
 	// Auth routes
 	api.POST("/auth/google", authHandler.GoogleAuth)
@@ -48,12 +51,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api.GET("/business/view/total", statsHandler.GetTotalViews)
 	api.GET("/business/engagement", statsHandler.GetEngagementRate)
 
-	// Post routes (TODO)
-	api.GET("/business/posts", notImplemented)
-	api.GET("/posts/:postId", notImplemented)
-	api.POST("/posts", notImplemented) // TODO: enforce 5MB image limit & MIME check in handler
-	api.PUT("/posts/anonymize", notImplemented)
-	api.GET("/posts/history", notImplemented)
+	// Post routes
+	api.GET("/business/posts", postHandler.ListPosts)
+	api.GET("/posts/:postId", postHandler.GetPost)
+	api.POST("/posts", postHandler.CreatePost)
+	api.PUT("/posts/anonymize", postHandler.AnonymizePost)
+	api.GET("/posts/history", postHandler.GetPostHistory)
 
 	// Block routes (TODO)
 	api.POST("/block", notImplemented)
