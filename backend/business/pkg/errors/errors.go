@@ -16,29 +16,29 @@ const (
 	ErrTokenExpired       ErrorCode = "TOKEN_EXPIRED"
 
 	// リソース関連
-	ErrNotFound           ErrorCode = "NOT_FOUND"
-	ErrAlreadyExists      ErrorCode = "ALREADY_EXISTS"
-	ErrDuplicate          ErrorCode = "DUPLICATE"
+	ErrNotFound      ErrorCode = "NOT_FOUND"
+	ErrAlreadyExists ErrorCode = "ALREADY_EXISTS"
+	ErrDuplicate     ErrorCode = "DUPLICATE"
 
 	// バリデーション関連
-	ErrInvalidInput       ErrorCode = "INVALID_INPUT"
-	ErrValidationFailed   ErrorCode = "VALIDATION_FAILED"
-	ErrInvalidEmail       ErrorCode = "INVALID_EMAIL"
-	ErrInvalidImage       ErrorCode = "INVALID_IMAGE"
-	ErrImageTooLarge      ErrorCode = "IMAGE_TOO_LARGE"
+	ErrInvalidInput     ErrorCode = "INVALID_INPUT"
+	ErrValidationFailed ErrorCode = "VALIDATION_FAILED"
+	ErrInvalidEmail     ErrorCode = "INVALID_EMAIL"
+	ErrInvalidImage     ErrorCode = "INVALID_IMAGE"
+	ErrImageTooLarge    ErrorCode = "IMAGE_TOO_LARGE"
 
 	// ビジネスロジック関連
-	ErrOperationFailed    ErrorCode = "OPERATION_FAILED"
+	ErrOperationFailed      ErrorCode = "OPERATION_FAILED"
 	ErrExternalServiceError ErrorCode = "EXTERNAL_SERVICE_ERROR"
 
 	// その他
-	ErrInternalServer     ErrorCode = "INTERNAL_SERVER_ERROR"
+	ErrInternalServer ErrorCode = "INTERNAL_SERVER_ERROR"
 )
 
 // APIError は APIレスポンスのエラー形式
 type APIError struct {
-	ErrorCode ErrorCode `json:"errorCode"`
-	Message   string    `json:"message"`
+	ErrorCode  ErrorCode `json:"errorCode"`
+	Message    string    `json:"message"`
 	StatusCode int       `json:"-"`
 }
 

@@ -5,8 +5,9 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"kojan-map/business/internal/api"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/middleware"
 	"kojan-map/business/pkg/logger"
@@ -22,7 +23,7 @@ type App struct {
 // NewApp はアプリケーションを初期化
 func NewApp(db *gorm.DB, log logger.Logger) *App {
 	engine := gin.Default()
-	
+
 	// ミドルウェアの登録
 	engine.Use(middleware.CORSMiddleware())
 	engine.Use(middleware.ErrorHandlingMiddleware())
@@ -65,14 +66,14 @@ func (a *App) Run(addr string) error {
 
 // InitDB はデータベース接続を初期化
 func InitDB() (*gorm.DB, error) {
-	// PostgreSQLの接続文字列を環境変数から取得
+	// MySQLの接続文字列を環境変数から取得
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		// デフォルト値（開発用）
-		dsn = "host=localhost user=postgres password=postgres dbname=kojan_map port=5432 sslmode=disable"
+		dsn = "root:root@tcp(localhost:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -99,6 +100,9 @@ func main() {
 		log.Error("Application setup failed: %v", err)
 		os.Exit(1)
 	}
+
+	// ルーティング登録（実装は後続タスクで追加予定）
+	api.RegisterRoutes(app.Engine)
 
 	// アプリケーション起動
 	port := os.Getenv("PORT")
