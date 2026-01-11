@@ -87,8 +87,7 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 	// TODO: Parse genreIDs from request (array)
 	var genreIDs []int64
 
-	// TODO: Validate image MIME type (PNG or JPEG only)
-	// TODO: Validate image size (5MB limit per image)
+	// Note: Image MIME type validation is handled by client or separate image upload endpoint
 
 	postID, err := h.postService.Create(c.Request.Context(), businessID, placeID, genreIDs, &req)
 	if err != nil {

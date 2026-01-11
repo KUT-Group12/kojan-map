@@ -8,6 +8,7 @@ import (
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
 	"kojan-map/business/pkg/response"
+	"kojan-map/business/pkg/validate"
 )
 
 // MemberHandler handles member-related endpoints.
@@ -82,8 +83,6 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 		return
 	}
 
-	// TODO: Validate MIME type (PNG or JPEG only)
-
 	// Read file content
 	f, err := file.Open()
 	if err != nil {
@@ -95,6 +94,13 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 	iconData := make([]byte, file.Size)
 	if _, err := f.Read(iconData); err != nil {
 		response.SendInternalServerError(c, fmt.Sprintf("failed to read file: %v", err))
+		return
+	}
+
+	// Validate MIME type (PNG or JPEG only) using file header magic numbers
+	imageValidator := validate.NewImageValidator()
+	if err := imageValidator.ValidateImage(iconData, file.Size, maxSize); err != nil {
+		response.SendBadRequest(c, fmt.Sprintf("invalid image format: %v", err))
 		return
 	}
 
