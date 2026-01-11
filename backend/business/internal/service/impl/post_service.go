@@ -41,6 +41,14 @@ func (s *PostServiceImpl) Get(ctx context.Context, postID int64) (interface{}, e
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
 
+	// Increment view count before returning the post
+	// If increment fails, still return the post content
+	if err := s.postRepo.IncrementViewCount(ctx, postID); err != nil {
+		// Do not fail the entire request; continue to fetch the post
+		// In production, consider logging this error
+		_ = err
+	}
+
 	post, err := s.postRepo.GetByID(ctx, postID)
 	if err != nil {
 		return nil, errors.NewAPIError(errors.ErrNotFound, fmt.Sprintf("post not found: %v", err))

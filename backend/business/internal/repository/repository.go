@@ -23,6 +23,8 @@ type PostRepo interface {
 	GetByID(ctx context.Context, postID int64) (interface{}, error)
 	Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error)
 	SetGenres(ctx context.Context, postID int64, genreIDs []int64) error
+	// IncrementViewCount increments the view count for a post by 1
+	IncrementViewCount(ctx context.Context, postID int64) error
 	Anonymize(ctx context.Context, postID int64) error
 	History(ctx context.Context, googleID string) (interface{}, error)
 }

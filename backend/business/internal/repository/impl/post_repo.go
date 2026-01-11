@@ -43,6 +43,24 @@ func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, 
 	return &post, nil
 }
 
+// IncrementViewCount increments the view count for a post by 1.
+func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) error {
+	result := r.db.WithContext(ctx).
+		Model(&domain.Post{}).
+		Where("id = ?", postID).
+		UpdateColumn("viewCount", gorm.Expr("viewCount + 1"))
+
+	if result.Error != nil {
+		return fmt.Errorf("failed to increment view count for post %d: %w", postID, result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("post not found for id %d", postID)
+	}
+
+	return nil
+}
+
 // Create creates a new post (M1-8-4).
 // SSOT Rules: 投稿はビジネスメンバーのみ作成可能、画像は5MB以下、ジャンルは複数指定可能
 func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
