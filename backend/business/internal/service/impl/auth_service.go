@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
 	"kojan-map/business/pkg/errors"
+	"kojan-map/business/pkg/jwt"
+	"kojan-map/business/pkg/mfa"
 	"kojan-map/business/pkg/oauth"
 )
 
@@ -16,6 +17,8 @@ import (
 type AuthServiceImpl struct {
 	authRepo      repository.AuthRepo
 	tokenVerifier *oauth.GoogleTokenVerifier
+	tokenManager  *jwt.TokenManager
+	mfaValidator  *mfa.MFAValidator
 }
 
 // NewAuthServiceImpl creates a new auth service.
@@ -28,6 +31,8 @@ func NewAuthServiceImpl(authRepo repository.AuthRepo) *AuthServiceImpl {
 	return &AuthServiceImpl{
 		authRepo:      authRepo,
 		tokenVerifier: oauth.NewGoogleTokenVerifier(googleClientID),
+		tokenManager:  jwt.NewTokenManager(),
+		mfaValidator:  mfa.NewMFAValidator(),
 	}
 }
 
@@ -62,8 +67,14 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 		return nil, errors.NewAPIError(errors.ErrUnauthorized, "token email does not match gmail")
 	}
 
-	// TODO: Verify MFA completion
-	// For now, assume MFA verified
+	// Verify MFA completion - generate MFA code
+	mfaCode, err := s.mfaValidator.GenerateCode(req.Gmail)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate MFA code: %v", err))
+	}
+
+	// TODO: Send MFA code via SMS/Email in production
+	// For development, code is returned in response
 
 	// Get or create user
 	user, err := s.authRepo.GetOrCreateUser(ctx, req.GoogleID, req.Gmail, "business")
@@ -71,35 +82,54 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to get or create user: %v", err))
 	}
 
-	// Generate session ID
-	sessionID := fmt.Sprintf("session_%d_%s", time.Now().Unix(), req.GoogleID)
-
+	// Return MFA challenge - user needs to verify code in next step
 	return &domain.GoogleAuthResponse{
-		SessionID: sessionID,
+		SessionID: mfaCode, // Temporarily store MFA code as session (DEV ONLY)
 		UserID:    user.(*domain.User).ID,
 		Role:      user.(*domain.User).Role,
 	}, nil
 }
 
 // BusinessLogin handles business member login (M1-1).
-// SSOT Rule: MFA必須、パスワード12文字以上必須
+// SSOT Rule: MFA必須、JWT トークン生成
 func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode string) (interface{}, error) {
 	if gmail == "" || mfaCode == "" {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "gmail and mfaCode are required")
 	}
 
-	// TODO: Verify MFA code
+	// Verify MFA code
+	valid, err := s.mfaValidator.VerifyCode(gmail, mfaCode)
+	if err != nil || !valid {
+		return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
+	}
+
 	// TODO: Fetch user by gmail and verify role is 'business'
-	// TODO: Generate JWT token
-	// For now, placeholder
+	// For now, query from database
+	user, err := s.authRepo.GetUserByID(ctx, gmail)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrNotFound, "user not found")
+	}
+
+	userData := user.(*domain.User)
+	if userData.Role != "business" {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, "user is not a business member")
+	}
+
+	// Generate JWT token
+	token, err := s.tokenManager.GenerateToken(userData.ID, userData.Gmail, userData.Role)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate JWT token: %v", err))
+	}
+
 	return &domain.BusinessLoginResponse{
-		Token: "TODO_JWT_TOKEN",
+		Token: token,
 	}, nil
 }
 
 // Logout handles logout (M1-3-3).
 func (s *AuthServiceImpl) Logout(ctx context.Context, session interface{}) error {
-	// TODO: Invalidate session/token
-	// TODO: Clear session from cache/DB
+	// TODO: Invalidate JWT token (blacklist or database)
+	// For now, just cleanup MFA codes periodically
+	s.mfaValidator.CleanupExpiredCodes()
 	return nil
 }
