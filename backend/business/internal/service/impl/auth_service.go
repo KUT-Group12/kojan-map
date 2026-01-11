@@ -3,22 +3,31 @@ package impl
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
 	"kojan-map/business/pkg/errors"
+	"kojan-map/business/pkg/oauth"
 )
 
 // AuthServiceImpl implements the AuthService interface.
 type AuthServiceImpl struct {
-	authRepo repository.AuthRepo
+	authRepo      repository.AuthRepo
+	tokenVerifier *oauth.GoogleTokenVerifier
 }
 
 // NewAuthServiceImpl creates a new auth service.
 func NewAuthServiceImpl(authRepo repository.AuthRepo) *AuthServiceImpl {
+	googleClientID := os.Getenv("GOOGLE_CLIENT_ID")
+	if googleClientID == "" {
+		googleClientID = "placeholder-client-id"
+	}
+
 	return &AuthServiceImpl{
-		authRepo: authRepo,
+		authRepo:      authRepo,
+		tokenVerifier: oauth.NewGoogleTokenVerifier(googleClientID),
 	}
 }
 
@@ -30,11 +39,31 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "invalid request payload")
 	}
 
-	// TODO: Verify Google OAuth token from frontend
-	// TODO: Verify MFA completion
 	if req.GoogleID == "" || req.Gmail == "" {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "googleId and gmail are required")
 	}
+
+	// Verify Google OAuth token from frontend
+	if req.IDToken == "" {
+		return nil, errors.NewAPIError(errors.ErrInvalidInput, "idToken is required")
+	}
+
+	claims, err := s.tokenVerifier.VerifyToken(ctx, req.IDToken)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, fmt.Sprintf("invalid OAuth token: %v", err))
+	}
+
+	// Verify token claims match request
+	if claims.Sub != req.GoogleID {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, "token subject does not match googleId")
+	}
+
+	if claims.Email != req.Gmail {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, "token email does not match gmail")
+	}
+
+	// TODO: Verify MFA completion
+	// For now, assume MFA verified
 
 	// Get or create user
 	user, err := s.authRepo.GetOrCreateUser(ctx, req.GoogleID, req.Gmail, "business")

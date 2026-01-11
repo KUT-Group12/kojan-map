@@ -20,6 +20,7 @@ func (User) TableName() string {
 type GoogleAuthRequest struct {
 	GoogleID string `json:"googleId" binding:"required"`
 	Gmail    string `json:"gmail" binding:"required,email"`
+	IDToken  string `json:"idToken" binding:"required"`
 	Role     string `json:"role" binding:"required,oneof=user business admin"`
 }
 
