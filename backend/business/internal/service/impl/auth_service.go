@@ -127,9 +127,24 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode stri
 }
 
 // Logout handles logout (M1-3-3).
+// Expects session parameter to be a JWT token string.
 func (s *AuthServiceImpl) Logout(ctx context.Context, session interface{}) error {
-	// TODO: Invalidate JWT token (blacklist or database)
-	// For now, just cleanup MFA codes periodically
+	tokenString, ok := session.(string)
+	if !ok {
+		return errors.NewAPIError(errors.ErrUnauthorized, "invalid session format")
+	}
+
+	if tokenString == "" {
+		return errors.NewAPIError(errors.ErrUnauthorized, "token is required")
+	}
+
+	// Revoke the token (add to blacklist)
+	if err := s.tokenManager.RevokeToken(tokenString); err != nil {
+		return errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to revoke token: %v", err))
+	}
+
+	// Cleanup expired MFA codes periodically
 	s.mfaValidator.CleanupExpiredCodes()
+
 	return nil
 }

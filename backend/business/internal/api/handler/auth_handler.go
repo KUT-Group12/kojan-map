@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
@@ -55,17 +58,40 @@ func (h *AuthHandler) BusinessLogin(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
+// extractTokenFromHeader extracts the JWT token from Authorization header.
+// Expected format: "Authorization: Bearer <token>"
+func (h *AuthHandler) extractTokenFromHeader(c *gin.Context) (string, error) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return "", fmt.Errorf("authorization header is required")
+	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", fmt.Errorf("invalid authorization header format (expected: Bearer <token>)")
+	}
+
+	token := parts[1]
+	if token == "" {
+		return "", fmt.Errorf("token is empty")
+	}
+
+	return token, nil
+}
+
 // Logout handles POST /api/auth/logout (M1-3-3).
 // SSOT Endpoint: POST /api/auth/logout
+// Expects Authorization header with Bearer token
 func (h *AuthHandler) Logout(c *gin.Context) {
-	var req domain.LogoutRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+	// Extract token from Authorization header
+	token, err := h.extractTokenFromHeader(c)
+	if err != nil {
+		response.SendUnauthorized(c, fmt.Sprintf("invalid authorization: %v", err))
 		return
 	}
 
-	// TODO: Extract session info from middleware
-	err := h.authService.Logout(c.Request.Context(), nil)
+	// Call logout service with token
+	err = h.authService.Logout(c.Request.Context(), token)
 	if err != nil {
 		c.Error(err)
 		return
