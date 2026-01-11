@@ -17,24 +17,27 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Initialize repositories
 	authRepo := impl.NewAuthRepoImpl(db)
+	memberRepo := impl.NewBusinessMemberRepoImpl(db)
 
 	// Initialize services
 	authService := svcimpl.NewAuthServiceImpl(authRepo)
+	memberService := svcimpl.NewMemberServiceImpl(memberRepo, authRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
+	memberHandler := handler.NewMemberHandler(memberService)
 
 	// Auth routes
 	api.POST("/auth/google", authHandler.GoogleAuth)
 	api.POST("/auth/business/login", authHandler.BusinessLogin)
 	api.POST("/auth/logout", authHandler.Logout)
 
-	// Member routes (TODO)
-	api.GET("/business/mypage/details", notImplemented)
-	api.PUT("/business/member/name", notImplemented)
-	api.PUT("/business/member/icon", notImplemented)
-	api.PUT("/business/member/anonymize", notImplemented)
-	api.GET("/business/member", notImplemented)
+	// Member routes
+	api.GET("/business/mypage/details", memberHandler.GetBusinessDetails)
+	api.PUT("/business/member/name", memberHandler.UpdateBusinessName)
+	api.PUT("/business/member/icon", memberHandler.UpdateBusinessIcon)
+	api.PUT("/business/member/anonymize", memberHandler.AnonymizeMember)
+	api.GET("/business/member", memberHandler.GetMemberInfo)
 
 	// Dashboard stats routes (TODO)
 	api.GET("/business/post/total", notImplemented)

@@ -19,7 +19,7 @@ func NewAuthRepoImpl(db *gorm.DB) *AuthRepoImpl {
 }
 
 // GetOrCreateUser retrieves or creates a user record.
-func (r *AuthRepoImpl) GetOrCreateUser(ctx context.Context, googleID, gmail, role string) (*domain.User, error) {
+func (r *AuthRepoImpl) GetOrCreateUser(ctx context.Context, googleID, gmail, role string) (interface{}, error) {
 	var user domain.User
 	result := r.db.WithContext(ctx).Where("id = ?", googleID).First(&user)
 
@@ -45,7 +45,7 @@ func (r *AuthRepoImpl) GetOrCreateUser(ctx context.Context, googleID, gmail, rol
 }
 
 // GetUserByID retrieves a user by Google ID.
-func (r *AuthRepoImpl) GetUserByID(ctx context.Context, googleID string) (*domain.User, error) {
+func (r *AuthRepoImpl) GetUserByID(ctx context.Context, googleID string) (interface{}, error) {
 	var user domain.User
 	if err := r.db.WithContext(ctx).Where("id = ?", googleID).First(&user).Error; err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (r *AuthRepoImpl) GetUserByID(ctx context.Context, googleID string) (*domai
 }
 
 // GetBusinessMemberByUserID retrieves business member info by user ID.
-func (r *AuthRepoImpl) GetBusinessMemberByUserID(ctx context.Context, userID string) (*domain.BusinessMember, error) {
+func (r *AuthRepoImpl) GetBusinessMemberByUserID(ctx context.Context, userID string) (interface{}, error) {
 	var member domain.BusinessMember
 	if err := r.db.WithContext(ctx).Where("userId = ?", userID).First(&member).Error; err != nil {
 		return nil, err
