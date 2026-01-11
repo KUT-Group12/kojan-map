@@ -22,6 +22,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	postRepo := impl.NewPostRepoImpl(db)
 	blockRepo := impl.NewBlockRepoImpl(db)
 	reportRepo := impl.NewReportRepoImpl(db)
+	contactRepo := impl.NewContactRepoImpl(db)
+	paymentRepo := impl.NewPaymentRepoImpl(db)
 
 	// Initialize services
 	authService := svcimpl.NewAuthServiceImpl(authRepo)
@@ -30,6 +32,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	postService := svcimpl.NewPostServiceImpl(postRepo)
 	blockService := svcimpl.NewBlockServiceImpl(blockRepo)
 	reportService := svcimpl.NewReportServiceImpl(reportRepo)
+	contactService := svcimpl.NewContactServiceImpl(contactRepo)
+	paymentService := svcimpl.NewPaymentServiceImpl(paymentRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
@@ -38,6 +42,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	postHandler := handler.NewPostHandler(postService)
 	blockHandler := handler.NewBlockHandler(blockService)
 	reportHandler := handler.NewReportHandler(reportService)
+	contactHandler := handler.NewContactHandler(contactService)
+	paymentHandler := handler.NewPaymentHandler(paymentService)
 
 	// Auth routes
 	api.POST("/auth/google", authHandler.GoogleAuth)
@@ -71,11 +77,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	// Report routes
 	api.POST("/report", reportHandler.CreateReport)
 
-	// Contact routes (TODO)
-	api.POST("/contact", notImplemented)
+	// Contact routes
+	api.POST("/contact", contactHandler.CreateContact)
 
-	// Stripe redirect (TODO)
-	api.POST("/business/stripe/redirect", notImplemented)
+	// Stripe redirect (mock)
+	api.POST("/business/stripe/redirect", paymentHandler.CreateRedirect)
 
 	// Healthcheck
 	r.GET("/health", func(c *gin.Context) {
