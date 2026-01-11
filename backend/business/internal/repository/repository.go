@@ -48,6 +48,7 @@ type StatsRepo interface {
 	TotalPosts(ctx context.Context, businessID int64) (int64, error)
 	TotalReactions(ctx context.Context, businessID int64) (int64, error)
 	TotalViews(ctx context.Context, businessID int64) (int64, error)
+	EngagementStats(ctx context.Context, businessID int64) (int64, int64, int64, error)
 }
 
 // PaymentRepo defines data access methods for payments.

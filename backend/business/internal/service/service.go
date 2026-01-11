@@ -19,7 +19,10 @@ type MemberService interface {
 
 // StatsService handles dashboard stats.
 type StatsService interface {
-	GetTotals(ctx context.Context, businessID int64) (interface{}, error)
+	GetTotalPosts(ctx context.Context, businessID int64) (interface{}, error)
+	GetTotalReactions(ctx context.Context, businessID int64) (interface{}, error)
+	GetTotalViews(ctx context.Context, businessID int64) (interface{}, error)
+	GetEngagementRate(ctx context.Context, businessID int64) (interface{}, error)
 }
 
 // PostService handles posts.

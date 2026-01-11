@@ -21,3 +21,17 @@ type TopReactionPost struct {
 	PostID         string `json:"postId"`
 	ReactionNumber int64  `json:"reactionNumber"`
 }
+
+// StatsResponse は単一統計値のレスポンス
+type StatsResponse struct {
+	Total int64  `json:"total"`
+	Label string `json:"label"`
+}
+
+// EngagementResponse はエンゲージメント率のレスポンス
+type EngagementResponse struct {
+	PostCount      int64   `json:"postCount"`
+	ReactionCount  int64   `json:"reactionCount"`
+	ViewCount      int64   `json:"viewCount"`
+	EngagementRate float64 `json:"engagementRate"`
+}

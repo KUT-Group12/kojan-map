@@ -18,14 +18,17 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	// Initialize repositories
 	authRepo := impl.NewAuthRepoImpl(db)
 	memberRepo := impl.NewBusinessMemberRepoImpl(db)
+	statsRepo := impl.NewStatsRepoImpl(db)
 
 	// Initialize services
 	authService := svcimpl.NewAuthServiceImpl(authRepo)
 	memberService := svcimpl.NewMemberServiceImpl(memberRepo, authRepo)
+	statsService := svcimpl.NewStatsServiceImpl(statsRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
 	memberHandler := handler.NewMemberHandler(memberService)
+	statsHandler := handler.NewStatsHandler(statsService)
 
 	// Auth routes
 	api.POST("/auth/google", authHandler.GoogleAuth)
@@ -39,11 +42,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api.PUT("/business/member/anonymize", memberHandler.AnonymizeMember)
 	api.GET("/business/member", memberHandler.GetMemberInfo)
 
-	// Dashboard stats routes (TODO)
-	api.GET("/business/post/total", notImplemented)
-	api.GET("/business/reaction/total", notImplemented)
-	api.GET("/business/view/total", notImplemented)
-	api.GET("/business/engagement", notImplemented)
+	// Dashboard stats routes
+	api.GET("/business/post/total", statsHandler.GetTotalPosts)
+	api.GET("/business/reaction/total", statsHandler.GetTotalReactions)
+	api.GET("/business/view/total", statsHandler.GetTotalViews)
+	api.GET("/business/engagement", statsHandler.GetEngagementRate)
 
 	// Post routes (TODO)
 	api.GET("/business/posts", notImplemented)
