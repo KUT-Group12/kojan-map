@@ -67,7 +67,8 @@ func TestPostServiceImpl_List(t *testing.T) {
 				assert.Error(t, err, "List should return error for invalid input")
 			} else {
 				require.NoError(t, err, "List should not return error for valid input")
-				assert.NotNil(t, result, "result should not be nil")
+				// List returns an empty slice when no posts exist, which is valid
+				assert.NotNil(t, result, "result should not be nil (even if empty)")
 			}
 		})
 	}

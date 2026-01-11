@@ -16,7 +16,7 @@ import (
 // AuthServiceImpl implements the AuthService interface.
 type AuthServiceImpl struct {
 	authRepo      repository.AuthRepo
-	tokenVerifier *oauth.GoogleTokenVerifier
+	tokenVerifier oauth.TokenVerifier
 	tokenManager  *jwt.TokenManager
 	mfaValidator  *mfa.MFAValidator
 }
@@ -121,9 +121,13 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode stri
 		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate JWT token: %v", err))
 	}
 
-	return &domain.BusinessLoginResponse{
+	response := &domain.BusinessLoginResponse{
 		Token: token,
-	}, nil
+	}
+	response.Business.ID = 0 // TODO: Get actual business ID from business member table
+	response.Business.Role = userData.Role
+
+	return response, nil
 }
 
 // Logout handles logout (M1-3-3).

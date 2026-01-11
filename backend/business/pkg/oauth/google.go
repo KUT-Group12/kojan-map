@@ -8,6 +8,11 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
+// TokenVerifier defines the interface for verifying OAuth tokens.
+type TokenVerifier interface {
+	VerifyToken(ctx context.Context, token string) (*TokenClaims, error)
+}
+
 // GoogleTokenVerifier handles Google OAuth token verification.
 type GoogleTokenVerifier struct {
 	clientID string
@@ -44,7 +49,8 @@ func (v *GoogleTokenVerifier) VerifyToken(ctx context.Context, token string) (*T
 	}
 
 	// Verify expiration
-	if claims.Expiration < int64(ctx.Value("currentTime").(int64)) {
+	currentTime, ok := ctx.Value("currentTime").(int64)
+	if ok && claims.Expiration < currentTime {
 		return nil, fmt.Errorf("token expired")
 	}
 

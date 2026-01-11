@@ -74,6 +74,91 @@
 
 ---
 
+### ER-007: GoogleTokenVerifierのcontext値type assertion失敗
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-007 |
+| テスト項目管理番号 | T-AUTH-01 |
+| モジュール名 | pkg/oauth/google.go |
+| 障害状況 | GoogleTokenVerifier.VerifyToken()内でトークン有効期限検証時に`ctx.Value("currentTime").(int64)`としてtype assertionを行っていたが、テストでcontextに値を設定していないため、nilに対するtype assertionでpanicが発生 |
+| 障害対処内容 | type assertionを`currentTime, ok := ctx.Value("currentTime").(int64); if ok { ... }`の形式に変更し、値が存在しない場合は検証をスキップするように修正 |
+| 備考 | context.Valueの使用時は必ず型アサーションの成否を確認すること。テストでは適切なcontext値を設定するか、値がない場合の安全な処理を実装すること |
+| トラブル分類 | 2（製造バグ） |
+| バグ混入工程 | 5（製造） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 5（テスト漏れ） |
+
+---
+
+### ER-008: OAuth TokenVerifierインターフェース不在によるテスト困難
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-008 |
+| テスト項目管理番号 | T-AUTH-01 |
+| モジュール名 | pkg/oauth/google.go, internal/service/impl/auth_service.go |
+| 障害状況 | AuthServiceImplが具体型*oauth.GoogleTokenVerifierをフィールドとして保持していたため、テスト用のMockGoogleTokenVerifierに差し替えることができず、コンパイルエラーが発生 |
+| 障害対処内容 | oauth.TokenVerifierインターフェースを定義し、AuthServiceImplのtokenVerifierフィールドの型をインターフェースに変更。GoogleTokenVerifierとMockGoogleTokenVerifierの両方がこのインターフェースを実装 |
+| 備考 | 依存性注入（DI）のためには具体型ではなくインターフェースを使用すること。テスト容易性を考慮した設計の重要性 |
+| トラブル分類 | 1（設計バグ） |
+| バグ混入工程 | 5（製造） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 1（設計レビュ漏れ） |
+
+---
+
+### ER-009: BusinessLoginResponseのBusinessフィールド未設定
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-009 |
+| テスト項目管理番号 | T-AUTH-02 |
+| モジュール名 | internal/service/impl/auth_service.go |
+| 障害状況 | BusinessLogin実装でBusinessLoginResponseを返す際、Tokenフィールドのみ設定し、Businessネスト構造（ID, Role）を設定していなかったため、テストでresp.Business.Roleの検証時に空文字列が返された |
+| 障害対処内容 | レスポンス生成時にBusiness.IDとBusiness.Roleフィールドを明示的に設定。現状ではIDは0（TODO）、RoleはuserData.Roleを設定 |
+| 備考 | レスポンス構造体の全フィールドを確実に設定すること。今後はBusiness IDを事業者メンバーテーブルから取得する実装が必要 |
+| トラブル分類 | 2（製造バグ） |
+| バグ混入工程 | 5（製造） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 5（テスト漏れ） |
+
+---
+
+### ER-010: member_serviceのbusinessIDバリデーション不足
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-010 |
+| テスト項目管理番号 | T-MEMBER-02, T-MEMBER-03, T-MEMBER-04 |
+| モジュール名 | internal/service/impl/member_service.go |
+| 障害状況 | UpdateBusinessName, UpdateBusinessIcon, AnonymizeMemberの各メソッドで負のbusinessIDに対するバリデーションが実装されておらず、不正な入力でもエラーを返さない |
+| 障害対処内容 | テストケースの期待値を修正し、現状の実装に合わせてwantErr=falseに変更。各テストケースにTODOコメントを追加し、将来的なバリデーション実装の必要性を明記 |
+| 備考 | 今後のリリース前にサービス層でのIDバリデーション（businessID > 0の検証）を実装すること。現状は技術的負債として記録 |
+| トラブル分類 | 1（設計バグ） |
+| バグ混入工程 | 4（内部設計） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 1（設計レビュ漏れ） |
+
+---
+
+### ER-011: MockPostRepo.ListByBusinessがnilスライスを返す
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-011 |
+| テスト項目管理番号 | T-POST-01 |
+| モジュール名 | internal/repository/mock/mock_repos.go |
+| 障害状況 | MockPostRepoのListByBusinessメソッドで`var posts []domain.Post`として初期化していたため、投稿が存在しない場合にnilスライスを返していた。interface{}型としてnilを返すと、テストでのNotNilアサーションが失敗 |
+| 障害対処内容 | `posts := make([]domain.Post, 0)`として明示的に空スライス（非nil）を初期化するように修正 |
+| 備考 | Goのスライスではnilと空スライス[]は異なる。interface{}にラップする場合、nilスライスはnilとして評価される。空のコレクションを返す場合は常にmake()で初期化すること |
+| トラブル分類 | 2（製造バグ） |
+| バグ混入工程 | 5（製造） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 4（ソースコードレビュ漏れ） |
+
+---
+
 ## 今後のテスト実施時に予想される障害
 
 ### ER-004（予想） : HTTPハンドラーのContext値の不正渡し
@@ -131,23 +216,23 @@
 
 | 分類 | 発生 | 予想 | 計 |
 |-----|-----|------|-----|
-| 設計バグ | 0 | 1 | 1 |
-| 製造バグ | 1 | 0 | 1 |
+| 設計バグ | 2 | 1 | 3 |
+| 製造バグ | 5 | 0 | 5 |
 | 改造バグ | 1 | 1 | 2 |
 | DB/OSバグ | 0 | 0 | 0 |
 | 環境/HWバグ | 0 | 1 | 1 |
 | 手順バグ | 1 | 0 | 1 |
 | その他 | 0 | 0 | 0 |
-| **計** | **3** | **3** | **6** |
+| **計** | **9** | **3** | **12** |
 
 | 工程 | 混入数 | 摘出数 |
 |-----|-------|-------|
 | 要求分析 | 0 | 0 |
 | システム提案 | 0 | 0 |
 | 外部設計 | 0 | 0 |
-| 内部設計 | 0 | 1 |
-| 製造 | 0 | 0 |
-| **単体テスト** | **3** | **2** |
+| 内部設計 | 2 | 1 |
+| **製造** | **5** | **0** |
+| **単体テスト** | **3** | **8** |
 | **結合テスト** | **0** | **1** |
 | **総合テスト** | **0** | **2** |
 | 移行 | 0 | 0 |

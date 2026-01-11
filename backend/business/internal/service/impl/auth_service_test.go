@@ -60,7 +60,7 @@ func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 			fixtures := NewTestFixtures()
 
 			// Initialize authentication components
-			tokenVerifier := oauth.NewGoogleTokenVerifier("test-client-id")
+			tokenVerifier := oauth.NewMockGoogleTokenVerifier("test-client-id")
 			tokenManager := jwt.NewTokenManager()
 			mfaValidator := mfa.NewMFAValidator()
 

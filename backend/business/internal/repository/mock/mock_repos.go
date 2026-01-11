@@ -146,11 +146,12 @@ func NewMockPostRepo() *MockPostRepo {
 
 // ListByBusiness retrieves all posts from the mock repository.
 // (In a real implementation, this would filter by businessID)
+// Returns an empty slice (not nil) when no posts exist.
 func (m *MockPostRepo) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	var posts []domain.Post
+	posts := make([]domain.Post, 0)
 	for _, post := range m.Posts {
 		posts = append(posts, *post)
 	}
