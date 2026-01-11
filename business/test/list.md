@@ -1,0 +1,188 @@
+# テスト項目一覧
+
+## 概要
+事業者会員バックエンド（business）の単体テスト実装状況を記録します。テスト対象は主にService層とリポジトリのモック実装です。
+
+## テスト実行コマンド
+
+### 全テスト実行
+```bash
+go test ./... -v
+```
+
+### 特定層のみテスト
+```bash
+# Service層
+go test ./internal/service/impl -v
+
+# Handler層
+go test ./internal/api/handler -v
+
+# Repository層（統合テスト）
+go test ./internal/repository/impl -v
+```
+
+### カバレッジ確認
+```bash
+go test ./... -cover
+```
+
+---
+
+## テスト実装状況
+
+### 1. 認証サービス (AuthServiceImpl)
+
+| テスト項目 | 内容 | ステータス | モック | 備考 |
+|----------|------|---------|-------|------|
+| GoogleAuth - 正常系 | 有効なIDトークンでMFAコード生成 | ✅ 実装 | oauth, mfa | SSOT M3-1 |
+| GoogleAuth - 異常系 | 空のIDトークン→エラー返却 | ✅ 実装 | oauth, mfa | エラーハンドリング確認 |
+| BusinessLogin - 正常系 | Gmail + MFA検証→JWT発行 | ✅ 実装 | mfa, jwt | SSOT M1-1 |
+| BusinessLogin - 異常系 | MFA不一致→エラー | ✅ 実装 | mfa, jwt | エラーハンドリング確認 |
+| Logout - 正常系 | JWT→ブラックリスト登録 | ✅ 実装 | jwt | SSOT M1-3-3 |
+| Logout - 異常系 | 空トークン→エラー | ✅ 実装 | jwt | エラーハンドリング確認 |
+
+**追加テスト候補:**
+- Google OAuth署名検証（本実装後）
+- MFA有効期限切れ検証
+- JWT署名検証
+
+---
+
+### 2. 会員管理サービス (MemberServiceImpl)
+
+| テスト項目 | 内容 | ステータス | モック | 備考 |
+|----------|------|---------|-------|------|
+| GetBusinessDetails - 正常系 | Google IDで会員情報取得 | ✅ 実装 | BusinessMemberRepo, AuthRepo | SSOT M3-2-2 |
+| GetBusinessDetails - 異常系 | 空Google ID→エラー | ✅ 実装 | BusinessMemberRepo, AuthRepo | 入力値検証 |
+| UpdateBusinessName - 正常系 | 事業者名更新成功 | ✅ 実装 | BusinessMemberRepo | SSOT M3-4-2 |
+| UpdateBusinessName - 異常系 | 無効な businessID | ✅ 実装 | BusinessMemberRepo | バリデーション |
+| UpdateBusinessName - 異常系 | 空名前→エラー | ✅ 実装 | BusinessMemberRepo | バリデーション |
+| UpdateBusinessIcon - 正常系 | PNG画像アップロード | ✅ 実装 | BusinessMemberRepo | SSOT M3-5-2、MIME検証含む |
+| UpdateBusinessIcon - 異常系 | 無効 businessID | ✅ 実装 | BusinessMemberRepo | バリデーション |
+| UpdateBusinessIcon - 異常系 | 空画像→エラー | ✅ 実装 | BusinessMemberRepo | バリデーション |
+| AnonymizeMember - 正常系 | 会員匿名化成功 | ✅ 実装 | BusinessMemberRepo | SSOT M3-3 |
+| AnonymizeMember - 異常系 | 無効 businessID | ✅ 実装 | BusinessMemberRepo | バリデーション |
+
+**追加テスト候補:**
+- 権限チェック（自事業者のみ更新可能）
+- 画像URL生成（Base64/署名付きURL）
+
+---
+
+### 3. 投稿管理サービス (PostServiceImpl)
+
+| テスト項目 | 内容 | ステータス | モック | 備考 |
+|----------|------|---------|-------|------|
+| List - 正常系 | ビジネスIDで投稿一覧取得 | ✅ 実装 | PostRepo | SSOT M1-6-1 |
+| List - 異常系 | 無効 businessID | ✅ 実装 | PostRepo | バリデーション |
+| List - 異常系 | ゼロ businessID | ✅ 実装 | PostRepo | バリデーション |
+| Get - 正常系 | 投稿詳細取得 + viewCount加算 | ✅ 実装 | PostRepo | SSOT M1-7-2 |
+| Get - 異常系 | 無効 postID | ✅ 実装 | PostRepo | バリデーション |
+| Get - 異常系 | ゼロ postID | ✅ 実装 | PostRepo | バリデーション |
+| Create - 正常系 | 投稿新規作成 | ✅ 実装 | PostRepo | SSOT M1-8-4 |
+| Create - 異常系 | 無効 businessID | ✅ 実装 | PostRepo | バリデーション |
+| SetGenres - 正常系 | ジャンル多対多関連付け | ✅ 実装 | PostRepo | SSOT M1-8-4 |
+| SetGenres - 異常系 | 無効 postID | ✅ 実装 | PostRepo | バリデーション |
+| SetGenres - 異常系 | 空ジャンル | ✅ 実装 | PostRepo | バリデーション |
+| Anonymize - 正常系 | 投稿内容匿名化 | ✅ 実装 | PostRepo | SSOT M1-13-2 |
+| Anonymize - 異常系 | 無効 postID | ✅ 実装 | PostRepo | バリデーション |
+| History - 正常系 | ユーザー投稿履歴取得 | ✅ 実装 | PostRepo | SSOT M1-14-2 |
+| History - 異常系 | 空 googleID | ✅ 実装 | PostRepo | バリデーション |
+
+**追加テスト候補:**
+- MIME型検証（PNG/JPEG）
+- ファイルサイズ制限（5MB）
+- 所有者権限チェック
+- ジャンルM:M実装（post_genre結合テーブル）
+
+---
+
+### 4. 統計サービス (StatsServiceImpl)
+
+| テスト項目 | 内容 | ステータス | モック | 備考 |
+|----------|------|---------|-------|------|
+| GetTotalPosts - 正常系 | 投稿数合計取得 | ✅ 実装 | StatsRepo | SSOT M3-7-1 |
+| GetTotalPosts - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
+| GetTotalPosts - エッジケース | ポスト数 0 | ✅ 実装 | StatsRepo | ゼロ値処理 |
+| GetTotalReactions - 正常系 | リアクション数合計取得 | ✅ 実装 | StatsRepo | SSOT M3-7-2 |
+| GetTotalReactions - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
+| GetTotalViews - 正常系 | ビュー数合計取得（SUM） | ✅ 実装 | StatsRepo | SSOT M3-7-3 |
+| GetTotalViews - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
+| GetEngagementRate - 正常系 | エンゲージメント率計算 | ✅ 実装 | StatsRepo | SSOT M3-7-4 |
+| GetEngagementRate - エッジケース | ポスト数 0→率 0 | ✅ 実装 | StatsRepo | ゼロ除算対策 |
+| GetEngagementRate - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
+
+**追加テスト候補:**
+- 複数ビジネスの独立性
+- 論理削除フラグ（isActive）の扱い
+- 匿名化投稿の集計除外
+
+---
+
+## モック実装ファイル
+
+### internal/repository/mock/mock_repos.go
+
+| モック | 実装機能 | 状態管理 |
+|-------|--------|--------|
+| MockAuthRepo | GetOrCreateUser, GetUserByID | メモリマップ |
+| MockBusinessMemberRepo | Get, Update (name/icon/anonymize) | メモリマップ |
+| MockPostRepo | List, Get, Create, Increment, Anonymize | メモリマップ（NextID自動採番） |
+| MockStatsRepo | TotalPosts, TotalReactions, TotalViews, Engagement | 固定値返却 |
+| MockBlockRepo | Create, Delete | メモリマップ |
+| MockReportRepo | Create | スライス集計 |
+| MockContactRepo | Create | スライス集計 |
+| MockPaymentRepo | CreatePayment | ダミー実装 |
+
+---
+
+## テスト依存関係
+
+### テスティングフレームワーク
+- `github.com/stretchr/testify/assert` - アサーション（簡潔）
+- `github.com/stretchr/testify/require` - 強制チェック（fatal）
+- 標準 `testing` - テスト実行フレームワーク
+
+### 対象パッケージ
+- Service実装層: `internal/service/impl`
+- Modelドメイン: `internal/domain`
+- リポジトリモック: `internal/repository/mock`
+
+---
+
+## 今後の拡張
+
+### 優先度: 高
+- [ ] Handler層の単体テスト（httptest + Gin）
+- [ ] Google OAuth本実装後の署名検証テスト
+- [ ] 権限チェック（認証ユーザーの抽出・検証）テスト
+- [ ] ジャンルM:M実装テスト
+
+### 優先度: 中
+- [ ] 統合テスト（実DB + 全層）
+- [ ] 並行処理テスト（Race condition検出）
+- [ ] ストレステスト（大量投稿・アクセス）
+- [ ] エラーハンドリングの詳細テスト
+
+### 優先度: 低
+- [ ] Swagger/OpenAPI自動生成のテスト
+- [ ] CI/CD パイプライン統合（GitHub Actions等）
+- [ ] ベンチマークテスト
+
+---
+
+## トラブルシューティング
+
+### テスト実行時エラー
+- `undefined: AuthServiceImpl` → 実装ファイルと同じディレクトリに テストファイルを配置
+- `nil pointer dereference` → モック作成時に必要なリポジトリをすべて指定
+- `import cycle` → 循環参照の確認、DIの設計見直し
+
+### テスト追加時のチェックリスト
+- [ ] モック実装にメソッドを追加
+- [ ] テスト関数名は `Test<タイプ><メソッド名>` の形式
+- [ ] テーブルドリブンテスト（複数ケース）を使用
+- [ ] 正常系と異常系を分離（`wantErr bool`）
+- [ ] `setup` / `cleanup` 関数を用意（必要な場合）
+- [ ] コミットメッセージに SSOT エンドポイントID（M3-7-1等）を含める
