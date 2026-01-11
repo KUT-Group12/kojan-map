@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"kojan-map/config"
-	"kojan-map/router"
 	"log"
+
+	"kojan-map/router"
+	"kojan-map/shared/config"
 
 	"github.com/gin-gonic/gin"
 )

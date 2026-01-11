@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"kojan-map/service"
 	"net/http"
+
+	"kojan-map/admin/service"
 
 	"github.com/gin-gonic/gin"
 )

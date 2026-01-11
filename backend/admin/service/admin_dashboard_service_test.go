@@ -3,9 +3,10 @@ package service
 import (
 	"testing"
 
+	"kojan-map/shared/models"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"kojan-map/models"
 )
 
 // MockUserRepository is a mock implementation of UserRepository

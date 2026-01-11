@@ -1,8 +1,9 @@
 package service
 
 import (
-	"kojan-map/models"
-	"kojan-map/repository"
+	adminrepo "kojan-map/admin/repository"
+	"kojan-map/shared/models"
+	sharedrepo "kojan-map/shared/repository"
 )
 
 // DashboardSummary represents the admin dashboard summary response
@@ -17,18 +18,18 @@ type DashboardSummary struct {
 
 // AdminDashboardService handles admin dashboard business logic
 type AdminDashboardService struct {
-	userRepo           *repository.UserRepository
-	postRepo           *repository.PostRepository
-	reportRepo         *repository.ReportRepository
-	businessMemberRepo *repository.BusinessMemberRepository
+	userRepo           *sharedrepo.UserRepository
+	postRepo           *sharedrepo.PostRepository
+	reportRepo         *adminrepo.ReportRepository
+	businessMemberRepo *adminrepo.BusinessMemberRepository
 }
 
 // NewAdminDashboardService creates a new AdminDashboardService
 func NewAdminDashboardService(
-	userRepo *repository.UserRepository,
-	postRepo *repository.PostRepository,
-	reportRepo *repository.ReportRepository,
-	businessMemberRepo *repository.BusinessMemberRepository,
+	userRepo *sharedrepo.UserRepository,
+	postRepo *sharedrepo.PostRepository,
+	reportRepo *adminrepo.ReportRepository,
+	businessMemberRepo *adminrepo.BusinessMemberRepository,
 ) *AdminDashboardService {
 	return &AdminDashboardService{
 		userRepo:           userRepo,

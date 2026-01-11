@@ -3,8 +3,9 @@ package service
 import (
 	"testing"
 
+	"kojan-map/shared/models"
+
 	"github.com/stretchr/testify/assert"
-	"kojan-map/models"
 )
 
 func TestAdminUserService_GetUsers(t *testing.T) {

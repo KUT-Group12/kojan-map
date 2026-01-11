@@ -2,8 +2,10 @@ package service
 
 import (
 	"errors"
-	"kojan-map/models"
-	"kojan-map/repository"
+
+	adminrepo "kojan-map/admin/repository"
+	"kojan-map/shared/models"
+	sharedrepo "kojan-map/shared/repository"
 )
 
 // BusinessApplicationResponse represents a business application with user info
@@ -18,16 +20,16 @@ type BusinessApplicationResponse struct {
 
 // AdminBusinessService handles admin business application management
 type AdminBusinessService struct {
-	requestRepo        *repository.BusinessRequestRepository
-	userRepo           *repository.UserRepository
-	businessMemberRepo *repository.BusinessMemberRepository
+	requestRepo        *adminrepo.BusinessRequestRepository
+	userRepo           *sharedrepo.UserRepository
+	businessMemberRepo *adminrepo.BusinessMemberRepository
 }
 
 // NewAdminBusinessService creates a new AdminBusinessService
 func NewAdminBusinessService(
-	requestRepo *repository.BusinessRequestRepository,
-	userRepo *repository.UserRepository,
-	businessMemberRepo *repository.BusinessMemberRepository,
+	requestRepo *adminrepo.BusinessRequestRepository,
+	userRepo *sharedrepo.UserRepository,
+	businessMemberRepo *adminrepo.BusinessMemberRepository,
 ) *AdminBusinessService {
 	return &AdminBusinessService{
 		requestRepo:        requestRepo,

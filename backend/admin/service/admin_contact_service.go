@@ -2,17 +2,18 @@ package service
 
 import (
 	"errors"
-	"kojan-map/models"
-	"kojan-map/repository"
+
+	adminrepo "kojan-map/admin/repository"
+	"kojan-map/shared/models"
 )
 
 // AdminContactService handles admin contact/inquiry management business logic
 type AdminContactService struct {
-	askRepo *repository.AskRepository
+	askRepo *adminrepo.AskRepository
 }
 
 // NewAdminContactService creates a new AdminContactService
-func NewAdminContactService(askRepo *repository.AskRepository) *AdminContactService {
+func NewAdminContactService(askRepo *adminrepo.AskRepository) *AdminContactService {
 	return &AdminContactService{askRepo: askRepo}
 }
 

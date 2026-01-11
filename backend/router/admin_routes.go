@@ -1,10 +1,11 @@
 package router
 
 import (
-	"kojan-map/handler"
-	"kojan-map/middleware"
-	"kojan-map/repository"
-	"kojan-map/service"
+	"kojan-map/admin/handler"
+	adminrepo "kojan-map/admin/repository"
+	"kojan-map/admin/service"
+	"kojan-map/shared/middleware"
+	sharedrepo "kojan-map/shared/repository"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -12,13 +13,15 @@ import (
 
 // SetupAdminRoutes configures all admin API routes
 func SetupAdminRoutes(r *gin.Engine, db *gorm.DB) {
-	// Initialize repositories
-	userRepo := repository.NewUserRepository(db)
-	reportRepo := repository.NewReportRepository(db)
-	businessRequestRepo := repository.NewBusinessRequestRepository(db)
-	askRepo := repository.NewAskRepository(db)
-	postRepo := repository.NewPostRepository(db)
-	businessMemberRepo := repository.NewBusinessMemberRepository(db)
+	// Initialize shared repositories
+	userRepo := sharedrepo.NewUserRepository(db)
+	postRepo := sharedrepo.NewPostRepository(db)
+
+	// Initialize admin repositories
+	reportRepo := adminrepo.NewReportRepository(db)
+	businessRequestRepo := adminrepo.NewBusinessRequestRepository(db)
+	askRepo := adminrepo.NewAskRepository(db)
+	businessMemberRepo := adminrepo.NewBusinessMemberRepository(db)
 
 	// Initialize services
 	dashboardService := service.NewAdminDashboardService(userRepo, postRepo, reportRepo, businessMemberRepo)

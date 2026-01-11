@@ -2,8 +2,9 @@ package service
 
 import (
 	"errors"
-	"kojan-map/models"
-	"kojan-map/repository"
+
+	adminrepo "kojan-map/admin/repository"
+	"kojan-map/shared/models"
 )
 
 // ReportListResponse represents the paginated report list response
@@ -16,11 +17,11 @@ type ReportListResponse struct {
 
 // AdminReportService handles admin report management business logic
 type AdminReportService struct {
-	reportRepo *repository.ReportRepository
+	reportRepo *adminrepo.ReportRepository
 }
 
 // NewAdminReportService creates a new AdminReportService
-func NewAdminReportService(reportRepo *repository.ReportRepository) *AdminReportService {
+func NewAdminReportService(reportRepo *adminrepo.ReportRepository) *AdminReportService {
 	return &AdminReportService{reportRepo: reportRepo}
 }
 

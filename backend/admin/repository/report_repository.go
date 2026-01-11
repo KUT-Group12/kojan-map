@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"kojan-map/models"
+	"kojan-map/shared/models"
 
 	"gorm.io/gorm"
 )

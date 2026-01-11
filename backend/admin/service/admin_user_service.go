@@ -2,8 +2,9 @@ package service
 
 import (
 	"errors"
-	"kojan-map/models"
-	"kojan-map/repository"
+
+	"kojan-map/shared/models"
+	sharedrepo "kojan-map/shared/repository"
 )
 
 // UserListResponse represents the paginated user list response
@@ -15,11 +16,11 @@ type UserListResponse struct {
 
 // AdminUserService handles admin user management business logic
 type AdminUserService struct {
-	userRepo *repository.UserRepository
+	userRepo *sharedrepo.UserRepository
 }
 
 // NewAdminUserService creates a new AdminUserService
-func NewAdminUserService(userRepo *repository.UserRepository) *AdminUserService {
+func NewAdminUserService(userRepo *sharedrepo.UserRepository) *AdminUserService {
 	return &AdminUserService{userRepo: userRepo}
 }
 
