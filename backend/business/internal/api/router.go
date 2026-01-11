@@ -20,18 +20,24 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	memberRepo := impl.NewBusinessMemberRepoImpl(db)
 	statsRepo := impl.NewStatsRepoImpl(db)
 	postRepo := impl.NewPostRepoImpl(db)
+	blockRepo := impl.NewBlockRepoImpl(db)
+	reportRepo := impl.NewReportRepoImpl(db)
 
 	// Initialize services
 	authService := svcimpl.NewAuthServiceImpl(authRepo)
 	memberService := svcimpl.NewMemberServiceImpl(memberRepo, authRepo)
 	statsService := svcimpl.NewStatsServiceImpl(statsRepo)
 	postService := svcimpl.NewPostServiceImpl(postRepo)
+	blockService := svcimpl.NewBlockServiceImpl(blockRepo)
+	reportService := svcimpl.NewReportServiceImpl(reportRepo)
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(authService)
 	memberHandler := handler.NewMemberHandler(memberService)
 	statsHandler := handler.NewStatsHandler(statsService)
 	postHandler := handler.NewPostHandler(postService)
+	blockHandler := handler.NewBlockHandler(blockService)
+	reportHandler := handler.NewReportHandler(reportService)
 
 	// Auth routes
 	api.POST("/auth/google", authHandler.GoogleAuth)
@@ -58,12 +64,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api.PUT("/posts/anonymize", postHandler.AnonymizePost)
 	api.GET("/posts/history", postHandler.GetPostHistory)
 
-	// Block routes (TODO)
-	api.POST("/block", notImplemented)
-	api.DELETE("/block", notImplemented)
+	// Block routes
+	api.POST("/block", blockHandler.CreateBlock)
+	api.DELETE("/block", blockHandler.DeleteBlock)
 
-	// Report routes (TODO)
-	api.POST("/report", notImplemented)
+	// Report routes
+	api.POST("/report", reportHandler.CreateReport)
 
 	// Contact routes (TODO)
 	api.POST("/contact", notImplemented)
