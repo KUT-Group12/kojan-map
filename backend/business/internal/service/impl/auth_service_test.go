@@ -7,15 +7,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"kojan-map/business/internal/domain"
-	"kojan-map/business/internal/repository/mock"
 	"kojan-map/business/pkg/jwt"
 	"kojan-map/business/pkg/mfa"
 	"kojan-map/business/pkg/oauth"
 )
 
+// TestAuthServiceImpl_GoogleAuth tests the Google OAuth authentication flow.
+// Test cases cover valid ID tokens and error conditions like empty tokens.
 func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 	type args struct {
 		googleID string
+		gmail    string
 		idToken  string
 	}
 
@@ -30,6 +32,7 @@ func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 			name: "valid_google_id_token",
 			args: args{
 				googleID: "user123",
+				gmail:    "test@example.com",
 				idToken:  "dummy-jwt-token",
 			},
 			wantErr:     false,
@@ -44,6 +47,7 @@ func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 			name: "empty_id_token",
 			args: args{
 				googleID: "user456",
+				gmail:    "test2@example.com",
 				idToken:  "",
 			},
 			wantErr: true,
@@ -52,25 +56,34 @@ func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			authRepo := mock.NewMockAuthRepo()
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
+
+			// Initialize authentication components
 			tokenVerifier := oauth.NewGoogleTokenVerifier("test-client-id")
 			tokenManager := jwt.NewTokenManager()
 			mfaValidator := mfa.NewMFAValidator()
 
+			// Create service with initialized components
 			svc := &AuthServiceImpl{
-				authRepo:      authRepo,
+				authRepo:      fixtures.AuthRepo,
 				tokenVerifier: tokenVerifier,
 				tokenManager:  tokenManager,
 				mfaValidator:  mfaValidator,
 			}
 
-			req := &domain.GoogleAuthRequest{IDToken: tt.args.idToken}
+			// Execute and verify
+			req := &domain.GoogleAuthRequest{
+				GoogleID: tt.args.googleID,
+				Gmail:    tt.args.gmail,
+				IDToken:  tt.args.idToken,
+			}
 			result, err := svc.GoogleAuth(context.Background(), req)
 
 			if tt.wantErr {
-				assert.Error(t, err, "GoogleAuth should return error")
+				assert.Error(t, err, "GoogleAuth should return error for invalid input")
 			} else {
-				require.NoError(t, err, "GoogleAuth should not return error")
+				require.NoError(t, err, "GoogleAuth should not return error for valid input")
 				if tt.checkResponse != nil {
 					tt.checkResponse(t, result)
 				}
@@ -79,6 +92,8 @@ func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 	}
 }
 
+// TestAuthServiceImpl_BusinessLogin tests the business login flow with MFA verification.
+// Test cases cover successful login with valid MFA code and error conditions.
 func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 	type args struct {
 		gmail   string
@@ -86,10 +101,10 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		setupMFA      func(validator *mfa.MFAValidator, email string) string
-		wantErr       bool
+		name        string
+		args        args
+		setupMFA    func(validator *mfa.MFAValidator, email string) string
+		wantErr     bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -99,6 +114,7 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 				mfaCode: "",
 			},
 			setupMFA: func(validator *mfa.MFAValidator, email string) string {
+				// Generate and return valid MFA code
 				code, _ := validator.GenerateCode(email)
 				return code
 			},
@@ -114,11 +130,12 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 			name: "invalid_mfa_code",
 			args: args{
 				gmail:   "business@example.com",
-				mfaCode: "000000",
+				mfaCode: "000000", // Intentionally wrong code
 			},
 			setupMFA: func(validator *mfa.MFAValidator, email string) string {
+				// Generate code but return wrong one
 				validator.GenerateCode(email)
-				return "000000" // wrong code
+				return "000000"
 			},
 			wantErr: true,
 		},
@@ -126,31 +143,36 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			authRepo := mock.NewMockAuthRepo()
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
+
+			// Initialize authentication components
 			mfaValidator := mfa.NewMFAValidator()
 			tokenManager := jwt.NewTokenManager()
 
-			// Setup MFA if needed
+			// Generate MFA code if setup function provided
 			mfaCode := ""
 			if tt.setupMFA != nil {
 				mfaCode = tt.setupMFA(mfaValidator, tt.args.gmail)
 			}
 
+			// Create service with initialized components
 			svc := &AuthServiceImpl{
-				authRepo:     authRepo,
+				authRepo:     fixtures.AuthRepo,
 				tokenManager: tokenManager,
 				mfaValidator: mfaValidator,
 			}
 
-			// Create user first
-			authRepo.GetOrCreateUser(context.Background(), "test-user-123", tt.args.gmail, "business")
+			// Create test user in repository (use gmail as googleID for mock)
+			fixtures.SetupUser(tt.args.gmail, tt.args.gmail)
 
+			// Execute and verify
 			result, err := svc.BusinessLogin(context.Background(), tt.args.gmail, mfaCode)
 
 			if tt.wantErr {
-				assert.Error(t, err, "BusinessLogin should return error")
+				assert.Error(t, err, "BusinessLogin should return error for invalid input")
 			} else {
-				require.NoError(t, err, "BusinessLogin should not return error")
+				require.NoError(t, err, "BusinessLogin should not return error for valid input")
 				if tt.checkResponse != nil {
 					tt.checkResponse(t, result)
 				}
@@ -187,12 +209,16 @@ func TestAuthServiceImpl_Logout(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			authRepo := mock.NewMockAuthRepo()
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
+
+			// Initialize authentication components
 			tokenManager := jwt.NewTokenManager()
 			mfaValidator := mfa.NewMFAValidator()
 
+			// Create service with initialized components
 			svc := &AuthServiceImpl{
-				authRepo:     authRepo,
+				authRepo:     fixtures.AuthRepo,
 				tokenManager: tokenManager,
 				mfaValidator: mfaValidator,
 			}

@@ -6,19 +6,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"kojan-map/business/internal/repository/mock"
 )
 
+// TestStatsServiceImpl_GetTotalPosts tests retrieving the total number of posts for a business.
+// Test cases cover valid business IDs and error conditions like negative IDs and zero posts.
 func TestStatsServiceImpl_GetTotalPosts(t *testing.T) {
 	type args struct {
 		businessID int64
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		mockValue     int64
-		wantErr       bool
+		name         string
+		args         args
+		mockValue    int64
+		wantErr      bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -51,19 +52,24 @@ func TestStatsServiceImpl_GetTotalPosts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			statsRepo := mock.NewMockStatsRepo()
-			statsRepo.TotalPostsVal = tt.mockValue
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
 
+			// Set mock stats value
+			fixtures.SetupStatsValue(tt.mockValue, 0, 0)
+
+			// Create service
 			svc := &StatsServiceImpl{
-				statsRepo: statsRepo,
+				statsRepo: fixtures.StatsRepo,
 			}
 
+			// Execute and verify
 			result, err := svc.GetTotalPosts(context.Background(), tt.args.businessID)
 
 			if tt.wantErr {
-				assert.Error(t, err, "GetTotalPosts should return error")
+				assert.Error(t, err, "GetTotalPosts should return error for invalid input")
 			} else {
-				require.NoError(t, err, "GetTotalPosts should not return error")
+				require.NoError(t, err, "GetTotalPosts should not return error for valid input")
 				if tt.checkResponse != nil {
 					tt.checkResponse(t, result)
 				}
@@ -72,16 +78,18 @@ func TestStatsServiceImpl_GetTotalPosts(t *testing.T) {
 	}
 }
 
+// TestStatsServiceImpl_GetTotalReactions tests retrieving the total number of reactions for a business.
+// Test cases cover valid business IDs and error conditions.
 func TestStatsServiceImpl_GetTotalReactions(t *testing.T) {
 	type args struct {
 		businessID int64
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		mockValue     int64
-		wantErr       bool
+		name         string
+		args         args
+		mockValue    int64
+		wantErr      bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -106,19 +114,24 @@ func TestStatsServiceImpl_GetTotalReactions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			statsRepo := mock.NewMockStatsRepo()
-			statsRepo.TotalReactionsVal = tt.mockValue
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
 
+			// Set mock stats value
+			fixtures.SetupStatsValue(0, tt.mockValue, 0)
+
+			// Create service
 			svc := &StatsServiceImpl{
-				statsRepo: statsRepo,
+				statsRepo: fixtures.StatsRepo,
 			}
 
+			// Execute and verify
 			result, err := svc.GetTotalReactions(context.Background(), tt.args.businessID)
 
 			if tt.wantErr {
-				assert.Error(t, err, "GetTotalReactions should return error")
+				assert.Error(t, err, "GetTotalReactions should return error for invalid input")
 			} else {
-				require.NoError(t, err, "GetTotalReactions should not return error")
+				require.NoError(t, err, "GetTotalReactions should not return error for valid input")
 				if tt.checkResponse != nil {
 					tt.checkResponse(t, result)
 				}
@@ -127,16 +140,18 @@ func TestStatsServiceImpl_GetTotalReactions(t *testing.T) {
 	}
 }
 
+// TestStatsServiceImpl_GetTotalViews tests retrieving the total number of views for a business.
+// Test cases cover valid business IDs and error conditions.
 func TestStatsServiceImpl_GetTotalViews(t *testing.T) {
 	type args struct {
 		businessID int64
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		mockValue     int64
-		wantErr       bool
+		name         string
+		args         args
+		mockValue    int64
+		wantErr      bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -161,19 +176,24 @@ func TestStatsServiceImpl_GetTotalViews(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			statsRepo := mock.NewMockStatsRepo()
-			statsRepo.TotalViewsVal = tt.mockValue
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
 
+			// Set mock stats value
+			fixtures.SetupStatsValue(0, 0, tt.mockValue)
+
+			// Create service
 			svc := &StatsServiceImpl{
-				statsRepo: statsRepo,
+				statsRepo: fixtures.StatsRepo,
 			}
 
+			// Execute and verify
 			result, err := svc.GetTotalViews(context.Background(), tt.args.businessID)
 
 			if tt.wantErr {
-				assert.Error(t, err, "GetTotalViews should return error")
+				assert.Error(t, err, "GetTotalViews should return error for invalid input")
 			} else {
-				require.NoError(t, err, "GetTotalViews should not return error")
+				require.NoError(t, err, "GetTotalViews should not return error for valid input")
 				if tt.checkResponse != nil {
 					tt.checkResponse(t, result)
 				}
@@ -182,6 +202,8 @@ func TestStatsServiceImpl_GetTotalViews(t *testing.T) {
 	}
 }
 
+// TestStatsServiceImpl_GetEngagementRate tests calculating the engagement rate for a business.
+// Test cases cover valid business IDs, zero posts edge case, and error conditions.
 func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 	type args struct {
 		businessID int64
@@ -194,10 +216,10 @@ func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		args          args
-		mockStats     mockStats
-		wantErr       bool
+		name         string
+		args         args
+		mockStats    mockStats
+		wantErr      bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -227,7 +249,7 @@ func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 			},
 			wantErr: false,
 			checkResponse: func(t *testing.T, result interface{}) {
-				assert.NotNil(t, result, "result should not be nil")
+				assert.NotNil(t, result, "result should not be nil (handles zero division)")
 			},
 		},
 		{
@@ -241,21 +263,24 @@ func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			statsRepo := mock.NewMockStatsRepo()
-			statsRepo.TotalPostsVal = tt.mockStats.posts
-			statsRepo.TotalReactionsVal = tt.mockStats.reactions
-			statsRepo.TotalViewsVal = tt.mockStats.views
+			// Initialize fixtures
+			fixtures := NewTestFixtures()
 
+			// Set mock stats values
+			fixtures.SetupStatsValue(tt.mockStats.posts, tt.mockStats.reactions, tt.mockStats.views)
+
+			// Create service
 			svc := &StatsServiceImpl{
-				statsRepo: statsRepo,
+				statsRepo: fixtures.StatsRepo,
 			}
 
+			// Execute and verify
 			result, err := svc.GetEngagementRate(context.Background(), tt.args.businessID)
 
 			if tt.wantErr {
-				assert.Error(t, err, "GetEngagementRate should return error")
+				assert.Error(t, err, "GetEngagementRate should return error for invalid input")
 			} else {
-				require.NoError(t, err, "GetEngagementRate should not return error")
+				require.NoError(t, err, "GetEngagementRate should not return error for valid input")
 				if tt.checkResponse != nil {
 					tt.checkResponse(t, result)
 				}
@@ -263,3 +288,4 @@ func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 		})
 	}
 }
+
