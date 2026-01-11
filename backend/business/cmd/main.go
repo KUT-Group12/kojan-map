@@ -39,6 +39,7 @@ func NewApp(db *gorm.DB, log logger.Logger) *App {
 func (a *App) Setup() error {
 	// テーブルの作成（マイグレーション）
 	if err := a.DB.AutoMigrate(
+		&domain.User{},
 		&domain.BusinessMember{},
 		&domain.Post{},
 		&domain.PostImage{},
@@ -102,7 +103,7 @@ func main() {
 	}
 
 	// ルーティング登録（実装は後続タスクで追加予定）
-	api.RegisterRoutes(app.Engine)
+	api.RegisterRoutes(app.Engine, app.DB)
 
 	// アプリケーション起動
 	port := os.Getenv("PORT")

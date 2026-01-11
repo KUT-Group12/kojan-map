@@ -4,20 +4,20 @@ import "time"
 
 // Post は投稿を表すドメインモデル
 type Post struct {
-	ID              string `gorm:"primaryKey"`
-	AuthorID        string
-	BusinessMember  BusinessMember
-	LocationID      string
-	GenreID         string
-	Title           string
-	Description     string
-	ViewCount       int64
-	ReactionCount   int64
-	PostedAt        time.Time
-	UpdatedAt       time.Time
-	AnonymizedAt    *time.Time // 匿名化日時
-	IsActive        bool       // 論理削除フラグ
-	Images          []PostImage `gorm:"foreignKey:PostID"`
+	ID             string `gorm:"primaryKey"`
+	AuthorID       string
+	BusinessMember BusinessMember
+	LocationID     string
+	GenreID        string
+	Title          string
+	Description    string
+	ViewCount      int64
+	ReactionCount  int64
+	PostedAt       time.Time
+	UpdatedAt      time.Time
+	AnonymizedAt   *time.Time  // 匿名化日時
+	IsActive       bool        // 論理削除フラグ
+	Images         []PostImage `gorm:"foreignKey:PostID"`
 }
 
 // TableName は対応するテーブル名を指定

@@ -4,50 +4,62 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"kojan-map/business/internal/api/handler"
+	"kojan-map/business/internal/repository/impl"
+	svcimpl "kojan-map/business/internal/service/impl"
 	"kojan-map/business/pkg/response"
 )
 
 // RegisterRoutes sets up route groups for business backend.
-// Handlers are placeholders; implementation will be added after DB schema alignment.
-func RegisterRoutes(r *gin.Engine) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api := r.Group("/api")
 
-	// Auth
-	api.POST("/auth/google", notImplemented)
-	api.POST("/auth/business/login", notImplemented)
-	api.POST("/auth/logout", notImplemented)
+	// Initialize repositories
+	authRepo := impl.NewAuthRepoImpl(db)
 
-	// Member
+	// Initialize services
+	authService := svcimpl.NewAuthServiceImpl(authRepo)
+
+	// Initialize handlers
+	authHandler := handler.NewAuthHandler(authService)
+
+	// Auth routes
+	api.POST("/auth/google", authHandler.GoogleAuth)
+	api.POST("/auth/business/login", authHandler.BusinessLogin)
+	api.POST("/auth/logout", authHandler.Logout)
+
+	// Member routes (TODO)
 	api.GET("/business/mypage/details", notImplemented)
 	api.PUT("/business/member/name", notImplemented)
 	api.PUT("/business/member/icon", notImplemented)
 	api.PUT("/business/member/anonymize", notImplemented)
 	api.GET("/business/member", notImplemented)
 
-	// Dashboard stats
+	// Dashboard stats routes (TODO)
 	api.GET("/business/post/total", notImplemented)
 	api.GET("/business/reaction/total", notImplemented)
 	api.GET("/business/view/total", notImplemented)
 	api.GET("/business/engagement", notImplemented)
 
-	// Posts
+	// Post routes (TODO)
 	api.GET("/business/posts", notImplemented)
 	api.GET("/posts/:postId", notImplemented)
 	api.POST("/posts", notImplemented) // TODO: enforce 5MB image limit & MIME check in handler
 	api.PUT("/posts/anonymize", notImplemented)
 	api.GET("/posts/history", notImplemented)
 
-	// Blocks
+	// Block routes (TODO)
 	api.POST("/block", notImplemented)
 	api.DELETE("/block", notImplemented)
 
-	// Reports
+	// Report routes (TODO)
 	api.POST("/report", notImplemented)
 
-	// Contact
+	// Contact routes (TODO)
 	api.POST("/contact", notImplemented)
 
-	// Stripe redirect
+	// Stripe redirect (TODO)
 	api.POST("/business/stripe/redirect", notImplemented)
 
 	// Healthcheck

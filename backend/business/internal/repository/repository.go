@@ -2,6 +2,13 @@ package repository
 
 import "context"
 
+// AuthRepo defines data access methods for authentication.
+type AuthRepo interface {
+	GetOrCreateUser(ctx context.Context, googleID, gmail, role string) (interface{}, error)
+	GetUserByID(ctx context.Context, googleID string) (interface{}, error)
+	GetBusinessMemberByUserID(ctx context.Context, userID string) (interface{}, error)
+}
+
 // BusinessMemberRepo defines data access methods for business members.
 type BusinessMemberRepo interface {
 	GetByGoogleID(ctx context.Context, googleID string) (interface{}, error)

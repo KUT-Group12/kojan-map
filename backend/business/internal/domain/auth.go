@@ -1,14 +1,33 @@
 package domain
 
+import "time"
+
+// User はユーザー基本情報（全ロール共通）
+type User struct {
+	ID        string `gorm:"primaryKey;column:id;type:varchar(50)"`
+	Gmail     string `gorm:"index;column:gmail;type:varchar(100)"`
+	Role      string `gorm:"column:role;type:enum('user','business','admin')"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// TableName はテーブル名を指定
+func (User) TableName() string {
+	return "users"
+}
+
 // GoogleAuthRequest はGoogle認証のリクエスト
 type GoogleAuthRequest struct {
-	// Googleから取得した認証情報を含む
-	// フロントエンドから送信される
+	GoogleID string `json:"googleId" binding:"required"`
+	Gmail    string `json:"gmail" binding:"required,email"`
+	Role     string `json:"role" binding:"required,oneof=user business admin"`
 }
 
 // GoogleAuthResponse はGoogle認証のレスポンス
 type GoogleAuthResponse struct {
 	SessionID string `json:"sessionId"`
+	UserID    string `json:"userId"`
+	Role      string `json:"role"`
 }
 
 // BusinessLoginRequest は事業者ログインのリクエスト
@@ -19,9 +38,9 @@ type BusinessLoginRequest struct {
 
 // BusinessLoginResponse は事業者ログインのレスポンス
 type BusinessLoginResponse struct {
-	Token string `json:"token"`
+	Token    string `json:"token"`
 	Business struct {
-		ID   string `json:"id"`
+		ID   int64  `json:"id"`
 		Role string `json:"role"`
 	} `json:"business"`
 }

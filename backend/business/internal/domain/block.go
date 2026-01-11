@@ -4,10 +4,10 @@ import "time"
 
 // Block はブロック情報を表すドメインモデル
 type Block struct {
-	ID               string `gorm:"primaryKey"`
-	BlockingUserID   string // ブロックを実行した事業者のGoogleID
-	BlockedGoogleID  string // ブロック対象のGoogleID
-	CreatedAt        time.Time
+	ID              string `gorm:"primaryKey"`
+	BlockingUserID  string // ブロックを実行した事業者のGoogleID
+	BlockedGoogleID string // ブロック対象のGoogleID
+	CreatedAt       time.Time
 }
 
 // TableName は対応するテーブル名を指定

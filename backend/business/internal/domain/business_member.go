@@ -4,39 +4,45 @@ import "time"
 
 // BusinessMember は事業者会員を表すドメインモデル
 type BusinessMember struct {
-	ID            string    `gorm:"primaryKey"`
-	GoogleID      string    `gorm:"uniqueIndex"`
-	Email         string
-	BusinessName  string
-	IconImageURL  string
-	RegisteredAt  time.Time
-	UpdatedAt     time.Time
-	AnonymizedAt  *time.Time // 匿名化日時
-	IsActive      bool
-	StripeCustomerID *string // Stripe顧客ID
+	ID               int64     `gorm:"primaryKey;autoIncrement;column:id"`
+	BusinessName     string    `gorm:"column:businessName;type:varchar(50);not null"`
+	KanaBusinessName string    `gorm:"column:kanaBusinessName;type:varchar(50);not null"`
+	ZipCode          int       `gorm:"column:zipCode;not null"`
+	Address          string    `gorm:"column:address;type:varchar(100);not null"`
+	Phone            int       `gorm:"column:phone;not null"`
+	RegistDate       time.Time `gorm:"column:registDate;not null"`
+	ProfileImage     []byte    `gorm:"column:profileImage;type:blob"`
+	UserID           string    `gorm:"column:userId;type:varchar(50);index;not null"`
+	PlaceID          int64     `gorm:"column:placeId;not null"`
+	AnonymizedAt     *time.Time
+	IsActive         bool
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // TableName は対応するテーブル名を指定
 func (BusinessMember) TableName() string {
-	return "business_members"
+	return "business"
 }
 
 // CreateBusinessMemberRequest は事業者会員作成時のリクエスト
 type CreateBusinessMemberRequest struct {
-	GoogleID     string
-	Email        string
-	BusinessName string
-	IconImageURL string
+	BusinessName     string `json:"businessName" binding:"required,max=50"`
+	KanaBusinessName string `json:"kanaBusinessName" binding:"required,max=50"`
+	ZipCode          int    `json:"zipCode" binding:"required"`
+	Address          string `json:"address" binding:"required,max=100"`
+	Phone            int    `json:"phone" binding:"required"`
+	UserID           string `json:"userId" binding:"required"`
+	PlaceID          int64  `json:"placeId" binding:"required"`
 }
 
 // BusinessMemberResponse は事業者会員情報のレスポンス
 type BusinessMemberResponse struct {
-	ID           string `json:"id"`
-	GoogleID     string `json:"googleId"`
-	Email        string `json:"gmail"`
+	ID           int64  `json:"id"`
 	BusinessName string `json:"businessName"`
+	Gmail        string `json:"gmail"`
+	RegistDate   string `json:"registeredAt"` // ISO 8601形式
 	IconImageURL string `json:"iconImageUrl"`
-	RegisteredAt string `json:"registeredAt"` // ISO 8601形式
 }
 
 // UpdateBusinessNameRequest は事業者名更新のリクエスト
@@ -46,7 +52,7 @@ type UpdateBusinessNameRequest struct {
 
 // UpdateBusinessIconRequest はアイコン更新のリクエスト
 type UpdateBusinessIconRequest struct {
-	NewBusinessIcon string `json:"newBusinessIcon" binding:"required"`
+	NewBusinessIcon []byte `json:"newBusinessIcon" binding:"required"`
 }
 
 // AnonymizeBusinessMemberRequest は匿名化のリクエスト
