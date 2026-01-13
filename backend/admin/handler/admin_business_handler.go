@@ -9,17 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AdminBusinessHandler handles admin business application requests
+// AdminBusinessHandlerは，事業者に関してのリクエストを処理するハンドラです．
+// 依存するサービス層のインスタンスを保持します．
 type AdminBusinessHandler struct {
 	service *service.AdminBusinessService
 }
 
-// NewAdminBusinessHandler creates a new AdminBusinessHandler
+// AdminBusinessHandlerを新しく作成するためのコンストラクタ関数です．
+// 引数 : s ビジネスロジックを担当するAdminBusinessHandlerへのポインタです．
 func NewAdminBusinessHandler(s *service.AdminBusinessService) *AdminBusinessHandler {
 	return &AdminBusinessHandler{service: s}
 }
 
-// GetApplications handles GET /api/admin/request
+// GetApplicationsは未処理の事業者申請一覧を取得する機能です．
+// Method : GET, path = /api/admin/request
+// Response =
+// 200 OK: { "applications": []Application}
+// 500 Internal Server: {"error": string}
 func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 	applications, err := h.service.GetApplications()
 	if err != nil {
@@ -30,7 +36,12 @@ func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"applications": applications})
 }
 
-// ApproveApplication handles PUT /api/applications/:id/approve
+// ApproveApplicationは指定されたIDを持つ申請を承認します．
+// Method = PUT Path = /api/applications/:id/approve
+// id(path) : 申請ID(整数)
+// Response =
+// 200 OK: {"success": true}
+// 400 Bad Request: ID不正 またはロジックエラー
 func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -47,7 +58,12 @@ func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-// RejectApplication handles PUT /api/applications/:id/reject
+// RejextApplicationは指定されたIDを持つ申請を却下します．
+// Method = PUT Path = /api/applications/:id/reject
+// id(path) : 申請ID (整数)
+// Response:
+// 200 OK: {"success": true}
+// 400 Bad Request: ID不正またはロジックエラー
 func (h *AdminBusinessHandler) RejectApplication(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
