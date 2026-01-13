@@ -6,17 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// AskRepository handles database operations for contact inquiries
+// AskRepositoryはお問合せのデータベース操作を処理します．
 type AskRepository struct {
 	db *gorm.DB
 }
 
-// NewAskRepository creates a new AskRepository
+// NewAskRepositoryは新しくAskRepositoryを作成するためのコンストラクタ関数です．
 func NewAskRepository(db *gorm.DB) *AskRepository {
 	return &AskRepository{db: db}
 }
 
-// FindAll retrieves all inquiries
+// FindAllは全てのお問い合わせを取得する機能です．
 func (r *AskRepository) FindAll() ([]models.Ask, error) {
 	var asks []models.Ask
 	result := r.db.Order("date DESC").Find(&asks)
@@ -26,7 +26,7 @@ func (r *AskRepository) FindAll() ([]models.Ask, error) {
 	return asks, nil
 }
 
-// FindByID finds an inquiry by ID
+// FindByIdは特定のIDのお問い合わせを取得する機能です．
 func (r *AskRepository) FindByID(id int) (*models.Ask, error) {
 	var ask models.Ask
 	result := r.db.Where("askId = ?", id).First(&ask)
@@ -36,14 +36,25 @@ func (r *AskRepository) FindByID(id int) (*models.Ask, error) {
 	return &ask, nil
 }
 
-// MarkAsHandled marks an inquiry as handled (askFlag = true)
+// MarkAsHandledは特定のお問い合わせを処理済みとする機能です．
+//
+// Parameters:
+//   - id: お問合せID
+//
+// Returns :
+//   - error:お問合せIDが見つからない場合，または処理済みの場合
 func (r *AskRepository) MarkAsHandled(id int) error {
 	return r.db.Model(&models.Ask{}).
 		Where("askId = ?", id).
 		Update("askFlag", true).Error
 }
 
-// MarkAsRejected marks an inquiry as rejected (askFlag = false, or could be a separate field)
+// MarkAsRejectedは特定のお問い合わせを未処理状態にする機能です．
+// Parameters:
+//   - id: お問い合わせID
+//
+// Returns:
+//   - error: 更新に失敗した場合，または該当するお問い合わせが見つからない場合
 func (r *AskRepository) MarkAsRejected(id int) error {
 	// For now, we just mark it as not handled
 	// In a real scenario, you might want a separate status field
