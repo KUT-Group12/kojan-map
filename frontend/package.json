@@ -61,7 +61,9 @@
       "scripts": {
             "dev": "vite",
             "build": "vite build",
-            "test": "echo \"No tests yet\""
+            "test": "echo \"No tests yet\"",
+            "lint": "echo \"lint skipped\""
       }
 }
+
 
