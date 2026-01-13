@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/response"
 )
 
@@ -30,8 +31,12 @@ func (h *BlockHandler) CreateBlock(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract blockerID from authenticated session
-	blockerID := "placeholder-user-id"
+	// Extract blockerID from authenticated context
+	blockerID, ok := contextkeys.GetUserID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	err := h.blockService.Block(c.Request.Context(), blockerID, req.BlockedGoogleID)
 	if err != nil {
@@ -53,8 +58,12 @@ func (h *BlockHandler) DeleteBlock(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract blockerID from authenticated session
-	blockerID := "placeholder-user-id"
+	// Extract blockerID from authenticated context
+	blockerID, ok := contextkeys.GetUserID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	err := h.blockService.Unblock(c.Request.Context(), blockerID, req.BlockedGoogleID)
 	if err != nil {
@@ -88,8 +97,12 @@ func (h *ReportHandler) CreateReport(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract reporterID from authenticated session
-	reporterID := "placeholder-user-id"
+	// Extract reporterID from authenticated context
+	reporterID, ok := contextkeys.GetUserID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	err := h.reportService.CreateReport(c.Request.Context(), reporterID, &req)
 	if err != nil {

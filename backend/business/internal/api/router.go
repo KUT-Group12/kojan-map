@@ -6,8 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"kojan-map/business/internal/api/handler"
+	"kojan-map/business/internal/api/middleware"
 	"kojan-map/business/internal/repository/impl"
 	svcimpl "kojan-map/business/internal/service/impl"
+	"kojan-map/business/pkg/jwt"
 	"kojan-map/business/pkg/response"
 )
 
@@ -45,43 +47,60 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	contactHandler := handler.NewContactHandler(contactService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
-	// Auth routes
+	// Initialize TokenManager for middleware
+	tokenManager := jwt.NewTokenManager()
+
+	// Auth routes (public)
 	api.POST("/auth/google", authHandler.GoogleAuth)
 	api.POST("/auth/business/login", authHandler.BusinessLogin)
 	api.POST("/auth/logout", authHandler.Logout)
 
-	// Member routes
-	api.GET("/business/mypage/details", memberHandler.GetBusinessDetails)
-	api.PUT("/business/member/name", memberHandler.UpdateBusinessName)
-	api.PUT("/business/member/icon", memberHandler.UpdateBusinessIcon)
-	api.PUT("/business/member/anonymize", memberHandler.AnonymizeMember)
-	api.GET("/business/member", memberHandler.GetMemberInfo)
+	// Member routes (protected)
+	memberRoutes := api.Group("/business")
+	memberRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	memberRoutes.GET("/mypage/details", memberHandler.GetBusinessDetails)
+	memberRoutes.PUT("/member/name", memberHandler.UpdateBusinessName)
+	memberRoutes.PUT("/member/icon", memberHandler.UpdateBusinessIcon)
+	memberRoutes.PUT("/member/anonymize", memberHandler.AnonymizeMember)
+	memberRoutes.GET("/member", memberHandler.GetMemberInfo)
 
-	// Dashboard stats routes
-	api.GET("/business/post/total", statsHandler.GetTotalPosts)
-	api.GET("/business/reaction/total", statsHandler.GetTotalReactions)
-	api.GET("/business/view/total", statsHandler.GetTotalViews)
-	api.GET("/business/engagement", statsHandler.GetEngagementRate)
+	// Dashboard stats routes (protected)
+	statsRoutes := api.Group("/business")
+	statsRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	statsRoutes.GET("/post/total", statsHandler.GetTotalPosts)
+	statsRoutes.GET("/reaction/total", statsHandler.GetTotalReactions)
+	statsRoutes.GET("/view/total", statsHandler.GetTotalViews)
+	statsRoutes.GET("/engagement", statsHandler.GetEngagementRate)
 
-	// Post routes
-	api.GET("/business/posts", postHandler.ListPosts)
-	api.GET("/posts/:postId", postHandler.GetPost)
-	api.POST("/posts", postHandler.CreatePost)
-	api.PUT("/posts/anonymize", postHandler.AnonymizePost)
-	api.GET("/posts/history", postHandler.GetPostHistory)
+	// Post routes (mostly protected)
+	postRoutes := api.Group("")
+	postRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	postRoutes.GET("/business/posts", postHandler.ListPosts)
+	postRoutes.GET("/posts/:postId", postHandler.GetPost)
+	postRoutes.POST("/posts", postHandler.CreatePost)
+	postRoutes.PUT("/posts/anonymize", postHandler.AnonymizePost)
+	postRoutes.GET("/posts/history", postHandler.GetPostHistory)
 
-	// Block routes
-	api.POST("/block", blockHandler.CreateBlock)
-	api.DELETE("/block", blockHandler.DeleteBlock)
+	// Block routes (protected)
+	blockRoutes := api.Group("")
+	blockRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	blockRoutes.POST("/block", blockHandler.CreateBlock)
+	blockRoutes.DELETE("/block", blockHandler.DeleteBlock)
 
-	// Report routes
-	api.POST("/report", reportHandler.CreateReport)
+	// Report routes (protected)
+	reportRoutes := api.Group("")
+	reportRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	reportRoutes.POST("/report", reportHandler.CreateReport)
 
-	// Contact routes
-	api.POST("/contact", contactHandler.CreateContact)
+	// Contact routes (protected)
+	contactRoutes := api.Group("")
+	contactRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	contactRoutes.POST("/contact", contactHandler.CreateContact)
 
-	// Stripe redirect (mock)
-	api.POST("/business/stripe/redirect", paymentHandler.CreateRedirect)
+	// Stripe redirect (protected)
+	paymentRoutes := api.Group("/business")
+	paymentRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	paymentRoutes.POST("/stripe/redirect", paymentHandler.CreateRedirect)
 
 	// Healthcheck
 	r.GET("/health", func(c *gin.Context) {

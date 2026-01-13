@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/response"
 	"kojan-map/business/pkg/validate"
 )
@@ -51,8 +52,12 @@ func (h *MemberHandler) UpdateBusinessName(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract business ID from authenticated session
-	businessID := int64(1) // Placeholder
+	// Extract business ID from authenticated context
+	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	err := h.memberService.UpdateBusinessName(c.Request.Context(), businessID, req.NewBusinessName)
 	if err != nil {
@@ -104,8 +109,12 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract business ID from authenticated session
-	businessID := int64(1) // Placeholder
+	// Extract business ID from authenticated context
+	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	err = h.memberService.UpdateBusinessIcon(c.Request.Context(), businessID, iconData)
 	if err != nil {
@@ -127,8 +136,12 @@ func (h *MemberHandler) AnonymizeMember(c *gin.Context) {
 		return
 	}
 
-	// TODO: Parse business ID from googleID or extract from authenticated session
-	businessID := int64(1) // Placeholder
+	// Extract business ID from authenticated context
+	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
 	err := h.memberService.AnonymizeMember(c.Request.Context(), businessID)
 	if err != nil {

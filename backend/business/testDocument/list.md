@@ -151,10 +151,118 @@ go test ./... -cover
 
 ---
 
+### 5. Handler層 (HTTP API エンドポイント)
+
+#### 5.1 認証ハンドラー (AuthHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| GoogleAuth - 正常系 | 有効なGoogleAuth リクエスト | ✅ 実装 | 1 | SSOT M3-1 |
+| GoogleAuth - 異常系 | 不正なリクエストボディ | ✅ 実装 | 1 | JSON検証 |
+| BusinessLogin - 正常系 | Gmail + MFAコード検証 | ✅ 実装 | 1 | SSOT M1-1 |
+| BusinessLogin - 異常系 | MFAコード省略 | ✅ 実装 | 1 | バリデーション |
+| Logout - 正常系 | JWT トークン失効化 | ✅ 実装 | 1 | SSOT M1-3-3 |
+| **小計** | | | **5** | |
+
+#### 5.2 会員管理ハンドラー (MemberHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| GetBusinessDetails - 正常系 | googleIdパラメータで取得 | ✅ 実装 | 1 | SSOT M1-2 |
+| GetBusinessDetails - 異常系 | googleIdパラメータ省略 | ✅ 実装 | 1 | 入力検証 |
+| GetMemberInfo - 正常系 | メンバー情報取得 | ✅ 実装 | 1 | 実装確認用 |
+| UpdateBusinessName - 正常系 | 事業者名更新（認証必須） | ✅ 実装 | 1 | SSOT M3-4-2 |
+| UpdateBusinessName - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| UpdateBusinessName - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
+| UpdateBusinessIcon - 正常系 | PNG画像アップロード | ✅ 実装 | 1 | SSOT M3-5-2 |
+| UpdateBusinessIcon - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| UpdateBusinessIcon - 異常系 | ファイルなし | ✅ 実装 | 1 | エラーハンドリング |
+| AnonymizeMember - 正常系 | 会員匿名化 | ✅ 実装 | 1 | SSOT M3-3 |
+| AnonymizeMember - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| **小計** | | | **11** | |
+
+#### 5.3 投稿ハンドラー (PostHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| ListPosts - 正常系 | 投稿一覧取得（認証必須） | ✅ 実装 | 1 | SSOT M1-6-1 |
+| ListPosts - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| GetPost - 正常系 | 投稿詳細取得 | ✅ 実装 | 1 | SSOT M1-7-2 |
+| CreatePost - 正常系 | 投稿作成（認証必須） | ✅ 実装 | 1 | SSOT M1-8-4 |
+| CreatePost - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| CreatePost - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
+| AnonymizePost - 正常系 | 投稿匿名化 | ✅ 実装 | 1 | SSOT M1-13-2 |
+| GetPostHistory - 正常系 | 投稿履歴取得 | ✅ 実装 | 1 | SSOT M1-14-2 |
+| **小計** | | | **9** | |
+
+#### 5.4 ブロック・レポートハンドラー (BlockHandler, ReportHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| CreateBlock - 正常系 | ユーザーブロック | ✅ 実装 | 1 | SSOT M1-9-2 |
+| CreateBlock - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| CreateBlock - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
+| DeleteBlock - 正常系 | ブロック削除 | ✅ 実装 | 1 | SSOT M1-10-2 |
+| DeleteBlock - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| CreateReport - 正常系 | 不正報告作成 | ✅ 実装 | 1 | SSOT M1-12-2 |
+| CreateReport - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| CreateReport - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
+| **小計** | | | **8** | |
+
+#### 5.5 お問い合わせハンドラー (ContactHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| CreateContact - 正常系 | 問い合わせ作成 | ✅ 実装 | 1 | SSOT M1-11-2 |
+| CreateContact - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| CreateContact - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
+| CreateContact - 異常系 | Subjectなし | ✅ 実装 | 1 | バリデーション |
+| **小計** | | | **4** | |
+
+#### 5.6 統計ハンドラー (StatsHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| GetTotalPosts - 正常系 | 投稿数統計取得 | ✅ 実装 | 1 | SSOT M3-7-1 |
+| GetTotalPosts - 異常系 | businessIdパラメータなし | ✅ 実装 | 1 | パラメータ検証 |
+| GetTotalPosts - 異常系 | businessId不正 | ✅ 実装 | 1 | 型検証 |
+| GetTotalReactions - 正常系 | リアクション数取得 | ✅ 実装 | 1 | SSOT M3-7-2 |
+| GetTotalReactions - 異常系 | パラメータなし | ✅ 実装 | 1 | パラメータ検証 |
+| GetTotalViews - 正常系 | ビュー数統計取得 | ✅ 実装 | 1 | SSOT M3-7-3 |
+| GetTotalViews - 異常系 | パラメータなし | ✅ 実装 | 1 | パラメータ検証 |
+| GetEngagementRate - 正常系 | エンゲージメント率計算 | ✅ 実装 | 1 | SSOT M3-7-4 |
+| GetEngagementRate - 異常系 | パラメータなし | ✅ 実装 | 1 | パラメータ検証 |
+| **小計** | | | **9** | |
+
+#### 5.7 決済ハンドラー (PaymentHandler)
+
+| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
+|----------|------|---------|---------|------|
+| CreateRedirect - 正常系 | Stripe リダイレクトURL生成 | ✅ 実装 | 1 | SSOT M1-15-3 |
+| CreateRedirect - パラメータなし | businessId省略→400 | ✅ 実装 | 1 | パラメータ検証 |
+| CreateRedirect - パラメータ不正 | businessId不正→400 | ✅ 実装 | 1 | 型検証 |
+| CreateRedirect - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
+| **小計** | | | **4** | |
+
+#### 5.8 ハンドラー層テスト集計
+
+| カテゴリ | テスト件数 |
+|---------|---------|
+| 認証ハンドラー | 5 |
+| 会員管理ハンドラー | 11 |
+| 投稿ハンドラー | 9 |
+| ブロック・レポート | 8 |
+| お問い合わせ | 4 |
+| 統計ハンドラー | 9 |
+| 決済ハンドラー | 4 |
+| **合計** | **50** |
+
+---
+
 ## 今後の拡張
 
 ### 優先度: 高
-- [ ] Handler層の単体テスト（httptest + Gin）
+- [ ] Middleware層の単体テスト（JWT検証、Context注入）
 - [ ] Google OAuth本実装後の署名検証テスト
 - [ ] 権限チェック（認証ユーザーの抽出・検証）テスト
 - [ ] ジャンルM:M実装テスト

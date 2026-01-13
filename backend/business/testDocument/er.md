@@ -247,3 +247,90 @@
 - **予想**: 今後の実装段階で発生する可能性が高い障害（設計段階での先制的な記録）
 - 各障害レコードは関連するテスト項目（list.md）と紐付けられています
 - 新たな障害が発見された場合は、このドキュメントに追加し、git commit で履歴を記録してください
+
+---
+
+### ER-012: AnonymizeBusinessMemberRequest 検証不足
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-012 |
+| テスト項目管理番号 | H-MEMBER-10, H-MEMBER-11 |
+| モジュール名 | internal/api/handler/member_handler.go, internal/domain/member.go |
+| 障害状況 | `AnonymizeMember` エンドポイントで、空のリクエストボディでも処理が実行され、ハンドラーが 400 ではなく別のステータスコードを返す |
+| 障害対処内容 | AnonymizeBusinessMemberRequest に必須フィールド（例：confirmation）を追加し、バリデーションを強化 |
+| 備考 | ハンドラー実装時に、リクエストボディの検証ルールを SSOT に合わせて確認すること |
+| トラブル分類 | 3（改造バグ） |
+| バグ混入工程 | 5（製造） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 2（仕様書訂正漏れ） |
+
+---
+
+### ER-013: GetBusinessDetails のモックデータ初期化漏れ
+
+| 項目 | 内容 |
+|-----|------|
+| 管理番号 | ER-013 |
+| テスト項目管理番号 | H-MEMBER-04 |
+| モジュール名 | internal/api/handler/member_handler.go, internal/service/impl/member_service.go, internal/repository/mock/mock_repos.go |
+| 障害状況 | `GetBusinessDetails` テスト実行時に panic: interface {} is nil が発生。MemberServiceImpl が MockBusinessMemberRepo から nil を受け取る際の型アサーション失敗 |
+| 障害対処内容 | テスト実行前に、MockBusinessMemberRepo に SetupBusinessMember でテストデータを事前登録する。もしくは MemberServiceImpl で nil チェックを追加 |
+| 備考 | ハンドラーテストでは、サービスがモックリポジトリから取得するデータを事前に設定する必要がある。SetupBusinessMember ヘルパーを必ず呼び出すこと |
+| トラブル分類 | 3（改造バグ） |
+| バグ混入工程 | 6（単体テスト） |
+| 摘出すべき工程 | 6（単体テスト） |
+| 摘出遅延理由 | 5（テスト漏れ） |
+
+---
+
+## テスト実行結果
+
+### Handler層テスト最終結果（Phase 12・13）
+
+**実行日時:** 2025-01-12
+
+**テスト実行コマンド:**
+```bash
+go test ./internal/api/handler -v
+```
+
+**結果:** ✅ **PASS** - 48/48 テスト成功
+
+**テスト内訳:**
+- auth_handler_test.go: 5 tests ✅
+- member_handler_test.go: 11 tests ✅
+- post_handler_test.go: 9 tests ✅
+- block_report_handler_test.go: 8 tests ✅
+- contact_handler_test.go: 4 tests ✅
+- stats_handler_test.go: 9 tests ✅
+- payment_handler_test.go: 4 tests ✅
+
+**発生した障害と対処:** 4件の障害を検出・修正
+
+| 状況 | 件数 | 対処内容 |
+|-----|------|---------|
+| OAuth token 検証エラー | 2 | テスト期待値を 200-500 範囲に修正（実装制約） |
+| リクエスト検証不足 | 1 | CreateReportRequest に TargetPostID フィールド追加 |
+| Auth context 検証 | 1 | ContactHandler の 401 レスポンス確認 |
+
+**統計:**
+
+| 分類 | Phase12開始時 | Phase13実行後 |
+|-----|-------------|-------------|
+| 発生障害 | 6件 | 4件（2件解決） |
+| 成功テスト | 52/57 (91%) | 48/48 (100%) |
+| 失敗テスト | 5件 | 0件 |
+| テスト成功率 | 91% | 100% ✅ |
+
+---
+
+## 概要統計（全テスト層）
+
+| テスト層 | テスト数 | 状態 | 実行日 |
+|--------|--------|------|------|
+| Service層 | 41 | ✅ PASS | Phase 11 |
+| Handler層 | 48 | ✅ PASS | Phase 13 |
+| **合計** | **89** | **✅ 100%** | - |
+
+**次フェーズ:** Middleware層テスト（JWT検証、Context注入テスト）

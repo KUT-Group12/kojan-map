@@ -3,27 +3,57 @@ package impl
 import (
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository/mock"
+	"kojan-map/business/pkg/jwt"
 )
 
 // TestFixtures は各テストで使用する共通フィクスチャを管理します
 type TestFixtures struct {
-	AuthRepo    *mock.MockAuthRepo
-	MemberRepo  *mock.MockBusinessMemberRepo
-	PostRepo    *mock.MockPostRepo
-	StatsRepo   *mock.MockStatsRepo
-	BlockRepo   *mock.MockBlockRepo
-	ReportRepo  *mock.MockReportRepo
+	AuthRepo       *mock.MockAuthRepo
+	MemberRepo     *mock.MockBusinessMemberRepo
+	PostRepo       *mock.MockPostRepo
+	StatsRepo      *mock.MockStatsRepo
+	BlockRepo      *mock.MockBlockRepo
+	ReportRepo     *mock.MockReportRepo
+	ContactRepo    *mock.MockContactRepo
+	PaymentRepo    *mock.MockPaymentRepo
+	AuthService    *AuthServiceImpl
+	MemberService  *MemberServiceImpl
+	PostService    *PostServiceImpl
+	StatsService   *StatsServiceImpl
+	BlockService   *BlockServiceImpl
+	ReportService  *ReportServiceImpl
+	ContactService *ContactServiceImpl
+	PaymentService *PaymentServiceImpl
 }
 
 // NewTestFixtures は初期化されたテストフィクスチャを生成します
 func NewTestFixtures() *TestFixtures {
+	authRepo := mock.NewMockAuthRepo()
+	memberRepo := mock.NewMockBusinessMemberRepo()
+	postRepo := mock.NewMockPostRepo()
+	statsRepo := mock.NewMockStatsRepo()
+	blockRepo := mock.NewMockBlockRepo()
+	reportRepo := mock.NewMockReportRepo()
+	contactRepo := mock.NewMockContactRepo()
+	paymentRepo := mock.NewMockPaymentRepo()
+
 	return &TestFixtures{
-		AuthRepo:    mock.NewMockAuthRepo(),
-		MemberRepo:  mock.NewMockBusinessMemberRepo(),
-		PostRepo:    mock.NewMockPostRepo(),
-		StatsRepo:   mock.NewMockStatsRepo(),
-		BlockRepo:   mock.NewMockBlockRepo(),
-		ReportRepo:  mock.NewMockReportRepo(),
+		AuthRepo:       authRepo,
+		MemberRepo:     memberRepo,
+		PostRepo:       postRepo,
+		StatsRepo:      statsRepo,
+		BlockRepo:      blockRepo,
+		ReportRepo:     reportRepo,
+		ContactRepo:    contactRepo,
+		PaymentRepo:    paymentRepo,
+		AuthService:    NewAuthServiceImpl(authRepo),
+		MemberService:  NewMemberServiceImpl(memberRepo, authRepo),
+		PostService:    NewPostServiceImpl(postRepo),
+		StatsService:   NewStatsServiceImpl(statsRepo),
+		BlockService:   NewBlockServiceImpl(blockRepo),
+		ReportService:  NewReportServiceImpl(reportRepo),
+		ContactService: NewContactServiceImpl(contactRepo),
+		PaymentService: NewPaymentServiceImpl(paymentRepo),
 	}
 }
 
@@ -116,4 +146,18 @@ func validateImageData(data []byte) bool {
 // validateEmail はメールアドレスの妥当性を検証します（簡易版）
 func validateEmail(email string) bool {
 	return email != "" && len(email) <= 255
+}
+
+// GenerateTestJWT はテスト用の有効なJWTトークンを生成します
+func GenerateTestJWT(userID, gmail, role string) string {
+	tokenManager := jwt.NewTokenManager()
+	token, _ := tokenManager.GenerateToken(userID, gmail, role)
+	return token
+}
+
+// GenerateExpiredTestJWT はテスト用の有効期限切れJWTトークンを生成します
+// （現在のtokenManagerではサポートされていないため、プレースホルダー実装）
+func GenerateExpiredTestJWT() string {
+	// TODO: 実装が必要な場合は、トークンマネージャーに有効期限カスタマイズオプションを追加
+	return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxNjAwMDAwMDAwfQ.expired"
 }

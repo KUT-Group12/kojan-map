@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/response"
 )
 
@@ -28,10 +29,11 @@ func (h *ContactHandler) CreateContact(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract googleID from authenticated session
-	googleID := c.GetHeader("X-Google-Id")
-	if googleID == "" {
-		googleID = "placeholder-google-id"
+	// Extract googleID from authenticated context
+	googleID, ok := contextkeys.GetUserID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
 	}
 
 	if err := h.contactService.CreateContact(c.Request.Context(), googleID, req.Subject, req.Message); err != nil {

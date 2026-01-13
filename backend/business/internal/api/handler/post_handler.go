@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/response"
 )
 
@@ -80,9 +81,13 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	// TODO: Extract businessID from authenticated session
-	businessID := int64(1) // Placeholder
-	placeID := int64(0)    // Placeholder
+	// Extract businessID from authenticated context
+	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	placeID := int64(0) // Placeholder
 
 	// TODO: Parse genreIDs from request (array)
 	var genreIDs []int64
