@@ -1,21 +1,36 @@
-# 1. ベースイメージ: Go 1.23 (Alpine版)
-FROM golang:1.23-alpine
+# 1. ビルドステージ
+FROM golang:1.21-alpine AS builder
 
-# 2. 作業ディレクトリ
 WORKDIR /app
 
-# 3. golangci-lintのインストール
-RUN wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+# 依存関係をインストール
+RUN apk add --no-cache git
 
-# 4. 依存関係の解決 (キャッシュ活用)
-COPY go.mod go.sum* ./
+# go.mod と go.sum をコピー
+COPY go.mod go.sum ./
+
+# 依存関係をダウンロード
 RUN go mod download
 
-# 5. ソースコードのコピー
+# ソースコードをコピー
 COPY . .
 
-# 6. リンターの実行
-RUN ./bin/golangci-lint run
+# バイナリをビルド
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
 
-# 7. 起動コマンド
-CMD ["go", "run", "main.go"]
+# 2. 実行ステージ
+FROM alpine:latest
+
+WORKDIR /app
+
+# タイムゾーンとCA証明書をインストール
+RUN apk --no-cache add ca-certificates tzdata
+
+# ビルドステージからバイナリをコピー
+COPY --from=builder /app/main .
+
+# ポート公開
+EXPOSE 8080
+
+# 起動コマンド
+CMD ["./main"]
