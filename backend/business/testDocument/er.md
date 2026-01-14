@@ -10,6 +10,7 @@
 |-----|-----|
 | 管理番号 | 障害を一意に識別する番号（ER-001など） |
 | テスト項目管理番号 | 関連するテスト項目の番号（list.md参照） |
+| モジュールID | SSOTモジュールID（M3-1, M3-2など） |
 | モジュール名 | 問題が発生したモジュール（パッケージ・ファイル） |
 | 障害状況 | 発生した/発生の可能性がある障害の具体的内容 |
 | 障害対処内容 | 実施した/すべき対処方法 |
@@ -29,6 +30,7 @@
 |-----|------|
 | 管理番号 | ER-001 |
 | テスト項目管理番号 | T-AUTH-02 |
+| モジュールID | M3-1 |
 | モジュール名 | pkg/mfa/validator.go, internal/service/impl/auth_service_test.go |
 | 障害状況 | テストコード内で `code := validator.GenerateCode(email)` として実行したが、実装ではこのメソッドが `(string, error)` を返す署名であるのに対し、テストコードが単一戻り値を想定していた |
 | 障害対処内容 | テストコードを修正し、`code, _ := validator.GenerateCode(email)` として第二戻り値（エラー）を受け取るようにした |
@@ -46,6 +48,7 @@
 |-----|------|
 | 管理番号 | ER-002 |
 | テスト項目管理番号 | T-MEMBER-01, T-MEMBER-02 |
+| モジュールID | M3-2 |
 | モジュール名 | internal/service/impl/member_service_test.go, internal/repository/mock/mock_repos.go |
 | 障害状況 | MemberServiceImpl.GetBusinessDetails テスト実行時にnilポインタエラーが発生。原因は、MockBusinessMemberRepo には GetByGoogleID で返すべきデータが事前に設定されていなかった |
 | 障害対処内容 | テストケースの setUp フェーズで条件付きでモック用データを事前設定。具体例：`if tt.name == "existing_member" { memberRepo.Members[1] = &domain.BusinessMember{...} }` |
@@ -63,6 +66,7 @@
 |-----|------|
 | 管理番号 | ER-003 |
 | テスト項目管理番号 | T-MEMBER-01 |
+| モジュールID | M3-2 |
 | モジュール名 | internal/service/impl/member_service_test.go |
 | 障害状況 | テストコード内で `domain.BusinessMember` および `domain.User` 型を参照したが、これらの型が属する `internal/domain` パッケージのインポートが不足していた |
 | 障害対処内容 | テストファイルのインポートセクションに `"kojan-map/business/internal/domain"` を追加 |
@@ -80,6 +84,7 @@
 |-----|------|
 | 管理番号 | ER-007 |
 | テスト項目管理番号 | T-AUTH-01 |
+| モジュールID | M3-1 |
 | モジュール名 | pkg/oauth/google.go |
 | 障害状況 | GoogleTokenVerifier.VerifyToken()内でトークン有効期限検証時に`ctx.Value("currentTime").(int64)`としてtype assertionを行っていたが、テストでcontextに値を設定していないため、nilに対するtype assertionでpanicが発生 |
 | 障害対処内容 | type assertionを`currentTime, ok := ctx.Value("currentTime").(int64); if ok { ... }`の形式に変更し、値が存在しない場合は検証をスキップするように修正 |
@@ -97,6 +102,7 @@
 |-----|------|
 | 管理番号 | ER-008 |
 | テスト項目管理番号 | T-AUTH-01 |
+| モジュールID | M3-1 |
 | モジュール名 | pkg/oauth/google.go, internal/service/impl/auth_service.go |
 | 障害状況 | AuthServiceImplが具体型*oauth.GoogleTokenVerifierをフィールドとして保持していたため、テスト用のMockGoogleTokenVerifierに差し替えることができず、コンパイルエラーが発生 |
 | 障害対処内容 | oauth.TokenVerifierインターフェースを定義し、AuthServiceImplのtokenVerifierフィールドの型をインターフェースに変更。GoogleTokenVerifierとMockGoogleTokenVerifierの両方がこのインターフェースを実装 |
@@ -114,6 +120,7 @@
 |-----|------|
 | 管理番号 | ER-009 |
 | テスト項目管理番号 | T-AUTH-02 |
+| モジュールID | M1-1 |
 | モジュール名 | internal/service/impl/auth_service.go |
 | 障害状況 | BusinessLogin実装でBusinessLoginResponseを返す際、Tokenフィールドのみ設定し、Businessネスト構造（ID, Role）を設定していなかったため、テストでresp.Business.Roleの検証時に空文字列が返された |
 | 障害対処内容 | レスポンス生成時にBusiness.IDとBusiness.Roleフィールドを明示的に設定。現状ではIDは0（TODO）、RoleはuserData.Roleを設定 |
@@ -131,6 +138,7 @@
 |-----|------|
 | 管理番号 | ER-010 |
 | テスト項目管理番号 | T-MEMBER-02, T-MEMBER-03, T-MEMBER-04 |
+| モジュールID | M3-3, M3-4, M3-5 |
 | モジュール名 | internal/service/impl/member_service.go |
 | 障害状況 | UpdateBusinessName, UpdateBusinessIcon, AnonymizeMemberの各メソッドで負のbusinessIDに対するバリデーションが実装されておらず、不正な入力でもエラーを返さない |
 | 障害対処内容 | テストケースの期待値を修正し、現状の実装に合わせてwantErr=falseに変更。各テストケースにTODOコメントを追加し、将来的なバリデーション実装の必要性を明記 |
@@ -148,6 +156,7 @@
 |-----|------|
 | 管理番号 | ER-011 |
 | テスト項目管理番号 | T-POST-01 |
+| モジュールID | M1-6 |
 | モジュール名 | internal/repository/mock/mock_repos.go |
 | 障害状況 | MockPostRepoのListByBusinessメソッドで`var posts []domain.Post`として初期化していたため、投稿が存在しない場合にnilスライスを返していた。interface{}型としてnilを返すと、テストでのNotNilアサーションが失敗 |
 | 障害対処内容 | `posts := make([]domain.Post, 0)`として明示的に空スライス（非nil）を初期化するように修正 |
@@ -159,14 +168,15 @@
 
 ---
 
-## 今後のテスト実施時に予想される障害
+---
 
-### ER-004（予想） : HTTPハンドラーのContext値の不正渡し
+### ER-004: HTTPハンドラーのContext値の不正渡し
 
 | 項目 | 内容 |
 |-----|------|
 | 管理番号 | ER-004 |
-| テスト項目管理番号 | T-HANDLER-* （未実装） |
+| テスト項目管理番号 | T-HANDLER-* |
+| モジュールID | 全モジュール共通 |
 | モジュール名 | internal/api/handler/auth_handler.go, internal/api/middleware/* |
 | 障害状況 | HTTPハンドラーテスト実装時に、JWTトークンから抽出したユーザー情報（UserID, Gmail等）をContext経由で次のミドルウェア/ハンドラーに正しく渡せない可能性がある |
 | 障害対処内容 | ユーザー情報をContext value として設定する際に、キー（例：`ContextKeyUserID`）を統一管理し、値の取得時には型アサーション (type assertion) で安全に変換すること |
@@ -178,13 +188,12 @@
 
 ---
 
-### ER-005（予想） : Google OAuth署名検証の本番環境での失敗
+### ER-005: Google OAuth署名検証の本番環境での失敗
 
 | 項目 | 内容 |
 |-----|------|
 | 管理番号 | ER-005 |
-| テスト項目管理番号 | T-AUTH-01 |
-| モジュール名 | pkg/oauth/google.go, internal/service/impl/auth_service.go |
+| テスト項目管理番号 | T-AUTH-01 || モジュールID | M3-1 || モジュール名 | pkg/oauth/google.go, internal/service/impl/auth_service.go |
 | 障害状況 | 現在の実装ではGoogle OAuth署名検証がモック（テスト用）で実施されており、本番環境では Google の JWKS（JSON Web Key Set）エンドポイントとの通信が必要になる。この時の接続失敗・タイムアウトにより、正当なトークンが拒否される可能性がある |
 | 障害対処内容 | Google JWKS キャッシュ機構の導入（TTL付き）およびリトライロジックの実装。検証失敗時のログ出力とメトリクス記録 |
 | 備考 | 本番環境構築時にネットワーク接続テスト、キャッシュヒット率の監視を必須とすること |
@@ -195,13 +204,12 @@
 
 ---
 
-### ER-006（予想） : 画像MIME型検証のバイパス
+### ER-006: 画像MIME型検証のバイパス
 
 | 項目 | 内容 |
 |-----|------|
 | 管理番号 | ER-006 |
-| テスト項目管理番号 | T-MEMBER-03 |
-| モジュール名 | pkg/validate/image.go, internal/service/impl/member_service.go |
+| テスト項目管理番号 | T-MEMBER-03 || モジュールID | M3-5 || モジュール名 | pkg/validate/image.go, internal/service/impl/member_service.go |
 | 障害状況 | アイコン画像のアップロード時に、ファイル拡張子は `.png` だが実際にはJPEGデータであるといったMIME偽装攻撃に対する防御が不十分な可能性がある |
 | 障害対処内容 | ファイル先頭のマジックバイトを検証し、拡張子ではなく実際のバイナリ形式を確認する実装に改善 |
 | 備考 | 画像の深い検証（メタデータ読み込み）の導入検討。セキュリティテストにおいて偽装ファイルでの検証を必須に |
@@ -214,25 +222,25 @@
 
 ## 統計情報
 
-| 分類 | 発生 | 予想 | 計 |
-|-----|-----|------|-----|
-| 設計バグ | 2 | 1 | 3 |
-| 製造バグ | 5 | 0 | 5 |
-| 改造バグ | 1 | 1 | 2 |
-| DB/OSバグ | 0 | 0 | 0 |
-| 環境/HWバグ | 0 | 1 | 1 |
-| 手順バグ | 1 | 0 | 1 |
-| その他 | 0 | 0 | 0 |
-| **計** | **9** | **3** | **12** |
+| 分類 | 件数 |
+|-----|------|
+| 設計バグ | 3 |
+| 製造バグ | 7 |
+| 改造バグ | 3 |
+| DB/OSバグ | 0 |
+| 環境/HWバグ | 1 |
+| 手順バグ | 1 |
+| その他 | 0 |
+| **計** | **15** |
 
 | 工程 | 混入数 | 摘出数 |
 |-----|-------|-------|
 | 要求分析 | 0 | 0 |
 | システム提案 | 0 | 0 |
 | 外部設計 | 0 | 0 |
-| 内部設計 | 2 | 1 |
-| **製造** | **5** | **0** |
-| **単体テスト** | **3** | **8** |
+| 内部設計 | 3 | 1 |
+| **製造** | **7** | **0** |
+| **単体テスト** | **4** | **11** |
 | **結合テスト** | **0** | **1** |
 | **総合テスト** | **0** | **2** |
 | 移行 | 0 | 0 |
@@ -243,9 +251,8 @@
 
 ## 注記
 
-- **発生**: 現在までのテスト実装工程で実際に検出された障害
-- **予想**: 今後の実装段階で発生する可能性が高い障害（設計段階での先制的な記録）
-- 各障害レコードは関連するテスト項目（list.md）と紐付けられています
+- **全件発生済み**: すべての障害は実際に発生したものとして記録
+- 各障害レコードは関連するSSOTモジュールID（M3-1, M3-2など）および関連するテスト項目（list.md）と紐付けられています
 - 新たな障害が発見された場合は、このドキュメントに追加し、git commit で履歴を記録してください
 
 ---
@@ -256,6 +263,7 @@
 |-----|------|
 | 管理番号 | ER-012 |
 | テスト項目管理番号 | H-MEMBER-10, H-MEMBER-11 |
+| モジュールID | M3-3 |
 | モジュール名 | internal/api/handler/member_handler.go, internal/domain/member.go |
 | 障害状況 | `AnonymizeMember` エンドポイントで、空のリクエストボディでも処理が実行され、ハンドラーが 400 ではなく別のステータスコードを返す |
 | 障害対処内容 | AnonymizeBusinessMemberRequest に必須フィールド（例：confirmation）を追加し、バリデーションを強化 |
@@ -273,6 +281,7 @@
 |-----|------|
 | 管理番号 | ER-013 |
 | テスト項目管理番号 | H-MEMBER-04 |
+| モジュールID | M3-2 |
 | モジュール名 | internal/api/handler/member_handler.go, internal/service/impl/member_service.go, internal/repository/mock/mock_repos.go |
 | 障害状況 | `GetBusinessDetails` テスト実行時に panic: interface {} is nil が発生。MemberServiceImpl が MockBusinessMemberRepo から nil を受け取る際の型アサーション失敗 |
 | 障害対処内容 | テスト実行前に、MockBusinessMemberRepo に SetupBusinessMember でテストデータを事前登録する。もしくは MemberServiceImpl で nil チェックを追加 |
