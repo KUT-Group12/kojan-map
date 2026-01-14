@@ -32,6 +32,13 @@
 ### 2. [post_service_test.go](user/services/post_service_test.go)
 投稿機能とリアクションのテスト
 
+#### 更新履歴（2026-01-14）
+- **GetAllPosts**: 戻り値型を `[]models.Post` → `[]map[string]interface{}` に変更
+- **GetPostDetail**: 戻り値型を `*models.Post` → `map[string]interface{}` に変更
+- **レスポンスフィールド**: 設計書の Post モデル JSON タグに準拠するよう統一
+  - postId, placeId, genreId, userId, title, text, postImage, numView, numReaction, postData, createdAt, latitude, longitude, genreName
+- **関連テーブル JOIN**: Genre（genreId, genreName）と Place（latitude, longitude）の関連データを同時取得
+
 #### テスト項目
 
 | # | テスト名 | 説明 | 状態 |

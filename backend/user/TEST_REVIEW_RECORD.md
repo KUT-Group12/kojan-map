@@ -45,12 +45,18 @@
 
 ### 2. PostService テストレビュー
 
+#### 更新内容（2026-01-14）
+**Post API レスポンス形式統一コミット対応**
+- GetAllPosts, GetPostDetail の戻り値型を map[string]interface{} に変更
+- レスポンスフィールド名を設計書に準拠するよう修正
+- Genre, Place テーブルクエリを修正（id → genre_id, place_id）
+
 | テストケース | 対象メソッド | 状態 | テスト内容妥当性 | カバレッジ | 指摘事項 | 対応 |
 |------------|-----------|------|-------------|----------|---------|-----|
-| TestPostService_CreatePost | CreatePost | ✅ 承認 | 投稿作成確認 | 100.0% | なし | - |
+| TestPostService_CreatePost | CreatePost | ✅ 承認 | 投稿作成確認 | 100.0% | 戻り値フィールド名統一 | ✅ 確認済み |
 | TestPostService_CreatePost_ValidationError | CreatePost | ✅ 承認 | 入力検証確認（100字・2000字制限） | 100.0% | なし | - |
-| TestPostService_GetAllPosts | GetAllPosts | ✅ 承認 | 投稿一覧取得と匿名化フィルタ確認 | 75.0% | なし | - |
-| TestPostService_GetPostDetail | GetPostDetail | ✅ 承認 | 投稿詳細取得と閲覧数カウント確認 | 100.0% | なし | - |
+| TestPostService_GetAllPosts | GetAllPosts | ✅ 承認 | 投稿一覧取得・匿名化フィルタ・レスポンス形式確認 | 75.0% | JSON フィールド名設計書準拠 | ✅ 完了 |
+| TestPostService_GetPostDetail | GetPostDetail | ✅ 承認 | 投稿詳細取得・閲覧数カウント・レスポンス形式確認 | 100.0% | JSON フィールド名設計書準拠 | ✅ 完了 |
 | TestPostService_GetPostDetail_NotFound | GetPostDetail | ✅ 承認 | エラーハンドリング確認 | 100.0% | なし | - |
 | TestPostService_DeletePost | DeletePost | ✅ 承認 | 所有者による投稿削除確認 | 80.0% | 権限チェック確認 | ✅ 確認済み |
 | TestPostService_DeletePost_Unauthorized | DeletePost | ✅ 承認 | 非所有者削除拒否確認 | 80.0% | なし | - |
