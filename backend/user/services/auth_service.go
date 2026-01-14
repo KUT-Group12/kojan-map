@@ -10,12 +10,21 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
-
 	"kojan-map/user/models"
+	"os"
 )
 
 type AuthService struct {
 	db *gorm.DB
+}
+
+// getJWTSecret JWT秘密鍵を環境変数から取得
+func getJWTSecret() []byte {
+	secret := os.Getenv("JWT_SECRET_KEY")
+	if secret == "" {
+		panic("JWT_SECRET_KEY is not set in environment variables")
+	}
+	return []byte(secret)
 }
 
 func NewAuthService(db *gorm.DB) *AuthService {
