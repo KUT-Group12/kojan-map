@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"gorm.io/gorm"
+
 	"kojan-map/user/models"
 )
 

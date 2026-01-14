@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+
 	"kojan-map/user/models"
 )
 
@@ -187,7 +188,8 @@ func TestPostService_IsUserReacted(t *testing.T) {
 	assert.False(t, reacted)
 
 	// リアクション追加
-	postService.AddReaction("user999", testPost.ID)
+	err = postService.AddReaction("user999", testPost.ID)
+	assert.NoError(t, err)
 
 	// リアクション確認
 	reacted, err = postService.IsUserReacted("user999", testPost.ID)
