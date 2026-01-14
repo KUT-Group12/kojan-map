@@ -1,0 +1,28 @@
+run:
+  timeout: 5m
+  tests: true
+  go: "1.23"
+
+linters:
+  enable:
+    - gofmt      # コードフォーマットチェック
+    - goimports  # import文の整理
+    - govet      # 潜在的なバグ検出
+    - errcheck   # エラーハンドリングチェック
+    - staticcheck # 静的解析
+    - unused     # 未使用コード検出
+    - gosimple   # コード簡素化の提案
+    - ineffassign # 無駄な代入検出
+    - typecheck  # 型チェック
+
+linters-settings:
+  gofmt:
+    simplify: true
+  
+  goimports:
+    local-prefixes: kojan-map
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
