@@ -39,6 +39,7 @@ func (Session) TableName() string {
 
 // UserInfo ユーザー情報レスポンス
 type UserInfo struct {
+	UserID           string    `json:"userId"`
 	Email            string    `json:"gmail"`
 	Role             string    `json:"role"`
 	RegistrationDate time.Time `json:"registrationDate"`

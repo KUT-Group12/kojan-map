@@ -14,7 +14,9 @@ type PostService struct{}
 // GetAllPosts 投稿一覧を取得
 func (ps *PostService) GetAllPosts() ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Order("created_at DESC").Find(&posts).Error; err != nil {
+	if err := config.DB.Where("is_anonymized = ?", false).
+		Order("created_at DESC").
+		Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
@@ -81,8 +83,12 @@ func (ps *PostService) GetPinSize(postID int) (float64, error) {
 
 // AddReaction リアクションを追加
 func (ps *PostService) AddReaction(userID string, postID int) error {
+	if userID == "" {
+		return errors.New("userID is required")
+	}
+
 	// 既にリアクション済みか確認
-	existingReaction := models.UserReaction{}
+	var existingReaction models.UserReaction
 	result := config.DB.Where("user_id = ? AND post_id = ?", userID, postID).
 		First(&existingReaction)
 
@@ -94,8 +100,7 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 		// リアクション数をデクリメント
 		return config.DB.Model(&models.Post{}).
 			Where("id = ?", postID).
-			Update("num_reaction", config.DB.Model(&models.Post{}).
-				Where("id = ?", postID)).Error
+			UpdateColumn("num_reaction", config.DB.Raw("num_reaction - 1")).Error
 	}
 
 	// リアクションを追加
@@ -103,13 +108,21 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 		UserID: userID,
 		PostID: postID,
 	}
-	return config.DB.Create(&reaction).Error
+	if err := config.DB.Create(&reaction).Error; err != nil {
+		return err
+	}
+
+	// リアクション数をインクリメント
+	return config.DB.Model(&models.Post{}).
+		Where("id = ?", postID).
+		UpdateColumn("num_reaction", config.DB.Raw("num_reaction + 1")).Error
 }
 
 // SearchPostsByKeyword キーワード検索
 func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("title LIKE ? OR text LIKE ?", "%"+keyword+"%", "%"+keyword+"%").
+	if err := config.DB.Where("(title LIKE ? OR text LIKE ?) AND is_anonymized = ?", 
+		"%"+keyword+"%", "%"+keyword+"%", false).
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
@@ -120,7 +133,7 @@ func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, erro
 // SearchPostsByGenre ジャンルで検索
 func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("genre_id = ?", genreID).
+	if err := config.DB.Where("genre_id = ? AND is_anonymized = ?", genreID, false).
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
@@ -131,10 +144,46 @@ func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 // SearchPostsByPeriod 期間で検索
 func (ps *PostService) SearchPostsByPeriod(startDate, endDate time.Time) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("post_date BETWEEN ? AND ?", startDate, endDate).
+	if err := config.DB.Where("post_date BETWEEN ? AND ? AND is_anonymized = ?", 
+		startDate, endDate, false).
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
+}
+
+// DeletePost 投稿を削除（ソフトデリート）
+func (ps *PostService) DeletePost(postID int, userID string) error {
+	if userID == "" {
+		return errors.New("userID is required")
+	}
+
+	var post models.Post
+	if err := config.DB.Where("id = ?", postID).First(&post).Error; err != nil {
+		return errors.New("post not found")
+	}
+
+	// 投稿者本人かチェック
+	if post.UserID != userID {
+		return errors.New("unauthorized: you can only delete your own posts")
+	}
+
+	// ソフトデリート
+	if err := config.DB.Delete(&post).Error; err != nil {
+		return errors.New("failed to delete post")
+	}
+
+	return nil
+}
+
+// IsUserReacted ユーザーがリアクション済みかチェック
+func (ps *PostService) IsUserReacted(userID string, postID int) (bool, error) {
+	var count int64
+	if err := config.DB.Model(&models.UserReaction{}).
+		Where("user_id = ? AND post_id = ?", userID, postID).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

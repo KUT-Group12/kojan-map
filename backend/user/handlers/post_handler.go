@@ -25,11 +25,14 @@ func NewPostHandler(postService *services.PostService) *PostHandler {
 func (ph *PostHandler) GetPosts(c *gin.Context) {
 	posts, err := ph.postService.GetAllPosts()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch posts"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"posts": posts})
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+		"total": len(posts),
+	})
 }
 
 // GetPostDetail 投稿詳細を取得
@@ -55,16 +58,28 @@ func (ph *PostHandler) GetPostDetail(c *gin.Context) {
 // POST /api/posts
 func (ph *PostHandler) CreatePost(c *gin.Context) {
 	var req struct {
-		PlaceID   int    `json:"placeId" binding:"required"`
-		GenreID   int    `json:"genreId" binding:"required"`
-		UserID    string `json:"userId" binding:"required"`
-		Title     string `json:"title" binding:"required"`
-		Text      string `json:"text" binding:"required"`
-		PostImage string `json:"postImage"`
+		PlaceID   int     `json:"placeId" binding:"required"`
+		GenreID   int     `json:"genreId" binding:"required"`
+		UserID    string  `json:"userId" binding:"required"`
+		Title     string  `json:"title" binding:"required"`
+		Text      string  `json:"text" binding:"required"`
+		PostImage string  `json:"postImage"`
+		Latitude  float64 `json:"latitude"`
+		Longitude float64 `json:"longitude"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
+		return
+	}
+
+	// タイトルとテキストの長さを検証
+	if len(req.Title) > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title too long (max 100 characters)"})
+		return
+	}
+	if len(req.Text) > 2000 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "text too long (max 2000 characters)"})
 		return
 	}
 
@@ -79,11 +94,14 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	if err := ph.postService.CreatePost(&post); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"postId": post.ID})
+	c.JSON(http.StatusCreated, gin.H{
+		"postId":  post.ID,
+		"message": "post created successfully",
+	})
 }
 
 // AnonymizePost 投稿を匿名化
@@ -175,11 +193,15 @@ func (ph *PostHandler) SearchByKeyword(c *gin.Context) {
 
 	posts, err := ph.postService.SearchPostsByKeyword(keyword)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to search posts"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"posts": posts})
+	c.JSON(http.StatusOK, gin.H{
+		"posts":   posts,
+		"total":   len(posts),
+		"keyword": keyword,
+	})
 }
 
 // SearchByGenre ジャンル検索
@@ -226,4 +248,55 @@ func (ph *PostHandler) SearchByPeriod(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
+
+// DeletePost 投稿を削除
+// DELETE /api/posts
+func (ph *PostHandler) DeletePost(c *gin.Context) {
+	var req struct {
+		PostID int    `json:"postId" binding:"required"`
+		UserID string `json:"userId" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
+		return
+	}
+
+	if err := ph.postService.DeletePost(req.PostID, req.UserID); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "post deleted successfully"})
+}
+
+// CheckReactionStatus リアクション状態を確認
+// GET /api/posts/reaction/status
+func (ph *PostHandler) CheckReactionStatus(c *gin.Context) {
+	postIDStr := c.Query("postId")
+	userID := c.Query("userId")
+
+	if postIDStr == "" || userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "postId and userId required"})
+		return
+	}
+
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid postId"})
+		return
+	}
+
+	isReacted, err := ph.postService.IsUserReacted(userID, postID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check reaction status"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"isReacted": isReacted,
+		"postId":    postID,
+		"userId":    userID,
+	})
 }
