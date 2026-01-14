@@ -2,29 +2,39 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User } from '../types';
 import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
-import {BusinessApplicationList} from './AdminDisplayBusinessApplicationList';
-import { 
-  Users, 
-  AlertTriangle, 
-  TrendingUp, 
-  MapPin, 
-  UserCheck, 
+import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
+import {
+  Users,
+  AlertTriangle,
+  TrendingUp,
+  MapPin,
+  UserCheck,
   Trash2,
   CheckCircle,
-  XCircle,
   LogOut,
   Activity,
   BarChart3,
   Shield,
   Clock,
-  Eye
-  ,MessageSquare
+  Eye,
+  MessageSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 interface AdminDashboardProps {
   user: User;
@@ -34,15 +44,52 @@ interface AdminDashboardProps {
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [reports] = useState([
-    { id: 'r1', pinId: 'pin1', reporter: '山田太郎', reason: '不適切な内容', status: 'pending' as const, date: '2025-11-03' },
-    { id: 'r2', pinId: 'pin3', reporter: '佐藤花子', reason: 'スパム', status: 'pending' as const, date: '2025-11-02' },
-    { id: 'r3', pinId: 'pin2', reporter: '鈴木一郎', reason: '虚偽情報', status: 'resolved' as const, date: '2025-11-01' },
+    {
+      id: 'r1',
+      pinId: 'pin1',
+      reporter: '山田太郎',
+      reason: '不適切な内容',
+      status: 'pending' as const,
+      date: '2025-11-03',
+    },
+    {
+      id: 'r2',
+      pinId: 'pin3',
+      reporter: '佐藤花子',
+      reason: 'スパム',
+      status: 'pending' as const,
+      date: '2025-11-02',
+    },
+    {
+      id: 'r3',
+      pinId: 'pin2',
+      reporter: '鈴木一郎',
+      reason: '虚偽情報',
+      status: 'resolved' as const,
+      date: '2025-11-01',
+    },
   ]);
 
   //データベースから持ってくるようにしなければならない？
-  const [businessApplications] = useState([
-    { id: 'ba1', userName: '田中商店', email: 'tanaka@example.com', ShopName: '田中商店', PhoneNumber: '090-1234-5678', address: '山田市1-2-3', date: '2025-11-03' },
-    { id: 'ba2', userName: '鈴木食堂', email: 'suzuki@example.com', ShopName: '鈴木食堂', PhoneNumber: '090-8765-4321', address: '山田市4-5-6', date: '2025-11-02' },
+  const [businessApplications, setBusinessApplications] = useState([
+    {
+      id: 'ba1',
+      userName: '田中商店',
+      email: 'tanaka@example.com',
+      ShopName: '田中商店',
+      PhoneNumber: '090-1234-5678',
+      address: '山田市1-2-3',
+      date: '2025-11-03',
+    },
+    {
+      id: 'ba2',
+      userName: '鈴木食堂',
+      email: 'suzuki@example.com',
+      ShopName: '鈴木食堂',
+      PhoneNumber: '090-8765-4321',
+      address: '山田市4-5-6',
+      date: '2025-11-02',
+    },
   ]);
 
   const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
@@ -58,7 +105,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     totalPosts: mockPins.length,
     totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
     businessUsers: 45,
-    pendingReports: reports.filter(r => r.status === 'pending').length,
+    pendingReports: reports.filter((r) => r.status === 'pending').length,
   };
 
   const weeklyActivityData = [
@@ -79,34 +126,43 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     { name: '緊急情報', value: 1, color: '#8B5CF6' },
   ];
 
-  const handleApproveBusinessAccount = (appId: string) => {
+  //事業者申請承認時の処理
+  const handleApprove = (id: string) => {
+    setBusinessApplications((prev) => prev.filter((app) => app.id !== id));
     toast.success('事業者アカウントを承認しました');
   };
 
-  const handleRejectBusinessAccount = (appId: string) => {
-    toast.success('事業者申請を却下しました');
+  //事業者申請却下時の処理
+  const handleReject = (id: string) => {
+    setBusinessApplications((prev) => prev.filter((app) => app.id !== id));
+    toast.error('事業者申請を却下しました');
   };
 
+  // 未実装の部分はコンソール表示
   const handleResolveReport = (reportId: string) => {
+    console.log('Resolving report:', reportId);
     toast.success('通報を処理しました');
   };
 
   const handleDeletePost = (pinId: string) => {
     if (confirm('この投稿を削除しますか？')) {
+      console.log('Resolving pin:', pinId);
       toast.success('投稿を削除しました');
     }
   };
 
   const handleDeleteAccount = (userId: string) => {
     if (confirm('このアカウントを削除しますか？関連する全ての投稿も削除されます。')) {
+      console.log('Resolving report:', userId);
       toast.success('アカウントを削除しました');
     }
   };
 
+  /*
   const handleRespondInquiry = (id: string) => {
     setInquiries((prev) => prev.map((q) => (q.id === id ? { ...q, status: 'responded' } : q)));
     toast.success('問い合わせを返信済みにしました');
-  };
+  };*/
 
   const handleDeleteInquiry = (id: string) => {
     if (confirm('この問い合わせを削除しますか？')) {
@@ -135,8 +191,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           <button
             onClick={() => setActiveTab('overview')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'overview'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -146,8 +202,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           <button
             onClick={() => setActiveTab('reports')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'reports' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'reports'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -160,8 +216,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           <button
             onClick={() => setActiveTab('business')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'business' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'business'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -174,8 +230,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           <button
             onClick={() => setActiveTab('posts')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'posts' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'posts'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -185,8 +241,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           <button
             onClick={() => setActiveTab('users')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'users' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'users'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -196,16 +252,14 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           <button
             onClick={() => setActiveTab('inquiries')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'inquiries' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'inquiries'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
-            {inquiries.length > 0 && (
-              <Badge className="bg-emerald-500">{inquiries.length}</Badge>
-            )}
+            {inquiries.length > 0 && <Badge className="bg-emerald-500">{inquiries.length}</Badge>}
           </button>
         </nav>
 
@@ -214,8 +268,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
             <p className="text-xs text-slate-400">ログイン中</p>
             <p className="text-sm truncate">{user.name}</p>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full bg-transparent border-slate-600 hover:bg-slate-700 text-white"
             onClick={onLogout}
           >
@@ -356,7 +410,12 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                         <Tooltip />
                         <Legend />
                         <Bar dataKey="posts" fill="#3b82f6" name="新規投稿" radius={[8, 8, 0, 0]} />
-                        <Bar dataKey="reactions" fill="#8b5cf6" name="リアクション" radius={[8, 8, 0, 0]} />
+                        <Bar
+                          dataKey="reactions"
+                          fill="#8b5cf6"
+                          name="リアクション"
+                          radius={[8, 8, 0, 0]}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -400,12 +459,15 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           {activeTab === 'reports' && (
             <div className="max-w-5xl space-y-4">
               {reports.map((report) => (
-                <Card key={report.id} className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
+                <Card
+                  key={report.id}
+                  className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-3">
-                          <Badge 
+                          <Badge
                             className={report.status === 'pending' ? 'bg-red-500' : 'bg-slate-400'}
                           >
                             {report.status === 'pending' ? '未処理' : '処理済み'}
@@ -429,8 +491,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       </div>
                       {report.status === 'pending' && (
                         <div className="flex space-x-2 ml-4">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="destructive"
                             onClick={() => handleDeletePost(report.pinId)}
                             className="shadow-md"
@@ -438,8 +500,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                             <Trash2 className="w-4 h-4 mr-1" />
                             投稿削除
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => handleResolveReport(report.id)}
                             className="shadow-md"
@@ -458,13 +520,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
           {/* ★事業者申請一覧表示 */}
           {activeTab === 'business' && (
-            <div className="max-w-5xl space-y-4">
-              <BusinessApplicationList 
-                applications = {businessApplications} 
-                onApprove = {handleApproveBusinessAccount}
-                onReject = {handleRejectBusinessAccount}
-              />
-            </div>
+            <ProcessBusinessRequestScreen
+              applications={businessApplications} // データを貸す
+              onApprove={handleApprove} // 関数を貸す
+              onReject={handleReject} // 関数を貸す
+            />
           )}
 
           {/* 事業者申請タブ */}
@@ -528,8 +588,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
           */}
 
-          
-
           {/* 投稿管理タブ */}
           {activeTab === 'posts' && (
             <div className="max-w-5xl">
@@ -541,8 +599,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 <CardContent>
                   <div className="space-y-2">
                     {mockPins.slice(0, 10).map((pin) => (
-                      <div 
-                        key={pin.id} 
+                      <div
+                        key={pin.id}
                         className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex-1">
@@ -552,11 +610,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           </p>
                           <div className="flex items-center space-x-3 mt-1">
                             <Badge variant="outline">{pin.genre}</Badge>
-                            <span className="text-xs text-slate-500">リアクション: {pin.reactions}</span>
+                            <span className="text-xs text-slate-500">
+                              リアクション: {pin.reactions}
+                            </span>
                           </div>
                         </div>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="destructive"
                           onClick={() => handleDeletePost(pin.id)}
                           className="shadow-md"
@@ -582,19 +642,39 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 <CardContent>
                   <div className="space-y-2">
                     {[
-                      { id: 'u1', name: '山田太郎', email: 'yamada@example.com', role: 'general', posts: 5 },
-                      { id: 'u2', name: '山田商店', email: 'yamadashouten@example.com', role: 'business', posts: 12 },
-                      { id: 'u3', name: '佐藤花子', email: 'sato@example.com', role: 'general', posts: 3 },
+                      {
+                        id: 'u1',
+                        name: '山田太郎',
+                        email: 'yamada@example.com',
+                        role: 'general',
+                        posts: 5,
+                      },
+                      {
+                        id: 'u2',
+                        name: '山田商店',
+                        email: 'yamadashouten@example.com',
+                        role: 'business',
+                        posts: 12,
+                      },
+                      {
+                        id: 'u3',
+                        name: '佐藤花子',
+                        email: 'sato@example.com',
+                        role: 'general',
+                        posts: 3,
+                      },
                     ].map((userItem) => (
-                      <div 
-                        key={userItem.id} 
+                      <div
+                        key={userItem.id}
                         className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <p>{userItem.name}</p>
-                            <Badge 
-                              className={userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'}
+                            <Badge
+                              className={
+                                userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
+                              }
                             >
                               {userItem.role === 'business' ? '事業者' : '一般'}
                             </Badge>
@@ -602,8 +682,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           <p className="text-sm text-slate-600">{userItem.email}</p>
                           <p className="text-xs text-slate-500 mt-1">投稿数: {userItem.posts}</p>
                         </div>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="destructive"
                           onClick={() => handleDeleteAccount(userItem.id)}
                           className="shadow-md"
@@ -629,7 +709,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       <MessageSquare className="w-5 h-5 text-blue-600" />
                       <div>
                         <CardTitle>お問い合わせ一覧</CardTitle>
-                        <CardDescription>一般会員・事業者からの問い合わせを管理します</CardDescription>
+                        <CardDescription>
+                          一般会員・事業者からの問い合わせを管理します
+                        </CardDescription>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -641,7 +723,12 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                       </div>
-                      <Button size="sm" variant={showOnlyOpen ? undefined : 'outline'} onClick={() => setShowOnlyOpen((v) => !v)} className="shadow-sm">
+                      <Button
+                        size="sm"
+                        variant={showOnlyOpen ? undefined : 'outline'}
+                        onClick={() => setShowOnlyOpen((v) => !v)}
+                        className="shadow-sm"
+                      >
                         未対応のみ
                       </Button>
                       <Badge className="bg-emerald-500">{inquiries.length}</Badge>
@@ -663,7 +750,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       });
 
                       if (filtered.length === 0) {
-                        return <div className="text-sm text-slate-500">条件に一致する問い合わせはありません。</div>;
+                        return (
+                          <div className="text-sm text-slate-500">
+                            条件に一致する問い合わせはありません。
+                          </div>
+                        );
                       }
 
                       return filtered.map((inq) => (
@@ -673,11 +764,19 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                               <div className="flex-1">
                                 <div className="flex items-center space-x-3 mb-2">
                                   <p className="font-medium">{inq.fromName}</p>
-                                  <Badge className={inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'}>
+                                  <Badge
+                                    className={
+                                      inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
+                                    }
+                                  >
                                     {inq.role === 'business' ? '事業者' : '一般'}
                                   </Badge>
                                   <span className="text-xs text-slate-500">{inq.date}</span>
-                                  <Badge className={inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'}>
+                                  <Badge
+                                    className={
+                                      inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'
+                                    }
+                                  >
                                     {inq.status === 'open' ? '未対応' : '対応済み'}
                                   </Badge>
                                   {inq.draft && (
@@ -689,11 +788,23 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                               </div>
                               <div className="flex flex-col ml-4 space-y-2">
                                 {inq.status === 'open' && (
-                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => { setReplyingInquiry(inq); setReplyText(''); setReplyModalOpen(true); }}>
+                                  <Button
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                    onClick={() => {
+                                      setReplyingInquiry(inq);
+                                      setReplyText('');
+                                      setReplyModalOpen(true);
+                                    }}
+                                  >
                                     返信
                                   </Button>
                                 )}
-                                <Button size="sm" variant="destructive" onClick={() => handleDeleteInquiry(inq.id)}>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteInquiry(inq.id)}
+                                >
                                   削除
                                 </Button>
                               </div>
@@ -707,51 +818,93 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
               </Card>
             </div>
           )}
-            {/* 返信モーダル（簡易実装・モックのメール送信） */}
-            {replyModalOpen && replyingInquiry && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                <div className="bg-white rounded-lg w-[640px] max-w-full p-4 shadow-lg">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
-                      <p className="text-sm text-slate-500">宛先: {replyingInquiry.email} ・ {replyingInquiry.role === 'business' ? '事業者' : '一般'}</p>
-                    </div>
-                    <div>
-                      <button className="text-slate-500 hover:text-slate-700" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>✕</button>
-                    </div>
+          {/* 返信モーダル（簡易実装・モックのメール送信） */}
+          {replyModalOpen && replyingInquiry && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-lg w-[640px] max-w-full p-4 shadow-lg">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
+                    <p className="text-sm text-slate-500">
+                      宛先: {replyingInquiry.email} ・{' '}
+                      {replyingInquiry.role === 'business' ? '事業者' : '一般'}
+                    </p>
                   </div>
-                  <div className="mt-3">
-                    <textarea
-                      className="w-full h-40 p-2 border rounded resize-none"
-                      placeholder="ここに返信内容を入力します（モック）。メール送信すると自動で対応済みに切り替わります。"
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-2 mt-3">
-                    <Button variant="outline" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>キャンセル</Button>
-                  <Button size="sm" onClick={() => {
-                    if (!replyingInquiry) return;
-                    // モック: メール送信として扱い、問い合わせを対応済みにする
-                    setInquiries((prev) => prev.map((q) => q.id === replyingInquiry.id ? { ...q, status: 'responded' } : q));
-                    toast.success('メールを送信しました（モック）。問い合わせを対応済みにしました。');
-                    setReplyModalOpen(false);
-                    setReplyingInquiry(null);
-                    setReplyText('');
-                  }}>メールで送信</Button>
-                  <Button size="sm" variant="outline" onClick={() => {
-                    if (!replyingInquiry) return;
-                    // 下書きを保存（モック）：draft フィールドに本文を保存、ステータスは変更しない
-                    setInquiries((prev) => prev.map((q) => q.id === replyingInquiry.id ? { ...q, draft: replyText } : q));
-                    toast.success('下書きを保存しました（モック）。');
-                    setReplyModalOpen(false);
-                    setReplyingInquiry(null);
-                    setReplyText('');
-                  }}>下書き</Button>
+                  <div>
+                    <button
+                      className="text-slate-500 hover:text-slate-700"
+                      onClick={() => {
+                        setReplyModalOpen(false);
+                        setReplyingInquiry(null);
+                        setReplyText('');
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 </div>
+                <div className="mt-3">
+                  <textarea
+                    className="w-full h-40 p-2 border rounded resize-none"
+                    placeholder="ここに返信内容を入力します（モック）。メール送信すると自動で対応済みに切り替わります。"
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2 mt-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setReplyModalOpen(false);
+                      setReplyingInquiry(null);
+                      setReplyText('');
+                    }}
+                  >
+                    キャンセル
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (!replyingInquiry) return;
+                      // モック: メール送信として扱い、問い合わせを対応済みにする
+                      setInquiries((prev) =>
+                        prev.map((q) =>
+                          q.id === replyingInquiry.id ? { ...q, status: 'responded' } : q
+                        )
+                      );
+                      toast.success(
+                        'メールを送信しました（モック）。問い合わせを対応済みにしました。'
+                      );
+                      setReplyModalOpen(false);
+                      setReplyingInquiry(null);
+                      setReplyText('');
+                    }}
+                  >
+                    メールで送信
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (!replyingInquiry) return;
+                      // 下書きを保存（モック）：draft フィールドに本文を保存、ステータスは変更しない
+                      setInquiries((prev) =>
+                        prev.map((q) =>
+                          q.id === replyingInquiry.id ? { ...q, draft: replyText } : q
+                        )
+                      );
+                      toast.success('下書きを保存しました（モック）。');
+                      setReplyModalOpen(false);
+                      setReplyingInquiry(null);
+                      setReplyText('');
+                    }}
+                  >
+                    下書き
+                  </Button>
+                </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
     </div>

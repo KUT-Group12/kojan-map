@@ -1,6 +1,6 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { LogOut, Check } from 'lucide-react'; // 修正箇所1: Checkを追加
+import { LogOut, Check } from 'lucide-react';
 
 interface User {
   email: string;
@@ -23,11 +23,9 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
               <LogOut className="w-10 h-10" />
             </div>
             <CardTitle className="text-xl">ログアウトの確認</CardTitle>
-            <CardDescription>
-              現在のアカウントからログアウトします
-            </CardDescription>
+            <CardDescription>現在のアカウントからログアウトします</CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* アカウント情報 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -45,7 +43,9 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
 
             {/* 注意事項：Checkアイコンを使用したリスト */}
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-gray-600">ログアウト後も保持されるデータ：</p>
+              <p className="text-xs font-semibold text-gray-600">
+                ログアウト後も保持されるデータ：
+              </p>
               <div className="space-y-2">
                 <div className="flex items-start space-x-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -67,16 +67,13 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
             {/* Googleログインのヒント */}
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
               <p className="text-xs text-gray-600 leading-relaxed">
-                💡 ヒント: 次回ログイン時には、<br />
+                💡 ヒント: 次回ログイン時には、
+                <br />
                 Google アカウントで再度ログインしてください。
               </p>
             </div>
 
-            <Button
-              variant="default"
-              onClick={onLogout}
-              className="w-full py-6 text-lg font-bold"
-            >
+            <Button variant="default" onClick={onLogout} className="w-full py-6 text-lg font-bold">
               ログアウトする
             </Button>
           </CardContent>

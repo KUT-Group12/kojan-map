@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Label } from './ui/label';
-import { MapPin, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { User, PinGenre } from '../types';
 import { genreLabels } from '../lib/mockData';
 import { toast } from 'sonner';
@@ -27,7 +27,13 @@ interface CreatePinModalProps {
   initialLongitude?: number;
 }
 
-export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initialLongitude }: CreatePinModalProps) {
+export function NewPostScreen({
+  user,
+  onClose,
+  onCreate,
+  initialLatitude,
+  initialLongitude,
+}: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [genre, setGenre] = useState<PinGenre>('other');
@@ -41,21 +47,21 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-  
+
     const newImages: string[] = [];
     const previewUrls: string[] = [];
-  
+
     for (const file of Array.from(files)) {
       // プレビュー用
       previewUrls.push(URL.createObjectURL(file));
-      
+
       // バックエンド送信用のBase64変換 (方法Aの場合)
       const base64 = await fileToBase64(file);
       newImages.push(base64);
     }
-  
+
     // プレビューとデータ保持を分けるか、両方管理する必要があります
-    setImages((prev) => [...prev, ...newImages]); 
+    setImages((prev) => [...prev, ...newImages]);
     e.target.value = '';
   };
 
@@ -63,7 +69,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
-  /*
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -95,8 +101,8 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
     });
 
     toast.success('投稿しました！');
-  };*/
-
+  };
+  /*
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -137,7 +143,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
     } catch (error) {
       toast.error('投稿に失敗しました');
     }
-  };
+  };*/
 
   const handleRemoveImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
@@ -157,9 +163,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新規投稿</DialogTitle>
-          <DialogDescription className="sr-only">
-            新しいピン投稿を作成します
-          </DialogDescription>
+          <DialogDescription className="sr-only">新しいピン投稿を作成します</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -215,7 +219,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                 step="0.0001"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
-                placeholder="35.6762"
+                placeholder="33.6071"
                 required
               />
             </div>
@@ -227,18 +231,18 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                 step="0.0001"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
-                placeholder="139.6503"
+                placeholder="133.6823"
                 required
               />
             </div>
           </div>
-
+          {/*
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800 flex items-start">
               <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
               <span>実際のアプリでは、地図上でクリックまたは店舗名検索で位置を指定できます</span>
             </p>
-          </div>
+          </div>*/}
 
           {/* 画像 */}
           <div>
@@ -253,7 +257,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                 multiple // 複数選択を許可
                 className="hidden"
               />
-              
+
               {/* プレビュー表示エリア */}
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mb-2">
@@ -275,13 +279,8 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                   ))}
                 </div>
               )}
-              
-              <Button
-                type="button"
-                variant="outline"
-                onClick={triggerFileInput}
-                className="w-full"
-              >
+
+              <Button type="button" variant="outline" onClick={triggerFileInput} className="w-full">
                 <Upload className="w-4 h-4 mr-2" />
                 画像をアップロード
               </Button>
@@ -297,9 +296,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-sm text-gray-600">
-                一般ユーザーの投稿は匿名で表示されます
-              </p>
+              <p className="text-sm text-gray-600">一般ユーザーの投稿は匿名で表示されます</p>
             </div>
           )}
 

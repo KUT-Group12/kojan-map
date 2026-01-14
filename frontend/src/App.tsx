@@ -39,7 +39,10 @@ export default function App() {
       name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '',
       role,
       businessName: role === 'business' ? '山田商店' : undefined,
-      businessIcon: role === 'business' ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaG9wJTIwbG9nbyUyMGljb258ZW58MXx8fHwxNzYyMjQxOTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080' : undefined,
+      businessIcon:
+        role === 'business'
+          ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaG9wJTIwbG9nbyUyMGljb258ZW58MXx8fHwxNzYyMjQxOTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080'
+          : undefined,
       createdAt: new Date(),
     };
     setUser(mockUser);

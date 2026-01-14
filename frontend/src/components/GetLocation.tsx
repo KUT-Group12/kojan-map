@@ -1,9 +1,9 @@
-/** 
+/**
  * Leafletを活用して地図を表示して座標を取得する
  * インストール方法
  * npm install react-leaflet@^4.2.1 leaflet lucide-react
- * npm install --save-dev @types/leaflet 
-*/
+ * npm install --save-dev @types/leaflet
+ */
 
 import { useMapEvents } from 'react-leaflet';
 
@@ -27,7 +27,7 @@ export function GetLocation({ onLocationSelected, enabled }: GetLocationProps) {
       const roundedLng = roundCoord(e.latlng.lng);
 
       console.log(`Rounded Location: ${roundedLat}, ${roundedLng}`);
-      
+
       onLocationSelected(roundedLat, roundedLng);
     },
   });
