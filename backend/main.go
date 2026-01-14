@@ -1,20 +1,102 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
+    "log"
+    "os"
+    "os/exec"
+    "path/filepath"
+    "strings"
+    "sync"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if _, err := fmt.Fprintf(w, "こじゃんとやまっぷ API サーバー起動中！🚀"); err != nil {
-			log.Printf("Failed to write response: %v", err)
-		}
-	})
+    // 環境変数で起動するサービスを指定
+    // デフォルト: business,user,admin（すべて）
+    servicesStr := os.Getenv("SERVICES")
+    if servicesStr == "" {
+        servicesStr = "business,user,admin"
+    }
 
-	fmt.Println("Server is running on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Server failed: %v", err)
-	}
+    services := strings.Split(strings.TrimSpace(servicesStr), ",")
+
+    // ポートの割り当て
+    portMap := map[string]string{
+        "business": "8080",
+        "user":     "8081",
+        "admin":    "8082",
+    }
+
+    // DATABASE_URL を環境変数から取得
+    databaseURL := os.Getenv("DATABASE_URL")
+    if databaseURL == "" {
+        databaseURL = "root:root@tcp(localhost:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
+    }
+
+    // 複数サービスを並行実行
+    var wg sync.WaitGroup
+    errors := make(chan error, len(services))
+    availableServices := 0
+
+    for _, service := range services {
+        service = strings.TrimSpace(service)
+        if service == "" {
+            continue
+        }
+
+        port, exists := portMap[service]
+        if !exists {
+            fmt.Printf("Unknown service: %s\n", service)
+            continue
+        }
+
+        // サービスディレクトリが存在するかをチェック
+        cmdPath := filepath.Join(service, "cmd", "main.go")
+        if _, err := os.Stat(cmdPath); err != nil {
+            fmt.Printf("Skipping %s service - not found at %s\n", service, cmdPath)
+            continue
+        }
+
+        availableServices++
+        wg.Add(1)
+        go func(svc string, port string) {
+            defer wg.Done()
+
+            fmt.Printf("Starting %s service on port %s...\n", svc, port)
+
+            cmd := exec.Command("go", "run", filepath.Join(svc, "cmd", "main.go"))
+            cmd.Env = append(
+                os.Environ(),
+                fmt.Sprintf("PORT=%s", port),
+                fmt.Sprintf("DATABASE_URL=%s", databaseURL),
+            )
+            cmd.Stdout = os.Stdout
+            cmd.Stderr = os.Stderr
+
+            if err := cmd.Run(); err != nil {
+                errors <- fmt.Errorf("service %s failed: %w", svc, err)
+            }
+        }(service, port)
+    }
+
+    // 利用可能なサービスがない場合
+    if availableServices == 0 {
+        log.Fatal("No services available to run")
+    }
+
+    // すべてのゴルーチンが完了するまで待機
+    go func() {
+        wg.Wait()
+        close(errors)
+    }()
+
+    // エラーハンドリング
+    for err := range errors {
+        if err != nil {
+            log.Printf("Error: %v", err)
+        }
+    }
+
+    // すべてのサービスが完了するまでメイン処理をブロック
+    wg.Wait()
 }
