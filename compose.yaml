@@ -2,20 +2,10 @@ services:
   # バックエンド (Go)
   backend:
     build: ./backend
-    command: go run main.go
     ports:
       - "8080:8080"
-    environment:
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_USER: root
-      DB_PASSWORD: root
-      DB_NAME: kojanmap
-      PORT: 8080
     depends_on:
       - db
-    volumes:
-      - ./backend:/app
 
   # フロントエンド (React)
   frontend:
@@ -24,8 +14,6 @@ services:
       - "5173:5173"
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
 
   # データベース (MySQL)
   db:
