@@ -158,12 +158,12 @@ func NewBusinessApplicationHandler(businessApplicationService *services.Business
 // POST /api/business/application
 func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context) {
 	var req struct {
-		UserID               string `json:"userId" binding:"required"`
-		BusinessName         string `json:"businessName" binding:"required"`
-		KanaBusinessName     string `json:"kanaBusinessName" binding:"required"`
-		ZipCode              int    `json:"zipCode" binding:"required"`
-		Address              string `json:"address" binding:"required"`
-		Phone                int    `json:"phone" binding:"required"`
+		UserID           string `json:"userId" binding:"required"`
+		BusinessName     string `json:"businessName" binding:"required"`
+		KanaBusinessName string `json:"kanaBusinessName" binding:"required"`
+		ZipCode          int    `json:"zipCode" binding:"required"`
+		Address          string `json:"address" binding:"required"`
+		Phone            int    `json:"phone" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -11,8 +11,8 @@ import (
 
 // AuthHandler 認証関連のハンドラー
 type AuthHandler struct {
-	userService  *services.UserService
-	authService  *services.AuthService
+	userService *services.UserService
+	authService *services.AuthService
 }
 
 // NewAuthHandler 認証ハンドラーを初期化
