@@ -5,7 +5,7 @@ FROM golang:1.23-alpine
 WORKDIR /app
 
 # 3. golangci-lintのインストール
-RUN wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+RUN wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.62.2
 
 # 4. 依存関係の解決 (キャッシュ活用)
 COPY go.mod go.sum* ./
