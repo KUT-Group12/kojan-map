@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
-
 	"kojan-map/user/models"
 )
 
@@ -367,4 +366,70 @@ func setupTestPostData(db *gorm.DB) {
 	for _, post := range posts {
 		db.Create(&post)
 	}
+}
+
+// TestPostService_GetPostTimestamp - 投稿日時を取得
+func TestPostService_GetPostTimestamp(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Migrator().DropTable(&models.Post{})
+
+	postService := &PostService{}
+
+	// テスト投稿を作成
+	testTime := time.Now().Add(-24 * time.Hour)
+	testPost := models.Post{
+		UserID:       "user123",
+		Title:        "Test Post",
+		Text:         "Test Content",
+		PlaceID:      1,
+		GenreID:      1,
+		PostDate:     testTime,
+		IsAnonymized: false,
+	}
+	if err := db.Create(&testPost).Error; err != nil {
+		t.Fatalf("Failed to create test post: %v", err)
+	}
+
+	// 投稿日時を取得
+	detail, err := postService.GetPostDetail(testPost.ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, detail)
+
+	// PostDateフィールドが含まれていることを確認
+	assert.NotNil(t, detail["postData"])
+}
+
+// TestPostService_GetReactionList - ユーザーのリアクション履歴を取得
+func TestPostService_GetReactionList(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Migrator().DropTable(&models.Post{}, &models.UserReaction{})
+
+	postService := &PostService{}
+
+	// テスト投稿を作成
+	testPost := models.Post{
+		UserID:   "owner1",
+		Title:    "Test Post",
+		Text:     "Test Content",
+		PlaceID:  1,
+		GenreID:  1,
+		PostDate: time.Now(),
+	}
+	if err := db.Create(&testPost).Error; err != nil {
+		t.Fatalf("Failed to create test post: %v", err)
+	}
+
+	// ユーザーがリアクションを追加
+	err := postService.AddReaction("user123", testPost.ID)
+	assert.NoError(t, err)
+
+	// リアクション履歴を確認
+	isReacted, err := postService.IsUserReacted("user123", testPost.ID)
+	assert.NoError(t, err)
+	assert.True(t, isReacted)
+
+	// リアクション情報をDBから取得
+	var reactions []models.UserReaction
+	db.Where("user_id = ?", "user123").Find(&reactions)
+	assert.Greater(t, len(reactions), 0)
 }

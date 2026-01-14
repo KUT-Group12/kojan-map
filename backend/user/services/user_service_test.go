@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
@@ -109,7 +108,7 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, newSession)
 	assert.Equal(t, oldSession.SessionID, newSession.SessionID)
-
+	
 	// セッション有効期限が延長されたか確認
 	var updatedSession models.Session
 	db.Where("session_id = ?", oldSession.SessionID).First(&updatedSession)
@@ -287,3 +286,71 @@ func TestUserService_Logout_NotFound(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "session not found")
 }
+
+// TestUserService_GetMyPageDetails - マイページ詳細情報を取得
+func TestUserService_GetMyPageDetails(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{})
+
+	service := &UserService{}
+
+	// ユーザーを登録
+	session, err := service.RegisterOrLogin("google456", "mypage@example.com")
+	assert.NoError(t, err)
+	assert.NotNil(t, session)
+
+	// ユーザー情報を取得
+	userInfo, err := service.GetUserInfo("google456")
+	assert.NoError(t, err)
+	assert.NotNil(t, userInfo)
+
+	// ユーザーID確認
+	assert.NotEmpty(t, userInfo.UserID)
+}
+
+// TestUserService_GetMyPageDetails_WithPosts - マイページ詳細情報（投稿あり）
+func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{})
+
+	service := &UserService{}
+
+	// ユーザーを登録
+	session, err := service.RegisterOrLogin("google789", "mypage2@example.com")
+	assert.NoError(t, err)
+	assert.NotNil(t, session)
+
+	// ユーザーが複数の投稿を作成
+	posts := []models.Post{
+		{
+			UserID:   session.UserID,
+			Title:    "My Post 1",
+			Text:     "Content 1",
+			PlaceID:  1,
+			GenreID:  1,
+			PostDate: time.Now(),
+		},
+		{
+			UserID:   session.UserID,
+			Title:    "My Post 2",
+			Text:     "Content 2",
+			PlaceID:  1,
+			GenreID:  1,
+			PostDate: time.Now(),
+		},
+	}
+	for _, post := range posts {
+		db.Create(&post)
+	}
+
+	// ユーザー情報を取得
+	userInfo, err := service.GetUserInfo("google789")
+	assert.NoError(t, err)
+	assert.NotNil(t, userInfo)
+
+	// ユーザーのポスト数を確認
+	var postCount int64
+	db.Model(&models.Post{}).Where("user_id = ?", userInfo.UserID).Count(&postCount)
+	assert.Equal(t, int64(2), postCount)
+}
+
