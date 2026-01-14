@@ -5,13 +5,14 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
 	"kojan-map/user/services"
 )
 
 // AuthHandler 認証関連のハンドラー
 type AuthHandler struct {
-	userService *services.UserService
-	authService *services.AuthService
+	userService  *services.UserService
+	authService  *services.AuthService
 }
 
 // NewAuthHandler 認証ハンドラーを初期化
