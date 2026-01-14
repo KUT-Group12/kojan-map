@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -27,8 +28,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		tokenString := parts[1]
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// 署名キーの検証処理をここに実装
-			return []byte("your-secret-key"), nil
+			secret := os.Getenv("JWT_SECRET_KEY")
+			if secret == "" {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return []byte(secret), nil
 		})
 
 		if err != nil || !token.Valid {

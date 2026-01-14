@@ -12,7 +12,7 @@ type Report struct {
 	UserID     string         `json:"userId"`
 	PostID     int            `json:"postId"`
 	Reason     string         `json:"reason"`
-	ReportDate time.Time      `json:"data"`
+	ReportDate time.Time      `json:"reportDate"`
 	Status     string         `gorm:"default:pending" json:"status"` // pending, reviewed, resolved
 	CreatedAt  time.Time      `json:"createdAt"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
