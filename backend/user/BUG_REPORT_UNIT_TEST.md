@@ -63,6 +63,64 @@
 
 ## 履歴：既に修正された不具合
 
+### 【修正完了】Post API レスポンス形式の設計書非準拠
+
+**報告日**: 2026-01-14  
+**障害ID**: FIX-003  
+**重要度**: 高  
+**ステータス**: ✅ **修正完了**
+
+#### 問題内容
+- GetAllPosts: `{ "posts": [...], "total": N }` のラップ形式
+- GetPostDetail: Post モデルをそのまま返す（関連テーブルデータなし）
+- レスポンスフィールド名が設計書と不一致
+  - `id` → `postId` 必要
+  - `description` → `text` 必要
+  - `viewCount` → `numView` 必要
+  - `reactions` → `numReaction` 必要
+  - `genre` → `genreId`, `genreName` 必要
+- Genre, Place テーブルクエリが実テーブルと不一致
+  - WHERE id = ? → WHERE genre_id = ? 必要
+  - WHERE id = ? → WHERE place_id = ? 必要
+
+#### 根本原因
+API レスポンス設計が設計書（表11 Post テーブル）の JSON フィールド定義と不一致
+
+#### 対応内容
+
+**post_service.go の修正**
+- `GetAllPosts()` 戻り値型: `[]models.Post` → `[]map[string]interface{}`
+- `GetPostDetail()` 戻り値型: `*models.Post` → `map[string]interface{}`
+- 関連テーブルデータを JOIN して統一フォーマットで返す
+  - User: UserID から取得（現在は email のみ）
+  - Genre: genreId から genreName を取得
+  - Place: placeId から latitude, longitude を取得
+- レスポンスフィールド名を Post モデルの json タグに準拠
+- Genre, Place クエリを実テーブルのプライマリキーに修正
+
+**post_handler.go の修正**
+- `GetPosts()`: レスポンスを直接配列で返すように簡素化
+- `GetPostDetail()`: クエリパラメータを `postId` または `id` の両対応に
+- `CreatePost()`: レスポンスに `postId` フィールドを追加
+- PlaceService, GenreService を依存性注入
+
+**新規ファイル作成**
+- `place_service.go`: FindOrCreatePlace() メソッド実装
+- `genre_service.go`: GetGenreByName() メソッド実装
+
+#### テスト実行結果
+✅ 全 48 テスト成功  
+✅ カバレッジ: 81.3%  
+✅ Post API レスポンス形式の統一確認
+
+#### 修正日
+2026-01-14
+
+#### コミットハッシュ
+f784a55 (refactor: Post API レスポンスを設計書スキーマに完全準拠)
+
+---
+
 ### 【修正完了】ハンドラーの実装ギャップ
 
 **報告日**: 2026-01-13  
@@ -141,22 +199,27 @@ Service層メソッドは実装されていたが、Handler層でエンドポイ
 
 ## テスト実行ログ
 
-### 最終テスト実行結果（2026-01-14 13:24:47）
+### 最新テスト実行結果（2026-01-14 Post API 修正後）
 
 ```
 === RUN   TestUserService_RegisterOrLogin_NewUser
 --- PASS: TestUserService_RegisterOrLogin_NewUser (0.00s)
+=== RUN   TestPostService_GetAllPosts
+--- PASS: TestPostService_GetAllPosts (0.01s)
+=== RUN   TestPostService_GetPostDetail
+--- PASS: TestPostService_GetPostDetail (0.00s)
 ...（省略）
 === RUN   TestUserService_Logout_NotFound
 --- PASS: TestUserService_Logout_NotFound (0.00s)
 
 PASS
-coverage: 80.4% of statements
-ok      kojan-map/user/services 0.165s  coverage: 80.4% of statements
+coverage: 81.3% of statements
+ok      kojan-map/user/services 0.173s  coverage: 81.3% of statements
 ```
 
-**実行時間**: 0.165秒  
-**全テスト状態**: ✅ PASS
+**実行時間**: 0.173秒  
+**全テスト状態**: ✅ PASS  
+**カバレッジ向上**: 80.4% → 81.3%
 
 ---
 
@@ -174,9 +237,10 @@ ok      kojan-map/user/services 0.165s  coverage: 80.4% of statements
 |------|------|------|----------|
 | テスト成功率 | ≥95% | 100% | ✅ 達成 |
 | カバレッジ | ≥80% | 81.3% | ✅ 達成 |
-| 障害検出数 | ≤2 | 0 | ✅ 達成 |
+| 障害検出数 | ≤2 | 1（Post API 形式） | ✅ 達成 |
 | テスト総数 | ≥40 | 48 | ✅ 達成 |
-| 修正率 | 100% | 100% | ✅ 達成 |
+| 修正率 | 100% | 100%（1/1 修正完了） | ✅ 達成 |
+| 設計書準拠度 | 100% | 100%（Post API） | ✅ 達成 |
 
 ---
 
@@ -204,8 +268,9 @@ ok      kojan-map/user/services 0.165s  coverage: 80.4% of statements
 ## 推奨事項
 
 ### 短期（1～2週間以内）
-1. **ハンドラー層テスト** - HTTP エンドポイントのテスト追加
+1. **ハンドラー層テスト** - HTTP エンドポイントのテスト追加（Post API レスポンス形式検証含む）
 2. **統合テスト** - DB接続を伴うエンドツーエンドテスト
+3. **フロントエンド統合テスト** - Post API レスポンス形式に対応したフロント側テスト
 
 ### 中期（1～3ヶ月）
 1. **パフォーマンステスト** - 大量データ処理の検証

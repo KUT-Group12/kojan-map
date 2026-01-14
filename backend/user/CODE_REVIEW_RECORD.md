@@ -28,6 +28,10 @@
 | post_service.go | SearchPostsByPeriod | ✅ 承認 | 期間指定の妥当性チェック | ✅ 完了 |
 | post_service.go | GetUserPostHistory | ✅ 承認 | 削除済みデータの除外 | ✅ 完了 |
 | post_service.go | GetPinSize | ✅ 承認 | 定数値の妥当性 | ✅ 確認済み |
+| post_service.go | GetAllPosts（修正） | ✅ 承認 | レスポンス形式を設計書準拠に変更 | ✅ 完了（2026-01-14） |
+| post_service.go | GetPostDetail（修正） | ✅ 承認 | 関連テーブル JOIN、レスポンス形式統一 | ✅ 完了（2026-01-14） |
+| place_service.go | FindOrCreatePlace | ✅ 承認 | 新規実装（2026-01-14） | ✅ 完了 |
+| genre_service.go | GetGenreByName | ✅ 承認 | 新規実装（2026-01-14） | ✅ 完了 |
 | other_service.go | BlockUser | ✅ 承認 | 自分自身ブロック防止 | ✅ 完了 |
 | other_service.go | UnblockUser | ✅ 承認 | なし | - |
 | other_service.go | GetBlockList | ✅ 承認 | ページネーション検討 | 将来実装 |
@@ -46,9 +50,9 @@
 | user_handler.go | GetMypageDetails | ✅ 承認 | 共通ロジック抽出 | ✅ 完了（KISS化） |
 | user_handler.go | getUserInfoHandler | ✅ 承認 | 共通化メソッド | ✅ 新規実装
 | user_handler.go | GetReactionHistory | ✅ 承認 | ページネーション検討 | 将来実装 |
-| post_handler.go | GetPosts | ✅ 承認 | ページネーション検討 | 将来実装 |
-| post_handler.go | GetPostDetail | ✅ 承認 | なし | - |
-| post_handler.go | CreatePost | ✅ 承認 | なし | - |
+| post_handler.go | GetPosts | ✅ 承認 | レスポンス形式簡素化・直接配列返却 | ✅ 完了（2026-01-14） |
+| post_handler.go | GetPostDetail | ✅ 承認 | クエリパラメータ柔軟化（postId/id両対応） | ✅ 完了（2026-01-14） |
+| post_handler.go | CreatePost | ✅ 承認 | レスポンスに postId を含める | ✅ 完了（2026-01-14） |
 | post_handler.go | DeletePost | ✅ 承認 | なし | - |
 | post_handler.go | AnonymizePost | ✅ 承認 | なし | - |
 | post_handler.go | GetPostHistory | ✅ 承認 | なし | - |
