@@ -26,7 +26,7 @@ func (bh *BlockHandler) BlockUser(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
 		return
 	}
 
@@ -35,7 +35,9 @@ func (bh *BlockHandler) BlockUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "user blocked"})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "user blocked successfully",
+	})
 }
 
 // UnblockUser ブロック解除

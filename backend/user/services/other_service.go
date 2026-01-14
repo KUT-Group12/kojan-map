@@ -13,24 +13,61 @@ type BlockService struct{}
 
 // BlockUser ユーザーをブロック
 func (bs *BlockService) BlockUser(userID, blockerID string) error {
+	if userID == "" || blockerID == "" {
+		return errors.New("userID and blockerID are required")
+	}
+
+	if userID == blockerID {
+		return errors.New("cannot block yourself")
+	}
+
+	// 既にブロック済みか確認
+	var existingBlock models.UserBlock
+	result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).First(&existingBlock)
+	if result.Error == nil {
+		return errors.New("user already blocked")
+	}
+
 	block := models.UserBlock{
 		UserID:    userID,
 		BlockerID: blockerID,
 	}
-	return config.DB.Create(&block).Error
+	if err := config.DB.Create(&block).Error; err != nil {
+		return errors.New("failed to block user")
+	}
+	return nil
 }
 
 // UnblockUser ブロック解除
 func (bs *BlockService) UnblockUser(userID, blockerID string) error {
-	return config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).
-		Delete(&models.UserBlock{}).Error
+	if userID == "" || blockerID == "" {
+		return errors.New("userID and blockerID are required")
+	}
+
+	result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).
+		Delete(&models.UserBlock{})
+	
+	if result.Error != nil {
+		return errors.New("failed to unblock user")
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("block relationship not found")
+	}
+	
+	return nil
 }
 
 // GetBlockList ブロックリストを取得
 func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) {
+	if userID == "" {
+		return nil, errors.New("userID is required")
+	}
+
 	var blocks []models.UserBlock
-	if err := config.DB.Where("user_id = ?", userID).Find(&blocks).Error; err != nil {
-		return nil, err
+	if err := config.DB.Where("blocker_id = ?", userID).
+		Order("created_at DESC").
+		Find(&blocks).Error; err != nil {
+		return nil, errors.New("failed to fetch block list")
 	}
 	return blocks, nil
 }
