@@ -21,11 +21,14 @@ func NewAdminBusinessHandler(s *service.AdminBusinessService) *AdminBusinessHand
 	return &AdminBusinessHandler{service: s}
 }
 
-// GetApplicationsは未処理の事業者申請一覧を取得する機能です．
-// Method : GET, path = /api/admin/request
-// Response =
-// 200 OK: { "applications": []Application}
-// 500 Internal Server: {"error": string}
+// GetApplicationsは未処理の事業者申請一覧を取得する機能です
+// @Summary 申請一覧の取得
+// @Description 未処理の事業者申請一覧を取得します
+// @Tags Admin Business
+// @Produce json
+// @Success 200 {object} SuccessResponse "取得成功"
+// @Failure 500 {object} ErrorResponse "サーバーエラー"
+// @Router /api/admin/request [get]
 func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 	applications, err := h.service.GetApplications()
 	if err != nil {
@@ -37,11 +40,14 @@ func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 }
 
 // ApproveApplicationは指定されたIDを持つ申請を承認します．
-// Method = PUT Path = /api/applications/:id/approve
-// id(path) : 申請ID(整数)
-// Response =
-// 200 OK: {"success": true}
-// 400 Bad Request: ID不正 またはロジックエラー
+// @Summary 申請承認
+// @Description 指定された申請IDの申請を承認します
+// @Tags Admin Business
+// @Produce json
+// @Param id path int true "申請ID"
+// @Success 200 {object} SuccessResponse "承認成功"
+// @Failure 400 {object} ErrorResponse "不正リクエスト"
+// @Router /api/applications/{id}/approve [put]
 func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -59,11 +65,13 @@ func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 }
 
 // RejextApplicationは指定されたIDを持つ申請を却下します．
-// Method = PUT Path = /api/applications/:id/reject
-// id(path) : 申請ID (整数)
-// Response:
-// 200 OK: {"success": true}
-// 400 Bad Request: ID不正またはロジックエラー
+// @Summary 申請却下
+// @Description 指定されたIDを持つ申請を却下します
+// @Produce json
+// @Param id path int true "申請ID"
+// @Success 200 {object} SuccessResponse "承認却下成功"
+// @Failure 400 {object} ErrorResponse "不正リクエスト"
+// @Router /api/applications/{id}/reject [put]
 func (h *AdminBusinessHandler) RejectApplication(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

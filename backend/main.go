@@ -10,6 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @title こじゃんとやまっぷ API
+// @version 1.0
+// @description 管理者用API
+// @host localhost:8080
+// @BasePath /
 func main() {
 	// Load configuration
 	cfg := config.Load()
