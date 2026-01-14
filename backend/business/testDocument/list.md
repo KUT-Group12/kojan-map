@@ -56,89 +56,156 @@ $ docker run kojan-map-backend go test ./... -v
 
 ---
 
-## テスト実装状況
+## テスト実装状況（SSOTモジュール別）
 
-### 1. 認証サービス (AuthServiceImpl)
+### M3-1: Google認証モジュール
 
-| テスト項目 | 内容 | ステータス | モック | 備考 |
-|----------|------|---------|-------|------|
-| GoogleAuth - 正常系 | 有効なIDトークンでMFAコード生成 | ✅ 実装 | oauth, mfa | SSOT M3-1 |
-| GoogleAuth - 異常系 | 空のIDトークン→エラー返却 | ✅ 実装 | oauth, mfa | エラーハンドリング確認 |
-| BusinessLogin - 正常系 | Gmail + MFA検証→JWT発行 | ✅ 実装 | mfa, jwt | SSOT M1-1 |
-| BusinessLogin - 異常系 | MFA不一致→エラー | ✅ 実装 | mfa, jwt | エラーハンドリング確認 |
-| Logout - 正常系 | JWT→ブラックリスト登録 | ✅ 実装 | jwt | SSOT M1-3-3 |
-| Logout - 異常系 | 空トークン→エラー | ✅ 実装 | jwt | エラーハンドリング確認 |
+**SSOT機能**: Google OAuth認証、MFAコード生成
+
+#### Service層テスト
+
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| GoogleAuth - 正常系 | 有効なIDトークンでMFAコード生成 | ✅ 実装 | oauth, mfa | M3-1 |
+| GoogleAuth - 異常系 | 空のIDトークン→エラー返却 | ✅ 実装 | oauth, mfa | M3-1 |
+
+#### Handler層テスト
+
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| GoogleAuth - 正常系 | 有効なGoogleAuth リクエスト | ✅ 実装 | 1 | M3-1 |
+| GoogleAuth - 異常系 | 不正なリクエストボディ | ✅ 実装 | 1 | M3-1 |
 
 **追加テスト候補:**
 - Google OAuth署名検証（本実装後）
 - MFA有効期限切れ検証
-- JWT署名検証
 
 ---
 
-### 2. 会員管理サービス (MemberServiceImpl)
+### M3-2: 事業者会員情報取得モジュール
 
-| テスト項目 | 内容 | ステータス | モック | 備考 |
-|----------|------|---------|-------|------|
-| GetBusinessDetails - 正常系 | Google IDで会員情報取得 | ✅ 実装 | BusinessMemberRepo, AuthRepo | SSOT M3-2-2 |
-| GetBusinessDetails - 異常系 | 空Google ID→エラー | ✅ 実装 | BusinessMemberRepo, AuthRepo | 入力値検証 |
-| UpdateBusinessName - 正常系 | 事業者名更新成功 | ✅ 実装 | BusinessMemberRepo | SSOT M3-4-2 |
-| UpdateBusinessName - 異常系 | 無効な businessID | ✅ 実装 | BusinessMemberRepo | バリデーション |
-| UpdateBusinessName - 異常系 | 空名前→エラー | ✅ 実装 | BusinessMemberRepo | バリデーション |
-| UpdateBusinessIcon - 正常系 | PNG画像アップロード | ✅ 実装 | BusinessMemberRepo | SSOT M3-5-2、MIME検証含む |
-| UpdateBusinessIcon - 異常系 | 無効 businessID | ✅ 実装 | BusinessMemberRepo | バリデーション |
-| UpdateBusinessIcon - 異常系 | 空画像→エラー | ✅ 実装 | BusinessMemberRepo | バリデーション |
-| AnonymizeMember - 正常系 | 会員匿名化成功 | ✅ 実装 | BusinessMemberRepo | SSOT M3-3 |
-| AnonymizeMember - 異常系 | 無効 businessID | ✅ 実装 | BusinessMemberRepo | バリデーション |
+**SSOT機能**: 事業者会員の詳細情報取得
+
+#### Service層テスト
+
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| GetBusinessDetails - 正常系 | Google IDで会員情報取得 | ✅ 実装 | BusinessMemberRepo, AuthRepo | M3-2-2 |
+| GetBusinessDetails - 異常系 | 空Google ID→エラー | ✅ 実装 | BusinessMemberRepo, AuthRepo | M3-2-2 |
+
+#### Handler層テスト
+
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| GetBusinessDetails - 正常系 | googleIdパラメータで取得 | ✅ 実装 | 1 | M3-2-2 |
+| GetBusinessDetails - 異常系 | googleIdパラメータ省略 | ✅ 実装 | 1 | M3-2-2 |
+
+---
+
+### M3-3: 事業者会員匿名化モジュール
+
+**SSOT機能**: 退会時の会員データ匿名化
+
+#### Service層テスト
+
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| AnonymizeMember - 正常系 | 会員匿名化成功 | ✅ 実装 | BusinessMemberRepo | M3-3 |
+| AnonymizeMember - 異常系 | 無効 businessID | ✅ 実装 | BusinessMemberRepo | M3-3 |
+
+#### Handler層テスト
+
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| AnonymizeMember - 正常系 | 会員匿名化 | ✅ 実装 | 1 | M3-3 |
+| AnonymizeMember - 認証なし | Context なし→401 | ✅ 実装 | 1 | M3-3 |
+
+---
+
+### M3-4: 事業者名更新モジュール
+
+**SSOT機能**: 事業者名の変更
+
+#### Service層テスト
+
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| UpdateBusinessName - 正常系 | 事業者名更新成功 | ✅ 実装 | BusinessMemberRepo | M3-4-2 |
+| UpdateBusinessName - 異常系 | 無効な businessID | ✅ 実装 | BusinessMemberRepo | M3-4-2 |
+| UpdateBusinessName - 異常系 | 空名前→エラー | ✅ 実装 | BusinessMemberRepo | M3-4-2 |
+
+#### Handler層テスト
+
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| UpdateBusinessName - 正常系 | 事業者名更新（認証必須） | ✅ 実装 | 1 | M3-4-2 |
+| UpdateBusinessName - 認証なし | Context なし→401 | ✅ 実装 | 1 | M3-4-2 |
+| UpdateBusinessName - 異常系 | 不正なJSON | ✅ 実装 | 1 | M3-4-2 |
 
 **追加テスト候補:**
 - 権限チェック（自事業者のみ更新可能）
-- 画像URL生成（Base64/署名付きURL）
 
 ---
 
-### 3. 投稿管理サービス (PostServiceImpl)
+### M3-5: アイコン画像更新モジュール
 
-| テスト項目 | 内容 | ステータス | モック | 備考 |
-|----------|------|---------|-------|------|
-| List - 正常系 | ビジネスIDで投稿一覧取得 | ✅ 実装 | PostRepo | SSOT M1-6-1 |
-| List - 異常系 | 無効 businessID | ✅ 実装 | PostRepo | バリデーション |
-| List - 異常系 | ゼロ businessID | ✅ 実装 | PostRepo | バリデーション |
-| Get - 正常系 | 投稿詳細取得 + viewCount加算 | ✅ 実装 | PostRepo | SSOT M1-7-2 |
-| Get - 異常系 | 無効 postID | ✅ 実装 | PostRepo | バリデーション |
-| Get - 異常系 | ゼロ postID | ✅ 実装 | PostRepo | バリデーション |
-| Create - 正常系 | 投稿新規作成 | ✅ 実装 | PostRepo | SSOT M1-8-4 |
-| Create - 異常系 | 無効 businessID | ✅ 実装 | PostRepo | バリデーション |
-| SetGenres - 正常系 | ジャンル多対多関連付け | ✅ 実装 | PostRepo | SSOT M1-8-4 |
-| SetGenres - 異常系 | 無効 postID | ✅ 実装 | PostRepo | バリデーション |
-| SetGenres - 異常系 | 空ジャンル | ✅ 実装 | PostRepo | バリデーション |
-| Anonymize - 正常系 | 投稿内容匿名化 | ✅ 実装 | PostRepo | SSOT M1-13-2 |
-| Anonymize - 異常系 | 無効 postID | ✅ 実装 | PostRepo | バリデーション |
-| History - 正常系 | ユーザー投稿履歴取得 | ✅ 実装 | PostRepo | SSOT M1-14-2 |
-| History - 異常系 | 空 googleID | ✅ 実装 | PostRepo | バリデーション |
+**SSOT機能**: 事業者アイコン画像のアップロード・更新
+
+#### Service層テスト
+
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| UpdateBusinessIcon - 正常系 | PNG画像アップロード | ✅ 実装 | BusinessMemberRepo | M3-5-2 |
+| UpdateBusinessIcon - 異常系 | 無効 businessID | ✅ 実装 | BusinessMemberRepo | M3-5-2 |
+| UpdateBusinessIcon - 異常系 | 空画像→エラー | ✅ 実装 | BusinessMemberRepo | M3-5-2 |
+
+#### Handler層テスト
+
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| UpdateBusinessIcon - 正常系 | PNG画像アップロード | ✅ 実装 | 1 | M3-5-2 |
+| UpdateBusinessIcon - 認証なし | Context なし→401 | ✅ 実装 | 1 | M3-5-2 |
+| UpdateBusinessIcon - 異常系 | ファイルなし | ✅ 実装 | 1 | M3-5-2 |
 
 **追加テスト候補:**
 - MIME型検証（PNG/JPEG）
 - ファイルサイズ制限（5MB）
-- 所有者権限チェック
-- ジャンルM:M実装（post_genre結合テーブル）
+- 画像URL生成（Base64/署名付きURL）
 
 ---
 
-### 4. 統計サービス (StatsServiceImpl)
+### M3-7: 統計情報取得モジュール
 
-| テスト項目 | 内容 | ステータス | モック | 備考 |
-|----------|------|---------|-------|------|
-| GetTotalPosts - 正常系 | 投稿数合計取得 | ✅ 実装 | StatsRepo | SSOT M3-7-1 |
-| GetTotalPosts - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
-| GetTotalPosts - エッジケース | ポスト数 0 | ✅ 実装 | StatsRepo | ゼロ値処理 |
-| GetTotalReactions - 正常系 | リアクション数合計取得 | ✅ 実装 | StatsRepo | SSOT M3-7-2 |
-| GetTotalReactions - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
-| GetTotalViews - 正常系 | ビュー数合計取得（SUM） | ✅ 実装 | StatsRepo | SSOT M3-7-3 |
-| GetTotalViews - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
-| GetEngagementRate - 正常系 | エンゲージメント率計算 | ✅ 実装 | StatsRepo | SSOT M3-7-4 |
-| GetEngagementRate - エッジケース | ポスト数 0→率 0 | ✅ 実装 | StatsRepo | ゼロ除算対策 |
-| GetEngagementRate - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | バリデーション |
+**SSOT機能**: 事業者向け統計データ（投稿数、リアクション数、閲覧数、エンゲージメント率）
+
+#### Service層テスト
+
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| GetTotalPosts - 正常系 | 投稿数合計取得 | ✅ 実装 | StatsRepo | M3-7-1 |
+| GetTotalPosts - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | M3-7-1 |
+| GetTotalPosts - エッジケース | ポスト数 0 | ✅ 実装 | StatsRepo | M3-7-1 |
+| GetTotalReactions - 正常系 | リアクション数合計取得 | ✅ 実装 | StatsRepo | M3-7-2 |
+| GetTotalReactions - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | M3-7-2 |
+| GetTotalViews - 正常系 | ビュー数合計取得（SUM） | ✅ 実装 | StatsRepo | M3-7-3 |
+| GetTotalViews - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | M3-7-3 |
+| GetEngagementRate - 正常系 | エンゲージメント率計算 | ✅ 実装 | StatsRepo | M3-7-4 |
+| GetEngagementRate - エッジケース | ポスト数 0→率 0 | ✅ 実装 | StatsRepo | M3-7-4 |
+| GetEngagementRate - 異常系 | 無効 businessID | ✅ 実装 | StatsRepo | M3-7-4 |
+
+#### Handler層テスト
+
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| GetTotalPosts - 正常系 | 投稿数統計取得 | ✅ 実装 | 1 | M3-7-1 |
+| GetTotalPosts - 異常系 | businessIdパラメータなし | ✅ 実装 | 1 | M3-7-1 |
+| GetTotalPosts - 異常系 | businessId不正 | ✅ 実装 | 1 | M3-7-1 |
+| GetTotalReactions - 正常系 | リアクション数取得 | ✅ 実装 | 1 | M3-7-2 |
+| GetTotalReactions - 異常系 | パラメータなし | ✅ 実装 | 1 | M3-7-2 |
+| GetTotalViews - 正常系 | ビュー数統計取得 | ✅ 実装 | 1 | M3-7-3 |
+| GetTotalViews - 異常系 | パラメータなし | ✅ 実装 | 1 | M3-7-3 |
+| GetEngagementRate - 正常系 | エンゲージメント率計算 | ✅ 実装 | 1 | M3-7-4 |
+| GetEngagementRate - 異常系 | パラメータなし | ✅ 実装 | 1 | M3-7-4 |
 
 **追加テスト候補:**
 - 複数ビジネスの独立性
@@ -147,142 +214,142 @@ $ docker run kojan-map-backend go test ./... -v
 
 ---
 
-## モック実装ファイル
+## その他のモジュール（M1: 一般会員関連）
 
-### internal/repository/mock/mock_repos.go
+**注意**: 以下は事業者バックエンドで実装しているが、SSOT上はM1（一般会員）モジュールに属する機能です。
 
-| モック | 実装機能 | 状態管理 |
-|-------|--------|--------|
-| MockAuthRepo | GetOrCreateUser, GetUserByID | メモリマップ |
-| MockBusinessMemberRepo | Get, Update (name/icon/anonymize) | メモリマップ |
-| MockPostRepo | List, Get, Create, Increment, Anonymize | メモリマップ（NextID自動採番） |
-| MockStatsRepo | TotalPosts, TotalReactions, TotalViews, Engagement | 固定値返却 |
-| MockBlockRepo | Create, Delete | メモリマップ |
-| MockReportRepo | Create | スライス集計 |
-| MockContactRepo | Create | スライス集計 |
-| MockPaymentRepo | CreatePayment | ダミー実装 |
+### 認証モジュール (M1-1, M1-3)
 
----
+#### Service層テスト
 
-## テスト依存関係
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| BusinessLogin - 正常系 | Gmail + MFA検証→JWT発行 | ✅ 実装 | mfa, jwt | M1-1 |
+| BusinessLogin - 異常系 | MFA不一致→エラー | ✅ 実装 | mfa, jwt | M1-1 |
+| Logout - 正常系 | JWT→ブラックリスト登録 | ✅ 実装 | jwt | M1-3-3 |
+| Logout - 異常系 | 空トークン→エラー | ✅ 実装 | jwt | M1-3-3 |
 
-### テスティングフレームワーク
-- `github.com/stretchr/testify/assert` - アサーション（簡潔）
-- `github.com/stretchr/testify/require` - 強制チェック（fatal）
-- 標準 `testing` - テスト実行フレームワーク
+#### Handler層テスト
 
-### 対象パッケージ
-- Service実装層: `internal/service/impl`
-- Modelドメイン: `internal/domain`
-- リポジトリモック: `internal/repository/mock`
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| BusinessLogin - 正常系 | Gmail + MFAコード検証 | ✅ 実装 | 1 | M1-1 |
+| BusinessLogin - 異常系 | MFAコード省略 | ✅ 実装 | 1 | M1-1 |
+| Logout - 正常系 | JWT トークン失効化 | ✅ 実装 | 1 | M1-3-3 |
+
+**追加テスト候補:**
+- JWT署名検証
 
 ---
 
-### 5. Handler層 (HTTP API エンドポイント)
+### 投稿管理モジュール (M1-6, M1-7, M1-8, M1-13, M1-14)
 
-#### 5.1 認証ハンドラー (AuthHandler)
+#### Service層テスト
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| GoogleAuth - 正常系 | 有効なGoogleAuth リクエスト | ✅ 実装 | 1 | SSOT M3-1 |
-| GoogleAuth - 異常系 | 不正なリクエストボディ | ✅ 実装 | 1 | JSON検証 |
-| BusinessLogin - 正常系 | Gmail + MFAコード検証 | ✅ 実装 | 1 | SSOT M1-1 |
-| BusinessLogin - 異常系 | MFAコード省略 | ✅ 実装 | 1 | バリデーション |
-| Logout - 正常系 | JWT トークン失効化 | ✅ 実装 | 1 | SSOT M1-3-3 |
-| **小計** | | | **5** | |
+| テスト項目 | 内容 | ステータス | モック | SSOT ID |
+|----------|------|---------|-------|---------|
+| List - 正常系 | ビジネスIDで投稿一覧取得 | ✅ 実装 | PostRepo | M1-6-1 |
+| List - 異常系 | 無効 businessID | ✅ 実装 | PostRepo | M1-6-1 |
+| List - 異常系 | ゼロ businessID | ✅ 実装 | PostRepo | M1-6-1 |
+| Get - 正常系 | 投稿詳細取得 + viewCount加算 | ✅ 実装 | PostRepo | M1-7-2 |
+| Get - 異常系 | 無効 postID | ✅ 実装 | PostRepo | M1-7-2 |
+| Get - 異常系 | ゼロ postID | ✅ 実装 | PostRepo | M1-7-2 |
+| Create - 正常系 | 投稿新規作成 | ✅ 実装 | PostRepo | M1-8-4 |
+| Create - 異常系 | 無効 businessID | ✅ 実装 | PostRepo | M1-8-4 |
+| SetGenres - 正常系 | ジャンル多対多関連付け | ✅ 実装 | PostRepo | M1-8-4 |
+| SetGenres - 異常系 | 無効 postID | ✅ 実装 | PostRepo | M1-8-4 |
+| SetGenres - 異常系 | 空ジャンル | ✅ 実装 | PostRepo | M1-8-4 |
+| Anonymize - 正常系 | 投稿内容匿名化 | ✅ 実装 | PostRepo | M1-13-2 |
+| Anonymize - 異常系 | 無効 postID | ✅ 実装 | PostRepo | M1-13-2 |
+| History - 正常系 | ユーザー投稿履歴取得 | ✅ 実装 | PostRepo | M1-14-2 |
+| History - 異常系 | 空 googleID | ✅ 実装 | PostRepo | M1-14-2 |
 
-#### 5.2 会員管理ハンドラー (MemberHandler)
+#### Handler層テスト
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| GetBusinessDetails - 正常系 | googleIdパラメータで取得 | ✅ 実装 | 1 | SSOT M1-2 |
-| GetBusinessDetails - 異常系 | googleIdパラメータ省略 | ✅ 実装 | 1 | 入力検証 |
-| GetMemberInfo - 正常系 | メンバー情報取得 | ✅ 実装 | 1 | 実装確認用 |
-| UpdateBusinessName - 正常系 | 事業者名更新（認証必須） | ✅ 実装 | 1 | SSOT M3-4-2 |
-| UpdateBusinessName - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| UpdateBusinessName - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
-| UpdateBusinessIcon - 正常系 | PNG画像アップロード | ✅ 実装 | 1 | SSOT M3-5-2 |
-| UpdateBusinessIcon - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| UpdateBusinessIcon - 異常系 | ファイルなし | ✅ 実装 | 1 | エラーハンドリング |
-| AnonymizeMember - 正常系 | 会員匿名化 | ✅ 実装 | 1 | SSOT M3-3 |
-| AnonymizeMember - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| **小計** | | | **11** | |
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| ListPosts - 正常系 | 投稿一覧取得（認証必須） | ✅ 実装 | 1 | M1-6-1 |
+| ListPosts - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-6-1 |
+| GetPost - 正常系 | 投稿詳細取得 | ✅ 実装 | 1 | M1-7-2 |
+| CreatePost - 正常系 | 投稿作成（認証必須） | ✅ 実装 | 1 | M1-8-4 |
+| CreatePost - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-8-4 |
+| CreatePost - 異常系 | 不正なJSON | ✅ 実装 | 1 | M1-8-4 |
+| AnonymizePost - 正常系 | 投稿匿名化 | ✅ 実装 | 1 | M1-13-2 |
+| GetPostHistory - 正常系 | 投稿履歴取得 | ✅ 実装 | 1 | M1-14-2 |
 
-#### 5.3 投稿ハンドラー (PostHandler)
+**追加テスト候補:**
+- 所有者権限チェック
+- ジャンルM:M実装（post_genre結合テーブル）
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| ListPosts - 正常系 | 投稿一覧取得（認証必須） | ✅ 実装 | 1 | SSOT M1-6-1 |
-| ListPosts - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| GetPost - 正常系 | 投稿詳細取得 | ✅ 実装 | 1 | SSOT M1-7-2 |
-| CreatePost - 正常系 | 投稿作成（認証必須） | ✅ 実装 | 1 | SSOT M1-8-4 |
-| CreatePost - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| CreatePost - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
-| AnonymizePost - 正常系 | 投稿匿名化 | ✅ 実装 | 1 | SSOT M1-13-2 |
-| GetPostHistory - 正常系 | 投稿履歴取得 | ✅ 実装 | 1 | SSOT M1-14-2 |
-| **小計** | | | **9** | |
+---
 
-#### 5.4 ブロック・レポートハンドラー (BlockHandler, ReportHandler)
+### ブロック・レポート・お問い合わせモジュール (M1-9, M1-10, M1-11, M1-12)
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| CreateBlock - 正常系 | ユーザーブロック | ✅ 実装 | 1 | SSOT M1-9-2 |
-| CreateBlock - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| CreateBlock - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
-| DeleteBlock - 正常系 | ブロック削除 | ✅ 実装 | 1 | SSOT M1-10-2 |
-| DeleteBlock - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| CreateReport - 正常系 | 不正報告作成 | ✅ 実装 | 1 | SSOT M1-12-2 |
-| CreateReport - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| CreateReport - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
-| **小計** | | | **8** | |
+#### Handler層テスト
 
-#### 5.5 お問い合わせハンドラー (ContactHandler)
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| CreateBlock - 正常系 | ユーザーブロック | ✅ 実装 | 1 | M1-9-2 |
+| CreateBlock - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-9-2 |
+| CreateBlock - 異常系 | 不正なJSON | ✅ 実装 | 1 | M1-9-2 |
+| DeleteBlock - 正常系 | ブロック削除 | ✅ 実装 | 1 | M1-10-2 |
+| DeleteBlock - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-10-2 |
+| CreateContact - 正常系 | 問い合わせ作成 | ✅ 実装 | 1 | M1-11-2 |
+| CreateContact - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-11-2 |
+| CreateContact - 異常系 | 不正なJSON | ✅ 実装 | 1 | M1-11-2 |
+| CreateContact - 異常系 | Subjectなし | ✅ 実装 | 1 | M1-11-2 |
+| CreateReport - 正常系 | 不正報告作成 | ✅ 実装 | 1 | M1-12-2 |
+| CreateReport - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-12-2 |
+| CreateReport - 異常系 | 不正なJSON | ✅ 実装 | 1 | M1-12-2 |
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| CreateContact - 正常系 | 問い合わせ作成 | ✅ 実装 | 1 | SSOT M1-11-2 |
-| CreateContact - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| CreateContact - 異常系 | 不正なJSON | ✅ 実装 | 1 | JSON検証 |
-| CreateContact - 異常系 | Subjectなし | ✅ 実装 | 1 | バリデーション |
-| **小計** | | | **4** | |
+---
 
-#### 5.6 統計ハンドラー (StatsHandler)
+### 決済モジュール (M1-15)
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| GetTotalPosts - 正常系 | 投稿数統計取得 | ✅ 実装 | 1 | SSOT M3-7-1 |
-| GetTotalPosts - 異常系 | businessIdパラメータなし | ✅ 実装 | 1 | パラメータ検証 |
-| GetTotalPosts - 異常系 | businessId不正 | ✅ 実装 | 1 | 型検証 |
-| GetTotalReactions - 正常系 | リアクション数取得 | ✅ 実装 | 1 | SSOT M3-7-2 |
-| GetTotalReactions - 異常系 | パラメータなし | ✅ 実装 | 1 | パラメータ検証 |
-| GetTotalViews - 正常系 | ビュー数統計取得 | ✅ 実装 | 1 | SSOT M3-7-3 |
-| GetTotalViews - 異常系 | パラメータなし | ✅ 実装 | 1 | パラメータ検証 |
-| GetEngagementRate - 正常系 | エンゲージメント率計算 | ✅ 実装 | 1 | SSOT M3-7-4 |
-| GetEngagementRate - 異常系 | パラメータなし | ✅ 実装 | 1 | パラメータ検証 |
-| **小計** | | | **9** | |
+#### Handler層テスト
 
-#### 5.7 決済ハンドラー (PaymentHandler)
+| テスト項目 | 内容 | ステータス | テスト件数 | SSOT ID |
+|----------|------|---------|---------|---------|
+| CreateRedirect - 正常系 | Stripe リダイレクトURL生成 | ✅ 実装 | 1 | M1-15-3 |
+| CreateRedirect - パラメータなし | businessId省略→400 | ✅ 実装 | 1 | M1-15-3 |
+| CreateRedirect - パラメータ不正 | businessId不正→400 | ✅ 実装 | 1 | M1-15-3 |
+| CreateRedirect - 認証なし | Context なし→401 | ✅ 実装 | 1 | M1-15-3 |
 
-| テスト項目 | 内容 | ステータス | テスト件数 | 備考 |
-|----------|------|---------|---------|------|
-| CreateRedirect - 正常系 | Stripe リダイレクトURL生成 | ✅ 実装 | 1 | SSOT M1-15-3 |
-| CreateRedirect - パラメータなし | businessId省略→400 | ✅ 実装 | 1 | パラメータ検証 |
-| CreateRedirect - パラメータ不正 | businessId不正→400 | ✅ 実装 | 1 | 型検証 |
-| CreateRedirect - 認証なし | Context なし→401 | ✅ 実装 | 1 | セキュリティ |
-| **小計** | | | **4** | |
+---
 
-#### 5.8 ハンドラー層テスト集計
+## テスト統計
 
-| カテゴリ | テスト件数 |
-|---------|---------|
-| 認証ハンドラー | 5 |
-| 会員管理ハンドラー | 11 |
-| 投稿ハンドラー | 9 |
-| ブロック・レポート | 8 |
-| お問い合わせ | 4 |
-| 統計ハンドラー | 9 |
-| 決済ハンドラー | 4 |
-| **合計** | **50** |
+### 事業者会員モジュール（M3）テスト集計
+
+| モジュール | Service層 | Handler層 | 合計 |
+|----------|----------|----------|------|
+| M3-1: Google認証 | 2 | 2 | 4 |
+| M3-2: 会員情報取得 | 2 | 2 | 4 |
+| M3-3: 会員匿名化 | 2 | 2 | 4 |
+| M3-4: 事業者名更新 | 3 | 3 | 6 |
+| M3-5: アイコン更新 | 3 | 3 | 6 |
+| M3-7: 統計情報 | 10 | 9 | 19 |
+| **M3 小計** | **22** | **21** | **43** |
+
+### その他モジュール（M1）テスト集計
+
+| モジュール | Service層 | Handler層 | 合計 |
+|----------|----------|----------|------|
+| M1-1, M1-3: 認証 | 4 | 3 | 7 |
+| M1-6～M1-14: 投稿管理 | 15 | 8 | 23 |
+| M1-9～M1-12: ブロック・レポート・お問い合わせ | 0 | 12 | 12 |
+| M1-15: 決済 | 0 | 4 | 4 |
+| **M1 小計** | **19** | **27** | **46** |
+
+### 総合計
+
+| 層 | テスト件数 |
+|-----|---------|
+| Service層 | 41 |
+| Handler層 | 48 |
+| **総合計** | **89** |
+
+---
 
 ---
 
@@ -304,6 +371,38 @@ $ docker run kojan-map-backend go test ./... -v
 - [ ] レート制限設定
 
 **注:** 統合テストと今後の拡張については [integration-tests.md](integration-tests.md) を参照してください。
+
+---
+
+## モック実装ファイル
+
+### internal/repository/mock/mock_repos.go
+
+| モック | 実装機能 | 状態管理 | 使用モジュール |
+|-------|--------|--------|-------------|
+| MockAuthRepo | GetOrCreateUser, GetUserByID | メモリマップ | M3-1, M3-2, M1-1 |
+| MockBusinessMemberRepo | Get, Update (name/icon/anonymize) | メモリマップ | M3-2, M3-3, M3-4, M3-5 |
+| MockPostRepo | List, Get, Create, Increment, Anonymize | メモリマップ（NextID自動採番） | M1-6～M1-14 |
+| MockStatsRepo | TotalPosts, TotalReactions, TotalViews, Engagement | 固定値返却 | M3-7 |
+| MockBlockRepo | Create, Delete | メモリマップ | M1-9, M1-10 |
+| MockReportRepo | Create | スライス集計 | M1-12 |
+| MockContactRepo | Create | スライス集計 | M1-11 |
+| MockPaymentRepo | CreatePayment | ダミー実装 | M1-15 |
+
+---
+
+## テスト依存関係
+
+### テスティングフレームワーク
+- `github.com/stretchr/testify/assert` - アサーション（簡潔）
+- `github.com/stretchr/testify/require` - 強制チェック（fatal）
+- 標準 `testing` - テスト実行フレームワーク
+
+### 対象パッケージ
+- Service実装層: `internal/service/impl`
+- Handler層: `internal/api/handler`
+- Modelドメイン: `internal/domain`
+- リポジトリモック: `internal/repository/mock`
 
 ---
 
