@@ -36,7 +36,7 @@ func AuthMiddleware(tokenManager *jwt.TokenManager) gin.HandlerFunc {
 			return
 		}
 
-		// トークンを検証してクレームを取得（ブラックリストチェックも含む）
+		// トークンを検証してクレームを取得
 		claims, err := tokenManager.VerifyToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("invalid token: %v", err)})
@@ -45,6 +45,11 @@ func AuthMiddleware(tokenManager *jwt.TokenManager) gin.HandlerFunc {
 		}
 
 		// トークンがブラックリストに登録されていないか確認
+		if tokenManager.IsTokenRevoked(tokenString) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "token has been revoked"})
+			c.Abort()
+			return
+		}
 
 		// ContextにUserID, Gmail, Roleを設定
 		// BusinessIDはuserIDから取得する必要があるため、ここでは設定しない
@@ -84,7 +89,7 @@ func OptionalAuthMiddleware(tokenManager *jwt.TokenManager) gin.HandlerFunc {
 			return
 		}
 
-		// トークンを検証してクレームを取得（ブラックリストチェックも含む）
+		// トークンを検証してクレームを取得
 		claims, err := tokenManager.VerifyToken(tokenString)
 		if err != nil {
 			// トークンが不正な場合は続行（トークンなしとして扱う）
@@ -93,6 +98,11 @@ func OptionalAuthMiddleware(tokenManager *jwt.TokenManager) gin.HandlerFunc {
 		}
 
 		// ブラックリスト確認
+		if tokenManager.IsTokenRevoked(tokenString) {
+			c.Next()
+			return
+		}
+
 		// ContextにUserID, Gmail, Roleを設定
 		newCtx := c.Request.Context()
 		newCtx = contextkeys.WithUserID(newCtx, claims.UserID)
