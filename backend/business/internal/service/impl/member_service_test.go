@@ -86,9 +86,9 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		args        args
-		wantErr     bool
+		name         string
+		args         args
+		wantErr      bool
 		setupFixture func(f *TestFixtures)
 	}{
 		{
@@ -158,9 +158,9 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		args        args
-		wantErr     bool
+		name         string
+		args         args
+		wantErr      bool
 		setupFixture func(f *TestFixtures)
 	}{
 		{
@@ -229,9 +229,9 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		args        args
-		wantErr     bool
+		name         string
+		args         args
+		wantErr      bool
 		setupFixture func(f *TestFixtures)
 	}{
 		{
@@ -281,4 +281,3 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 		})
 	}
 }
-

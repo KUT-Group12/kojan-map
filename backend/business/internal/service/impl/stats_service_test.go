@@ -16,10 +16,10 @@ func TestStatsServiceImpl_GetTotalPosts(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		args         args
-		mockValue    int64
-		wantErr      bool
+		name          string
+		args          args
+		mockValue     int64
+		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -86,10 +86,10 @@ func TestStatsServiceImpl_GetTotalReactions(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		args         args
-		mockValue    int64
-		wantErr      bool
+		name          string
+		args          args
+		mockValue     int64
+		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -148,10 +148,10 @@ func TestStatsServiceImpl_GetTotalViews(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		args         args
-		mockValue    int64
-		wantErr      bool
+		name          string
+		args          args
+		mockValue     int64
+		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -216,10 +216,10 @@ func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		args         args
-		mockStats    mockStats
-		wantErr      bool
+		name          string
+		args          args
+		mockStats     mockStats
+		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{
@@ -288,4 +288,3 @@ func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 		})
 	}
 }
-

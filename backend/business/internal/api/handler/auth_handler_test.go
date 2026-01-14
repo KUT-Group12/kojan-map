@@ -71,10 +71,10 @@ func TestAuthHandler_GoogleAuth_InvalidRequest(t *testing.T) {
 // TestAuthHandler_BusinessLogin tests the BusinessLogin endpoint (M1-1).
 func TestAuthHandler_BusinessLogin(t *testing.T) {
 	fixtures := svcimpl.NewTestFixtures()
-	
+
 	// Setup test user
 	fixtures.SetupUser("test-user-id", "test@example.com")
-	
+
 	authService := fixtures.AuthService
 	authHandler := NewAuthHandler(authService)
 

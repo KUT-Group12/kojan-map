@@ -401,4 +401,3 @@ func TestPostServiceImpl_History(t *testing.T) {
 		})
 	}
 }
-

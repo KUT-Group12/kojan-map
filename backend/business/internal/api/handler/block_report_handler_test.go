@@ -10,8 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"kojan-map/business/internal/domain"
-	"kojan-map/business/pkg/contextkeys"
 	svcimpl "kojan-map/business/internal/service/impl"
+	"kojan-map/business/pkg/contextkeys"
 )
 
 // TestBlockHandler_CreateBlock tests CreateBlock endpoint (M1-9-2).

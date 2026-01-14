@@ -101,10 +101,10 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		args        args
-		setupMFA    func(validator *mfa.MFAValidator, email string) string
-		wantErr     bool
+		name          string
+		args          args
+		setupMFA      func(validator *mfa.MFAValidator, email string) string
+		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
 		{

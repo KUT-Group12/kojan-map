@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"kojan-map/business/pkg/contextkeys"
 	svcimpl "kojan-map/business/internal/service/impl"
+	"kojan-map/business/pkg/contextkeys"
 )
 
 // TestStatsHandler_GetTotalPosts tests GetTotalPosts endpoint (M3-7-1).

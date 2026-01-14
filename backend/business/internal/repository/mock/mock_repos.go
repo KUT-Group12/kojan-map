@@ -133,7 +133,7 @@ func (m *MockBusinessMemberRepo) Anonymize(ctx context.Context, businessID int64
 type MockPostRepo struct {
 	mu     sync.Mutex
 	Posts  map[int64]*domain.Post // Key: postID, Value: Post
-	NextID int64                   // Auto-increment counter
+	NextID int64                  // Auto-increment counter
 }
 
 // NewMockPostRepo creates a new MockPostRepo with an empty posts map and NextID initialized to 1.
@@ -358,4 +358,3 @@ func NewMockPaymentRepo() *MockPaymentRepo {
 func (m *MockPaymentRepo) CreatePayment(ctx context.Context, businessID int64, amount int64, payFlag bool) (int64, error) {
 	return 1, nil
 }
-

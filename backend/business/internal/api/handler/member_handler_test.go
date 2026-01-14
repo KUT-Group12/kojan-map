@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"kojan-map/business/internal/domain"
-	"kojan-map/business/pkg/contextkeys"
 	svcimpl "kojan-map/business/internal/service/impl"
+	"kojan-map/business/pkg/contextkeys"
 )
 
 // TestMemberHandler_UpdateBusinessName tests UpdateBusinessName endpoint (M3-4-2).
@@ -218,11 +218,11 @@ func TestMemberHandler_AnonymizeMember_MissingAuth(t *testing.T) {
 // TestMemberHandler_GetBusinessDetails tests GetBusinessDetails endpoint (M1-2).
 func TestMemberHandler_GetBusinessDetails(t *testing.T) {
 	fixtures := svcimpl.NewTestFixtures()
-	
+
 	// Setup test data
 	fixtures.SetupUser("test-user-id", "test@example.com")
 	fixtures.SetupBusinessMember(1, "test-user-id", "Test Business", nil)
-	
+
 	memberHandler := NewMemberHandler(fixtures.MemberService)
 
 	w := httptest.NewRecorder()
@@ -258,11 +258,11 @@ func TestMemberHandler_GetBusinessDetails_MissingGoogleID(t *testing.T) {
 // TestMemberHandler_GetMemberInfo tests GetMemberInfo endpoint.
 func TestMemberHandler_GetMemberInfo(t *testing.T) {
 	fixtures := svcimpl.NewTestFixtures()
-	
+
 	// Setup test data
 	fixtures.SetupUser("test-user-id", "test@example.com")
 	fixtures.SetupBusinessMember(1, "test-user-id", "Test Business", nil)
-	
+
 	memberHandler := NewMemberHandler(fixtures.MemberService)
 
 	w := httptest.NewRecorder()
