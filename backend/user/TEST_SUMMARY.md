@@ -5,11 +5,13 @@
 バックエンドのサービス層に対して、包括的な単体テストを実装しました。KISS化による改善で、エラーハンドリングを統一し、コード保守性を向上させました。
 
 ### テスト統計
-- **テスト総数**: 48
-- **成功**: 48 ✓
-- **失敗**: 0
-- **カバレッジ**: 81.3%
-- **実行時間**: 0.173秒
+- **テスト実行パッケージ**: kojan-map/user/services
+- **状態**: ✅ 全テスト成功（PASS）
+- **実行時間**: 0.054秒
+
+#### 注記
+post_service_test.go は実装準備中のため、現在は services パッケージの他のテストのみ実行されています。
+PostService の戻り値型統一（map[string]interface{}）に対応したテストの追加が必要です。
 
 ## テストファイル一覧
 
@@ -29,33 +31,35 @@
 | 7 | `TestUserService_DeleteUser` | ユーザーと関連データの削除 | ✓ |
 | 8 | `TestUserService_DeleteUser_NotFound` | 存在しないユーザー削除時のエラー | ✓ |
 
-### 2. [post_service_test.go](user/services/post_service_test.go)
+### 2. post_service_test.go
+
 投稿機能とリアクションのテスト
 
-#### 更新履歴（2026-01-14）
-- **GetAllPosts**: 戻り値型を `[]models.Post` → `[]map[string]interface{}` に変更
-- **GetPostDetail**: 戻り値型を `*models.Post` → `map[string]interface{}` に変更
-- **レスポンスフィールド**: 設計書の Post モデル JSON タグに準拠するよう統一
-  - postId, placeId, genreId, userId, title, text, postImage, numView, numReaction, postData, createdAt, latitude, longitude, genreName
-- **関連テーブル JOIN**: Genre（genreId, genreName）と Place（latitude, longitude）の関連データを同時取得
+#### 実装状況（2026-01-14）
 
-#### テスト項目
+**ステータス**: 📝 実装準備中
 
-| # | テスト名 | 説明 | 状態 |
-|---|---------|------|------|
-| 1 | `TestPostService_CreatePost` | 投稿の新規作成 | ✓ |
-| 2 | `TestPostService_CreatePost_ValidationError` | 投稿作成時の入力検証 | ✓ |
-| 3 | `TestPostService_GetAllPosts` | 匿名化済み投稿をフィルタリングした取得 | ✓ |
-| 4 | `TestPostService_GetPostDetail` | 投稿詳細取得と閲覧数カウント | ✓ |
-| 5 | `TestPostService_GetPostDetail_NotFound` | 存在しない投稿エラーハンドリング | ✓ |
-| 6 | `TestPostService_DeletePost` | 所有者による投稿削除 | ✓ |
-| 7 | `TestPostService_DeletePost_Unauthorized` | 非所有者の削除拒否 | ✓ |
-| 8 | `TestPostService_AnonymizePost` | 投稿の匿名化（タイトル・テキスト削除） | ✓ |
-| 9 | `TestPostService_AddReaction` | リアクション追加と削除のトグル | ✓ |
-| 10 | `TestPostService_AddReaction_Toggle` | リアクション済みユーザーの削除確認 | ✓ |
-| 11 | `TestPostService_IsUserReacted` | ユーザーのリアクション状態確認 | ✓ |
-| 12 | `TestPostService_SearchByKeyword` | キーワード検索 | ✓ |
-| 13 | `TestPostService_SearchByGenre` | ジャンル別検索 | ✓ |
+PostService の設計書準拠リファクタリング完了に伴い、以下の変更対応が必要です：
+
+- **GetAllPosts()**: 戻り値型 `[]models.Post` → `[]map[string]interface{}`
+- **GetPostDetail()**: 戻り値型 `*models.Post` → `map[string]interface{}`
+- **レスポンスフィールド統一**: 設計書の Post モデル JSON タグ準拠
+  - postId, userId, title, text, postImage, numView, numReaction, postData, createdAt
+  - genreId, genreName（Genre JOIN）
+  - placeId, latitude, longitude（Place JOIN）
+
+#### テスト対象メソッド（実装予定）
+
+| # | メソッド | 説明 |
+|---|---------|------|
+| 1 | CreatePost | 投稿の新規作成 |
+| 2 | GetAllPosts | 全投稿の取得（map形式） |
+| 3 | GetPostDetail | 投稿詳細取得と閲覧数インクリメント |
+| 4 | GetPostsByGenre | ジャンル別投稿取得 |
+| 5 | GetPostsByPlace | 場所別投稿取得 |
+| 6 | UpdatePostNumView | 閲覧数更新 |
+| 7 | UpdatePostNumReaction | リアクション数更新 |
+| 8 | DeletePost | 投稿削除 |
 
 ### 3. [other_service_test.go](user/services/other_service_test.go)
 ブロック、通報、お問い合わせ、事業者申請のテスト
@@ -86,13 +90,26 @@
 ### 全テストを実行
 ```bash
 cd backend
-go test ./user/services/... -v
+go test ./user/services -v
 ```
 
-### カバレッジ付きテスト
+### 結果確認
 ```bash
-go test ./user/services/... -v -coverprofile=coverage.out
-go tool cover -html=coverage.out -o coverage.html
+# 現在の状態（post_service_test.go 未実装）
+$ go test ./user/services
+ok      kojan-map/user/services (cached)
+```
+
+### コード品質チェック
+```bash
+# フォーマット確認
+gofmt -s -w .
+
+# 静的解析
+go vet ./...
+
+# テスト実行
+go test ./...
 ```
 
 ### 特定のテストのみ実行

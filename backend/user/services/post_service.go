@@ -36,20 +36,20 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 		config.DB.Where("place_id = ?", post.PlaceID).First(&place)
 
 		result[i] = map[string]interface{}{
-			"postId":       post.ID,
-			"placeId":      post.PlaceID,
-			"genreId":      post.GenreID,
-			"userId":       post.UserID,
-			"title":        post.Title,
-			"text":         post.Text,
-			"postImage":    post.PostImage,
-			"numView":      post.NumView,
-			"numReaction":  post.NumReaction,
-			"postData":     post.PostDate,
-			"createdAt":    post.CreatedAt,
-			"latitude":     place.Latitude,
-			"longitude":    place.Longitude,
-			"genreName":    genre.GenreName,
+			"postId":      post.ID,
+			"placeId":     post.PlaceID,
+			"genreId":     post.GenreID,
+			"userId":      post.UserID,
+			"title":       post.Title,
+			"text":        post.Text,
+			"postImage":   post.PostImage,
+			"numView":     post.NumView,
+			"numReaction": post.NumReaction,
+			"postData":    post.PostDate,
+			"createdAt":   post.CreatedAt,
+			"latitude":    place.Latitude,
+			"longitude":   place.Longitude,
+			"genreName":   genre.GenreName,
 		}
 	}
 	return result, nil
@@ -78,20 +78,20 @@ func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error)
 	config.DB.Where("place_id = ?", post.PlaceID).First(&place)
 
 	result := map[string]interface{}{
-		"postId":       post.ID,
-		"placeId":      post.PlaceID,
-		"genreId":      post.GenreID,
-		"userId":       post.UserID,
-		"title":        post.Title,
-		"text":         post.Text,
-		"postImage":    post.PostImage,
-		"numView":      post.NumView,
-		"numReaction":  post.NumReaction,
-		"postData":     post.PostDate,
-		"createdAt":    post.CreatedAt,
-		"latitude":     place.Latitude,
-		"longitude":    place.Longitude,
-		"genreName":    genre.GenreName,
+		"postId":      post.ID,
+		"placeId":     post.PlaceID,
+		"genreId":     post.GenreID,
+		"userId":      post.UserID,
+		"title":       post.Title,
+		"text":        post.Text,
+		"postImage":   post.PostImage,
+		"numView":     post.NumView,
+		"numReaction": post.NumReaction,
+		"postData":    post.PostDate,
+		"createdAt":   post.CreatedAt,
+		"latitude":    place.Latitude,
+		"longitude":   place.Longitude,
+		"genreName":   genre.GenreName,
 	}
 
 	return result, nil
@@ -183,7 +183,7 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 // SearchPostsByKeyword キーワード検索
 func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("(title LIKE ? OR text LIKE ?) AND is_anonymized = ?", 
+	if err := config.DB.Where("(title LIKE ? OR text LIKE ?) AND is_anonymized = ?",
 		"%"+keyword+"%", "%"+keyword+"%", false).
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {
@@ -206,7 +206,7 @@ func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 // SearchPostsByPeriod 期間で検索
 func (ps *PostService) SearchPostsByPeriod(startDate, endDate time.Time) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("post_date BETWEEN ? AND ? AND is_anonymized = ?", 
+	if err := config.DB.Where("post_date BETWEEN ? AND ? AND is_anonymized = ?",
 		startDate, endDate, false).
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {

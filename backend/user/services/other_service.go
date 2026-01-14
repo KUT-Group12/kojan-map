@@ -46,14 +46,14 @@ func (bs *BlockService) UnblockUser(userID, blockerID string) error {
 
 	result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).
 		Delete(&models.UserBlock{})
-	
+
 	if result.Error != nil {
 		return errors.New("failed to unblock user")
 	}
 	if result.RowsAffected == 0 {
 		return errors.New("block relationship not found")
 	}
-	
+
 	return nil
 }
 
