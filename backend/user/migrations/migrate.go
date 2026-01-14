@@ -9,6 +9,12 @@ import (
 // RunMigrations すべてのマイグレーションを実行
 func RunMigrations() error {
 	// テーブルを順に作成（外部キー制約を考慮）
+	if err := createGenresTable(); err != nil {
+		return err
+	}
+	if err := createPlacesTable(); err != nil {
+		return err
+	}
 	if err := createUsersTable(); err != nil {
 		return err
 	}
@@ -36,6 +42,52 @@ func RunMigrations() error {
 
 	log.Println("✓ All migrations completed")
 	return nil
+}
+
+// createGenresTable ジャンルテーブルを作成
+func createGenresTable() error {
+	// テーブル作成
+	if err := config.DB.Exec(`
+	CREATE TABLE IF NOT EXISTS genre (
+		genre_id INT PRIMARY KEY AUTO_INCREMENT,
+		genre_name VARCHAR(50) NOT NULL UNIQUE
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	`).Error; err != nil {
+		return err
+	}
+
+	// 初期データ投入（既にデータがある場合はスキップ）
+	var count int64
+	config.DB.Raw("SELECT COUNT(*) FROM genre").Scan(&count)
+	if count == 0 {
+		if err := config.DB.Exec(`
+		INSERT INTO genre (genre_id, genre_name) VALUES
+		(1, 'グルメ'),
+		(2, 'イベント'),
+		(3, '景色'),
+		(4, 'お店'),
+		(5, '緊急情報'),
+		(6, 'その他');
+		`).Error; err != nil {
+			return err
+		}
+		log.Println("✓ Genre initial data inserted")
+	}
+
+	return nil
+}
+
+// createPlacesTable 場所テーブルを作成
+func createPlacesTable() error {
+	return config.DB.Exec(`
+	CREATE TABLE IF NOT EXISTS place (
+		place_id INT PRIMARY KEY AUTO_INCREMENT,
+		num_post INT NOT NULL DEFAULT 0,
+		latitude DOUBLE NOT NULL,
+		longitude DOUBLE NOT NULL,
+		KEY idx_location (latitude, longitude)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	`).Error
 }
 
 // createUsersTable ユーザーテーブルを作成

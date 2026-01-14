@@ -12,18 +12,51 @@ import (
 type PostService struct{}
 
 // GetAllPosts 投稿一覧を取得
-func (ps *PostService) GetAllPosts() ([]models.Post, error) {
+func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 	var posts []models.Post
 	if err := config.DB.Where("is_anonymized = ?", false).
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
-	return posts, nil
+
+	// フロントエンド用にデータを変換
+	result := make([]map[string]interface{}, len(posts))
+	for i, post := range posts {
+		// ユーザー情報を取得
+		user := models.User{}
+		config.DB.Where("id = ?", post.UserID).First(&user)
+
+		// ジャンルを取得
+		genre := models.Genre{}
+		config.DB.Where("genre_id = ?", post.GenreID).First(&genre)
+
+		// 場所情報を取得
+		place := models.Place{}
+		config.DB.Where("place_id = ?", post.PlaceID).First(&place)
+
+		result[i] = map[string]interface{}{
+			"postId":       post.ID,
+			"placeId":      post.PlaceID,
+			"genreId":      post.GenreID,
+			"userId":       post.UserID,
+			"title":        post.Title,
+			"text":         post.Text,
+			"postImage":    post.PostImage,
+			"numView":      post.NumView,
+			"numReaction":  post.NumReaction,
+			"postData":     post.PostDate,
+			"createdAt":    post.CreatedAt,
+			"latitude":     place.Latitude,
+			"longitude":    place.Longitude,
+			"genreName":    genre.GenreName,
+		}
+	}
+	return result, nil
 }
 
 // GetPostDetail 投稿詳細を取得
-func (ps *PostService) GetPostDetail(postID int) (*models.Post, error) {
+func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error) {
 	post := models.Post{}
 	if err := config.DB.Where("id = ?", postID).First(&post).Error; err != nil {
 		return nil, errors.New("post not found")
@@ -32,7 +65,36 @@ func (ps *PostService) GetPostDetail(postID int) (*models.Post, error) {
 	// 閲覧数をインクリメント
 	config.DB.Model(&post).Update("num_view", post.NumView+1)
 
-	return &post, nil
+	// ユーザー情報を取得
+	user := models.User{}
+	config.DB.Where("id = ?", post.UserID).First(&user)
+
+	// ジャンルを取得
+	genre := models.Genre{}
+	config.DB.Where("genre_id = ?", post.GenreID).First(&genre)
+
+	// 場所情報を取得
+	place := models.Place{}
+	config.DB.Where("place_id = ?", post.PlaceID).First(&place)
+
+	result := map[string]interface{}{
+		"postId":       post.ID,
+		"placeId":      post.PlaceID,
+		"genreId":      post.GenreID,
+		"userId":       post.UserID,
+		"title":        post.Title,
+		"text":         post.Text,
+		"postImage":    post.PostImage,
+		"numView":      post.NumView,
+		"numReaction":  post.NumReaction,
+		"postData":     post.PostDate,
+		"createdAt":    post.CreatedAt,
+		"latitude":     place.Latitude,
+		"longitude":    place.Longitude,
+		"genreName":    genre.GenreName,
+	}
+
+	return result, nil
 }
 
 // CreatePost 投稿を作成

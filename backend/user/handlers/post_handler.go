@@ -12,12 +12,18 @@ import (
 
 // PostHandler 投稿関連のハンドラー
 type PostHandler struct {
-	postService *services.PostService
+	postService  *services.PostService
+	placeService *services.PlaceService
+	genreService *services.GenreService
 }
 
 // NewPostHandler 投稿ハンドラーを初期化
-func NewPostHandler(postService *services.PostService) *PostHandler {
-	return &PostHandler{postService: postService}
+func NewPostHandler(postService *services.PostService, placeService *services.PlaceService, genreService *services.GenreService) *PostHandler {
+	return &PostHandler{
+		postService:  postService,
+		placeService: placeService,
+		genreService: genreService,
+	}
 }
 
 // GetPosts 投稿一覧を取得
@@ -29,16 +35,16 @@ func (ph *PostHandler) GetPosts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"posts": posts,
-		"total": len(posts),
-	})
+	c.JSON(http.StatusOK, posts)
 }
 
 // GetPostDetail 投稿詳細を取得
 // GET /api/posts/detail
 func (ph *PostHandler) GetPostDetail(c *gin.Context) {
 	postIDStr := c.Query("postId")
+	if postIDStr == "" {
+		postIDStr = c.Query("id")
+	}
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid postId"})
@@ -58,39 +64,62 @@ func (ph *PostHandler) GetPostDetail(c *gin.Context) {
 // POST /api/posts
 func (ph *PostHandler) CreatePost(c *gin.Context) {
 	var req struct {
-		PlaceID   int     `json:"placeId" binding:"required"`
-		GenreID   int     `json:"genreId" binding:"required"`
-		UserID    string  `json:"userId" binding:"required"`
-		Title     string  `json:"title" binding:"required"`
-		Text      string  `json:"text" binding:"required"`
-		PostImage string  `json:"postImage"`
-		Latitude  float64 `json:"latitude"`
-		Longitude float64 `json:"longitude"`
+		Latitude    float64  `json:"latitude" binding:"required"`
+		Longitude   float64  `json:"longitude" binding:"required"`
+		Title       string   `json:"title" binding:"required"`
+		Description string   `json:"description" binding:"required"`
+		Genre       string   `json:"genre" binding:"required"`
+		Images      []string `json:"images"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format", "details": err.Error()})
 		return
 	}
 
-	// タイトルとテキストの長さを検証
-	if len(req.Title) > 100 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title too long (max 100 characters)"})
+	// タイトルと説明文の長さを検証
+	if len(req.Title) > 50 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title too long (max 50 characters)"})
 		return
 	}
-	if len(req.Text) > 2000 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "text too long (max 2000 characters)"})
+	if len(req.Description) > 2000 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "description too long (max 2000 characters)"})
+		return
+	}
+
+	// ジャンルIDをデータベースから取得
+	genreID, err := ph.genreService.GetGenreByName(req.Genre)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "無効なジャンルです", "details": err.Error()})
+		return
+	}
+
+	// 画像がある場合は最初の画像を使用
+	postImage := ""
+	if len(req.Images) > 0 {
+		postImage = req.Images[0]
+	}
+
+	// TODO: 認証実装後に実際のユーザーIDを取得
+	userID := "user123" // 仮のGoogle ID
+
+	// 場所を登録または取得
+	placeID, err := ph.placeService.FindOrCreatePlace(req.Latitude, req.Longitude)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register place"})
 		return
 	}
 
 	post := models.Post{
-		PlaceID:   req.PlaceID,
-		GenreID:   req.GenreID,
-		UserID:    req.UserID,
-		Title:     req.Title,
-		Text:      req.Text,
-		PostImage: req.PostImage,
-		PostDate:  time.Now(),
+		PlaceID:     placeID,
+		GenreID:     genreID,
+		UserID:      userID,
+		Title:       req.Title,
+		Text:        req.Description,
+		PostImage:   postImage,
+		PostDate:    time.Now(),
+		NumReaction: 0, // 初期値
+		NumView:     0, // 初期値
 	}
 
 	if err := ph.postService.CreatePost(&post); err != nil {
