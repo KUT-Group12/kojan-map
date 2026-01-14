@@ -108,7 +108,7 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, newSession)
 	assert.Equal(t, oldSession.SessionID, newSession.SessionID)
-	
+
 	// セッション有効期限が延長されたか確認
 	var updatedSession models.Session
 	db.Where("session_id = ?", oldSession.SessionID).First(&updatedSession)

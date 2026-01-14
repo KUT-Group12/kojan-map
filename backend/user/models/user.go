@@ -8,13 +8,13 @@ import (
 
 // User 一般会員モデル
 type User struct {
-	ID               string    `gorm:"primaryKey" json:"id"`
-	GoogleID         string    `gorm:"uniqueIndex" json:"googleId"`
-	Email            string    `gorm:"uniqueIndex" json:"email"`
-	Role             string    `json:"role"` // "user", "business", "admin"
-	RegistrationDate time.Time `json:"registrationDate"`
-	CreatedAt        time.Time `json:"createdAt"`
-	UpdatedAt        time.Time `json:"updatedAt"`
+	ID               string         `gorm:"primaryKey" json:"id"`
+	GoogleID         string         `gorm:"uniqueIndex" json:"googleId"`
+	Email            string         `gorm:"uniqueIndex" json:"email"`
+	Role             string         `json:"role"` // "user", "business", "admin"
+	RegistrationDate time.Time      `json:"registrationDate"`
+	CreatedAt        time.Time      `json:"createdAt"`
+	UpdatedAt        time.Time      `json:"updatedAt"`
 	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
 }
 

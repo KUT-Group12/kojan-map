@@ -46,7 +46,7 @@ type TokenExchangeRequest struct {
 
 // Response for successful authentication
 type AuthResponse struct {
-	JWTToken string `json:"jwt_token"`
+	JWTToken string       `json:"jwt_token"`
 	User     *models.User `json:"user"`
 }
 
@@ -134,13 +134,13 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 
 	// Create new user
 	newUser := models.User{
-		ID:       fmt.Sprintf("user_%d", time.Now().UnixNano()),
-		GoogleID: googleResp.Sub,
-		Email:    googleResp.Email,
-		Role:     role,
+		ID:               fmt.Sprintf("user_%d", time.Now().UnixNano()),
+		GoogleID:         googleResp.Sub,
+		Email:            googleResp.Email,
+		Role:             role,
 		RegistrationDate: time.Now(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}
 
 	if err := as.db.Create(&newUser).Error; err != nil {
