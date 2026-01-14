@@ -38,10 +38,13 @@ func main() {
 
 	// サービスとハンドラーを初期化
 	userService := &services.UserService{}
-	authHandler := handlers.NewAuthHandler(userService)
+	authService := services.NewAuthService(config.DB)
+	authHandler := handlers.NewAuthHandler(userService, authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postService := &services.PostService{}
-	postHandler := handlers.NewPostHandler(postService)
+	placeService := services.NewPlaceService(config.DB)
+	genreService := services.NewGenreService(config.DB)
+	postHandler := handlers.NewPostHandler(postService, placeService, genreService)
 	blockService := &services.BlockService{}
 	blockHandler := handlers.NewBlockHandler(blockService)
 	reportService := &services.ReportService{}
@@ -89,6 +92,11 @@ func setupRoutes(
 	router.POST("/api/users/register", authHandler.Register)
 	router.PUT("/api/auth/logout", authHandler.Logout)
 	router.PUT("/api/auth/withdrawal", authHandler.Withdrawal)
+	// Google OAuth 認証エンドポイント
+	router.POST("/api/auth/exchange-token", authHandler.ExchangeToken)
+	router.POST("/api/auth/verify-token", authHandler.VerifyToken)
+	router.GET("/api/auth/me", authHandler.GetCurrentUser)
+	router.POST("/api/auth/refresh", authHandler.Refresh)
 
 	// ユーザー情報ルート
 	router.GET("/api/member/info", userHandler.GetMemberInfo)
