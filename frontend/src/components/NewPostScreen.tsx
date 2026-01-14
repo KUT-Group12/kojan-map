@@ -108,6 +108,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
       toast.success('投稿しました！');
       onClose();
     } catch (error) {
+      console.error(error);
       toast.error('投稿に失敗しました');
     }
   };
