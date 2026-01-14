@@ -1,8 +1,9 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { LogOut, Check } from 'lucide-react';
+import { LogOut, Check, ArrowLeft } from 'lucide-react';
 
 interface User {
+  name?: string; // 修正: ユーザー名を追加
   email: string;
   role: 'business' | 'general' | 'admin';
 }
@@ -13,7 +14,7 @@ interface LogoutScreenProps {
   onBack: () => void;
 }
 
-export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
+export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-gray-50 p-4">
       <div className="max-w-md w-full space-y-6">
@@ -23,9 +24,13 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
               <LogOut className="w-10 h-10" />
             </div>
             <CardTitle className="text-xl">ログアウトの確認</CardTitle>
-            <CardDescription>現在のアカウントからログアウトします</CardDescription>
+            <CardDescription>
+              {/* テストが期待する文言に修正 */}
+              {user.name && <span className="block font-bold text-gray-900 mb-1">{user.name} 様</span>}
+              ログアウトしてもよろしいですか？
+            </CardDescription>
           </CardHeader>
-
+          
           <CardContent className="space-y-6">
             {/* アカウント情報 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -41,11 +46,9 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
               </div>
             </div>
 
-            {/* 注意事項：Checkアイコンを使用したリスト */}
+            {/* 注意事項 */}
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-gray-600">
-                ログアウト後も保持されるデータ：
-              </p>
+              <p className="text-xs font-semibold text-gray-600">ログアウト後も保持されるデータ：</p>
               <div className="space-y-2">
                 <div className="flex items-start space-x-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -67,15 +70,30 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
             {/* Googleログインのヒント */}
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
               <p className="text-xs text-gray-600 leading-relaxed">
-                💡 ヒント: 次回ログイン時には、
-                <br />
+                💡 ヒント: 次回ログイン時には、<br />
                 Google アカウントで再度ログインしてください。
               </p>
             </div>
 
-            <Button variant="default" onClick={onLogout} className="w-full py-6 text-lg font-bold">
-              ログアウトする
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="default"
+                onClick={onLogout}
+                className="w-full py-6 text-lg font-bold"
+              >
+                ログアウトする
+              </Button>
+              
+              {/* 修正: 戻るボタンを追加（テストの onBack 呼び出しに対応） */}
+              <Button
+                variant="ghost"
+                onClick={onBack}
+                className="w-full text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                戻る
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Label } from './ui/label';
-import { Upload } from 'lucide-react';
+import { MapPin, Upload } from 'lucide-react';
 import { User, PinGenre } from '../types';
 import { genreLabels } from '../lib/mockData';
 import { toast } from 'sonner';
@@ -22,133 +22,23 @@ interface CreatePinModalProps {
     genre: PinGenre;
     images: string[];
   }) => void;
-  // optional initial coordinates to prefill the form when creating at a specific location
   initialLatitude?: number;
   initialLongitude?: number;
 }
 
-export function NewPostScreen({
-  user,
-  onClose,
-  onCreate,
-  initialLatitude,
-  initialLongitude,
-}: CreatePinModalProps) {
+export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initialLongitude }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [genre, setGenre] = useState<PinGenre>('other');
+  
+  // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
   const [latitude, setLatitude] = useState(String(initialLatitude ?? 35.6762));
   const [longitude, setLongitude] = useState(String(initialLongitude ?? 139.6503));
   const [images, setImages] = useState<string[]>([]);
 
-  /* 画像をアップロードするための処理 */
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newImages: string[] = [];
-    const previewUrls: string[] = [];
-
-    for (const file of Array.from(files)) {
-      // プレビュー用
-      previewUrls.push(URL.createObjectURL(file));
-
-      // バックエンド送信用のBase64変換 (方法Aの場合)
-      const base64 = await fileToBase64(file);
-      newImages.push(base64);
-    }
-
-    // プレビューとデータ保持を分けるか、両方管理する必要があります
-    setImages((prev) => [...prev, ...newImages]);
-    e.target.value = '';
-  };
-
-  // ボタンがクリックされた時に隠しinputをクリックさせる
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      toast.error('タイトルを入力してください');
-      return;
-    }
-
-    if (!description.trim()) {
-      toast.error('説明を入力してください');
-      return;
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      toast.error('有効な位置情報を入力してください');
-      return;
-    }
-
-    onCreate({
-      latitude: lat,
-      longitude: lng,
-      title,
-      description,
-      genre,
-      images,
-    });
-
-    toast.success('投稿しました！');
-  };
-  /*
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!title.trim()) {
-      toast.error('タイトルを入力してください');
-      return;
-    }
-
-    if (!description.trim()) {
-      toast.error('説明を入力してください');
-      return;
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      toast.error('有効な位置情報を入力してください');
-      return;
-    }
-  
-    // 送信前に数値を確定させる
-    //const lat = parseFloat(latitude);
-    //const lng = parseFloat(longitude);
-  
-    // バックエンドへAPIリクエスト (onCreateの中でfetchを呼ぶ想定)
-    try {
-      await onCreate({
-        latitude: lat,
-        longitude: lng,
-        title,
-        description,
-        genre,
-        images, // Base64の配列
-      });
-      toast.success('投稿しました！');
-      onClose();
-    } catch (error) {
-      toast.error('投稿に失敗しました');
-    }
-  };*/
-
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
-
+  // ファイルをBase64に変換するユーティリティ
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -158,16 +48,86 @@ export function NewPostScreen({
     });
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newImages: string[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const base64 = await fileToBase64(file);
+        newImages.push(base64);
+      } catch (error) {
+        console.error("ファイルの読み込みに失敗しました", error);
+      }
+    }
+
+    setImages((prev) => [...prev, ...newImages]);
+    e.target.value = ''; // 同じファイルを再度選択できるようにリセット
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // バリデーション
+    if (!title.trim()) {
+      toast.error('タイトルを入力してください');
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error('説明を入力してください');
+      return;
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      toast.error('有効な位置情報を入力してください');
+      return;
+    }
+
+    try {
+      await onCreate({
+        latitude: lat,
+        longitude: lng,
+        title,
+        description,
+        genre,
+        images,
+      });
+      toast.success('投稿しました！');
+      onClose();
+    } catch (error) {
+      toast.error('投稿に失敗しました');
+    }
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新規投稿</DialogTitle>
-          <DialogDescription className="sr-only">新しいピン投稿を作成します</DialogDescription>
+          <DialogDescription className="sr-only">
+            新しいピン投稿を作成します
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* タイトル */}
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          data-testid="new-post-form"
+        >
+          {/* タイトル入力 */}
           <div>
             <Label htmlFor="title">タイトル *</Label>
             <Input
@@ -179,7 +139,7 @@ export function NewPostScreen({
             />
           </div>
 
-          {/* 説明 */}
+          {/* 説明入力 */}
           <div>
             <Label htmlFor="description">説明 *</Label>
             <Textarea
@@ -192,11 +152,11 @@ export function NewPostScreen({
             />
           </div>
 
-          {/* ジャンル */}
+          {/* ジャンル選択 */}
           <div>
             <Label htmlFor="genre">ジャンル *</Label>
             <Select value={genre} onValueChange={(value) => setGenre(value as PinGenre)}>
-              <SelectTrigger>
+              <SelectTrigger id="genre">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -209,7 +169,7 @@ export function NewPostScreen({
             </Select>
           </div>
 
-          {/* 位置情報 */}
+          {/* 位置情報入力 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="latitude">緯度 *</Label>
@@ -219,7 +179,7 @@ export function NewPostScreen({
                 step="0.0001"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
-                placeholder="33.6071"
+                placeholder="35.6762"
                 required
               />
             </div>
@@ -231,34 +191,33 @@ export function NewPostScreen({
                 step="0.0001"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
-                placeholder="133.6823"
+                placeholder="139.6503"
                 required
               />
             </div>
           </div>
-          {/*
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800 flex items-start">
               <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
               <span>実際のアプリでは、地図上でクリックまたは店舗名検索で位置を指定できます</span>
             </p>
-          </div>*/}
+          </div>
 
-          {/* 画像 */}
+          {/* 画像アップロード */}
           <div>
             <Label>画像（任意）</Label>
             <div className="mt-2 space-y-2">
-              {/* 非表示のファイル入力 */}
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 accept="image/*"
-                multiple // 複数選択を許可
+                multiple
                 className="hidden"
+                data-testid="file-input"
               />
 
-              {/* プレビュー表示エリア */}
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mb-2">
                   {images.map((image, index) => (
@@ -280,14 +239,19 @@ export function NewPostScreen({
                 </div>
               )}
 
-              <Button type="button" variant="outline" onClick={triggerFileInput} className="w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={triggerFileInput}
+                className="w-full"
+              >
                 <Upload className="w-4 h-4 mr-2" />
                 画像をアップロード
               </Button>
             </div>
           </div>
 
-          {/* 投稿者情報表示 */}
+          {/* ユーザーロールに応じた表示 */}
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
@@ -296,19 +260,16 @@ export function NewPostScreen({
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-sm text-gray-600">一般ユーザーの投稿は匿名で表示されます</p>
+              <p className="text-sm text-gray-600">
+                一般ユーザーの投稿は匿名で表示されます
+              </p>
             </div>
           )}
 
-          {/* 送信ボタン */}
           <div className="flex space-x-2 pt-4">
             <Button type="submit" className="flex-1">
               投稿する
             </Button>
-            {/*
-            <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
-            </Button>*/}
           </div>
         </form>
       </DialogContent>
