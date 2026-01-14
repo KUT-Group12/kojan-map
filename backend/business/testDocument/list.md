@@ -5,27 +5,24 @@
 
 ## テスト実行コマンド
 
-### 全テスト実行
+### 単体テスト実行
 ```bash
+# 全単体テスト実行
 go test ./... -v
-```
 
-### 特定層のみテスト
-```bash
-# Service層
+# Service層のテスト
 go test ./internal/service/impl -v
 
-# Handler層
+# Handler層のテスト
 go test ./internal/api/handler -v
-
-# Repository層（統合テスト）
-go test ./internal/repository/impl -v
 ```
 
 ### カバレッジ確認
 ```bash
 go test ./... -cover
 ```
+
+**注:** 統合テストのコマンドは [integration-tests.md](integration-tests.md) を参照してください。
 
 ---
 
@@ -289,17 +286,15 @@ $ docker run kojan-map-backend go test ./... -v
 
 ---
 
-## 本番環境対応チェックリスト
+## 本番環境対応チェックリスト（単体テスト分）
 
 ### デプロイ前確認事項
 - [x] Go 1.23 対応完了
-- [x] 全89テスト PASS
+- [x] 全89単体テスト PASS
 - [x] Docker イメージビルド成功
 - [x] middleware セキュリティテスト実装
-- [ ] Dockerfile最終テスト（CI/CD環境）
-- [ ] 環境変数設定ガイド作成
-- [ ] エラーログ形式標準化
 - [ ] ヘルスチェックエンドポイント実装
+- [ ] エラーログ形式標準化
 
 ### セキュリティ確認
 - [x] 認証なし→401エラー検証
@@ -307,40 +302,8 @@ $ docker run kojan-map-backend go test ./... -v
 - [ ] HTTPS/TLS設定確認
 - [ ] CORS設定確認
 - [ ] レート制限設定
-- [ ] SQL インジェクション対策確認
 
-### パフォーマンス確認
-- [ ] ベンチマークテスト実施
-- [ ] メモリリーク検査（pprof）
-- [ ] データベース接続プーリング設定
-
-### ドキュメント
-- [x] テスト一覧作成（list.md）
-- [x] 障害管理表作成（er.md）
-- [ ] API 仕様書（OpenAPI/Swagger）
-- [ ] デプロイメント手順書
-- [ ] 運用ガイドライン
-
----
-
-## 今後の拡張
-
-### 優先度: 高
-- [ ] Middleware層の単体テスト（JWT検証、Context注入）
-- [ ] Google OAuth本実装後の署名検証テスト
-- [ ] 権限チェック（認証ユーザーの抽出・検証）テスト
-- [ ] ジャンルM:M実装テスト
-
-### 優先度: 中
-- [ ] 統合テスト（実DB + 全層）
-- [ ] 並行処理テスト（Race condition検出）
-- [ ] ストレステスト（大量投稿・アクセス）
-- [ ] エラーハンドリングの詳細テスト
-
-### 優先度: 低
-- [ ] Swagger/OpenAPI自動生成のテスト
-- [ ] CI/CD パイプライン統合（GitHub Actions等）
-- [ ] ベンチマークテスト
+**注:** 統合テストと今後の拡張については [integration-tests.md](integration-tests.md) を参照してください。
 
 ---
 
@@ -351,10 +314,9 @@ $ docker run kojan-map-backend go test ./... -v
 - `nil pointer dereference` → モック作成時に必要なリポジトリをすべて指定
 - `import cycle` → 循環参照の確認、DIの設計見直し
 
-### テスト追加時のチェックリスト
+### 単体テスト追加時のチェックリスト
 - [ ] モック実装にメソッドを追加
 - [ ] テスト関数名は `Test<タイプ><メソッド名>` の形式
 - [ ] テーブルドリブンテスト（複数ケース）を使用
 - [ ] 正常系と異常系を分離（`wantErr bool`）
 - [ ] `setup` / `cleanup` 関数を用意（必要な場合）
-- [ ] コミットメッセージに SSOT エンドポイントID（M3-7-1等）を含める
