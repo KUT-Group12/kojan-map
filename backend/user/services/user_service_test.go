@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )

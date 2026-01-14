@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
