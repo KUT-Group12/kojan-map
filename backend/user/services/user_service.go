@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
@@ -48,9 +47,9 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 
 	// 既存の有効なセッションを確認
 	var existingSession models.Session
-	if err := config.DB.Where("user_id = ? AND expires_at > ?", user.ID, time.Now()).First(&existingSession).Error; err == nil {
+	if err := config.DB.Where("google_id = ? AND expiry > ?", user.GoogleID, time.Now()).First(&existingSession).Error; err == nil {
 		// 有効なセッションが存在する場合は延長
-		existingSession.ExpiresAt = time.Now().Add(24 * time.Hour)
+		existingSession.Expiry = time.Now().Add(24 * time.Hour)
 		if err := config.DB.Save(&existingSession).Error; err != nil {
 			return nil, fmt.Errorf("failed to update session: %w", err)
 		}
@@ -59,10 +58,9 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 
 	// 新しいセッションIDを生成
 	session := models.Session{
-		ID:        uuid.New().String(),
-		UserID:    user.ID,
-		SessionID: uuid.New().String(),
-		ExpiresAt: time.Now().Add(24 * time.Hour),
+		ID:       uuid.New().String(),
+		GoogleID: user.GoogleID,
+		Expiry:   time.Now().Add(24 * time.Hour),
 	}
 
 	if err := config.DB.Create(&session).Error; err != nil {
@@ -111,7 +109,7 @@ func (us *UserService) Logout(sessionID string) error {
 		return errors.New("sessionID is required")
 	}
 
-	result := config.DB.Where("session_id = ?", sessionID).Delete(&models.Session{})
+	result := config.DB.Where("id = ?", sessionID).Delete(&models.Session{})
 	if result.Error != nil {
 		return fmt.Errorf("failed to logout: %w", result.Error)
 	}
@@ -144,7 +142,7 @@ func (us *UserService) DeleteUser(googleID string) error {
 		}
 
 		// 関連するセッションを削除
-		if err := tx.Where("user_id = ?", user.ID).Delete(&models.Session{}).Error; err != nil {
+		if err := tx.Where("google_id = ?", googleID).Delete(&models.Session{}).Error; err != nil {
 			return fmt.Errorf("failed to delete sessions: %w", err)
 		}
 

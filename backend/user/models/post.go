@@ -3,27 +3,22 @@ package models
 import (
 	"time"
 
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
 // Post 投稿モデル
 type Post struct {
-	ID           int               `gorm:"primaryKey" json:"postId"`
-	PlaceID      int               `json:"placeId"`
-	GenreID      int               `json:"genreId"`
-	UserID       string            `json:"userId"`
-	Title        string            `json:"title"`
-	Text         string            `gorm:"type:longtext" json:"text"`
-	PostImage    string            `json:"postImage"`
-	NumView      int               `json:"numView"`
-	NumReaction  int               `json:"numReaction"`
-	PostDate     time.Time         `json:"postData"`
-	IsAnonymized bool              `gorm:"default:false" json:"isAnonymized"`
-	Location     datatypes.JSONMap `gorm:"type:json" json:"location"`
-	CreatedAt    time.Time         `json:"createdAt"`
-	UpdatedAt    time.Time         `json:"updatedAt"`
-	DeletedAt    gorm.DeletedAt    `gorm:"index" json:"-"`
+	ID          int            `gorm:"primaryKey" json:"postId"`
+	PlaceID     int            `gorm:"index" json:"placeId"`
+	UserID      string         `gorm:"index" json:"userId"`
+	PostDate    time.Time      `json:"postDate"`
+	Title       string         `gorm:"type:varchar(50)" json:"title"`
+	Text        string         `gorm:"type:text" json:"text"`
+	PostImage   []byte         `gorm:"type:blob" json:"postImage"`
+	NumReaction int            `gorm:"default:0" json:"numReaction"`
+	NumView     int            `gorm:"default:0" json:"numView"`
+	GenreID     int            `gorm:"index" json:"genreId"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // TableName テーブル名を指定

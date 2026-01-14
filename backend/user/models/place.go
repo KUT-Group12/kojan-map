@@ -12,4 +12,3 @@ type Place struct {
 func (Place) TableName() string {
 	return "place"
 }
-

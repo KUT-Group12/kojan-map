@@ -2,11 +2,9 @@ package services
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-
 	"kojan-map/user/models"
 )
 
@@ -20,10 +18,10 @@ func TestBlockService_BlockUser(t *testing.T) {
 
 	// ブロックが記録されたか確認
 	var block models.UserBlock
-	err = db.Where("user_id = ? AND blocker_id = ?", "blocked456", "blocker123").First(&block).Error
+	err = db.Where("blocker_id = ? AND blocked_id = ?", "blocker123", "blocked456").First(&block).Error
 	assert.NoError(t, err)
 	assert.Equal(t, "blocker123", block.BlockerID)
-	assert.Equal(t, "blocked456", block.UserID)
+	assert.Equal(t, "blocked456", block.BlockedID)
 }
 
 func TestBlockService_BlockUser_SelfBlock(t *testing.T) {
@@ -42,9 +40,8 @@ func TestBlockService_BlockUser_Duplicate(t *testing.T) {
 
 	// 初回ブロック
 	block := models.UserBlock{
-		UserID:    "blocked456",
+		BlockedID: "blocked456",
 		BlockerID: "blocker123",
-		CreatedAt: time.Now(),
 	}
 	db.Create(&block)
 
@@ -60,9 +57,8 @@ func TestBlockService_UnblockUser(t *testing.T) {
 
 	// ブロックを作成
 	block := models.UserBlock{
-		UserID:    "blocked456",
+		BlockedID: "blocked456",
 		BlockerID: "blocker123",
-		CreatedAt: time.Now(),
 	}
 	db.Create(&block)
 
@@ -72,7 +68,7 @@ func TestBlockService_UnblockUser(t *testing.T) {
 
 	// ブロックが削除されたか確認
 	var deletedBlock models.UserBlock
-	err = db.Where("user_id = ? AND blocker_id = ?", "blocked456", "blocker123").First(&deletedBlock).Error
+	err = db.Where("blocker_id = ? AND blocked_id = ?", "blocker123", "blocked456").First(&deletedBlock).Error
 	assert.Error(t, err)
 }
 
@@ -102,9 +98,9 @@ func TestBlockService_GetBlockList(t *testing.T) {
 
 	// ブロックを作成
 	blocks := []models.UserBlock{
-		{BlockerID: "blocker123", UserID: users[0].ID, CreatedAt: time.Now()},
-		{BlockerID: "blocker123", UserID: users[1].ID, CreatedAt: time.Now()},
-		{BlockerID: "other_user", UserID: users[2].ID, CreatedAt: time.Now()}, // 別ユーザー
+		{BlockerID: "blocker123", BlockedID: users[0].ID},
+		{BlockerID: "blocker123", BlockedID: users[1].ID},
+		{BlockerID: "other_user", BlockedID: users[2].ID},
 	}
 	for _, b := range blocks {
 		db.Create(&b)
@@ -159,7 +155,7 @@ func TestBusinessApplicationService_CreateApplication(t *testing.T) {
 	service := &BusinessApplicationService{}
 
 	// 企業会員申請を作成
-	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "東京都渋谷区", "090-1234-5678")
+	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "テスト株式会社", "東京都渋谷区", 1234567, 9012345678)
 	assert.NoError(t, err)
 }
 
@@ -168,7 +164,7 @@ func TestBusinessApplicationService_CreateApplication_ValidationError(t *testing
 	service := &BusinessApplicationService{}
 
 	// BusinessNameが空
-	err := service.CreateBusinessApplication("applicant123", "", "東京都渋谷区", "090-1234-5678")
+	err := service.CreateBusinessApplication("applicant123", "", "", "東京都渋谷区", 1234567, 9012345678)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "businessName, address, and phone are required")
+	assert.Contains(t, err.Error(), "all fields are required")
 }

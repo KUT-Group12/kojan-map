@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
@@ -21,6 +22,8 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.Session{},
+		&models.Genre{},
+		&models.Place{},
 		&models.Post{},
 		&models.UserReaction{},
 		&models.UserBlock{},
@@ -43,11 +46,11 @@ func TestUserService_RegisterOrLogin_NewUser(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
-	assert.NotEmpty(t, session.SessionID)
+	assert.NotEmpty(t, session.ID)
 
 	// DBにユーザーが作成されたか確認
 	var user models.User
-	err = db.Where("id = ?", session.UserID).First(&user).Error
+	err = db.Where("google_id = ?", session.GoogleID).First(&user).Error
 	assert.NoError(t, err)
 	assert.Equal(t, "test@example.com", user.Email)
 	assert.Equal(t, "user", user.Role)
@@ -72,7 +75,7 @@ func TestUserService_RegisterOrLogin_ExistingUser(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
-	assert.Equal(t, existingUser.ID, session.UserID)
+	assert.Equal(t, "google456", session.GoogleID)
 
 	// ユーザー数が増えていないか確認
 	var count int64
@@ -95,10 +98,9 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	db.Create(&user)
 
 	oldSession := models.Session{
-		ID:        uuid.New().String(),
-		SessionID: uuid.New().String(),
-		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(1 * time.Hour),
+		ID:       uuid.New().String(),
+		GoogleID: "google789",
+		Expiry:   time.Now().Add(1 * time.Hour),
 	}
 	db.Create(&oldSession)
 
@@ -107,12 +109,12 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, newSession)
-	assert.Equal(t, oldSession.SessionID, newSession.SessionID)
-	
+	assert.Equal(t, oldSession.ID, newSession.ID)
+
 	// セッション有効期限が延長されたか確認
 	var updatedSession models.Session
-	db.Where("session_id = ?", oldSession.SessionID).First(&updatedSession)
-	assert.True(t, updatedSession.ExpiresAt.After(oldSession.ExpiresAt))
+	db.Where("id = ?", oldSession.ID).First(&updatedSession)
+	assert.True(t, updatedSession.Expiry.After(oldSession.Expiry))
 }
 
 func TestUserService_RegisterOrLogin_ValidationError(t *testing.T) {
@@ -179,10 +181,9 @@ func TestUserService_DeleteUser(t *testing.T) {
 	db.Create(&user)
 
 	session := models.Session{
-		ID:        uuid.New().String(),
-		SessionID: uuid.New().String(),
-		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(24 * time.Hour),
+		ID:       uuid.New().String(),
+		GoogleID: "google_delete",
+		Expiry:   time.Now().Add(24 * time.Hour),
 	}
 	db.Create(&session)
 
@@ -258,21 +259,21 @@ func TestUserService_Logout(t *testing.T) {
 	service := &UserService{}
 
 	// セッションを作成
+	sessionID := uuid.New().String()
 	session := models.Session{
-		ID:        uuid.New().String(),
-		SessionID: uuid.New().String(),
-		UserID:    uuid.New().String(),
-		ExpiresAt: time.Now().Add(24 * time.Hour),
+		ID:       sessionID,
+		GoogleID: "google_logout",
+		Expiry:   time.Now().Add(24 * time.Hour),
 	}
 	db.Create(&session)
 
 	// ログアウト実行
-	err := service.Logout(session.SessionID)
+	err := service.Logout(sessionID)
 	assert.NoError(t, err)
 
 	// セッションが削除されたか確認
 	var deletedSession models.Session
-	err = db.Where("session_id = ?", session.SessionID).First(&deletedSession).Error
+	err = db.Where("id = ?", sessionID).First(&deletedSession).Error
 	assert.Error(t, err)
 }
 
@@ -290,7 +291,11 @@ func TestUserService_Logout_NotFound(t *testing.T) {
 // TestUserService_GetMyPageDetails - マイページ詳細情報を取得
 func TestUserService_GetMyPageDetails(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{})
+	defer func() {
+		if err := db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{}); err != nil {
+			t.Logf("Failed to drop table: %v", err)
+		}
+	}()
 
 	service := &UserService{}
 
@@ -311,7 +316,11 @@ func TestUserService_GetMyPageDetails(t *testing.T) {
 // TestUserService_GetMyPageDetails_WithPosts - マイページ詳細情報（投稿あり）
 func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{})
+	defer func() {
+		if err := db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{}); err != nil {
+			t.Logf("Failed to drop table: %v", err)
+		}
+	}()
 
 	service := &UserService{}
 
@@ -320,10 +329,15 @@ func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 
+	// ユーザー情報を取得
+	userInfo, err := service.GetUserInfo("google789")
+	assert.NoError(t, err)
+	assert.NotNil(t, userInfo)
+
 	// ユーザーが複数の投稿を作成
 	posts := []models.Post{
 		{
-			UserID:   session.UserID,
+			UserID:   userInfo.UserID,
 			Title:    "My Post 1",
 			Text:     "Content 1",
 			PlaceID:  1,
@@ -331,7 +345,7 @@ func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
 			PostDate: time.Now(),
 		},
 		{
-			UserID:   session.UserID,
+			UserID:   userInfo.UserID,
 			Title:    "My Post 2",
 			Text:     "Content 2",
 			PlaceID:  1,
@@ -343,14 +357,8 @@ func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
 		db.Create(&post)
 	}
 
-	// ユーザー情報を取得
-	userInfo, err := service.GetUserInfo("google789")
-	assert.NoError(t, err)
-	assert.NotNil(t, userInfo)
-
 	// ユーザーのポスト数を確認
 	var postCount int64
 	db.Model(&models.Post{}).Where("user_id = ?", userInfo.UserID).Count(&postCount)
 	assert.Equal(t, int64(2), postCount)
 }
-

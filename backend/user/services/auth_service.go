@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
+
 	"kojan-map/user/models"
-	"os"
 )
 
 type AuthService struct {
@@ -68,8 +69,6 @@ type JWTClaims struct {
 	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
-
-var jwtSecret = []byte("your-secret-key-change-in-production") // 本番環境では環境変数から取得
 
 // VerifyGoogleToken - Verify Google OAuth token
 // Note: This is a simplified verification. For production, use google-auth-library-golang
@@ -174,14 +173,14 @@ func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	return token.SignedString(getJWTSecret())
 }
 
 // VerifyJWT - Verify and parse JWT token
 func (as *AuthService) VerifyJWT(tokenString string) (*JWTClaims, error) {
 	claims := &JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+		return getJWTSecret(), nil
 	})
 
 	if err != nil {
