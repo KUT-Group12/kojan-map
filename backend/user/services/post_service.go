@@ -14,17 +14,16 @@ type PostService struct{}
 // GetAllPosts 投稿一覧を取得
 func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 	var posts []models.Post
-	
+
 	// JOINクエリで関連データを一度に取得（N+1問題を解決）
 	err := config.DB.
-		Select("posts.*, users.email as user_email, genres.genre_name, places.latitude, places.longitude").
+		Select("posts.*, users.email as user_email, genre.genre_name, place.latitude, place.longitude").
 		Joins("LEFT JOIN users ON users.id = posts.user_id").
-		Joins("LEFT JOIN genres ON genres.genre_id = posts.genre_id").
-		Joins("LEFT JOIN places ON places.place_id = posts.place_id").
-		Where("posts.is_anonymized = ?", false).
-		Order("posts.created_at DESC").
+		Joins("LEFT JOIN genre ON genre.genre_id = posts.genre_id").
+		Joins("LEFT JOIN place ON place.place_id = posts.place_id").
+		Order("posts.post_date DESC").
 		Find(&posts).Error
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -39,20 +38,19 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 		config.DB.Where("place_id = ?", post.PlaceID).First(&place)
 
 		result[i] = map[string]interface{}{
-			"postId":       post.ID,
-			"placeId":      post.PlaceID,
-			"genreId":      post.GenreID,
-			"userId":       post.UserID,
-			"title":        post.Title,
-			"text":         post.Text,
-			"postImage":    post.PostImage,
-			"numView":      post.NumView,
-			"numReaction":  post.NumReaction,
-			"postData":     post.PostDate,
-			"createdAt":    post.CreatedAt,
-			"latitude":     place.Latitude,
-			"longitude":    place.Longitude,
-			"genreName":    genre.GenreName,
+			"postId":      post.ID,
+			"placeId":     post.PlaceID,
+			"genreId":     post.GenreID,
+			"userId":      post.UserID,
+			"title":       post.Title,
+			"text":        post.Text,
+			"postImage":   post.PostImage,
+			"numView":     post.NumView,
+			"numReaction": post.NumReaction,
+			"postDate":    post.PostDate,
+			"latitude":    place.Latitude,
+			"longitude":   place.Longitude,
+			"genreName":   genre.GenreName,
 		}
 	}
 	return result, nil
@@ -81,20 +79,19 @@ func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error)
 	config.DB.Where("place_id = ?", post.PlaceID).First(&place)
 
 	result := map[string]interface{}{
-		"postId":       post.ID,
-		"placeId":      post.PlaceID,
-		"genreId":      post.GenreID,
-		"userId":       post.UserID,
-		"title":        post.Title,
-		"text":         post.Text,
-		"postImage":    post.PostImage,
-		"numView":      post.NumView,
-		"numReaction":  post.NumReaction,
-		"postData":     post.PostDate,
-		"createdAt":    post.CreatedAt,
-		"latitude":     place.Latitude,
-		"longitude":    place.Longitude,
-		"genreName":    genre.GenreName,
+		"postId":      post.ID,
+		"placeId":     post.PlaceID,
+		"genreId":     post.GenreID,
+		"userId":      post.UserID,
+		"title":       post.Title,
+		"text":        post.Text,
+		"postImage":   post.PostImage,
+		"numView":     post.NumView,
+		"numReaction": post.NumReaction,
+		"postData":    post.PostDate,
+		"latitude":    place.Latitude,
+		"longitude":   place.Longitude,
+		"genreName":   genre.GenreName,
 	}
 
 	return result, nil
@@ -106,18 +103,6 @@ func (ps *PostService) CreatePost(post *models.Post) error {
 		return errors.New("title and text are required")
 	}
 	return config.DB.Create(post).Error
-}
-
-// AnonymizePost 投稿を匿名化（削除）
-func (ps *PostService) AnonymizePost(postID int) error {
-	return config.DB.Model(&models.Post{}).
-		Where("id = ?", postID).
-		Updates(map[string]interface{}{
-			"is_anonymized": true,
-			"title":         "[削除されました]",
-			"text":          "[削除されました]",
-			"post_image":    "",
-		}).Error
 }
 
 // GetUserPostHistory ユーザーの投稿履歴を取得
@@ -186,9 +171,9 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 // SearchPostsByKeyword キーワード検索
 func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("(title LIKE ? OR text LIKE ?) AND is_anonymized = ?", 
-		"%"+keyword+"%", "%"+keyword+"%", false).
-		Order("created_at DESC").
+	if err := config.DB.Where("title LIKE ? OR text LIKE ?",
+		"%"+keyword+"%", "%"+keyword+"%").
+		Order("post_date DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
@@ -198,8 +183,8 @@ func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, erro
 // SearchPostsByGenre ジャンルで検索
 func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("genre_id = ? AND is_anonymized = ?", genreID, false).
-		Order("created_at DESC").
+	if err := config.DB.Where("genre_id = ?", genreID).
+		Order("post_date DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
@@ -209,9 +194,9 @@ func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 // SearchPostsByPeriod 期間で検索
 func (ps *PostService) SearchPostsByPeriod(startDate, endDate time.Time) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("post_date BETWEEN ? AND ? AND is_anonymized = ?", 
-		startDate, endDate, false).
-		Order("created_at DESC").
+	if err := config.DB.Where("post_date BETWEEN ? AND ?",
+		startDate, endDate).
+		Order("post_date DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}

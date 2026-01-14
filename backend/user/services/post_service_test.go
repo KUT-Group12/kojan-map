@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+
 	"kojan-map/user/models"
 )
 
@@ -25,7 +26,7 @@ func TestPostService_CreatePost(t *testing.T) {
 		UserID:      "user123",
 		Title:       "テスト投稿",
 		Text:        "これはテスト投稿です",
-		PostImage:   "test.jpg",
+		PostImage:   nil,
 		NumView:     0,
 		NumReaction: 0,
 		PlaceID:     place.ID,
@@ -58,7 +59,7 @@ func TestPostService_GetAllPosts(t *testing.T) {
 		assert.NotNil(t, post["userId"])
 		assert.NotNil(t, post["title"])
 		assert.NotNil(t, post["text"])
-		assert.NotNil(t, post["postImage"])
+		// postImage は nil の場合もあり得るので確認を削除
 		assert.NotNil(t, post["numView"])
 		assert.NotNil(t, post["numReaction"])
 
@@ -196,25 +197,6 @@ func TestPostService_IsUserReacted(t *testing.T) {
 	assert.True(t, reacted)
 }
 
-// TestPostService_AnonymizePost - 投稿の匿名化
-func TestPostService_AnonymizePost(t *testing.T) {
-	db := setupTestDB(t)
-	postService := &PostService{}
-
-	setupTestPostData(db)
-
-	var testPost models.Post
-	db.First(&testPost)
-
-	err := postService.AnonymizePost(testPost.ID)
-	assert.NoError(t, err)
-
-	// 匿名化確認
-	var anonymizedPost models.Post
-	db.First(&anonymizedPost, testPost.ID)
-	assert.True(t, anonymizedPost.IsAnonymized)
-}
-
 // TestPostService_DeletePost - 投稿削除（所有者確認付き）
 func TestPostService_DeletePost(t *testing.T) {
 	db := setupTestDB(t)
@@ -293,11 +275,11 @@ func TestPostService_ResponseFieldMapping(t *testing.T) {
 			"userId",      // Post.UserID
 			"title",       // Post.Title
 			"text",        // Post.Text
-			"postImage",   // Post.PostImage
 			"numView",     // Post.NumView
 			"numReaction", // Post.NumReaction
-			"postData",    // Post.PostDate
-			"createdAt",   // Post.CreatedAt
+			"postDate",    // Post.PostDate
+			"placeId",     // Post.PlaceID
+			"genreId",     // Post.GenreID
 		}
 
 		for _, field := range requiredFields {
@@ -339,28 +321,26 @@ func setupTestPostData(db *gorm.DB) {
 	// 投稿作成
 	posts := []models.Post{
 		{
-			UserID:       "user123",
-			Title:        "テスト投稿1",
-			Text:         "テスト投稿の内容1",
-			PostImage:    "test1.jpg",
-			NumView:      10,
-			NumReaction:  5,
-			PlaceID:      1,
-			GenreID:      1,
-			PostDate:     time.Now(),
-			IsAnonymized: false,
+			UserID:      "user123",
+			Title:       "テスト投稿1",
+			Text:        "テスト投稿の内容1",
+			PostImage:   nil,
+			NumView:     10,
+			NumReaction: 5,
+			PlaceID:     1,
+			GenreID:     1,
+			PostDate:    time.Now(),
 		},
 		{
-			UserID:       "user456",
-			Title:        "テスト投稿2",
-			Text:         "テスト投稿の内容2",
-			PostImage:    "test2.jpg",
-			NumView:      20,
-			NumReaction:  8,
-			PlaceID:      2,
-			GenreID:      2,
-			PostDate:     time.Now(),
-			IsAnonymized: false,
+			UserID:      "user456",
+			Title:       "テスト投稿2",
+			Text:        "テスト投稿の内容2",
+			PostImage:   nil,
+			NumView:     20,
+			NumReaction: 8,
+			PlaceID:     2,
+			GenreID:     2,
+			PostDate:    time.Now(),
 		},
 	}
 	for _, post := range posts {
@@ -371,20 +351,23 @@ func setupTestPostData(db *gorm.DB) {
 // TestPostService_GetPostTimestamp - 投稿日時を取得
 func TestPostService_GetPostTimestamp(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Migrator().DropTable(&models.Post{})
+	defer func() {
+		if err := db.Migrator().DropTable(&models.Post{}); err != nil {
+			t.Logf("Failed to drop table: %v", err)
+		}
+	}()
 
 	postService := &PostService{}
 
 	// テスト投稿を作成
 	testTime := time.Now().Add(-24 * time.Hour)
 	testPost := models.Post{
-		UserID:       "user123",
-		Title:        "Test Post",
-		Text:         "Test Content",
-		PlaceID:      1,
-		GenreID:      1,
-		PostDate:     testTime,
-		IsAnonymized: false,
+		UserID:   "user123",
+		Title:    "Test Post",
+		Text:     "Test Content",
+		PlaceID:  1,
+		GenreID:  1,
+		PostDate: testTime,
 	}
 	if err := db.Create(&testPost).Error; err != nil {
 		t.Fatalf("Failed to create test post: %v", err)
@@ -402,7 +385,11 @@ func TestPostService_GetPostTimestamp(t *testing.T) {
 // TestPostService_GetReactionList - ユーザーのリアクション履歴を取得
 func TestPostService_GetReactionList(t *testing.T) {
 	db := setupTestDB(t)
-	defer db.Migrator().DropTable(&models.Post{}, &models.UserReaction{})
+	defer func() {
+		if err := db.Migrator().DropTable(&models.Post{}, &models.UserReaction{}); err != nil {
+			t.Logf("Failed to drop table: %v", err)
+		}
+	}()
 
 	postService := &PostService{}
 

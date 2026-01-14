@@ -109,7 +109,6 @@ func setupRoutes(
 	router.GET("/api/posts/detail", postHandler.GetPostDetail)
 	router.POST("/api/posts", postHandler.CreatePost)
 	router.DELETE("/api/posts", postHandler.DeletePost)
-	router.PUT("/api/posts/anonymize", postHandler.AnonymizePost)
 	router.GET("/api/posts/history", postHandler.GetPostHistory)
 	router.GET("/api/posts/pin/scale", postHandler.GetPinSize)
 	router.POST("/api/posts/reaction", postHandler.AddReaction)

@@ -10,7 +10,7 @@ import (
 type User struct {
 	ID               string         `gorm:"primaryKey" json:"id"`
 	GoogleID         string         `gorm:"uniqueIndex" json:"googleId"`
-	Email            string         `gorm:"uniqueIndex" json:"email"`
+	Email            string         `gorm:"uniqueIndex" json:"gmail"`
 	Role             string         `json:"role"` // "user", "business", "admin"
 	RegistrationDate time.Time      `json:"registrationDate"`
 	CreatedAt        time.Time      `json:"createdAt"`
@@ -25,10 +25,9 @@ func (User) TableName() string {
 
 // Session セッション情報モデル
 type Session struct {
-	ID        string    `gorm:"primaryKey" json:"id"`
-	UserID    string    `gorm:"index" json:"userId"`
-	SessionID string    `gorm:"index" json:"sessionId"`
-	ExpiresAt time.Time `json:"expiresAt"`
+	ID        string    `gorm:"primaryKey" json:"sessionId"`
+	GoogleID  string    `gorm:"index" json:"googleId"`
+	Expiry    time.Time `json:"expiry"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
 	"kojan-map/user/services"
 )
 
@@ -158,10 +157,12 @@ func NewBusinessApplicationHandler(businessApplicationService *services.Business
 // POST /api/business/application
 func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context) {
 	var req struct {
-		UserID       string `json:"userId" binding:"required"`
-		BusinessName string `json:"businessName" binding:"required"`
-		Address      string `json:"address" binding:"required"`
-		Phone        string `json:"phone" binding:"required"`
+		UserID           string `json:"userId" binding:"required"`
+		BusinessName     string `json:"businessName" binding:"required"`
+		KanaBusinessName string `json:"kanaBusinessName" binding:"required"`
+		ZipCode          int    `json:"zipCode" binding:"required"`
+		Address          string `json:"address" binding:"required"`
+		Phone            int    `json:"phone" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -172,7 +173,9 @@ func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context)
 	if err := bah.businessApplicationService.CreateBusinessApplication(
 		req.UserID,
 		req.BusinessName,
+		req.KanaBusinessName,
 		req.Address,
+		req.ZipCode,
 		req.Phone,
 	); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

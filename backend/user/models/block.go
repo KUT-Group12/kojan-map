@@ -1,17 +1,14 @@
 package models
 
 import (
-	"time"
-
 	"gorm.io/gorm"
 )
 
 // UserBlock ユーザーブロック情報
 type UserBlock struct {
-	ID        int            `gorm:"primaryKey" json:"id"`
-	UserID    string         `gorm:"index" json:"userId"`
+	ID        int            `gorm:"primaryKey" json:"blockId"`
 	BlockerID string         `gorm:"index" json:"blockerId"`
-	CreatedAt time.Time      `json:"createdAt"`
+	BlockedID string         `gorm:"index" json:"blockedId"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 

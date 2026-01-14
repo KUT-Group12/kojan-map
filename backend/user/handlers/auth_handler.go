@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-
 	"kojan-map/user/services"
 )
 
@@ -42,7 +41,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"sessionId": session.SessionID})
+	c.JSON(http.StatusOK, gin.H{"sessionId": session.ID})
 }
 
 // Logout ログアウト

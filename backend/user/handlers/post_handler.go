@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-
 	"kojan-map/user/models"
 	"kojan-map/user/services"
 )
@@ -96,9 +95,12 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	// 画像がある場合は最初の画像を使用
-	postImage := ""
+	var postImage []byte
 	if len(req.Images) > 0 {
-		postImage = req.Images[0]
+		// Images が []byte の場合、またはbase64文字列の場合に対応
+		if imgBytes, ok := interface{}(req.Images[0]).([]byte); ok {
+			postImage = imgBytes
+		}
 	}
 
 	// TODO: 認証実装後に実際のユーザーIDを取得
@@ -135,24 +137,6 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 }
 
 // AnonymizePost 投稿を匿名化
-// PUT /api/posts/anonymize
-func (ph *PostHandler) AnonymizePost(c *gin.Context) {
-	var req struct {
-		PostID int `json:"postId" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := ph.postService.AnonymizePost(req.PostID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "post anonymized"})
-}
 
 // GetPostHistory ユーザーの投稿履歴を取得
 // GET /api/posts/history

@@ -23,14 +23,14 @@ func (bs *BlockService) BlockUser(userID, blockerID string) error {
 
 	// 既にブロック済みか確認
 	var existingBlock models.UserBlock
-	result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).First(&existingBlock)
+	result := config.DB.Where("blocker_id = ? AND blocked_id = ?", blockerID, userID).First(&existingBlock)
 	if result.Error == nil {
 		return errors.New("user already blocked")
 	}
 
 	block := models.UserBlock{
-		UserID:    userID,
 		BlockerID: blockerID,
+		BlockedID: userID,
 	}
 	if err := config.DB.Create(&block).Error; err != nil {
 		return errors.New("failed to block user")
@@ -44,7 +44,7 @@ func (bs *BlockService) UnblockUser(userID, blockerID string) error {
 		return errors.New("userID and blockerID are required")
 	}
 
-	result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).
+	result := config.DB.Where("blocker_id = ? AND blocked_id = ?", blockerID, userID).
 		Delete(&models.UserBlock{})
 
 	if result.Error != nil {
@@ -65,7 +65,6 @@ func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) 
 
 	var blocks []models.UserBlock
 	if err := config.DB.Where("blocker_id = ?", userID).
-		Order("created_at DESC").
 		Find(&blocks).Error; err != nil {
 		return nil, errors.New("failed to fetch block list")
 	}
@@ -85,8 +84,9 @@ func (rs *ReportService) CreateReport(userID string, postID int, reason string) 
 		UserID:     userID,
 		PostID:     postID,
 		Reason:     reason,
-		ReportDate: time.Now(),
-		Status:     "pending",
+		Date:       time.Now(),
+		ReportFlag: false,
+		RemoveFlag: false,
 	}
 	return config.DB.Create(&report).Error
 }
@@ -101,10 +101,11 @@ func (cs *ContactService) CreateContact(userID, subject, text string) error {
 	}
 
 	contact := models.Contact{
-		UserID:  userID,
-		Subject: subject,
-		Text:    text,
-		Status:  "pending",
+		AskUserID: userID,
+		Date:      time.Now(),
+		Subject:   subject,
+		Text:      text,
+		AskFlag:   false,
 	}
 	return config.DB.Create(&contact).Error
 }
@@ -113,17 +114,19 @@ func (cs *ContactService) CreateContact(userID, subject, text string) error {
 type BusinessApplicationService struct{}
 
 // CreateBusinessApplication 事業者申請を作成
-func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, address, phone string) error {
-	if businessName == "" || address == "" || phone == "" {
-		return errors.New("businessName, address, and phone are required")
+func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName, address string, zipCode, phone int) error {
+	if businessName == "" || kanaBusinessName == "" || address == "" || zipCode == 0 || phone == 0 {
+		return errors.New("all fields are required")
 	}
 
 	app := models.BusinessApplication{
-		UserID:       userID,
-		BusinessName: businessName,
-		Address:      address,
-		Phone:        phone,
-		Status:       "pending",
+		UserID:           userID,
+		BusinessName:     businessName,
+		KanaBusinessName: kanaBusinessName,
+		ZipCode:          zipCode,
+		Address:          address,
+		Phone:            phone,
+		RegistDate:       time.Now(),
 	}
 	return config.DB.Create(&app).Error
 }

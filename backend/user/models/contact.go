@@ -8,12 +8,12 @@ import (
 
 // Contact 問い合わせモデル
 type Contact struct {
-	ID        int            `gorm:"primaryKey" json:"id"`
-	UserID    string         `json:"userId"`
-	Subject   string         `json:"subject"`
-	Text      string         `gorm:"type:longtext" json:"text"`
-	Status    string         `gorm:"default:pending" json:"status"` // pending, replied
-	CreatedAt time.Time      `json:"createdAt"`
+	ID        int            `gorm:"primaryKey" json:"askId"`
+	Date      time.Time      `json:"date"`
+	Subject   string         `gorm:"type:varchar(100)" json:"subject"`
+	Text      string         `gorm:"type:text" json:"text"`
+	AskUserID string         `gorm:"index" json:"askUserId"`
+	AskFlag   bool           `gorm:"default:false" json:"askFlag"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
