@@ -41,6 +41,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// claimsからuserIDを抽出
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			if userID, exists := claims["userID"]; exists {
+				c.Set("userID", userID)
+			}
+		}
+
 		c.Set("user", token.Claims)
 		c.Next()
 	}

@@ -13,12 +13,17 @@ type PostService struct{}
 
 // GetAllPosts 投稿一覧を取得
 func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
-	var posts []models.Post
+	var posts []struct {
+		models.Post
+		GenreName string  `gorm:"column:genre_name"`
+		Latitude  float64 `gorm:"column:latitude"`
+		Longitude float64 `gorm:"column:longitude"`
+	}
 
 	// JOINクエリで関連データを一度に取得（N+1問題を解決）
 	err := config.DB.
-		Select("posts.*, users.email as user_email, genre.genre_name, place.latitude, place.longitude").
-		Joins("LEFT JOIN users ON users.id = posts.user_id").
+		Table("posts").
+		Select("posts.*, genre.genre_name, place.latitude, place.longitude").
 		Joins("LEFT JOIN genre ON genre.genre_id = posts.genre_id").
 		Joins("LEFT JOIN place ON place.place_id = posts.place_id").
 		Order("posts.post_date DESC").
@@ -31,12 +36,6 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 	// フロントエンド用にデータを変換
 	result := make([]map[string]interface{}, len(posts))
 	for i, post := range posts {
-		// 個別にデータを取得（JOINで取得できなかった場合のフォールバック）
-		var genre models.Genre
-		var place models.Place
-		config.DB.Where("genre_id = ?", post.GenreID).First(&genre)
-		config.DB.Where("place_id = ?", post.PlaceID).First(&place)
-
 		result[i] = map[string]interface{}{
 			"postId":      post.ID,
 			"placeId":     post.PlaceID,
@@ -48,9 +47,9 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 			"numView":     post.NumView,
 			"numReaction": post.NumReaction,
 			"postDate":    post.PostDate,
-			"latitude":    place.Latitude,
-			"longitude":   place.Longitude,
-			"genreName":   genre.GenreName,
+			"latitude":    post.Latitude,
+			"longitude":   post.Longitude,
+			"genreName":   post.GenreName,
 		}
 	}
 	return result, nil

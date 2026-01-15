@@ -25,10 +25,10 @@ func (User) TableName() string {
 
 // Session セッション情報モデル
 type Session struct {
-	ID        string    `gorm:"primaryKey" json:"sessionId"`
-	GoogleID  string    `gorm:"index" json:"googleId"`
-	Expiry    time.Time `json:"expiry"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID        string    `gorm:"column:id;primaryKey" json:"sessionId"`
+	GoogleID  string    `gorm:"column:google_id;index" json:"googleId"`
+	Expiry    time.Time `gorm:"column:expiry" json:"expiry"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
 }
 
 // TableName テーブル名を指定

@@ -98,14 +98,23 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	// 画像がある場合は最初の画像を使用
 	var postImage []byte
 	if len(req.Images) > 0 {
-		// Images が []byte の場合、またはbase64文字列の場合に対応
-		if imgBytes, ok := interface{}(req.Images[0]).([]byte); ok {
-			postImage = imgBytes
-		}
+		// base64文字列のデコード処理が必要（TODO: base64デコード実装）
+		// 現状では画像を保存しない
+		// postImage = []byte(req.Images[0])
 	}
 
-	// TODO: 認証実装後に実際のユーザーIDを取得
-	userID := "user123" // 仮のGoogle ID
+	// 認証ミドルウェアで設定されたユーザーIDをコンテキストから取得
+	userIDValue, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized: userID not found in context"})
+		return
+	}
+
+	userID, ok := userIDValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid userID type in context"})
+		return
+	}
 
 	// 場所を登録または取得
 	placeID, err := ph.placeService.FindOrCreatePlace(req.Latitude, req.Longitude)
