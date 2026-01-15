@@ -1,0 +1,19 @@
+# Environment variables
+.env
+
+# Build artifacts
+main
+*.exe
+*.out
+
+# Test coverage
+coverage.out
+coverage.html
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
