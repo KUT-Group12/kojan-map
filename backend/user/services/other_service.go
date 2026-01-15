@@ -114,7 +114,7 @@ func (cs *ContactService) CreateContact(userID, subject, text string) error {
 type BusinessApplicationService struct{}
 
 // CreateBusinessApplication 事業者申請を作成
-func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName, address string, zipCode, phone int) error {
+func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName string, zipCode int, address string, phone int) error {
 	if businessName == "" || kanaBusinessName == "" || address == "" || zipCode == 0 || phone == 0 {
 		return errors.New("all fields are required")
 	}

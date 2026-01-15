@@ -114,13 +114,10 @@ func createSessionsTable() error {
 	return config.DB.Exec(`
 	CREATE TABLE IF NOT EXISTS sessions (
 		id VARCHAR(36) PRIMARY KEY,
-		user_id VARCHAR(36) NOT NULL,
-		session_id VARCHAR(255) NOT NULL UNIQUE,
-		expires_at TIMESTAMP NOT NULL,
+		google_id VARCHAR(255) NOT NULL,
+		expiry TIMESTAMP NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		KEY idx_user_id (user_id),
-		KEY idx_session_id (session_id),
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+		KEY idx_google_id (google_id)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }

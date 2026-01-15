@@ -156,7 +156,7 @@ func TestBusinessApplicationService_CreateApplication(t *testing.T) {
 	service := &BusinessApplicationService{}
 
 	// 企業会員申請を作成
-	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "テスト株式会社", "東京都渋谷区", 1234567, 9012345678)
+	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "テスト株式会社", 1234567, "東京都渋谷区", 9012345678)
 	assert.NoError(t, err)
 }
 
@@ -165,7 +165,7 @@ func TestBusinessApplicationService_CreateApplication_ValidationError(t *testing
 	service := &BusinessApplicationService{}
 
 	// BusinessNameが空
-	err := service.CreateBusinessApplication("applicant123", "", "", "東京都渋谷区", 1234567, 9012345678)
+	err := service.CreateBusinessApplication("applicant123", "", "", 1234567, "東京都渋谷区", 9012345678)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "all fields are required")
 }

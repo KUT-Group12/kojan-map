@@ -175,8 +175,8 @@ func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context)
 		req.UserID,
 		req.BusinessName,
 		req.KanaBusinessName,
-		req.Address,
 		req.ZipCode,
+		req.Address,
 		req.Phone,
 	); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
