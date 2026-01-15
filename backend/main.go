@@ -3,18 +3,43 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+
+	"kojan-map/router"
+	"kojan-map/shared/config"
+
+	"github.com/gin-gonic/gin"
 )
 
+// @title こじゃんとやまっぷ API
+// @version 1.0
+// @description 管理者用API
+// @host localhost:8080
+// @BasePath /
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if _, err := fmt.Fprintf(w, "こじゃんとやまっぷ API サーバー起動中！🚀"); err != nil {
-			log.Printf("Failed to write response: %v", err)
-		}
+	// Load configuration
+	cfg := config.Load()
+
+	// Connect to database
+	db := config.ConnectDB(cfg)
+
+	// Create Gin router
+	r := gin.Default()
+
+	// Health check endpoint
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "こじゃんとやまっぷ API サーバー起動中！🚀",
+			"status":  "healthy",
+		})
 	})
 
-	fmt.Println("Server is running on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Server failed: %v", err)
+	// Setup admin routes
+	router.SetupAdminRoutes(r, db)
+
+	// Start server
+	addr := fmt.Sprintf(":%s", cfg.ServerPort)
+	log.Printf("Server is running on port %s...", cfg.ServerPort)
+	if err := r.Run(addr); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }
