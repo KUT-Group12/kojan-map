@@ -8,11 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-
-	"kojan-map/router"
-	"kojan-map/shared/config"
-
-	"github.com/gin-gonic/gin"
 )
 
 // @title こじゃんとやまっぷ API
