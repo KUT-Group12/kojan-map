@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { NewPostScreen } from '../components/NewPostScreen';
 import { User } from '../types';
 import { toast } from 'sonner';
+import { MOCK_GENERAL_USER, MOCK_BUSINESS_USER } from '../lib/mockData';
 
 // sonnerのtoastをモック化
 jest.mock('sonner', () => ({
@@ -12,11 +13,7 @@ jest.mock('sonner', () => ({
 }));
 
 describe('NewPostScreen コンポーネント', () => {
-  const mockUser: User = {
-    id: 'u1',
-    role: 'general',
-    name: 'テストユーザー',
-  } as any;
+  const mockUser: User = MOCK_GENERAL_USER as User;
 
   const mockOnClose = jest.fn();
   const mockOnCreate = jest.fn();
@@ -103,9 +100,9 @@ describe('NewPostScreen コンポーネント', () => {
   });
 
   test('事業者ユーザーの場合、事業者向けのメッセージが表示されること', () => {
-    const businessUser = { ...mockUser, role: 'business', businessName: 'やまっぷ商店' } as User;
+    const businessUser = MOCK_BUSINESS_USER as User;
     render(<NewPostScreen user={businessUser} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
-    expect(screen.getByText(/事業者名「やまっぷ商店」として投稿されます/i)).toBeInTheDocument();
+    expect(screen.getByText(/事業者名「山田商店」として投稿されます/i)).toBeInTheDocument();
   });
 });

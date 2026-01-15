@@ -161,12 +161,43 @@ export const mockInquiries: Inquiry[] = [
   },
 ];
 
+// モックユーザーデータ（テスト用）
+export const MOCK_GENERAL_USER = {
+  id: 'u1',
+  name: 'テストユーザー',
+  email: 'test@example.com',
+  role: 'general' as const,
+  createdAt: new Date('2025-01-01T00:00:00'),
+  businessIcon: '',
+};
+
+export const MOCK_BUSINESS_USER = {
+  id: 'business1',
+  name: '山田商店',
+  email: 'business@example.com',
+  role: 'business' as const,
+  businessName: '山田商店',
+  businessIcon: 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaG9wJTIwbG9nbyUyMGljb258ZW58MXx8fHwxNzYyMjQxOTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080',
+  createdAt: new Date('2025-01-01T00:00:00'),
+};
+
+export const MOCK_ADMIN_USER = {
+  id: 'admin1',
+  name: '管理者',
+  email: 'admin@example.com',
+  role: 'admin' as const,
+  createdAt: new Date('2025-01-01T00:00:00'),
+  businessIcon: '',
+};
+
 export const MOCK_USER = {
   id: 'current-user-123',
   name: '山田 太郎',
   email: 'yamada@example.com',
+  role: 'general' as const,
   // ブロックリストのサンプルデータ
   blockedUsers: ['user-abc-001', 'user-xyz-999', 'bad-actor-456'],
   // その他の必要なプロパティがあれば適宜追加
-  createdAt: new Date().toISOString(),
+  createdAt: new Date('2025-01-01T00:00:00'),
+  businessIcon: '',
 };

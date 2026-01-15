@@ -3,33 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DisplayPostList } from '../components/DisplayPostList';
 import { Pin, User } from '../types';
 import '@testing-library/jest-dom';
+import { mockPins, MOCK_GENERAL_USER } from '../lib/mockData';
 
-// 1. モックデータ：Pin (これまでのエラーに基づき全ての項目を網羅)
-const mockPin: Pin = {
-  id: 'p1',
-  title: '高知のおいしいお店',
-  description: 'ここのカツオのタタキは絶品です。',
-  genre: 'food',
-  reactions: 15,
-  viewCount: 100,
-  createdAt: new Date('2025-01-01T10:00:00'),
-  latitude: 33.5597,
-  longitude: 133.5311,
-  userId: 'u1',
-  userName: '高知太郎',
-  userRole: 'business',
-  images: ['https://example.com/image.jpg'],
-};
+// 1. モックデータ：Pin (既存のmockPinsから最初のピンを使用)
+const mockPin: Pin = mockPins[0];
 
-// 2. モックデータ：User
+// 2. モックデータ：User (centralized mock dataを使用)
 const mockUser: User = {
+  ...MOCK_GENERAL_USER,
   id: 'u2', // 投稿者とは別のユーザー
   name: '閲覧者A',
   email: 'viewer@example.com',
-  role: 'general',
-  createdAt: new Date(),
-  businessIcon: '',
-};
+} as User;
 
 describe('DisplayPostList (PinDetailModal)', () => {
   const defaultProps = {
@@ -48,20 +33,26 @@ describe('DisplayPostList (PinDetailModal)', () => {
   it('投稿のタイトル、説明、位置情報が正しく表示されること', () => {
     render(<DisplayPostList {...defaultProps} />);
     
-    expect(screen.getAllByText('高知のおいしいお店')[0]).toBeInTheDocument();
-    expect(screen.getByText('ここのカツオのタタキは絶品です。')).toBeInTheDocument();
+    expect(screen.getAllByText('美味しいラーメン店発見！')[0]).toBeInTheDocument();
+    expect(screen.getByText('駅近くに新しくできたラーメン店。味噌ラーメンがとても美味しかったです！')).toBeInTheDocument();
     // 座標の表示確認（toFixed(4)されているか）
-    expect(screen.getByText(/33.5597/)).toBeInTheDocument();
-    expect(screen.getByText(/133.5311/)).toBeInTheDocument();
+    expect(screen.getByText(/33.6762/)).toBeInTheDocument();
+    expect(screen.getByText(/133.6503/)).toBeInTheDocument();
   });
 
   it('閲覧数が表示されていること', () => {
     render(<DisplayPostList {...defaultProps} />);
-    expect(screen.getByText(/100 閲覧/)).toBeInTheDocument();
+    expect(screen.getByText(/145 閲覧/)).toBeInTheDocument();
   });
 
   it('画像が正しくレンダリングされていること', () => {
-    render(<DisplayPostList {...defaultProps} />);
+    // mockPins[0] has empty images array, so skip this test or use a pin with images
+    const pinWithImage: Pin = {
+      ...mockPin,
+      images: ['https://example.com/image.jpg'],
+    };
+    const propsWithImage = { ...defaultProps, pin: pinWithImage, pinsAtLocation: [pinWithImage] };
+    render(<DisplayPostList {...propsWithImage} />);
     const img = screen.getByAltText('投稿画像 1');
     expect(img).toHaveAttribute('src', 'https://example.com/image.jpg');
   });

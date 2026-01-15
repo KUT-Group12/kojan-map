@@ -1,18 +1,19 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LogoutScreen } from '../components/LogoutScreen'; // パスは適宜調整してください
+import { MOCK_BUSINESS_USER, MOCK_GENERAL_USER } from '../lib/mockData';
 
 describe('LogoutScreen コンポーネント', () => {
   const mockOnLogout = jest.fn();
   const mockOnBack = jest.fn();
 
   const businessUser = {
+    ...MOCK_BUSINESS_USER,
     email: 'business@example.com',
-    role: 'business' as const,
   };
 
   const generalUser = {
+    ...MOCK_GENERAL_USER,
     email: 'general@example.com',
-    role: 'general' as const,
   };
 
   beforeEach(() => {

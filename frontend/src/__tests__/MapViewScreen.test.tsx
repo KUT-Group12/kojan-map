@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MapViewScreen } from '../components/MapViewScreen';
 import { Pin } from '../types';
+import { mockPins } from '../lib/mockData';
 
 // LeafletとReact-Leafletのモック化
 // 地図のレンダリングをスキップし、マーカーの数やイベントだけを追えるようにします
@@ -34,34 +35,17 @@ jest.mock('react-dom/server', () => ({
 }));
 
 describe('MapViewScreen コンポーネント', () => {
-  const mockPins: Pin[] = [
+  // 集約テスト用にカスタマイズしたmockPinsを作成（同じ座標のピンを含む）
+  const testMockPins: Pin[] = [
+    mockPins[0], // 最初のピン
     {
-      id: '1',
-      latitude: 33.6071,
-      longitude: 133.6823,
-      genre: 'グルメ',
-      userRole: 'general',
-      isHot: false,
-      title: 'ピン1',
-    } as any,
-    {
-      id: '2',
-      latitude: 33.6071, // ピン1と同じ座標
-      longitude: 133.6823,
-      genre: 'グルメ',
-      userRole: 'general',
-      isHot: false,
+      ...mockPins[1],
+      latitude: mockPins[0].latitude, // 最初のピンと同じ座標に変更
+      longitude: mockPins[0].longitude,
+      id: 'pin-same-location',
       title: 'ピン2',
-    } as any,
-    {
-      id: '3',
-      latitude: 33.7000, // 別の座標
-      longitude: 133.8000,
-      genre: '景色',
-      userRole: 'business',
-      isHot: true,
-      title: 'ピン3',
-    } as any,
+    },
+    mockPins[2], // 別の座標のピン
   ];
 
   const mockOnPinClick = jest.fn();
@@ -74,7 +58,7 @@ describe('MapViewScreen コンポーネント', () => {
   test('凡例が正しく表示されていること', () => {
     render(
       <MapViewScreen 
-        pins={mockPins} 
+        pins={testMockPins} 
         onPinClick={mockOnPinClick} 
         onMapDoubleClick={mockOnMapDoubleClick} 
       />
@@ -87,13 +71,13 @@ describe('MapViewScreen コンポーネント', () => {
   test('同じ座標のピンが正しくグループ化され、マーカーの数が集約されること', () => {
     render(
       <MapViewScreen 
-        pins={mockPins} 
+        pins={testMockPins} 
         onPinClick={mockOnPinClick} 
         onMapDoubleClick={mockOnMapDoubleClick} 
       />
     );
 
-    // mockPinsは3つあるが、座標が2種類なのでマーカーは2つになるはず
+    // testMockPinsは3つあるが、座標が2種類なのでマーカーは2つになるはず
     const markers = screen.getAllByTestId('map-marker');
     expect(markers).toHaveLength(2);
   });
@@ -101,7 +85,7 @@ describe('MapViewScreen コンポーネント', () => {
   test('マーカーをクリックしたときに onPinClick が呼ばれること', () => {
     render(
       <MapViewScreen 
-        pins={mockPins} 
+        pins={testMockPins} 
         onPinClick={mockOnPinClick} 
         onMapDoubleClick={mockOnMapDoubleClick} 
       />
@@ -116,7 +100,7 @@ describe('MapViewScreen コンポーネント', () => {
   test('オーバーレイが開いているときは、地図のz-indexが調整されること', () => {
     const { container } = render(
       <MapViewScreen 
-        pins={mockPins} 
+        pins={testMockPins} 
         onPinClick={mockOnPinClick} 
         onMapDoubleClick={mockOnMapDoubleClick} 
         isOverlayOpen={true}
