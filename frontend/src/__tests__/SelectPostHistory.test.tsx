@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SelectPostHistory } from '../components/SelectPostHistory'; 
 import { Pin } from '../types';
+import { mockPins } from '../lib/mockData';
 
 // 子コンポーネントをモック化
 jest.mock('../components/DisplayPostHistory', () => ({
@@ -19,36 +20,8 @@ jest.mock('../components/SelectPostDeletion', () => ({
 }));
 
 describe('SelectPostHistory コンポーネント', () => {
-  const mockPins: Pin[] = [
-    {
-      id: 'pin-1',
-      title: '桂浜の夕日',
-      description: 'とても綺麗でした',
-      latitude: 33.4971,
-      longitude: 133.5711,
-      genre: 'scenery',
-      userId: 'user-1',
-      userName: '田中 太郎',
-      userRole: 'general' as const,
-      images: [],
-      reactions: 0,
-      createdAt: new Date('2026-01-01'),
-    },
-    {
-      id: 'pin-2',
-      title: '美味しいカツオ',
-      description: 'ひろめ市場で食べました',
-      latitude: 33.5611,
-      longitude: 133.5353,
-      genre: 'food',
-      userId: 'user-1',
-      userName: '田中 太郎',
-      userRole: 'general' as const,
-      images: [],
-      reactions: 0,
-      createdAt: new Date('2026-01-02'),
-    },
-  ];
+  // Use first two pins from centralized mock data
+  const testPins: Pin[] = [mockPins[0], mockPins[1]];
 
   const mockOnPinClick = jest.fn();
   const mockOnDeletePin = jest.fn();
@@ -72,38 +45,38 @@ describe('SelectPostHistory コンポーネント', () => {
   test('投稿リストが正しくレンダリングされること', () => {
     render(
       <SelectPostHistory 
-        pins={mockPins} 
+        pins={testPins} 
         onPinClick={mockOnPinClick} 
         onDeletePin={mockOnDeletePin} 
       />
     );
     const items = screen.getAllByTestId('post-history-item');
     expect(items).toHaveLength(2);
-    expect(screen.getByText('桂浜の夕日')).toBeInTheDocument();
+    expect(screen.getByText('美味しいラーメン店発見！')).toBeInTheDocument();
   });
 
   test('投稿をクリックすると onPinClick が呼ばれること', () => {
     render(
       <SelectPostHistory 
-        pins={mockPins} 
+        pins={testPins} 
         onPinClick={mockOnPinClick} 
         onDeletePin={mockOnDeletePin} 
       />
     );
-    fireEvent.click(screen.getByText('桂浜の夕日'));
-    expect(mockOnPinClick).toHaveBeenCalledWith(mockPins[0]);
+    fireEvent.click(screen.getByText('美味しいラーメン店発見！'));
+    expect(mockOnPinClick).toHaveBeenCalledWith(testPins[0]);
   });
 
   test('削除を実行すると onDeletePin が呼ばれること', () => {
     render(
       <SelectPostHistory 
-        pins={mockPins} 
+        pins={testPins} 
         onPinClick={mockOnPinClick} 
         onDeletePin={mockOnDeletePin} 
       />
     );
     const deleteButtons = screen.getAllByText('削除ボタンモック');
     fireEvent.click(deleteButtons[1]);
-    expect(mockOnDeletePin).toHaveBeenCalledWith('pin-2');
+    expect(mockOnDeletePin).toHaveBeenCalledWith(testPins[1].id);
   });
 });

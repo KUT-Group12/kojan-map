@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { User } from '../types';
+import { MOCK_ADMIN_USER } from '../lib/mockData';
 
 // Rechartsのモック
 jest.mock('recharts', () => ({
@@ -26,11 +27,9 @@ jest.mock('sonner', () => ({
 }));
 
 const mockUser: User = {
-  id: 'admin-1',
+  ...MOCK_ADMIN_USER,
   name: '管理者ユーザー',
-  role: 'admin',
   email: 'admin@example.com',
-  createdAt: new Date('2025-11-01'),
 };
 
 const mockOnLogout = jest.fn();
