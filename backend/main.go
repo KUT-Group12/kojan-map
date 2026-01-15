@@ -8,8 +8,18 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"kojan-map/router"
+	"kojan-map/shared/config"
+
+	"github.com/gin-gonic/gin"
 )
 
+// @title こじゃんとやまっぷ API
+// @version 1.0
+// @description 管理者用API
+// @host localhost:8080
+// @BasePath /
 func main() {
 	// 環境変数で起動するサービスを指定
 	// デフォルト: business（現在実装済み）
