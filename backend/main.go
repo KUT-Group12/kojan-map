@@ -8,7 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	"kojan-map/user/config"
+	"kojan-map/router"
+	"kojan-map/shared/config"
 	"kojan-map/user/handlers"
 	"kojan-map/user/middleware"
 	"kojan-map/user/migrations"
@@ -22,29 +23,73 @@ func init() {
 	}
 }
 
+// @title こじゃんとやまっぷ API
+// @version 1.0
+// @description 管理者用・一般会員用API
+// @host localhost:8080
+// @BasePath /
 func main() {
-	// データベース接続を初期化
-	config.InitDatabase()
+	// Load configuration
+	cfg := config.Load()
+
+	// Connect to database
+	db := config.ConnectDB(cfg)
 
 	// マイグレーションを実行
 	if err := migrations.RunMigrations(); err != nil {
 		log.Fatal("Migration failed:", err)
 	}
 
-	// Ginエンジンを作成
-	router := gin.Default()
+	// Create Gin router
+	r := gin.Default()
 
 	// CORSミドルウェアを追加
-	router.Use(corsMiddleware())
+	r.Use(corsMiddleware())
 
+	// Health check endpoint
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "こじゃんとやまっぷ API サーバー起動中！🚀",
+			"status":  "healthy",
+		})
+	})
+
+	// Setup admin routes
+	router.SetupAdminRoutes(r, db)
+
+	// Setup user routes (一般会員用)
+	setupUserRoutes(r, db, middleware.AuthMiddleware())
+
+	// Start server
+	port := cfg.ServerPort
+	if port == "" {
+		port = os.Getenv("PORT")
+		if port == "" {
+			port = "8080"
+		}
+	}
+
+	addr := fmt.Sprintf(":%s", port)
+	log.Printf("こじゃんとやまっぷ API サーバー起動中！🚀 (Port: %s)", port)
+	if err := r.Run(addr); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+// setupUserRoutes 一般会員用ルーティングを設定
+func setupUserRoutes(
+	router *gin.Engine,
+	db interface{},
+	authMiddleware gin. HandlerFunc,
+) {
 	// サービスとハンドラーを初期化
 	userService := &services.UserService{}
-	authService := services.NewAuthService(config.DB)
+	authService := services.NewAuthService(db)
 	authHandler := handlers.NewAuthHandler(userService, authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postService := &services.PostService{}
-	placeService := services.NewPlaceService(config.DB)
-	genreService := services.NewGenreService(config.DB)
+	placeService := services.NewPlaceService(db)
+	genreService := services.NewGenreService(db)
 	postHandler := handlers.NewPostHandler(postService, placeService, genreService)
 	blockService := &services.BlockService{}
 	blockHandler := handlers.NewBlockHandler(blockService)
@@ -55,43 +100,9 @@ func main() {
 	businessApplicationService := &services.BusinessApplicationService{}
 	businessApplicationHandler := handlers.NewBusinessApplicationHandler(businessApplicationService)
 
-	// ルートを設定
-	setupRoutes(router, authHandler, userHandler, postHandler, blockHandler, reportHandler, contactHandler, businessApplicationHandler, middleware.AuthMiddleware())
-
-	// サーバーを起動
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	fmt.Printf("こじゃんとやまっぷ API サーバー起動中！🚀 (Port: %s)\n", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// setupRoutes ルーティングを設定
-func setupRoutes(
-	router *gin.Engine,
-	authHandler *handlers.AuthHandler,
-	userHandler *handlers.UserHandler,
-	postHandler *handlers.PostHandler,
-	blockHandler *handlers.BlockHandler,
-	reportHandler *handlers.ReportHandler,
-	contactHandler *handlers.ContactHandler,
-	businessApplicationHandler *handlers.BusinessApplicationHandler,
-	authMiddleware gin.HandlerFunc,
-) {
-	// ヘルスチェック
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "こじゃんとやまっぷ API サーバー起動中！🚀",
-		})
-	})
-
 	// 認証関連ルート
 	router.POST("/api/users/register", authHandler.Register)
-	router.PUT("/api/auth/logout", authHandler.Logout)
+	router.PUT("/api/auth/logout", authHandler. Logout)
 	router.PUT("/api/auth/withdrawal", authHandler.Withdrawal)
 	// Google OAuth 認証エンドポイント
 	router.POST("/api/auth/exchange-token", authHandler.ExchangeToken)
@@ -100,7 +111,7 @@ func setupRoutes(
 	router.POST("/api/auth/refresh", authHandler.Refresh)
 
 	// ユーザー情報ルート
-	router.GET("/api/member/info", userHandler.GetMemberInfo)
+	router.GET("/api/member/info", userHandler. GetMemberInfo)
 	router.GET("/api/mypage/details", userHandler.GetMypageDetails)
 	router.GET("/api/posts/history/reactions", userHandler.GetReactionHistory)
 
@@ -109,20 +120,20 @@ func setupRoutes(
 	router.GET("/api/posts/detail", postHandler.GetPostDetail)
 	router.POST("/api/posts", postHandler.CreatePost)
 	router.DELETE("/api/posts", postHandler.DeletePost)
-	router.GET("/api/posts/history", postHandler.GetPostHistory)
+	router.GET("/api/posts/history", postHandler. GetPostHistory)
 	router.GET("/api/posts/pin/scale", postHandler.GetPinSize)
 	router.POST("/api/posts/reaction", postHandler.AddReaction)
 	router.GET("/api/posts/reaction/status", postHandler.CheckReactionStatus)
 
 	// 検索ルート
-	router.GET("/api/posts/search", postHandler.SearchByKeyword)
+	router. GET("/api/posts/search", postHandler.SearchByKeyword)
 	router.GET("/api/posts/search/genre", postHandler.SearchByGenre)
 	router.GET("/api/posts/search/period", postHandler.SearchByPeriod)
 
 	// ブロック関連ルート
-	router.POST("/api/users/block", blockHandler.BlockUser)
+	router.POST("/api/users/block", blockHandler. BlockUser)
 	router.DELETE("/api/users/block", blockHandler.UnblockUser)
-	router.GET("/api/users/block/list", blockHandler.GetBlockList)
+	router.GET("/api/users/block/list", blockHandler. GetBlockList)
 
 	// 通報関連ルート
 	router.POST("/api/report", reportHandler.CreateReport)
