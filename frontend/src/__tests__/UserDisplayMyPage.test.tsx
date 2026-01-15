@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { UserDisplayMyPage } from '../components/UserDisplayMyPage';
 import { User, Pin } from '../types';
 import { toast } from 'sonner';
+import { MOCK_GENERAL_USER, mockPins } from '../lib/mockData';
 
 // toast のモック
 jest.mock('sonner', () => ({
@@ -30,21 +31,17 @@ jest.mock('../components/UserInputBusinessApplication', () => ({
 
 describe('UserDisplayMyPage コンポーネント', () => {
   const mockUser: User = {
-    id: 'user-1',
+    ...MOCK_GENERAL_USER,
     name: '田中 太郎',
     email: 'tanaka@example.com',
-    role: 'general' as const,
-    createdAt: new Date('2026-01-01'),
     blockedUsers: [],
   };
 
-  const mockPins: Pin[] = [
-    { id: 'p1', title: '投稿1', userId: 'user-1', createdAt: new Date(), userName: '田中', userRole: 'general', images: [], reactions: 0 } as any
-  ];
+  const testPins: Pin[] = [mockPins[0]];
 
   const defaultProps = {
     user: mockUser,
-    pins: mockPins,
+    pins: testPins,
     reactedPins: [],
     onPinClick: jest.fn(),
     onDeletePin: jest.fn(),
@@ -59,7 +56,7 @@ describe('UserDisplayMyPage コンポーネント', () => {
   test('ユーザーの基本情報が表示されること', () => {
     render(<UserDisplayMyPage {...defaultProps} />);
     expect(screen.getByText('tanaka@example.com')).toBeInTheDocument();
-    expect(screen.getByText('2026年1月1日')).toBeInTheDocument();
+    expect(screen.getByText('2025年1月1日')).toBeInTheDocument();
   });
 
   test('タブを切り替えるとコンテンツが切り替わること', async () => {

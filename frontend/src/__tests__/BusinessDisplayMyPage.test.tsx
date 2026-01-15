@@ -2,16 +2,14 @@
 import { render, screen } from '@testing-library/react';
 import { BusinessDisplayMyPage } from '../components/BusinessDisplayMyPage';
 import { User, Pin } from '../types';
+import { MOCK_BUSINESS_USER } from '../lib/mockData';
 // import { expect, describe, it, vi } from 'vitest'; // ← これを削除
 
 // 2. モックデータの作成
 const mockUser: User = {
-  id: 'u1',
+  ...MOCK_BUSINESS_USER,
   name: 'テスト商店',
   email: 'test@example.com',
-  createdAt: new Date(),
-  businessIcon: '',
-  role: 'business', // 前回の指示通り追加
 };
 
 const mockPins: Pin[] = [];
