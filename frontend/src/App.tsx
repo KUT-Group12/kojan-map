@@ -17,6 +17,11 @@ interface User {
   createdAt: Date;
 }
 
+/**
+ * Root application component that manages loading and authentication state and renders the appropriate UI for loading, unauthenticated, admin, and non-admin users.
+ *
+ * @returns The root React element representing the app UI based on the current loading and user authentication state.
+ */
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);

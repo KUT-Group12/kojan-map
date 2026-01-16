@@ -13,6 +13,15 @@ interface ContactModalProps {
   onClose: () => void;
 }
 
+/**
+ * Modal component that presents a contact form and sends user inquiries.
+ *
+ * Validates that both subject and message are non-empty; shows an error toast if validation fails, and shows a success toast and invokes `onClose` after a successful submission.
+ *
+ * @param user - The user whose registered email is shown as the reply address
+ * @param onClose - Callback invoked to close the modal
+ * @returns The ContactModal React element
+ */
 export function ContactModal({ user, onClose }: ContactModalProps) {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');

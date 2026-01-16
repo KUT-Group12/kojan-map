@@ -11,6 +11,14 @@ interface LoginScreenProps {
   onLogin: (role: UserRole, googleId: string) => void;
 }
 
+/**
+ * Renders a two-step Google-based login UI that requires terms agreement, performs (simulated) Google authentication, and lets the user choose a role.
+ *
+ * The component manages local UI state (terms consent, loading, and role-selection flow), obtains a Google ID after authentication, and calls `onLogin(role, googleId)` when the user selects a role.
+ *
+ * @param onLogin - Callback invoked with the selected role and the authenticated Google ID after role selection
+ * @returns A React element containing the login screen UI
+ */
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -180,7 +188,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   );
 }
 
-// アイコンをコンポーネント化してスッキリさせる
+/**
+ * Renders a compact Google logo SVG intended for use inline in buttons or small UI elements.
+ *
+ * @returns An SVG element styled for a 20px icon that inherits current color
+ */
 function GoogleIcon() {
   return (
     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

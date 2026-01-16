@@ -14,6 +14,17 @@ interface LogoutScreenProps {
   onBack: () => void;
 }
 
+/**
+ * Render a logout confirmation screen for the given user.
+ *
+ * Renders a centered card showing the user's membership type and email, notes about data retained after logout,
+ * a Google-login hint, a primary "ログアウトする" button and a secondary "戻る" button.
+ *
+ * @param user - The user to display; `name` (optional) is shown as a greeting when present, `email` is shown, and `role` controls membership label and an extra retained-data item for business users.
+ * @param onLogout - Callback invoked when the primary logout button is clicked.
+ * @param onBack - Callback invoked when the back button is clicked.
+ * @returns The React element for the logout confirmation screen.
+ */
 export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-gray-50 p-4">

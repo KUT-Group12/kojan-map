@@ -2,6 +2,11 @@ import * as React from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 
+/**
+ * Determines whether the current viewport width is below the mobile breakpoint.
+ *
+ * @returns `true` if `window.innerWidth` is less than `MOBILE_BREAKPOINT`, `false` otherwise.
+ */
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
 

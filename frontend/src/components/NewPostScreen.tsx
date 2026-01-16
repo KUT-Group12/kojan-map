@@ -26,6 +26,16 @@ interface CreatePinModalProps {
   initialLongitude?: number;
 }
 
+/**
+ * Renders a modal form for creating a new pin (post) including title, description, genre, location, optional image upload, validation, and submission.
+ *
+ * @param user - The current user object; used to determine display behavior (e.g., businessName for business users).
+ * @param onClose - Callback invoked to close the modal.
+ * @param onCreate - Callback invoked with the created pin data: an object containing `latitude` (number), `longitude` (number), `title`, `description`, `genre`, and `images` (base64 strings).
+ * @param initialLatitude - Optional initial latitude to prefill the form; defaults to 35.6762 when not provided.
+ * @param initialLongitude - Optional initial longitude to prefill the form; defaults to 139.6503 when not provided.
+ * @returns The JSX element for the new post creation modal.
+ */
 export function NewPostScreen({
   user,
   onClose,

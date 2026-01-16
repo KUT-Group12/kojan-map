@@ -5,7 +5,12 @@ interface AdminSelectLogoutProps {
   onLogoutAction?: (url: string) => void;
 }
 
-// 2. プロパティを受け取り、デフォルトで location.href を使うように設定
+/**
+ * Renders a logout button that invokes a provided logout action when clicked.
+ *
+ * @param onLogoutAction - Callback invoked with the destination URL when logout is performed; defaults to setting `window.location.href` to the given URL.
+ * @returns A JSX element rendering an outlined "ログアウト" button that triggers the logout action.
+ */
 export function AdminSelectLogout({
   onLogoutAction = (url) => {
     window.location.href = url;

@@ -26,6 +26,23 @@ interface PinDetailModalProps {
   onSelectPin?: (pin: Pin) => void;
 }
 
+/**
+ * Renders a modal showing detailed information for a single post (pin) and related actions.
+ *
+ * Displays post metadata, description, images, location, reaction controls, reporting/blocking or deletion UI depending on ownership, and a list of other posts at the same location. Interactive handlers passed via props are invoked for closing, reacting, deleting, blocking, creating a post at the same location, and selecting another nearby pin.
+ *
+ * @param pin - The post to display in the modal.
+ * @param currentUser - The currently signed-in user viewing the post.
+ * @param isReacted - Whether the current user has reacted to the post.
+ * @param onClose - Called to close the modal or any nested screens.
+ * @param onReaction - Called with the pin id when the user toggles a reaction.
+ * @param onDelete - Called with the pin id when the owner deletes the post.
+ * @param onBlockUser - Optional callback called with a user id to block that user.
+ * @param pinsAtLocation - Optional list of other pins at the same location for quick selection.
+ * @param onOpenCreateAtLocation - Optional callback to prefill creating a new post at the pin's coordinates.
+ * @param onSelectPin - Optional callback invoked when the user selects another pin from the nearby list.
+ * @returns The rendered post detail dialog element.
+ */
 export function DisplayPostList({
   pin,
   currentUser,

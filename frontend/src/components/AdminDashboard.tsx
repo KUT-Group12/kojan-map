@@ -41,6 +41,15 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
+/**
+ * Render the administrator dashboard UI with tabs for overview, reports, business applications, posts, users, and inquiries.
+ *
+ * Displays system statistics, charts, lists of reports, business applications, posts, users, and inquiry management with reply/delete flows. Provides controls for approving/rejecting business applications and logging out.
+ *
+ * @param user - The currently logged-in admin user whose name is shown in the sidebar
+ * @param onLogout - Callback invoked when the logout button is clicked
+ * @returns The rendered admin dashboard React element
+ */
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [reports] = useState([

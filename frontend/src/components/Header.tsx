@@ -10,6 +10,19 @@ interface HeaderProps {
   onContact: () => void;
 }
 
+/**
+ * Render the application header containing branding, navigation buttons, contact action, and user controls.
+ *
+ * The header shows the app title and account type, highlights the active view button, conditionally
+ * renders a dashboard button for business users, exposes an inquiry action, and triggers navigation
+ * actions (including logout) via the provided callback.
+ *
+ * @param user - Current user object; used to determine account type, conditional dashboard display, and optional display name
+ * @param onNavigate - Callback invoked with a view key ('map' | 'mypage' | 'dashboard' | 'logout') when a navigation or logout action is requested
+ * @param currentView - Currently active view key used to determine which navigation button is highlighted
+ * @param onContact - Callback invoked when the inquiry ("お問い合わせ") button is clicked
+ * @returns The header JSX element for the application
+ */
 export function Header({ user, onNavigate, currentView, onContact }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">

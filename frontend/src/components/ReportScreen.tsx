@@ -10,6 +10,16 @@ interface ReportScreenProps {
   onReportComplete: () => void;
 }
 
+/**
+ * Renders the report UI: a trigger button when reporting is inactive, or a textarea with Send/Cancel actions when active.
+ *
+ * When the Send action is invoked with a non-empty reason, the component shows a success toast, clears the input, closes the reporting UI, and calls `onReportComplete`. If the reason is empty, it shows an error toast and keeps the UI open.
+ *
+ * @param isReporting - Whether the reporting UI is currently active.
+ * @param setIsReporting - Function to enable or disable the reporting UI.
+ * @param onReportComplete - Callback invoked after a report is successfully submitted.
+ * @returns The report UI as a React element.
+ */
 export function ReportScreen({ isReporting, setIsReporting, onReportComplete }: ReportScreenProps) {
   const [reportReason, setReportReason] = useState('');
 

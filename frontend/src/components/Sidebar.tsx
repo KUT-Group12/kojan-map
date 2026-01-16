@@ -14,6 +14,19 @@ interface SidebarProps {
   onPinClick: (pin: Pin) => void;
 }
 
+/**
+ * Renders the sidebar UI for searching, filtering, and selecting pins.
+ *
+ * The component displays keyword, genre, and date filters (hidden for business users),
+ * applies those filters to the provided `pins`, and calls `onFilterChange` with the
+ * filtered list. Clicking a pin invokes `onPinClick`.
+ *
+ * @param user - Current user; controls whether filtering UI is available (business users see all pins).
+ * @param pins - List of pins to display and filter.
+ * @param onFilterChange - Called with the list of pins after filters are applied.
+ * @param onPinClick - Called when a pin is clicked with the selected pin.
+ * @returns The sidebar JSX element containing filter controls and the pin list.
+ */
 export function Sidebar({ user, pins, onFilterChange, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');

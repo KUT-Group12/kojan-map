@@ -18,6 +18,17 @@ interface BusinessDisplayMyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+/**
+ * Render the business user management UI including profile display, inline name editing, icon upload/preview, post history, and settings.
+ *
+ * @param user - The current business user data shown and edited in the UI
+ * @param pins - List of pins/posts belonging to the user, shown in 投稿履歴
+ * @param onPinClick - Callback invoked when a pin is selected; receives the clicked pin
+ * @param onDeletePin - Callback invoked to delete a pin; receives the pin id
+ * @param onUpdateUser - Callback invoked with an updated User object when the user record (name or businessIcon) changes
+ * @param onNavigateToDeleteAccount - Callback invoked to navigate to the account deletion flow
+ * @returns The React element for the business user's my page interface
+ */
 export function BusinessDisplayMyPage({
   user,
   pins,

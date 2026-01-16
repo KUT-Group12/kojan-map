@@ -7,6 +7,11 @@ import { SearchIcon } from 'lucide-react';
 import { cn } from './utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog';
 
+/**
+ * Renders a command container with consistent styling and a data-slot attribute.
+ *
+ * @returns The command container element with applied styling and `data-slot="command"`.
+ */
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
@@ -20,6 +25,14 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
   );
 }
 
+/**
+ * Render a dialog that hosts a Command palette with an accessible (screen-reader) header and a content area.
+ *
+ * @param title - Dialog title exposed to assistive technology; defaults to "Command Palette"
+ * @param description - Dialog description exposed to assistive technology; defaults to "Search for a command to run..."
+ * @param children - Elements rendered inside the Command palette content
+ * @returns A Dialog element containing the Command wrapper and provided children
+ */
 function CommandDialog({
   title = 'Command Palette',
   description = 'Search for a command to run...',
@@ -44,6 +57,13 @@ function CommandDialog({
   );
 }
 
+/**
+ * Renders the command palette input with a leading search icon.
+ *
+ * @param className - Additional CSS classes to apply to the input element.
+ * @param props - Props forwarded to the underlying command input component.
+ * @returns The rendered command input element.
+ */
 function CommandInput({
   className,
   ...props
@@ -63,6 +83,11 @@ function CommandInput({
   );
 }
 
+/**
+ * Renders a scrollable container for command palette items.
+ *
+ * @returns A scrollable list element used to host command items in the palette.
+ */
 function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
@@ -73,6 +98,11 @@ function CommandList({ className, ...props }: React.ComponentProps<typeof Comman
   );
 }
 
+/**
+ * Render the empty-state element for the command list.
+ *
+ * @returns The command palette empty-state element
+ */
 function CommandEmpty({ ...props }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
@@ -83,6 +113,11 @@ function CommandEmpty({ ...props }: React.ComponentProps<typeof CommandPrimitive
   );
 }
 
+/**
+ * Renders a grouped container for command items with heading styling and layout.
+ *
+ * @returns A CommandPrimitive.Group element styled as a command group, including padding, overflow handling, and heading text styles.
+ */
 function CommandGroup({
   className,
   ...props
@@ -99,6 +134,11 @@ function CommandGroup({
   );
 }
 
+/**
+ * Renders a styled separator used inside the command palette.
+ *
+ * @returns A CommandPrimitive.Separator element with `data-slot="command-separator"` and command-palette-specific styling.
+ */
 function CommandSeparator({
   className,
   ...props
@@ -112,6 +152,12 @@ function CommandSeparator({
   );
 }
 
+/**
+ * Render a styled command palette item.
+ *
+ * @param className - Additional CSS class names to merge with the component's default styles
+ * @returns The rendered `CommandPrimitive.Item` element with merged styling and forwarded props
+ */
 function CommandItem({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Item>) {
   return (
     <CommandPrimitive.Item
@@ -125,6 +171,14 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
   );
 }
 
+/**
+ * Render a right-aligned, small keyboard shortcut label for a command item.
+ *
+ * Renders a <span> with the `data-slot="command-shortcut"` attribute and component styling,
+ * and forwards all native span props to the element.
+ *
+ * @returns A span element used to display a command's keyboard shortcut.
+ */
 function CommandShortcut({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span

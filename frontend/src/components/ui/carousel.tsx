@@ -30,6 +30,12 @@ type CarouselContextProps = {
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null);
 
+/**
+ * Accesses the nearest Carousel context and returns its value.
+ *
+ * @returns The Carousel context object containing carouselRef, api, controls, and state.
+ * @throws If no Carousel context is available (hook used outside a <Carousel />).
+ */
 function useCarousel() {
   const context = React.useContext(CarouselContext);
 
@@ -40,6 +46,20 @@ function useCarousel() {
   return context;
 }
 
+/**
+ * Render a carousel container that provides a shared carousel context and basic keyboard and button navigation.
+ *
+ * The component initializes the Embla carousel, exposes its ref and API via context to child components, and keeps track
+ * of whether the carousel can scroll previous/next. If `setApi` is provided it will be called with the Embla API once available.
+ *
+ * @param orientation - Layout orientation, either `'horizontal'` or `'vertical'`. Determines carousel axis and positioning of controls.
+ * @param opts - Embla carousel options passed through to the underlying hook.
+ * @param setApi - Optional callback invoked with the Embla API instance when it becomes available.
+ * @param plugins - Optional Embla plugins to initialize with the carousel.
+ * @param className - Additional CSS classes applied to the outer container.
+ * @param children - Rendered child elements (carousel content and controls).
+ * @returns The rendered carousel element (a context provider wrapping a div region with keyboard handlers).
+ */
 function Carousel({
   orientation = 'horizontal',
   opts,
@@ -129,6 +149,13 @@ function Carousel({
   );
 }
 
+/**
+ * Renders the carousel's scrollable content area and attaches the internal carousel ref.
+ *
+ * @param className - Additional classes applied to the inner container
+ * @param props - Other props forwarded to the inner container div
+ * @returns The content container element that hosts carousel items
+ */
 function CarouselContent({ className, ...props }: React.ComponentProps<'div'>) {
   const { carouselRef, orientation } = useCarousel();
 
@@ -142,6 +169,15 @@ function CarouselContent({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Renders a carousel item wrapper for a single slide.
+ *
+ * The element includes ARIA attributes for a slide, a data-slot identifier, and
+ * applies orientation-specific spacing (left padding for horizontal, top
+ * padding for vertical).
+ *
+ * @returns A `div` element that serves as a slide wrapper with role `"group"`, `aria-roledescription="slide"`, `data-slot="carousel-item"`, and orientation-aware spacing.
+ */
 function CarouselItem({ className, ...props }: React.ComponentProps<'div'>) {
   const { orientation } = useCarousel();
 
@@ -160,6 +196,14 @@ function CarouselItem({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Renders the carousel's previous-slide button positioned according to the carousel orientation.
+ *
+ * The button is disabled when the carousel cannot scroll to a previous slide and invokes the carousel's
+ * scrollPrev action when clicked.
+ *
+ * @returns The Button element used to navigate to the previous carousel slide.
+ */
 function CarouselPrevious({
   className,
   variant = 'outline',
@@ -190,6 +234,14 @@ function CarouselPrevious({
   );
 }
 
+/**
+ * Renders a carousel "next" navigation button positioned according to the carousel orientation.
+ *
+ * The button is disabled when the carousel cannot advance to a next slide and calls the carousel's
+ * scroll-next action when activated.
+ *
+ * @returns The rendered "next slide" Button element.
+ */
 function CarouselNext({
   className,
   variant = 'outline',

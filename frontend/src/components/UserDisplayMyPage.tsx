@@ -21,6 +21,18 @@ interface UserDisplayMyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+/**
+ * Render the user's My Page containing account details, an optional business registration form, and tabs for posts, reactions, and settings.
+ *
+ * @param user - The current user's data.
+ * @param pins - The list of pins (posts) created by the user.
+ * @param reactedPins - The list of pins the user has reacted to.
+ * @param onPinClick - Callback invoked with a pin when a pin is selected.
+ * @param onDeletePin - Callback invoked with a pin ID to delete a pin.
+ * @param onUpdateUser - Callback invoked with updated user data.
+ * @param onNavigateToDeleteAccount - Callback to navigate to the account deletion flow.
+ * @returns The rendered My Page UI as a JSX element.
+ */
 export function UserDisplayMyPage({
   user,
   pins,

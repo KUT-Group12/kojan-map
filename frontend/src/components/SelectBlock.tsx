@@ -7,6 +7,14 @@ interface SelectBlockProps {
   onClose: () => void;
 }
 
+/**
+ * Renders a destructive "Block" button that prompts for confirmation and, when confirmed, invokes the provided block handler and closes the parent UI.
+ *
+ * @param userId - Identifier of the user to be blocked
+ * @param onBlockUser - Callback invoked with `userId` to perform the blocking action
+ * @param onClose - Callback invoked to close the parent modal or dialog after a successful block
+ * @returns The button element that manages confirmation, executes the block callback, shows a toast, and closes the UI on success
+ */
 export function SelectBlock({ userId, onBlockUser, onClose }: SelectBlockProps) {
   const handleBlock = () => {
     // ユーザーに確認を促す

@@ -15,6 +15,17 @@ interface MapViewProps {
   isOverlayOpen?: boolean;
 }
 
+/**
+ * Renders an interactive Leaflet map with color-coded markers grouped by shared coordinates and an on-screen legend.
+ *
+ * Groups pins that share the same coordinates into a single marker (the marker shows a count when multiple pins occupy the same location). Business posts and general posts are rendered with distinct marker styles; hovering and clicking markers update hover state and invoke callbacks.
+ *
+ * @param pins - Array of pin objects to display; pins at the same coordinates are shown as a single grouped marker with a count badge.
+ * @param onPinClick - Called with the representative pin for a marker group when that marker is clicked.
+ * @param onMapDoubleClick - Called with (latitude, longitude) when a location is selected (double-click / location selection).
+ * @param isOverlayOpen - When true, reduces map z-index and disables location selection interactions.
+ * @returns The component's JSX element rendering the interactive map, legend, and grouped markers.
+ */
 export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpen }: MapViewProps) {
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 

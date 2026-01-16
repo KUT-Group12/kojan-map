@@ -34,6 +34,12 @@ const buttonVariants = cva(
   }
 );
 
+/**
+ * Render a styled button that supports variant and size options and can compose into a child element.
+ *
+ * @param asChild - If true, render the provided child via Radix `Slot` instead of a native `button`, enabling composition and styling inheritance.
+ * @returns A button element (or the provided child rendered via `Slot`) with classes computed from `buttonVariants`.
+ */
 function Button({
   className,
   variant,
