@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
-import { GetLocation, roundCoord } from '../components/GetLocation'; // パスは適宜調整してください
 import { useMapEvents } from 'react-leaflet';
+import { GetLocation } from '../components/GetLocation';
 
-// react-leaflet のフックをモック化する
+// react-leaflet をモック化
 jest.mock('react-leaflet', () => ({
   useMapEvents: jest.fn(),
 }));
@@ -14,15 +14,10 @@ describe('GetLocation コンポーネント', () => {
     jest.clearAllMocks();
   });
 
-  test('座標の丸め処理 (roundCoord) が正しく動作すること', () => {
-    expect(roundCoord(33.559722)).toBe(33.5597);
-    expect(roundCoord(133.531111)).toBe(133.5311);
-    expect(roundCoord(33.5)).toBe(33.5);
-  });
-
-  test('enabledがtrueのとき、ダブルクリックで座標が渡されること', () => {
-    // useMapEventsが呼ばれた際の引数（イベント設定オブジェクト）をキャプチャする
-    let capturedEvents: any;
+  test('enabledがtrueのとき、ダブルクリックで座標が丸められて呼ばれること', () => {
+    let capturedEvents: any = {};
+    
+    // useMapEvents が呼ばれたときに、渡されたイベントハンドラをキャプチャする
     (useMapEvents as jest.Mock).mockImplementation((events) => {
       capturedEvents = events;
     });
@@ -31,19 +26,16 @@ describe('GetLocation コンポーネント', () => {
       <GetLocation onLocationSelected={mockOnLocationSelected} enabled={true} />
     );
 
-    // キャプチャした dblclick イベントを擬似的に実行する
-    const mockEvent = {
-      latlng: { lat: 33.559722, lng: 133.531111 },
-    };
-    
-    capturedEvents.dblclick(mockEvent);
+    // キャプチャした dblclick ハンドラを直接実行（Leafletの内部ズーム処理をバイパス）
+    capturedEvents.dblclick({
+      latlng: { lat: 35.68123456, lng: 139.76712345 }
+    });
 
-    // 期待通りに丸められた座標でコールバックが呼ばれたか確認
-    expect(mockOnLocationSelected).toHaveBeenCalledWith(33.5597, 133.5311);
+    expect(mockOnLocationSelected).toHaveBeenCalledWith(35.6812, 139.7671);
   });
 
-  test('enabledがfalseのとき、ダブルクリックしても座標が渡されないこと', () => {
-    let capturedEvents: any;
+  test('enabledがfalseのとき、ダブルクリックしても呼ばれないこと', () => {
+    let capturedEvents: any = {};
     (useMapEvents as jest.Mock).mockImplementation((events) => {
       capturedEvents = events;
     });
@@ -52,13 +44,10 @@ describe('GetLocation コンポーネント', () => {
       <GetLocation onLocationSelected={mockOnLocationSelected} enabled={false} />
     );
 
-    const mockEvent = {
-      latlng: { lat: 33.559722, lng: 133.531111 },
-    };
-    
-    capturedEvents.dblclick(mockEvent);
+    capturedEvents.dblclick({
+      latlng: { lat: 35.6812, lng: 139.7671 }
+    });
 
-    // コールバックが呼ばれていないことを確認
     expect(mockOnLocationSelected).not.toHaveBeenCalled();
   });
 });
