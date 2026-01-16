@@ -5,8 +5,17 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  // 1. 無視するディレクトリの設定 (旧 globalIgnores)
-  { ignores: ['dist'] },
+  // 1. 無視するディレクトリの設定
+  // ここに書かれたパスは、プロジェクト全体で ESLint の対象外になります
+  {
+    ignores: [
+      '**/__tests__/**',
+      '**/*.test.tsx',
+      '**/*.test.ts',
+      'node_modules/**',
+      'dist/**', // 'dist' だけでなく 'dist/**' と書くのが一般的です
+    ],
+  },
 
   // 2. TypeScript/React 向けの設定
   {
@@ -14,7 +23,10 @@ export default tseslint.config(
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.node, // Node.js環境（process.envなど）を使う場合は追加
+      },
     },
     plugins: {
       'react-hooks': reactHooks,
