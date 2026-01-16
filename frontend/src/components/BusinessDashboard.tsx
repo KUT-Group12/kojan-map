@@ -36,6 +36,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
   const [activeTab, setActiveTab] = useState('overview');
 
   // モック統計データ
+  /*
   const weeklyData = [
     { date: '10/28', reactions: 12, views: 45 },
     { date: '10/29', reactions: 18, views: 67 },
@@ -44,7 +45,8 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
     { date: '11/01', reactions: 31, views: 112 },
     { date: '11/02', reactions: 28, views: 98 },
     { date: '11/03', reactions: 35, views: 134 },
-  ];
+  ];*/
+  const weeklyData = [];
 
   const genreStats = pins.reduce(
     (acc, pin) => {

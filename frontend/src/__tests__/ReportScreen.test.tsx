@@ -20,10 +20,10 @@ describe('ReportScreen コンポーネント', () => {
 
   test('初期状態で「通報」ボタンが表示されていること', () => {
     render(
-      <ReportScreen 
-        isReporting={false} 
-        setIsReporting={mockSetIsReporting} 
-        onReportComplete={mockOnReportComplete} 
+      <ReportScreen
+        isReporting={false}
+        setIsReporting={mockSetIsReporting}
+        onReportComplete={mockOnReportComplete}
       />
     );
 
@@ -33,10 +33,10 @@ describe('ReportScreen コンポーネント', () => {
 
   test('「通報」ボタンをクリックすると setIsReporting(true) が呼ばれること', () => {
     render(
-      <ReportScreen 
-        isReporting={false} 
-        setIsReporting={mockSetIsReporting} 
-        onReportComplete={mockOnReportComplete} 
+      <ReportScreen
+        isReporting={false}
+        setIsReporting={mockSetIsReporting}
+        onReportComplete={mockOnReportComplete}
       />
     );
 
@@ -48,10 +48,10 @@ describe('ReportScreen コンポーネント', () => {
 
   test('isReportingがtrueのとき、通報フォームが表示されること', () => {
     render(
-      <ReportScreen 
-        isReporting={true} 
-        setIsReporting={mockSetIsReporting} 
-        onReportComplete={mockOnReportComplete} 
+      <ReportScreen
+        isReporting={true}
+        setIsReporting={mockSetIsReporting}
+        onReportComplete={mockOnReportComplete}
       />
     );
 
@@ -63,10 +63,10 @@ describe('ReportScreen コンポーネント', () => {
 
   test('理由を入力せずに送信するとエラーが表示されること', () => {
     render(
-      <ReportScreen 
-        isReporting={true} 
-        setIsReporting={mockSetIsReporting} 
-        onReportComplete={mockOnReportComplete} 
+      <ReportScreen
+        isReporting={true}
+        setIsReporting={mockSetIsReporting}
+        onReportComplete={mockOnReportComplete}
       />
     );
 
@@ -79,10 +79,10 @@ describe('ReportScreen コンポーネント', () => {
 
   test('理由を入力して送信すると成功し、フォームが閉じること', () => {
     render(
-      <ReportScreen 
-        isReporting={true} 
-        setIsReporting={mockSetIsReporting} 
-        onReportComplete={mockOnReportComplete} 
+      <ReportScreen
+        isReporting={true}
+        setIsReporting={mockSetIsReporting}
+        onReportComplete={mockOnReportComplete}
       />
     );
 
@@ -99,10 +99,10 @@ describe('ReportScreen コンポーネント', () => {
 
   test('キャンセルボタンを押すと setIsReporting(false) が呼ばれること', () => {
     render(
-      <ReportScreen 
-        isReporting={true} 
-        setIsReporting={mockSetIsReporting} 
-        onReportComplete={mockOnReportComplete} 
+      <ReportScreen
+        isReporting={true}
+        setIsReporting={mockSetIsReporting}
+        onReportComplete={mockOnReportComplete}
       />
     );
 

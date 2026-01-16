@@ -67,7 +67,7 @@ describe('UserReactionViewScreen コンポーネント', () => {
 
     // 一般ユーザーは userName が表示される
     expect(screen.getByText(/投稿者: 一般ユーザーA/)).toBeInTheDocument();
-    
+
     // 事業者ユーザーは businessName が表示される
     expect(screen.getByText(/投稿者: 土佐観光観光協会/)).toBeInTheDocument();
   });

@@ -1,5 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import ProcessBusinessRequestScreen, { BusinessApplication } from '../components/ProcessBusinessRequestScreen';
+import ProcessBusinessRequestScreen, {
+  BusinessApplication,
+} from '../components/ProcessBusinessRequestScreen';
 
 // 子コンポーネントをモック化
 // 子コンポーネント自体のテストは別途行うため、ここではプロップスが正しく渡されているかだけを確認します
@@ -36,7 +38,7 @@ describe('ProcessBusinessRequestScreen コンポーネント', () => {
       PhoneNumber: '080-8765-4321',
       address: '高知県土佐市...',
       date: '2026-01-14',
-    }
+    },
   ];
 
   const mockOnApprove = jest.fn();
@@ -48,10 +50,10 @@ describe('ProcessBusinessRequestScreen コンポーネント', () => {
 
   test('タイトルと未処理件数が正しく表示されること', () => {
     render(
-      <ProcessBusinessRequestScreen 
-        applications={mockApplications} 
-        onApprove={mockOnApprove} 
-        onReject={mockOnReject} 
+      <ProcessBusinessRequestScreen
+        applications={mockApplications}
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
       />
     );
 
@@ -62,10 +64,10 @@ describe('ProcessBusinessRequestScreen コンポーネント', () => {
 
   test('子コンポーネントにデータが渡され、表示されていること', () => {
     render(
-      <ProcessBusinessRequestScreen 
-        applications={mockApplications} 
-        onApprove={mockOnApprove} 
-        onReject={mockOnReject} 
+      <ProcessBusinessRequestScreen
+        applications={mockApplications}
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
       />
     );
 
@@ -76,10 +78,10 @@ describe('ProcessBusinessRequestScreen コンポーネント', () => {
 
   test('承認ボタンがクリックされたときに onApprove が呼ばれること', () => {
     render(
-      <ProcessBusinessRequestScreen 
-        applications={mockApplications} 
-        onApprove={mockOnApprove} 
-        onReject={mockOnReject} 
+      <ProcessBusinessRequestScreen
+        applications={mockApplications}
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
       />
     );
 
@@ -92,10 +94,10 @@ describe('ProcessBusinessRequestScreen コンポーネント', () => {
 
   test('却下ボタンがクリックされたときに onReject が呼ばれること', () => {
     render(
-      <ProcessBusinessRequestScreen 
-        applications={mockApplications} 
-        onApprove={mockOnApprove} 
-        onReject={mockOnReject} 
+      <ProcessBusinessRequestScreen
+        applications={mockApplications}
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
       />
     );
 
@@ -107,10 +109,10 @@ describe('ProcessBusinessRequestScreen コンポーネント', () => {
 
   test('申請が0件の場合の表示確認', () => {
     render(
-      <ProcessBusinessRequestScreen 
-        applications={[]} 
-        onApprove={mockOnApprove} 
-        onReject={mockOnReject} 
+      <ProcessBusinessRequestScreen
+        applications={[]}
+        onApprove={mockOnApprove}
+        onReject={mockOnReject}
       />
     );
 

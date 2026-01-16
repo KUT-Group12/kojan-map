@@ -20,13 +20,7 @@ describe('LogoutScreen コンポーネント', () => {
   });
 
   test('ビジネス会員の情報と注意事項が正しく表示されること', () => {
-    render(
-      <LogoutScreen 
-        user={businessUser} 
-        onLogout={mockOnLogout} 
-        onBack={mockOnBack} 
-      />
-    );
+    render(<LogoutScreen user={businessUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     // メールアドレスと会員区分の表示確認
     expect(screen.getByText('business@example.com')).toBeInTheDocument();
@@ -37,13 +31,7 @@ describe('LogoutScreen コンポーネント', () => {
   });
 
   test('一般会員の場合、事業者向けの案内が表示されないこと', () => {
-    render(
-      <LogoutScreen 
-        user={generalUser} 
-        onLogout={mockOnLogout} 
-        onBack={mockOnBack} 
-      />
-    );
+    render(<LogoutScreen user={generalUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     expect(screen.getByText('一般会員')).toBeInTheDocument();
     expect(screen.getByText('general@example.com')).toBeInTheDocument();
@@ -53,13 +41,7 @@ describe('LogoutScreen コンポーネント', () => {
   });
 
   test('ログアウトボタンをクリックすると onLogout コールバックが呼ばれること', () => {
-    render(
-      <LogoutScreen 
-        user={generalUser} 
-        onLogout={mockOnLogout} 
-        onBack={mockOnBack} 
-      />
-    );
+    render(<LogoutScreen user={generalUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     const logoutButton = screen.getByRole('button', { name: /ログアウトする/i });
     fireEvent.click(logoutButton);
@@ -68,13 +50,7 @@ describe('LogoutScreen コンポーネント', () => {
   });
 
   test('共通の保持データ案内が表示されていること', () => {
-    render(
-      <LogoutScreen 
-        user={generalUser} 
-        onLogout={mockOnLogout} 
-        onBack={mockOnBack} 
-      />
-    );
+    render(<LogoutScreen user={generalUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     expect(screen.getByText('すべての投稿とピン情報')).toBeInTheDocument();
     expect(screen.getByText('リアクション履歴')).toBeInTheDocument();

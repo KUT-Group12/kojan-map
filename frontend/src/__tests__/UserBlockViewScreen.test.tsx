@@ -13,9 +13,7 @@ jest.mock('../components/DisplayUserSetting', () => ({
 }));
 
 jest.mock('../components/SelectUnlock', () => ({
-  SelectUnlock: ({ userId }: any) => (
-    <button data-testid={`unlock-button-${userId}`}>解除</button>
-  ),
+  SelectUnlock: ({ userId }: any) => <button data-testid={`unlock-button-${userId}`}>解除</button>,
 }));
 
 describe('UserBlockViewScreen コンポーネント', () => {

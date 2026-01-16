@@ -18,8 +18,8 @@ jest.mock('react-leaflet', () => ({
     getZoom: () => 13,
   }),
   Marker: ({ eventHandlers, position }: any) => (
-    <div 
-      data-testid="map-marker" 
+    <div
+      data-testid="map-marker"
       onClick={eventHandlers?.click}
       onMouseOver={eventHandlers?.mouseover}
       onMouseOut={eventHandlers?.mouseout}
@@ -55,8 +55,8 @@ describe('MapViewScreen コンポーネント', () => {
     } as any,
     {
       id: '3',
-      latitude: 33.7000, // 別の座標
-      longitude: 133.8000,
+      latitude: 33.7, // 別の座標
+      longitude: 133.8,
       genre: '景色',
       userRole: 'business',
       isHot: true,
@@ -73,10 +73,10 @@ describe('MapViewScreen コンポーネント', () => {
 
   test('凡例が正しく表示されていること', () => {
     render(
-      <MapViewScreen 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onMapDoubleClick={mockOnMapDoubleClick} 
+      <MapViewScreen
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onMapDoubleClick={mockOnMapDoubleClick}
       />
     );
     expect(screen.getByText('凡例')).toBeInTheDocument();
@@ -86,10 +86,10 @@ describe('MapViewScreen コンポーネント', () => {
 
   test('同じ座標のピンが正しくグループ化され、マーカーの数が集約されること', () => {
     render(
-      <MapViewScreen 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onMapDoubleClick={mockOnMapDoubleClick} 
+      <MapViewScreen
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onMapDoubleClick={mockOnMapDoubleClick}
       />
     );
 
@@ -100,10 +100,10 @@ describe('MapViewScreen コンポーネント', () => {
 
   test('マーカーをクリックしたときに onPinClick が呼ばれること', () => {
     render(
-      <MapViewScreen 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onMapDoubleClick={mockOnMapDoubleClick} 
+      <MapViewScreen
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onMapDoubleClick={mockOnMapDoubleClick}
       />
     );
 
@@ -115,10 +115,10 @@ describe('MapViewScreen コンポーネント', () => {
 
   test('オーバーレイが開いているときは、地図のz-indexが調整されること', () => {
     const { container } = render(
-      <MapViewScreen 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onMapDoubleClick={mockOnMapDoubleClick} 
+      <MapViewScreen
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onMapDoubleClick={mockOnMapDoubleClick}
         isOverlayOpen={true}
       />
     );

@@ -6,20 +6,20 @@ import '@testing-library/jest-dom';
 
 // テスト用のモックデータ
 const mockPin: Pin = {
-    id: 'p1',
-    title: 'テストの投稿',
-    description: 'これはテスト用の説明文です。',
-    genre: 'food', // エラーに出ていた "food" を使用
-    reactions: 10,
-    createdAt: new Date('2025-01-01'),
-    latitude: 33.5,
-    longitude: 133.5,
-    userId: 'u1',
-    // --- 足りなかったプロパティを追加 ---
-    userName: 'テストユーザー',
-    userRole: 'business', // または 'business'
-    images: [], // 画像がない場合は空の配列を指定
-  };
+  id: 'p1',
+  title: 'テストの投稿',
+  description: 'これはテスト用の説明文です。',
+  genre: 'food', // エラーに出ていた "food" を使用
+  reactions: 10,
+  createdAt: new Date('2025-01-01'),
+  latitude: 33.5,
+  longitude: 133.5,
+  userId: 'u1',
+  // --- 足りなかったプロパティを追加 ---
+  userName: 'テストユーザー',
+  userRole: 'business', // または 'business'
+  images: [], // 画像がない場合は空の配列を指定
+};
 
 describe('DisplayPostHistory', () => {
   const mockOnPinClick = jest.fn();
@@ -60,7 +60,7 @@ describe('DisplayPostHistory', () => {
     render(<DisplayPostHistory {...defaultProps} />);
     const deleteBtn = screen.getByText('削除');
     expect(deleteBtn).toBeInTheDocument();
-    
+
     fireEvent.click(deleteBtn);
     expect(mockOnDeletePin).toHaveBeenCalledWith('p1');
   });

@@ -40,7 +40,7 @@ describe('LogoutScreen コンポーネント', () => {
 
   test('ログアウトボタンをクリックすると onLogout が呼ばれること', () => {
     render(<LogoutScreen user={generalUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
-    
+
     const logoutButton = screen.getByRole('button', { name: /ログアウトする/i });
     fireEvent.click(logoutButton);
 
@@ -49,7 +49,7 @@ describe('LogoutScreen コンポーネント', () => {
 
   test('戻るボタンをクリックすると onBack が呼ばれること', () => {
     render(<LogoutScreen user={generalUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
-    
+
     const backButton = screen.getByRole('button', { name: /戻る/i });
     fireEvent.click(backButton);
 

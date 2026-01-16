@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SelectPostHistory } from '../components/SelectPostHistory'; 
+import { SelectPostHistory } from '../components/SelectPostHistory';
 import { Pin } from '../types';
 
 // 子コンポーネントをモック化
@@ -60,21 +60,17 @@ describe('SelectPostHistory コンポーネント', () => {
   // ここに最低1つの test ブロックが必要です
   test('投稿がない場合に「まだ投稿がありません」と表示されること', () => {
     render(
-      <SelectPostHistory 
-        pins={[]} 
-        onPinClick={mockOnPinClick} 
-        onDeletePin={mockOnDeletePin} 
-      />
+      <SelectPostHistory pins={[]} onPinClick={mockOnPinClick} onDeletePin={mockOnDeletePin} />
     );
     expect(screen.getByText('まだ投稿がありません')).toBeInTheDocument();
   });
 
   test('投稿リストが正しくレンダリングされること', () => {
     render(
-      <SelectPostHistory 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onDeletePin={mockOnDeletePin} 
+      <SelectPostHistory
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onDeletePin={mockOnDeletePin}
       />
     );
     const items = screen.getAllByTestId('post-history-item');
@@ -84,10 +80,10 @@ describe('SelectPostHistory コンポーネント', () => {
 
   test('投稿をクリックすると onPinClick が呼ばれること', () => {
     render(
-      <SelectPostHistory 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onDeletePin={mockOnDeletePin} 
+      <SelectPostHistory
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onDeletePin={mockOnDeletePin}
       />
     );
     fireEvent.click(screen.getByText('桂浜の夕日'));
@@ -96,10 +92,10 @@ describe('SelectPostHistory コンポーネント', () => {
 
   test('削除を実行すると onDeletePin が呼ばれること', () => {
     render(
-      <SelectPostHistory 
-        pins={mockPins} 
-        onPinClick={mockOnPinClick} 
-        onDeletePin={mockOnDeletePin} 
+      <SelectPostHistory
+        pins={mockPins}
+        onPinClick={mockOnPinClick}
+        onDeletePin={mockOnDeletePin}
       />
     );
     const deleteButtons = screen.getAllByText('削除ボタンモック');

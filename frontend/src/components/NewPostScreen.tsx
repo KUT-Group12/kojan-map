@@ -26,11 +26,17 @@ interface CreatePinModalProps {
   initialLongitude?: number;
 }
 
-export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initialLongitude }: CreatePinModalProps) {
+export function NewPostScreen({
+  user,
+  onClose,
+  onCreate,
+  initialLatitude,
+  initialLongitude,
+}: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [genre, setGenre] = useState<PinGenre>('other');
-  
+
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
   const [latitude, setLatitude] = useState(String(initialLatitude ?? 35.6762));
   const [longitude, setLongitude] = useState(String(initialLongitude ?? 139.6503));
@@ -58,7 +64,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
         const base64 = await fileToBase64(file);
         newImages.push(base64);
       } catch (error) {
-        console.error("ファイルの読み込みに失敗しました", error);
+        console.error('ファイルの読み込みに失敗しました', error);
       }
     }
 
@@ -118,16 +124,10 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新規投稿</DialogTitle>
-          <DialogDescription className="sr-only">
-            新しいピン投稿を作成します
-          </DialogDescription>
+          <DialogDescription className="sr-only">新しいピン投稿を作成します</DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-          data-testid="new-post-form"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4" data-testid="new-post-form">
           {/* タイトル入力 */}
           <div>
             <Label htmlFor="title">タイトル *</Label>
@@ -240,12 +240,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                 </div>
               )}
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={triggerFileInput}
-                className="w-full"
-              >
+              <Button type="button" variant="outline" onClick={triggerFileInput} className="w-full">
                 <Upload className="w-4 h-4 mr-2" />
                 画像をアップロード
               </Button>
@@ -261,9 +256,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-sm text-gray-600">
-                一般ユーザーの投稿は匿名で表示されます
-              </p>
+              <p className="text-sm text-gray-600">一般ユーザーの投稿は匿名で表示されます</p>
             </div>
           )}
 

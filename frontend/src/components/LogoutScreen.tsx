@@ -26,11 +26,13 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
             <CardTitle className="text-xl">ログアウトの確認</CardTitle>
             <CardDescription>
               {/* テストが期待する文言に修正 */}
-              {user.name && <span className="block font-bold text-gray-900 mb-1">{user.name} 様</span>}
+              {user.name && (
+                <span className="block font-bold text-gray-900 mb-1">{user.name} 様</span>
+              )}
               ログアウトしてもよろしいですか？
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* アカウント情報 */}
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -48,7 +50,9 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
 
             {/* 注意事項 */}
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-gray-600">ログアウト後も保持されるデータ：</p>
+              <p className="text-xs font-semibold text-gray-600">
+                ログアウト後も保持されるデータ：
+              </p>
               <div className="space-y-2">
                 <div className="flex items-start space-x-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -70,7 +74,8 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
             {/* Googleログインのヒント */}
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
               <p className="text-xs text-gray-600 leading-relaxed">
-                💡 ヒント: 次回ログイン時には、<br />
+                💡 ヒント: 次回ログイン時には、
+                <br />
                 Google アカウントで再度ログインしてください。
               </p>
             </div>
@@ -83,7 +88,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
               >
                 ログアウトする
               </Button>
-              
+
               {/* 修正: 戻るボタンを追加（テストの onBack 呼び出しに対応） */}
               <Button
                 variant="ghost"

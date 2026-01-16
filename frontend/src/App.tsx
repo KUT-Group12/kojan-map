@@ -22,30 +22,30 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // ロード画面を2秒間表示
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
-
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (role: UserRole) => {
-    // モックユーザーでログイン
-    const mockUser: User = {
-      id: `user_${Date.now()}`,
-      email: 'user@example.com',
-      // 一般会員はユーザー名を不要にするため空文字にする
-      name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '',
-      role,
+  // LoginScreenから渡される引数に合わせて修正
+  const handleLogin = (role: UserRole, googleId: string) => {
+    // 【解説】ここで LoginScreen から受け取った情報を使って userData を組み立てます
+    const userData: User = {
+      id: googleId, // Googleから取得したIDを使用
+      email: `${googleId}@example.com`, // 本来はGoogleから取得するが、今は仮のメール
+      name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '一般ユーザー',
+      role: role,
       businessName: role === 'business' ? '山田商店' : undefined,
       businessIcon:
         role === 'business'
-          ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaG9wJTIwbG9nbyUyMGljb258ZW58MXx8fHwxNzYyMjQxOTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080'
+          ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?w=100'
           : undefined,
       createdAt: new Date(),
     };
-    setUser(mockUser);
+
+    // userDataをセットすることで、!user の条件が外れ、画面が切り替わります
+    setUser(userData);
   };
 
   const handleLogout = () => {
@@ -60,10 +60,12 @@ export default function App() {
     return <LoadingScreen />;
   }
 
+  // 1. まだログイン（userDataの生成）ができていない場合
   if (!user) {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // 2. ログイン完了後：管理者の場合
   if (user.role === 'admin') {
     return (
       <>
@@ -73,6 +75,7 @@ export default function App() {
     );
   }
 
+  // 3. ログイン完了後：一般・ビジネス会員の場合
   return (
     <>
       <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />

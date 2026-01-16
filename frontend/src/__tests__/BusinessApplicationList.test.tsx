@@ -1,6 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 // import { describe, it, expect } from '@jest/globals'; // 環境によっては必要ですが、基本は不要です
-import { BusinessApplicationList, UserInputBusiness } from '../components/AdminDisplayBusinessApplicationList.tsx';
+import {
+  BusinessApplicationList,
+  UserInputBusiness,
+} from '../components/AdminDisplayBusinessApplicationList.tsx';
 
 // モックデータ
 const mockApplications: UserInputBusiness[] = [
@@ -24,10 +27,10 @@ describe('BusinessApplicationList', () => {
   // 1. 正常にデータが表示されるかのテスト
   it('申請データが正しく表示されること', () => {
     render(
-      <BusinessApplicationList 
-        applications={mockApplications} 
-        onApprove={jest.fn()} 
-        onReject={jest.fn()} 
+      <BusinessApplicationList
+        applications={mockApplications}
+        onApprove={jest.fn()}
+        onReject={jest.fn()}
       />
     );
 
@@ -43,10 +46,10 @@ describe('BusinessApplicationList', () => {
     // vi.fn() を jest.fn() に修正
     const onApproveMock = jest.fn();
     render(
-      <BusinessApplicationList 
-        applications={mockApplications} 
-        onApprove={onApproveMock} 
-        onReject={jest.fn()} 
+      <BusinessApplicationList
+        applications={mockApplications}
+        onApprove={onApproveMock}
+        onReject={jest.fn()}
       />
     );
 
@@ -64,10 +67,10 @@ describe('BusinessApplicationList', () => {
     // vi.fn() を jest.fn() に修正
     const onRejectMock = jest.fn();
     render(
-      <BusinessApplicationList 
-        applications={mockApplications} 
-        onApprove={jest.fn()} 
-        onReject={onRejectMock} 
+      <BusinessApplicationList
+        applications={mockApplications}
+        onApprove={jest.fn()}
+        onReject={onRejectMock}
       />
     );
 
@@ -81,11 +84,7 @@ describe('BusinessApplicationList', () => {
   // 4. データが空の場合のテスト
   it('申請が0件の時、メッセージが表示されること', () => {
     render(
-      <BusinessApplicationList 
-        applications={[]} 
-        onApprove={jest.fn()} 
-        onReject={jest.fn()} 
-      />
+      <BusinessApplicationList applications={[]} onApprove={jest.fn()} onReject={jest.fn()} />
     );
 
     expect(screen.getByText('現在、未処理の申請はありません。')).toBeInTheDocument();

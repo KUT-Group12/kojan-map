@@ -5,9 +5,7 @@ import { User } from '../types';
 // 子コンポーネントをモック化
 jest.mock('../components/UserBlockViewScreen', () => ({
   UserBlockViewScreen: ({ user }: any) => (
-    <div data-testid="user-block-view">
-      ブロックユーザー数: {user.blockedUsers?.length || 0}
-    </div>
+    <div data-testid="user-block-view">ブロックユーザー数: {user.blockedUsers?.length || 0}</div>
   ),
 }));
 

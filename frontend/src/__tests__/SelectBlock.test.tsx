@@ -27,17 +27,13 @@ describe('SelectBlock コンポーネント', () => {
   });
 
   test('ブロックボタンが表示されていること', () => {
-    render(
-      <SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />
-    );
+    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
 
     expect(screen.getByRole('button', { name: /ブロック/i })).toBeInTheDocument();
   });
 
   test('確認ダイアログで「OK」を押すとブロック処理が実行されること', () => {
-    render(
-      <SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />
-    );
+    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
 
     const button = screen.getByRole('button', { name: /ブロック/i });
     fireEvent.click(button);
@@ -56,9 +52,7 @@ describe('SelectBlock コンポーネント', () => {
     // このテストケースだけ confirm が false を返すように設定
     (window.confirm as jest.Mock).mockReturnValue(false);
 
-    render(
-      <SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />
-    );
+    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
 
     const button = screen.getByRole('button', { name: /ブロック/i });
     fireEvent.click(button);
@@ -79,9 +73,7 @@ describe('SelectBlock コンポーネント', () => {
     // console.error を一時的に消す（ログを汚さないため）
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    render(
-      <SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />
-    );
+    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
 
     const button = screen.getByRole('button', { name: /ブロック/i });
     fireEvent.click(button);

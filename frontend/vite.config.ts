@@ -4,7 +4,6 @@ import path from 'path';
 import { defineConfig } from 'vitest/config';
 //import react from '@vitejs/plugin-react';
 
-
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -60,8 +59,8 @@ export default defineConfig({
     open: true,
   },
   test: {
-    globals: true,           // describe や expect をグローバルで使う
-    environment: 'jsdom',    // ブラウザ環境をシミュレート
+    globals: true, // describe や expect をグローバルで使う
+    environment: 'jsdom', // ブラウザ環境をシミュレート
     setupFiles: './src/setupTests.ts', // ここが重要
   },
 });

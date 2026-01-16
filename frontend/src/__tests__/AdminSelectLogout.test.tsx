@@ -8,10 +8,10 @@ describe('AdminSelectLogout コンポーネント', () => {
 
     // 2. コンポーネントにモック関数を注入してレンダリング
     render(<AdminSelectLogout onLogoutAction={mockLogoutAction} />);
-    
+
     // 3. ボタンを取得（正規表現 /ログアウト/i で柔軟にマッチさせます）
     const logoutButton = screen.getByRole('button', { name: /ログアウト/i });
-    
+
     // 4. ボタンをクリック
     fireEvent.click(logoutButton);
 

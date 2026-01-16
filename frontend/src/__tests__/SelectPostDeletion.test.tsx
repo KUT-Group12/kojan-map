@@ -27,9 +27,7 @@ describe('SelectPostDeletion コンポーネント', () => {
   });
 
   test('削除ボタンが正しく表示されていること', () => {
-    render(
-      <SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />
-    );
+    render(<SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />);
 
     const deleteButton = screen.getByRole('button', { name: /削除/i });
     expect(deleteButton).toBeInTheDocument();
@@ -37,9 +35,7 @@ describe('SelectPostDeletion コンポーネント', () => {
   });
 
   test('確認ダイアログで「OK」を押すと削除処理が実行されること', () => {
-    render(
-      <SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />
-    );
+    render(<SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />);
 
     const deleteButton = screen.getByRole('button', { name: /削除/i });
     fireEvent.click(deleteButton);
@@ -58,9 +54,7 @@ describe('SelectPostDeletion コンポーネント', () => {
     // confirm が false を返すように設定
     (window.confirm as jest.Mock).mockReturnValue(false);
 
-    render(
-      <SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />
-    );
+    render(<SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />);
 
     const deleteButton = screen.getByRole('button', { name: /削除/i });
     fireEvent.click(deleteButton);

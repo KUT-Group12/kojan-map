@@ -39,7 +39,16 @@ describe('UserDisplayMyPage コンポーネント', () => {
   };
 
   const mockPins: Pin[] = [
-    { id: 'p1', title: '投稿1', userId: 'user-1', createdAt: new Date(), userName: '田中', userRole: 'general', images: [], reactions: 0 } as any
+    {
+      id: 'p1',
+      title: '投稿1',
+      userId: 'user-1',
+      createdAt: new Date(),
+      userName: '田中',
+      userRole: 'general',
+      images: [],
+      reactions: 0,
+    } as any,
   ];
 
   const defaultProps = {
@@ -63,25 +72,25 @@ describe('UserDisplayMyPage コンポーネント', () => {
   });
 
   test('タブを切り替えるとコンテンツが切り替わること', async () => {
-    const user = userEvent.setup(); 
+    const user = userEvent.setup();
     render(<UserDisplayMyPage {...defaultProps} />);
-    
+
     // 1. 初期状態：投稿履歴が表示されていること
     expect(screen.getByTestId('post-history')).toBeInTheDocument();
-    
+
     // 2. リアクションタブをクリック
     const reactionTab = screen.getByRole('tab', { name: /リアクション/ });
-    await user.click(reactionTab); 
-  
+    await user.click(reactionTab);
+
     // Radix Tabs の切り替えを待機
     await waitFor(() => {
       expect(screen.getByTestId('reaction-view')).toBeInTheDocument();
     });
-    
+
     // 3. 設定タブをクリック
     const settingsTab = screen.getByRole('tab', { name: /設定/ });
     await user.click(settingsTab);
-  
+
     await waitFor(() => {
       expect(screen.getByTestId('user-settings')).toBeInTheDocument();
     });

@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { User } from '../types';
 import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
-import ProcessBusinessRequestScreen from "./ProcessBusinessRequestScreen";
+import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import {
   Users,
   AlertTriangle,

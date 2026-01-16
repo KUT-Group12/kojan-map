@@ -47,7 +47,7 @@ describe('DisplayPostList (PinDetailModal)', () => {
 
   it('投稿のタイトル、説明、位置情報が正しく表示されること', () => {
     render(<DisplayPostList {...defaultProps} />);
-    
+
     expect(screen.getAllByText('高知のおいしいお店')[0]).toBeInTheDocument();
     expect(screen.getByText('ここのカツオのタタキは絶品です。')).toBeInTheDocument();
     // 座標の表示確認（toFixed(4)されているか）
@@ -70,7 +70,7 @@ describe('DisplayPostList (PinDetailModal)', () => {
     render(<DisplayPostList {...defaultProps} />);
     const addButton = screen.getByText('投稿を追加');
     fireEvent.click(addButton);
-    
+
     expect(defaultProps.onOpenCreateAtLocation).toHaveBeenCalledWith(
       mockPin.latitude,
       mockPin.longitude

@@ -55,7 +55,7 @@ describe('UserTriggerReaction コンポーネント', () => {
 
     const button = screen.getByRole('button', { name: '事業者はリアクション不可' });
     expect(button).toBeDisabled();
-    
+
     // クリックしても関数が呼ばれないこと
     fireEvent.click(button);
     expect(mockOnReaction).not.toHaveBeenCalled();
