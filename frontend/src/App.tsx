@@ -30,7 +30,7 @@ export default function App() {
 
   // LoginScreenから渡される引数に合わせて修正
   const handleLogin = (role: UserRole, googleId: string) => {
-    // 【解説】ここで LoginScreen から受け取った情報を使って userData を組み立てます
+    // バックエンドと繋がるまでは、モックデータが必要
     const userData: User = {
       id: googleId, // Googleから取得したIDを使用
       email: `${googleId}@example.com`, // 本来はGoogleから取得するが、今は仮のメール
