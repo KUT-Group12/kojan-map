@@ -95,13 +95,6 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	// 画像がある場合は最初の画像を使用
-	var postImage []byte
-	if len(req.Images) > 0 {
-		// base64文字列のデコード処理が必要（TODO: base64デコード実装）
-		// 現状では画像を保存しない
-		// postImage = []byte(req.Images[0])
-	}
 
 	// 認証ミドルウェアで設定されたユーザーIDをコンテキストから取得
 	userIDValue, exists := c.Get("userID")
