@@ -117,7 +117,9 @@ func createSessionsTable() error {
 		google_id VARCHAR(255) NOT NULL,
 		expiry TIMESTAMP NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		KEY idx_google_id (google_id)
+		revoked_at TIMESTAMP NULL,
+		KEY idx_google_id (google_id),
+		KEY idx_revoked_at (revoked_at)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }

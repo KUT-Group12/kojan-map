@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -15,17 +16,19 @@ import (
 	"kojan-map/user/models"
 )
 
-type AuthService struct {
-	db *gorm.DB
-}
+var jwtSecret []byte
 
-// getJWTSecret JWT秘密鍵を環境変数から取得
-func getJWTSecret() []byte {
+func init() {
+	// JWT秘密鍵を起動時に初期化
 	secret := os.Getenv("JWT_SECRET_KEY")
 	if secret == "" {
-		panic("JWT_SECRET_KEY is not set in environment variables")
+		log.Fatal("JWT_SECRET_KEY environment variable is not set")
 	}
-	return []byte(secret)
+	jwtSecret = []byte(secret)
+}
+
+type AuthService struct {
+	db *gorm.DB
 }
 
 func NewAuthService(db *gorm.DB) *AuthService {
@@ -173,14 +176,14 @@ func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(getJWTSecret())
+	return token.SignedString(jwtSecret)
 }
 
 // VerifyJWT - Verify and parse JWT token
 func (as *AuthService) VerifyJWT(tokenString string) (*JWTClaims, error) {
 	claims := &JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return getJWTSecret(), nil
+		return jwtSecret, nil
 	})
 
 	if err != nil {
