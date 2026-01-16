@@ -103,7 +103,7 @@ func setupUserRoutes(
 
 	// 認証関連ルート
 	router.POST("/api/users/register", authHandler.Register)
-	router.PUT("/api/auth/logout", authHandler. Logout)
+	router.PUT("/api/auth/logout", authHandler.Logout)
 	router.PUT("/api/auth/withdrawal", authHandler.Withdrawal)
 	// Google OAuth 認証エンドポイント
 	router.POST("/api/auth/exchange-token", authHandler.ExchangeToken)
@@ -112,7 +112,7 @@ func setupUserRoutes(
 	router.POST("/api/auth/refresh", authHandler.Refresh)
 
 	// ユーザー情報ルート
-	router.GET("/api/member/info", userHandler. GetMemberInfo)
+	router.GET("/api/member/info", userHandler.GetMemberInfo)
 	router.GET("/api/mypage/details", userHandler.GetMypageDetails)
 	router.GET("/api/posts/history/reactions", userHandler.GetReactionHistory)
 
@@ -121,20 +121,20 @@ func setupUserRoutes(
 	router.GET("/api/posts/detail", postHandler.GetPostDetail)
 	router.POST("/api/posts", postHandler.CreatePost)
 	router.DELETE("/api/posts", postHandler.DeletePost)
-	router.GET("/api/posts/history", postHandler. GetPostHistory)
+	router.GET("/api/posts/history", postHandler.GetPostHistory)
 	router.GET("/api/posts/pin/scale", postHandler.GetPinSize)
 	router.POST("/api/posts/reaction", postHandler.AddReaction)
 	router.GET("/api/posts/reaction/status", postHandler.CheckReactionStatus)
 
 	// 検索ルート
-	router. GET("/api/posts/search", postHandler.SearchByKeyword)
+	router.GET("/api/posts/search", postHandler.SearchByKeyword)
 	router.GET("/api/posts/search/genre", postHandler.SearchByGenre)
 	router.GET("/api/posts/search/period", postHandler.SearchByPeriod)
 
 	// ブロック関連ルート
-	router.POST("/api/users/block", blockHandler. BlockUser)
+	router.POST("/api/users/block", blockHandler.BlockUser)
 	router.DELETE("/api/users/block", blockHandler.UnblockUser)
-	router.GET("/api/users/block/list", blockHandler. GetBlockList)
+	router.GET("/api/users/block/list", blockHandler.GetBlockList)
 
 	// 通報関連ルート
 	router.POST("/api/report", reportHandler.CreateReport)
