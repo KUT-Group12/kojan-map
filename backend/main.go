@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 
 	"kojan-map/router"
 	"kojan-map/shared/config"
@@ -79,8 +80,8 @@ func main() {
 // setupUserRoutes 一般会員用ルーティングを設定
 func setupUserRoutes(
 	router *gin.Engine,
-	db interface{},
-	authMiddleware gin. HandlerFunc,
+	db *gorm.DB,
+	authMiddleware gin.HandlerFunc,
 ) {
 	// サービスとハンドラーを初期化
 	userService := &services.UserService{}

@@ -110,14 +110,18 @@ func (us *UserService) Logout(sessionID string) error {
 		return errors.New("sessionID is required")
 	}
 
-	result := config.DB.Where("id = ?", sessionID).Delete(&models.Session{})
+	// [must] セッションを削除するのではなく、RevokedAt を設定して無効化
+	now := time.Now()
+	result := config.DB.Model(&models.Session{}).
+		Where("id = ?", sessionID).
+		Update("revoked_at", now)
+
 	if result.Error != nil {
 		return fmt.Errorf("failed to logout: %w", result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return errors.New("session not found")
 	}
-
 	return nil
 }
 
@@ -142,9 +146,12 @@ func (us *UserService) DeleteUser(googleID string) error {
 			return us.handleDBError(err)
 		}
 
-		// 関連するセッションを削除
-		if err := tx.Where("google_id = ?", googleID).Delete(&models.Session{}).Error; err != nil {
-			return fmt.Errorf("failed to delete sessions: %w", err)
+		// 関連するセッションを無効化（削除ではなく RevokedAt を設定）
+		now := time.Now()
+		if err := tx.Model(&models.Session{}).
+			Where("google_id = ?", googleID).
+			Update("revoked_at", now).Error; err != nil {
+			return fmt.Errorf("failed to revoke sessions: %w", err)
 		}
 
 		// ユーザーを削除（ソフトデリート）

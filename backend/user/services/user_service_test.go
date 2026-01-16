@@ -271,10 +271,11 @@ func TestUserService_Logout(t *testing.T) {
 	err := service.Logout(sessionID)
 	assert.NoError(t, err)
 
-	// セッションが削除されたか確認
-	var deletedSession models.Session
-	err = db.Where("id = ?", sessionID).First(&deletedSession).Error
-	assert.Error(t, err)
+	// セッションが無効化されたか確認（RevokedAtが設定されている）
+	var revokedSession models.Session
+	err = db.Where("id = ?", sessionID).First(&revokedSession).Error
+	assert.NoError(t, err)
+	assert.NotNil(t, revokedSession.RevokedAt)
 }
 
 func TestUserService_Logout_NotFound(t *testing.T) {
