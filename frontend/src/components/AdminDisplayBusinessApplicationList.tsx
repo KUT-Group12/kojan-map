@@ -6,9 +6,9 @@ import { CheckCircle, XCircle } from 'lucide-react';
 import { BusinessRequest } from '../types';
 
 export interface AdminDisplayBusinessRequest extends BusinessRequest {
-  fromName: string;
-  gmail: string;
-  applicationDate: string;
+  fromName: string; // 申請者氏名
+  gmail: string; // 申請者メールアドレス
+  applicationDate: string; // 申請日時
 }
 
 interface Props {
