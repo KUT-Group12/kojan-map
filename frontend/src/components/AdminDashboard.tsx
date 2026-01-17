@@ -106,18 +106,18 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const [userList, setUsers] = useState<AdminUser[]>([
     {
-      googleId: 'google-u1', // id -> googleId
-      fromName: '山田太郎', // name -> fromName
-      gmail: 'yamada@example.com', // email -> gmail
-      role: 'user', // 'general' -> 'user' (設計書 表7 準拠)
-      registrationDate: '2025-11-01', // 追加 (表7 カラム)
-      postCount: 5, // posts -> postCount
+      googleId: 'google-u1', // 設計書準拠: googleId
+      fromName: '山田太郎', // 設計書準拠: fromName (User型を継承)
+      gmail: 'yamada@example.com', // 設計書準拠: gmail
+      role: 'general', // 修正: 型定義 UserRole 'general' | 'business' | 'admin' に合わせる
+      registrationDate: '2025-11-01',
+      postCount: 5, // AdminUser で拡張した項目
     },
     {
       googleId: 'google-u2',
       fromName: '山田商店',
       gmail: 'yamadashouten@example.com',
-      role: 'business',
+      role: 'business', // 事業者
       registrationDate: '2025-10-25',
       postCount: 12,
     },
@@ -125,7 +125,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       googleId: 'google-u3',
       fromName: '佐藤花子',
       gmail: 'sato@example.com',
-      role: 'user',
+      role: 'general', // 一般ユーザー
       registrationDate: '2025-11-10',
       postCount: 3,
     },

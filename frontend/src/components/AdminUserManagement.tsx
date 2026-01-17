@@ -2,16 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Trash2 } from 'lucide-react';
+import { User } from '../types';
 
 // ユーザーの型定義
-export interface AdminUser {
-  googleId: string; // id -> googleId (PK)
-  fromName: string; // 表示名 (※DBには無いがモジュール設計 M4-6-1等で取得対象) [cite: 128]
-  gmail: string; // email -> gmail
-  role: 'user' | 'business' | 'admin'; // 会員区分 (ENUM)
-  registrationDate: string; // 登録日
-  // 統計情報 (表12 投稿内容 の postId 数を外部でカウント)
-  postCount: number; // posts -> postCount
+export interface AdminUser extends User {
+  postCount: number; // 投稿数
 }
 
 interface AdminUserManagementProps {
@@ -20,10 +15,11 @@ interface AdminUserManagementProps {
 }
 
 export default function AdminUserManagement({ users, onDeleteAccount }: AdminUserManagementProps) {
-  const handleDeleteClick = (googleId: string, userName: string) => {
-    // ユーザーへの確認
-    if (confirm(`${userName} さんのアカウントを削除してもよろしいですか？`)) {
-      onDeleteAccount(googleId); // googleId を渡す [cite: 128]
+  const handleDeleteClick = (googleId: string, fromName?: string) => {
+    // ユーザーへの確認（名前がない場合はIDを表示）
+    const displayName = fromName || googleId;
+    if (confirm(`${displayName} さんのアカウントを削除してもよろしいですか？`)) {
+      onDeleteAccount(googleId);
     }
   };
 
@@ -39,12 +35,15 @@ export default function AdminUserManagement({ users, onDeleteAccount }: AdminUse
             {users.length > 0 ? (
               users.map((userItem) => (
                 <div
-                  key={userItem.googleId} // googleId を key に使用
+                  key={userItem.googleId}
                   className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
                 >
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <p className="font-medium text-slate-900">{userItem.fromName}</p>
+                      {/* fromName が optional なのでフォールバックを設定 */}
+                      <p className="font-medium text-slate-900">
+                        {userItem.fromName || '名称未設定'}
+                      </p>
                       <Badge
                         className={
                           userItem.role === 'business'
@@ -54,7 +53,6 @@ export default function AdminUserManagement({ users, onDeleteAccount }: AdminUse
                               : 'bg-slate-400'
                         }
                       >
-                        {/* 会員区分の表示  */}
                         {userItem.role === 'business'
                           ? '事業者'
                           : userItem.role === 'admin'
