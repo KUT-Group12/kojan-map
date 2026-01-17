@@ -4,12 +4,25 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
-import { Inquiry } from '../lib/mockData'; // 型定義をインポート
 
-interface AdminContactManagementProps {
+export interface Inquiry {
+  askId: number; // INT -> number
+  date: string; // DATETIME -> ISO string
+  subject: string; // VARCHAR(100) -> 件名
+  text: string; // TEXT -> 本文 (messageから変更)
+  userId: string; // VARCHAR(50) -> Google ID (fromNameやroleの代わり)
+  askFlag: boolean; // BOOLEAN (false: 未対応, true: 対応済み)
+  // 以下はフロントエンドの管理上必要なプロパティ
+  email: string;
+  fromName: string; // DBに名前カラムがない場合、userIdから引くか結合が必要
+  role: 'general' | 'business';
+  draft?: string; // 下書き
+}
+
+export interface AdminContactManagementProps {
   inquiries: Inquiry[];
   setInquiries: React.Dispatch<React.SetStateAction<Inquiry[]>>;
-  onDeleteInquiry: (id: string) => void;
+  onDeleteInquiry: (askId: number) => void; // string -> number
 }
 
 export default function AdminContactManagement({
@@ -26,12 +39,13 @@ export default function AdminContactManagement({
   // フィルタリングロジック
   const filteredInquiries = inquiries.filter((it) => {
     const q = searchQuery.trim().toLowerCase();
-    if (showOnlyOpen && it.status !== 'open') return false;
+    // status !== 'open' -> askFlag (対応済み)
+    if (showOnlyOpen && it.askFlag) return false;
     if (!q) return true;
     return (
       it.fromName.toLowerCase().includes(q) ||
       it.email.toLowerCase().includes(q) ||
-      it.message.toLowerCase().includes(q)
+      it.text.toLowerCase().includes(q) // message -> text
     );
   });
 
@@ -45,7 +59,8 @@ export default function AdminContactManagement({
     if (!replyingInquiry) return;
     setInquiries((prev) =>
       prev.map((q) =>
-        q.id === replyingInquiry.id ? { ...q, status: 'responded', draft: undefined } : q
+        // id -> askId, status -> askFlag
+        q.askId === replyingInquiry.askId ? { ...q, askFlag: true, draft: undefined } : q
       )
     );
     toast.success('メールを送信しました。問い合わせを対応済みにしました。');
@@ -55,7 +70,7 @@ export default function AdminContactManagement({
   const handleSaveDraft = () => {
     if (!replyingInquiry) return;
     setInquiries((prev) =>
-      prev.map((q) => (q.id === replyingInquiry.id ? { ...q, draft: replyText } : q))
+      prev.map((q) => (q.askId === replyingInquiry.askId ? { ...q, draft: replyText } : q))
     );
     toast.success('下書きを保存しました。');
     closeModal();
@@ -83,7 +98,7 @@ export default function AdminContactManagement({
               <div className="flex items-center bg-white rounded shadow px-2 py-1 border">
                 <input
                   className="w-64 px-2 py-1 text-sm outline-none"
-                  placeholder="検索（名前・メール・本文）"
+                  placeholder="検索（名前・メール・件名・本文）"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -96,10 +111,11 @@ export default function AdminContactManagement({
               >
                 未対応のみ
               </Button>
-              <Badge className="bg-emerald-500">{inquiries.length}</Badge>
+              <Badge className="bg-emerald-500">{filteredInquiries.length}</Badge>
             </div>
           </div>
         </CardHeader>
+
         <CardContent>
           <div className="space-y-3">
             {filteredInquiries.length === 0 ? (
@@ -108,7 +124,7 @@ export default function AdminContactManagement({
               </div>
             ) : (
               filteredInquiries.map((inq) => (
-                <Card key={inq.id} className="shadow-sm border-slate-100">
+                <Card key={inq.askId} className="shadow-sm border-slate-100">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -120,20 +136,28 @@ export default function AdminContactManagement({
                             {inq.role === 'business' ? '事業者' : '一般'}
                           </Badge>
                           <span className="text-xs text-slate-500">{inq.date}</span>
-                          <Badge className={inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'}>
-                            {inq.status === 'open' ? '未対応' : '対応済み'}
+                          {/* askFlag === false が「未処理」 */}
+                          <Badge className={!inq.askFlag ? 'bg-red-500' : 'bg-slate-400'}>
+                            {!inq.askFlag ? '未対応' : '対応済み'}
                           </Badge>
                           {inq.draft && (
                             <Badge className="bg-yellow-500 text-slate-900">下書きあり</Badge>
                           )}
                         </div>
+
+                        {/* subject（件名）と text（本文）を表示 */}
+                        <p className="text-sm font-bold text-slate-800 mb-1">{inq.subject}</p>
                         <p className="text-sm text-slate-700 mb-2 whitespace-pre-wrap">
-                          {inq.message}
+                          {inq.text}
                         </p>
-                        <p className="text-xs text-slate-500">{inq.email}</p>
+                        <p className="text-xs text-slate-400">
+                          {inq.email} <span className="ml-2">| UserID: {inq.userId}</span>
+                        </p>
                       </div>
+
                       <div className="flex flex-col ml-4 space-y-2">
-                        {inq.status === 'open' && (
+                        {/* 未対応（false）の場合のみ返信ボタンを表示 */}
+                        {!inq.askFlag && (
                           <Button
                             size="sm"
                             className="bg-blue-600 hover:bg-blue-700"
@@ -145,7 +169,7 @@ export default function AdminContactManagement({
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => onDeleteInquiry(inq.id)}
+                          onClick={() => onDeleteInquiry(inq.askId)}
                         >
                           削除
                         </Button>
@@ -173,8 +197,7 @@ export default function AdminContactManagement({
               <div>
                 <h3 className="text-lg font-bold">{`返信: ${replyingInquiry.fromName} 様`}</h3>
                 <p className="text-sm text-slate-500">
-                  {replyingInquiry.email} ({replyingInquiry.role === 'business' ? '事業者' : '一般'}
-                  )
+                  宛先: {replyingInquiry.email} | 件名: {replyingInquiry.subject}
                 </p>
               </div>
               <button className="text-slate-400 hover:text-slate-600" onClick={closeModal}>
@@ -184,7 +207,7 @@ export default function AdminContactManagement({
 
             <textarea
               className="w-full h-48 p-3 border rounded-md resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="返信内容を入力してください。メール送信すると自動で対応済みに切り替わります。"
+              placeholder="返信内容を入力してください..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
             />

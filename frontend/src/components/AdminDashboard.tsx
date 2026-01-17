@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { User } from '../types';
-import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
+import { mockPins } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import AdminReport, { AdminReportProps, Report } from './AdminReport';
 import AdminUserManagement from './AdminUserManagement';
-import AdminContactManagement from './AdminContactManagement';
+import AdminContactManagement, { Inquiry } from './AdminContactManagement';
 import {
   Users,
   AlertTriangle,
@@ -101,6 +101,42 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     { id: 'u2', name: '山田商店', email: 'yamadashouten@example.com', role: 'business', posts: 12 },
     { id: 'u3', name: '佐藤花子', email: 'sato@example.com', role: 'general', posts: 3 },
   ]);
+
+  const mockInquiries: Inquiry[] = [
+    {
+      askId: 1, // id: 'q1' -> askId: 1
+      fromName: '佐藤花子',
+      email: 'sato@example.com',
+      role: 'general',
+      userId: 'google-user-001', // 追加: 問い合わせ元のGoogle ID
+      subject: 'アプリの使い方について', // 追加: 件名
+      text: 'アプリの使い方について教えてください。', // message -> text
+      date: '2025-11-12 14:30', // DATETIME形式を意識
+      askFlag: false, // status: 'open' -> false (未対応)
+    },
+    {
+      askId: 2,
+      fromName: '山田商店',
+      email: 'yamadashouten@example.com',
+      role: 'business',
+      userId: 'google-biz-002',
+      subject: '事業者登録の審査期間',
+      text: '事業者登録について質問があります。申請してから何日ほどかかりますか？',
+      date: '2025-11-10 09:15',
+      askFlag: false,
+    },
+    {
+      askId: 3,
+      fromName: '田中太郎',
+      email: 'tanaka@example.com',
+      role: 'general',
+      userId: 'google-user-003',
+      subject: '投稿の反映不具合',
+      text: '投稿が反映されません。再起動しても直りません。',
+      date: '2025-11-08 18:00',
+      askFlag: true, // status: 'responded' -> true (対応済み)
+    },
+  ];
 
   const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
 
@@ -216,9 +252,12 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     toast.success('問い合わせを返信済みにしました');
   };*/
 
-  const handleDeleteInquiry = (id: string) => {
+  const handleDeleteInquiry = (askId: number) => {
     if (confirm('この問い合わせを削除しますか？')) {
-      setInquiries((prev) => prev.filter((q) => q.id !== id));
+      setInquiries((prev) =>
+        // id ではなく askId でフィルタリング
+        prev.filter((q) => q.askId !== askId)
+      );
       toast.success('問い合わせを削除しました');
     }
   };
