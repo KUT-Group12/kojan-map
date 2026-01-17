@@ -68,7 +68,7 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
               {user.role === 'business' && user.businessName && (
                 <div>

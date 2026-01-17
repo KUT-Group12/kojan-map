@@ -263,8 +263,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     const pin: Pin = {
       ...newPin,
       id: `pin_${Date.now()}`,
-      userId: user.id,
-      userName: user.role === 'business' ? user.name : '匿名',
+      userId: user.googleId,
+      userName: '匿名',
       userRole: user.role,
       businessName: user.businessName,
       businessIcon: user.businessIcon,
@@ -315,11 +315,11 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
         ...newPinData,
         genre: newPinData.genre as any, // または newPinData.genre as PinGenre
         id: result.id,
-        userId: user.id,
-        userName: user.role === 'business' ? user.name : '匿名',
+        userId: user.googleId,
+        userName: '匿名',
         userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
+        businessName: "",
+        businessIcon: "",
         reactions: 0,
         createdAt: new Date(),
         viewCount: 0,
@@ -361,13 +361,13 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
 
       const pin: Pin = {
         ...newPinData,
-        genre: newPinData.genre as any,
+        genre: newPinData.genre as PinGenre,
         id: result.id,
-        userId: user.id,
-        userName: user.role === 'business' ? user.name : '匿名',
+        userId: user.googleId,
+        userName: '匿名',
         userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
+        businessName: "",
+        businessIcon: "",
         reactions: 0,
         createdAt: new Date(),
         viewCount: 0,
@@ -390,12 +390,12 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     // 既存のピンも更新（名前／事業者名／アイコン）
     const updatePins = (pinsArray: Pin[]) =>
       pinsArray.map((p) =>
-        p.userId === updatedUser.id
+        p.userId === updatedUser.googleId
           ? {
               ...p,
-              businessIcon: updatedUser.businessIcon,
-              businessName: updatedUser.businessName,
-              userName: updatedUser.name,
+              businessIcon: undefined,
+              businessName: "",
+              userName: "",
             }
           : p
       );
@@ -403,20 +403,20 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     setPins(updatePins(pins));
     setFilteredPins(updatePins(filteredPins));
 
-    if (selectedPin && selectedPin.userId === updatedUser.id) {
+    if (selectedPin && selectedPin.userId === updatedUser.googleId) {
       setSelectedPin({
         ...selectedPin,
-        businessIcon: updatedUser.businessIcon,
-        businessName: updatedUser.businessName,
-        userName: updatedUser.name,
+        businessIcon: undefined,
+        businessName: "",
+        userName: "",
       });
     }
   };
 
 
   const handleBlockUser = (blockUserId: string) => {
-    const nextBlocked = Array.from(new Set([...(user.blockedUsers || []), blockUserId]));
-    const updatedUser: User = { ...user, blockedUsers: nextBlocked };
+    const nextBlocked = Array.from(new Set([...([]), blockUserId]));
+    const updatedUser: User = user;
     onUpdateUser(updatedUser);
   };
 
@@ -466,7 +466,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           user.role === 'business' ? (
             <BusinessDisplayMyPage 
               user={user}
-              pins={pins.filter(p => p.userId === user.id)}
+              pins={pins.filter(p => p.userId === user.googleId)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
@@ -475,7 +475,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           ) : (
             <UserDisplayMyPage 
               user={user}
-              pins={pins.filter(p => p.userId === user.id)}
+              pins={pins.filter(p => p.userId === user.googleId)}
               reactedPins={Array.from(reactedPins).map(id => pins.find(p => p.id === id)!).filter(Boolean)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
@@ -489,7 +489,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           <div className="flex-1 h-full">
             <BusinessDashboard 
               user={user}
-              pins={pins.filter(p => p.userId === user.id)}
+              pins={pins.filter(p => p.userId === user.googleId)}
               onPinClick={handlePinClick}
             />
           </div>

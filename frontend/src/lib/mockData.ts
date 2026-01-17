@@ -3,8 +3,8 @@ import { Pin, PinGenre } from '../types';
 export const genreColors: Record<PinGenre, string> = {
   food: '#EF4444',      // 赤
   event: '#F59E0B',     // オレンジ
-  scenery: '#10B981',   // 緑
-  shop: '#3B82F6',      // 青
+  scene: '#10B981',   // 緑
+  store: '#3B82F6',      // 青
   emergency: '#8B5CF6', // 紫
   other: '#6B7280',     // グレー
 };
@@ -12,8 +12,8 @@ export const genreColors: Record<PinGenre, string> = {
 export const genreLabels: Record<PinGenre, string> = {
   food: 'グルメ',
   event: 'イベント',
-  scenery: '景色',
-  shop: 'お店',
+  scene: '景色',
+  store: 'お店',
   emergency: '緊急情報',
   other: 'その他',
 };
@@ -47,7 +47,7 @@ export const mockPins: Pin[] = [
     longitude: 139.6553,
     title: '週末セール開催中！',
     description: '今週末限定で全商品20%オフ！ぜひお越しください。',
-    genre: 'shop',
+    genre: 'store',
     images: [],
     reactions: 67,
     createdAt: new Date('2025-11-02T09:00:00'),
@@ -62,7 +62,7 @@ export const mockPins: Pin[] = [
     longitude: 139.6453,
     title: '桜が満開です',
     description: '公園の桜が見頃を迎えています。お花見におすすめです！',
-    genre: 'scenery',
+    genre: 'scene',
     images: [],
     reactions: 89,
     createdAt: new Date('2025-11-01T15:20:00'),

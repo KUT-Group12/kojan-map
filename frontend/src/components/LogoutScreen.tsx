@@ -1,11 +1,7 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { LogOut, Check } from 'lucide-react'; // 修正箇所1: Checkを追加
-
-interface User {
-  email: string;
-  role: 'business' | 'general' | 'admin';
-}
+import { LogOut, Check } from 'lucide-react';
+import { User } from '../types';
 
 interface LogoutScreenProps {
   user: User;
@@ -39,7 +35,7 @@ export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">メールアドレス</span>
-                <span className="font-medium text-gray-800">{user.email}</span>
+                <span className="font-medium text-gray-800">{user.gmail}</span>
               </div>
             </div>
 

@@ -46,7 +46,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
-              ご質問や要望は、登録されているメールアドレス（{user.email}）に返信されます。
+              ご質問や要望は、登録されているメールアドレス（{user.gmail}）に返信されます。
             </p>
           </div>
 

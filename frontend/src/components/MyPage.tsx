@@ -23,7 +23,8 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editingNameValue, setEditingNameValue] = useState(user.name || '');
+  // TODO: user.name no longer exists in the new User type
+  const [editingNameValue, setEditingNameValue] = useState('');
 
   const handleBusinessRegistration = () => {
     toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
@@ -112,14 +113,15 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                         }}>
                           保存
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => { setIsEditingName(false); setEditingNameValue(user.name); }}>
+                        <Button size="sm" variant="outline" onClick={() => { setIsEditingName(false); setEditingNameValue(''); }}>
                           キャンセル
                         </Button>
                       </>
                     ) : (
                       <>
-                        <p>{user.name}</p>
-                        <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>編集</Button>
+                        {/* TODO: user.name no longer exists in the new User type */}
+                        <p>-</p>
+                        {/* <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>編集</Button> */}
                       </>
                     )}
                   </div>
@@ -129,7 +131,7 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">アカウント種別</p>
@@ -139,7 +141,7 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
               </div>
               <div>
                 <p className="text-sm text-gray-600">登録日</p>
-                <p>{formatDate(user.createdAt)}</p>
+                <p>{formatDate(new Date(user.registrationDate))}</p>
               </div>
             </div>
 
@@ -199,18 +201,11 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                 <div className="flex-shrink-0">
                   <p className="text-sm text-gray-600 mb-2">現在のアイコン</p>
                   <div className="w-32 h-32 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
-                    {user.businessIcon ? (
-                      <img 
-                        src={user.businessIcon} 
-                        alt="事業者アイコン" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-center text-gray-400">
-                        <ImageIcon className="w-12 h-12 mx-auto mb-2" />
-                        <p className="text-xs">未設定</p>
-                      </div>
-                    )}
+                    {/* TODO: user.businessIcon no longer exists in the new User type */}
+                    <div className="text-center text-gray-400">
+                      <ImageIcon className="w-12 h-12 mx-auto mb-2" />
+                      <p className="text-xs">未設定</p>
+                    </div>
                   </div>
                 </div>
 
@@ -387,27 +382,8 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                 <CardDescription>ブロックしたユーザーの管理</CardDescription>
               </CardHeader>
               <CardContent>
-                {(!user.blockedUsers || user.blockedUsers.length === 0) ? (
-                  <p className="text-gray-500 text-sm">ブロックしたユーザーはいません</p>
-                ) : (
-                  <div className="space-y-2">
-                    {user.blockedUsers.map((userId) => (
-                          <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center space-x-2">
-                              <UserX className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm">ユーザーID: {userId}</span>
-                            </div>
-                            <Button size="sm" variant="outline" onClick={() => {
-                              const next = (user.blockedUsers || []).filter(id => id !== userId);
-                              const updatedUser = { ...user, blockedUsers: next };
-                              onUpdateUser(updatedUser);
-                            }}>
-                              ブロック解除
-                            </Button>
-                          </div>
-                        ))}
-                  </div>
-                )}
+                {/* TODO: blockedUsers no longer exists in the new User type */}
+                <p className="text-gray-500 text-sm">ブロック機能は実装予定です</p>
               </CardContent>
             </Card>
 

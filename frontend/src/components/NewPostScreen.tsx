@@ -292,7 +292,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
-                事業者名「{user.businessName}」として投稿されます
+                事業者として投稿されます
               </p>
             </div>
           ) : (
