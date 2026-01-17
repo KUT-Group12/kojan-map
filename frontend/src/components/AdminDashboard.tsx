@@ -6,7 +6,7 @@ import { User } from '../types';
 import { mockPins } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import AdminReport, { AdminReportProps, Report } from './AdminReport';
-import AdminUserManagement from './AdminUserManagement';
+import AdminUserManagement, { AdminUser } from './AdminUserManagement';
 import AdminContactManagement, { Inquiry } from './AdminContactManagement';
 import {
   Users,
@@ -96,10 +96,31 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     },
   ]);
 
-  const [userList, setUserList] = useState([
-    { id: 'u1', name: '山田太郎', email: 'yamada@example.com', role: 'general', posts: 5 },
-    { id: 'u2', name: '山田商店', email: 'yamadashouten@example.com', role: 'business', posts: 12 },
-    { id: 'u3', name: '佐藤花子', email: 'sato@example.com', role: 'general', posts: 3 },
+  const [userList, setUsers] = useState<AdminUser[]>([
+    {
+      googleId: 'google-u1', // id -> googleId
+      fromName: '山田太郎', // name -> fromName
+      gmail: 'yamada@example.com', // email -> gmail
+      role: 'user', // 'general' -> 'user' (設計書 表7 準拠)
+      registrationDate: '2025-11-01', // 追加 (表7 カラム)
+      postCount: 5, // posts -> postCount
+    },
+    {
+      googleId: 'google-u2',
+      fromName: '山田商店',
+      gmail: 'yamadashouten@example.com',
+      role: 'business',
+      registrationDate: '2025-10-25',
+      postCount: 12,
+    },
+    {
+      googleId: 'google-u3',
+      fromName: '佐藤花子',
+      gmail: 'sato@example.com',
+      role: 'user',
+      registrationDate: '2025-11-10',
+      postCount: 3,
+    },
   ]);
 
   const mockInquiries: Inquiry[] = [
@@ -139,16 +160,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   ];
 
   const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
-
-  /*
-  const systemStats = {
-    totalUsers: 1234,
-    activeUsers: 856,
-    totalPosts: mockPins.length,
-    totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
-    businessUsers: 45,
-    pendingReports: reports.filter((r) => r.status === 'pending').length,
-  };*/
 
   const systemStats = {
     totalUsers: 1234,
@@ -193,8 +204,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   // 未実装の部分はコンソール表示
   const handleResolveReport = (reportId: number) => {
-    // console.log('Resolving report:', reportId);
-    // toast.success('通報を処理しました');
     setReports((prev) =>
       prev.map((report) =>
         // report.id → report.reportId に変更
@@ -208,16 +217,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   };
 
   const handleDeletePost = (postId: number) => {
-    /*
-    if (confirm('この投稿を削除しますか？')) {
-      // 対象の pinId を持つ通報をすべて処理済みに更新
-      setReports((prev) =>
-        prev.map((report) =>
-          report.pinId === pinId ? { ...report, status: 'resolved' as const } : report
-        )
-      );
-      toast.success('投稿を削除し、関連する通報を処理済みにしました');
-    }*/
     if (confirm('この投稿を削除しますか？')) {
       // 対象の postId を持つ通報をすべて処理済み、かつ削除済みに更新
       setReports((prev) =>
@@ -237,20 +236,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const reportProps: AdminReportProps = {
     reports: reports,
-    onDeletePost: handleDeletePost, // これで宣言済みなのでエラーになりません
+    onDeletePost: handleDeletePost,
     onResolveReport: handleResolveReport,
   };
 
-  const handleDeleteAccount = (userId: string) => {
-    setUserList((prev) => prev.filter((user) => user.id !== userId));
+  const handleDeleteAccount = (googleId: string) => {
+    //if (confirm('このアカウントを完全に削除してもよろしいですか？')) {
+    // setUserList を users のステート更新関数（setUsers など）に合わせる
+    setUsers((prev) =>
+      // user.id ではなく user.googleId でフィルタリング
+      prev.filter((user) => user.googleId !== googleId)
+    );
     toast.success('アカウントを削除しました');
+    //}
   };
-
-  /*
-  const handleRespondInquiry = (id: string) => {
-    setInquiries((prev) => prev.map((q) => (q.id === id ? { ...q, status: 'responded' } : q)));
-    toast.success('問い合わせを返信済みにしました');
-  };*/
 
   const handleDeleteInquiry = (askId: number) => {
     if (confirm('この問い合わせを削除しますか？')) {
