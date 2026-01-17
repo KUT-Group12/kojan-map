@@ -5,14 +5,15 @@ import { Badge } from './ui/badge';
 import { User } from '../types';
 import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
+import AdminReport, { AdminReportProps, Report } from './AdminReport';
+import AdminUserManagement from './AdminUserManagement';
+import AdminContactManagement from './AdminContactManagement';
 import {
   Users,
   AlertTriangle,
   TrendingUp,
   MapPin,
   UserCheck,
-  Trash2,
-  CheckCircle,
   LogOut,
   Activity,
   BarChart3,
@@ -43,7 +44,7 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [reports] = useState([
+  const [reports, setReports] = useState<Report[]>([
     {
       id: 'r1',
       pinId: 'pin1',
@@ -92,12 +93,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     },
   ]);
 
+  const [userList, setUserList] = useState([
+    { id: 'u1', name: '山田太郎', email: 'yamada@example.com', role: 'general', posts: 5 },
+    { id: 'u2', name: '山田商店', email: 'yamadashouten@example.com', role: 'business', posts: 12 },
+    { id: 'u3', name: '佐藤花子', email: 'sato@example.com', role: 'general', posts: 3 },
+  ]);
+
   const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showOnlyOpen, setShowOnlyOpen] = useState(false);
-  const [replyModalOpen, setReplyModalOpen] = useState(false);
-  const [replyingInquiry, setReplyingInquiry] = useState<Inquiry | null>(null);
-  const [replyText, setReplyText] = useState('');
 
   const systemStats = {
     totalUsers: 1234,
@@ -140,22 +142,44 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   // 未実装の部分はコンソール表示
   const handleResolveReport = (reportId: string) => {
-    console.log('Resolving report:', reportId);
-    toast.success('通報を処理しました');
+    // console.log('Resolving report:', reportId);
+    // toast.success('通報を処理しました');
+    setReports((prev) =>
+      prev.map((report) =>
+        report.id === reportId
+          ? { ...report, status: 'resolved' as const } // ステータスを更新
+          : report
+      )
+    );
+    toast.success('通報を処理済みにしました');
   };
 
   const handleDeletePost = (pinId: string) => {
+    /*
     if (confirm('この投稿を削除しますか？')) {
       console.log('Resolving pin:', pinId);
       toast.success('投稿を削除しました');
+    }*/
+    if (confirm('この投稿を削除しますか？')) {
+      // 対象の pinId を持つ通報をすべて処理済みに更新
+      setReports((prev) =>
+        prev.map((report) =>
+          report.pinId === pinId ? { ...report, status: 'resolved' as const } : report
+        )
+      );
+      toast.success('投稿を削除し、関連する通報を処理済みにしました');
     }
   };
 
+  const reportProps: AdminReportProps = {
+    reports: reports,
+    onDeletePost: handleDeletePost, // これで宣言済みなのでエラーになりません
+    onResolveReport: handleResolveReport,
+  };
+
   const handleDeleteAccount = (userId: string) => {
-    if (confirm('このアカウントを削除しますか？関連する全ての投稿も削除されます。')) {
-      console.log('Resolving report:', userId);
-      toast.success('アカウントを削除しました');
-    }
+    setUserList((prev) => prev.filter((user) => user.id !== userId));
+    toast.success('アカウントを削除しました');
   };
 
   /*
@@ -226,17 +250,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
             {businessApplications.length > 0 && (
               <Badge className="bg-orange-500">{businessApplications.length}</Badge>
             )}
-          </button>
-          <button
-            onClick={() => setActiveTab('posts')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'posts'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
-          >
-            <MapPin className="w-5 h-5" />
-            <span>投稿管理</span>
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -456,69 +469,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           )}
 
           {/* 通報管理タブ */}
-          {activeTab === 'reports' && (
-            <div className="max-w-5xl space-y-4">
-              {reports.map((report) => (
-                <Card
-                  key={report.id}
-                  className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <Badge
-                            className={report.status === 'pending' ? 'bg-red-500' : 'bg-slate-400'}
-                          >
-                            {report.status === 'pending' ? '未処理' : '処理済み'}
-                          </Badge>
-                          <span className="text-sm text-slate-500">{report.date}</span>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="flex items-center">
-                            <span className="text-sm text-slate-600 w-24">通報者:</span>
-                            <span>{report.reporter}</span>
-                          </p>
-                          <p className="flex items-center">
-                            <span className="text-sm text-slate-600 w-24">理由:</span>
-                            <span className="text-red-600">{report.reason}</span>
-                          </p>
-                          <p className="flex items-center">
-                            <span className="text-sm text-slate-600 w-24">対象投稿ID:</span>
-                            <span className="text-sm text-slate-700">{report.pinId}</span>
-                          </p>
-                        </div>
-                      </div>
-                      {report.status === 'pending' && (
-                        <div className="flex space-x-2 ml-4">
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeletePost(report.pinId)}
-                            className="shadow-md"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            投稿削除
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResolveReport(report.id)}
-                            className="shadow-md"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            却下
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          {activeTab === 'reports' && <AdminReport {...reportProps} />}
+          {/*
+              reports={reports}
+              onDeletePost={handleDeletePost}
+              onResolveReport={handleResolveReport}*/}
 
-          {/* ★事業者申請一覧表示 */}
+          {/* 事業者申請一覧表示 */}
           {activeTab === 'business' && (
             <ProcessBusinessRequestScreen
               applications={businessApplications} // データを貸す
@@ -527,383 +484,18 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
             />
           )}
 
-          {/* 事業者申請タブ */}
-          {/*{activeTab === 'business' && (
-            <div className="max-w-5xl space-y-4">
-              {businessApplications.map((app) => (
-                <Card key={app.id} className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">事業者名</p>
-                          <p>{app.businessName}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">申請者</p>
-                          <p>{app.userName}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">メールアドレス</p>
-                          <p className="text-sm">{app.email}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">電話番号</p>
-                          <p>{app.phone}</p>
-                        </div>
-                        <div className="col-span-2 space-y-1">
-                          <p className="text-xs text-slate-500">住所</p>
-                          <p>{app.address}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">申請日</p>
-                          <p className="text-sm">{app.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2 ml-6">
-                        <Button 
-                          size="sm"
-                          onClick={() => handleApproveBusinessAccount(app.id)}
-                          className="bg-green-600 hover:bg-green-700 shadow-md"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          承認
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleRejectBusinessAccount(app.id)}
-                          className="shadow-md"
-                        >
-                          <XCircle className="w-4 h-4 mr-1" />
-                          却下
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          */}
-
-          {/* 投稿管理タブ */}
-          {activeTab === 'posts' && (
-            <div className="max-w-5xl">
-              <Card className="shadow-xl border-slate-200">
-                <CardHeader>
-                  <CardTitle>投稿一覧</CardTitle>
-                  <CardDescription>全ての投稿の管理</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {mockPins.slice(0, 10).map((pin) => (
-                      <div
-                        key={pin.id}
-                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <p>{pin.title}</p>
-                          <p className="text-sm text-slate-600">
-                            投稿者: {pin.userRole === 'business' ? pin.businessName : pin.userName}
-                          </p>
-                          <div className="flex items-center space-x-3 mt-1">
-                            <Badge variant="outline">{pin.genre}</Badge>
-                            <span className="text-xs text-slate-500">
-                              リアクション: {pin.reactions}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeletePost(pin.id)}
-                          className="shadow-md"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
           {/* ユーザー管理タブ */}
           {activeTab === 'users' && (
-            <div className="max-w-5xl">
-              <Card className="shadow-xl border-slate-200">
-                <CardHeader>
-                  <CardTitle>ユーザー一覧</CardTitle>
-                  <CardDescription>全てのユーザーアカウントの管理</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {[
-                      {
-                        id: 'u1',
-                        name: '山田太郎',
-                        email: 'yamada@example.com',
-                        role: 'general',
-                        posts: 5,
-                      },
-                      {
-                        id: 'u2',
-                        name: '山田商店',
-                        email: 'yamadashouten@example.com',
-                        role: 'business',
-                        posts: 12,
-                      },
-                      {
-                        id: 'u3',
-                        name: '佐藤花子',
-                        email: 'sato@example.com',
-                        role: 'general',
-                        posts: 3,
-                      },
-                    ].map((userItem) => (
-                      <div
-                        key={userItem.id}
-                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <p>{userItem.name}</p>
-                            <Badge
-                              className={
-                                userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
-                              }
-                            >
-                              {userItem.role === 'business' ? '事業者' : '一般'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-slate-600">{userItem.email}</p>
-                          <p className="text-xs text-slate-500 mt-1">投稿数: {userItem.posts}</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteAccount(userItem.id)}
-                          className="shadow-md"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          削除
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminUserManagement users={userList} onDeleteAccount={handleDeleteAccount} />
           )}
 
           {/* お問い合わせタブ */}
           {activeTab === 'inquiries' && (
-            <div className="max-w-5xl space-y-4">
-              <Card className="shadow-lg border-slate-200">
-                <CardHeader>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center space-x-3">
-                      <MessageSquare className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <CardTitle>お問い合わせ一覧</CardTitle>
-                        <CardDescription>
-                          一般会員・事業者からの問い合わせを管理します
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center bg-white rounded shadow px-2 py-1">
-                        <input
-                          className="w-64 px-2 py-1 text-sm outline-none"
-                          placeholder="検索（名前・メール・本文）"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
-                      <Button
-                        size="sm"
-                        variant={showOnlyOpen ? undefined : 'outline'}
-                        onClick={() => setShowOnlyOpen((v) => !v)}
-                        className="shadow-sm"
-                      >
-                        未対応のみ
-                      </Button>
-                      <Badge className="bg-emerald-500">{inquiries.length}</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {(() => {
-                      const q = searchQuery.trim().toLowerCase();
-                      const filtered = inquiries.filter((it) => {
-                        if (showOnlyOpen && it.status !== 'open') return false;
-                        if (!q) return true;
-                        return (
-                          it.fromName.toLowerCase().includes(q) ||
-                          it.email.toLowerCase().includes(q) ||
-                          it.message.toLowerCase().includes(q)
-                        );
-                      });
-
-                      if (filtered.length === 0) {
-                        return (
-                          <div className="text-sm text-slate-500">
-                            条件に一致する問い合わせはありません。
-                          </div>
-                        );
-                      }
-
-                      return filtered.map((inq) => (
-                        <Card key={inq.id} className="shadow-sm border-slate-100">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <p className="font-medium">{inq.fromName}</p>
-                                  <Badge
-                                    className={
-                                      inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
-                                    }
-                                  >
-                                    {inq.role === 'business' ? '事業者' : '一般'}
-                                  </Badge>
-                                  <span className="text-xs text-slate-500">{inq.date}</span>
-                                  <Badge
-                                    className={
-                                      inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'
-                                    }
-                                  >
-                                    {inq.status === 'open' ? '未対応' : '対応済み'}
-                                  </Badge>
-                                  {inq.draft && (
-                                    <Badge className="bg-yellow-500 text-slate-900">下書き</Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-slate-700 mb-2">{inq.message}</p>
-                                <p className="text-xs text-slate-500">{inq.email}</p>
-                              </div>
-                              <div className="flex flex-col ml-4 space-y-2">
-                                {inq.status === 'open' && (
-                                  <Button
-                                    size="sm"
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                    onClick={() => {
-                                      setReplyingInquiry(inq);
-                                      setReplyText('');
-                                      setReplyModalOpen(true);
-                                    }}
-                                  >
-                                    返信
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteInquiry(inq.id)}
-                                >
-                                  削除
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ));
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          {/* 返信モーダル（簡易実装・モックのメール送信） */}
-          {replyModalOpen && replyingInquiry && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-lg w-[640px] max-w-full p-4 shadow-lg">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
-                    <p className="text-sm text-slate-500">
-                      宛先: {replyingInquiry.email} ・{' '}
-                      {replyingInquiry.role === 'business' ? '事業者' : '一般'}
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      className="text-slate-500 hover:text-slate-700"
-                      onClick={() => {
-                        setReplyModalOpen(false);
-                        setReplyingInquiry(null);
-                        setReplyText('');
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <textarea
-                    className="w-full h-40 p-2 border rounded resize-none"
-                    placeholder="ここに返信内容を入力します（モック）。メール送信すると自動で対応済みに切り替わります。"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2 mt-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setReplyModalOpen(false);
-                      setReplyingInquiry(null);
-                      setReplyText('');
-                    }}
-                  >
-                    キャンセル
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (!replyingInquiry) return;
-                      // モック: メール送信として扱い、問い合わせを対応済みにする
-                      setInquiries((prev) =>
-                        prev.map((q) =>
-                          q.id === replyingInquiry.id ? { ...q, status: 'responded' } : q
-                        )
-                      );
-                      toast.success(
-                        'メールを送信しました（モック）。問い合わせを対応済みにしました。'
-                      );
-                      setReplyModalOpen(false);
-                      setReplyingInquiry(null);
-                      setReplyText('');
-                    }}
-                  >
-                    メールで送信
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      if (!replyingInquiry) return;
-                      // 下書きを保存（モック）：draft フィールドに本文を保存、ステータスは変更しない
-                      setInquiries((prev) =>
-                        prev.map((q) =>
-                          q.id === replyingInquiry.id ? { ...q, draft: replyText } : q
-                        )
-                      );
-                      toast.success('下書きを保存しました（モック）。');
-                      setReplyModalOpen(false);
-                      setReplyingInquiry(null);
-                      setReplyText('');
-                    }}
-                  >
-                    下書き
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <AdminContactManagement
+              inquiries={inquiries}
+              setInquiries={setInquiries}
+              onDeleteInquiry={handleDeleteInquiry}
+            />
           )}
         </div>
       </div>
