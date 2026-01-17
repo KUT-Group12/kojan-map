@@ -4,25 +4,19 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { Inquiry as BaseInquiry } from '../types';
 
-export interface Inquiry {
-  askId: number; // INT -> number
-  date: string; // DATETIME -> ISO string
-  subject: string; // VARCHAR(100) -> 件名
-  text: string; // TEXT -> 本文 (messageから変更)
-  userId: string; // VARCHAR(50) -> Google ID (fromNameやroleの代わり)
-  askFlag: boolean; // BOOLEAN (false: 未対応, true: 対応済み)
-  // 以下はフロントエンドの管理上必要なプロパティ
-  email: string;
-  fromName: string; // DBに名前カラムがない場合、userIdから引くか結合が必要
-  role: 'general' | 'business';
-  draft?: string; // 下書き
+export interface Inquiry extends BaseInquiry {
+  email: string; // 表示用
+  fromName: string; // 表示用
+  role: 'general' | 'business'; // 表示用バッジ分岐用
+  draft?: string; // UI管理用（下書き）
 }
 
 export interface AdminContactManagementProps {
   inquiries: Inquiry[];
   setInquiries: React.Dispatch<React.SetStateAction<Inquiry[]>>;
-  onDeleteInquiry: (askId: number) => void; // string -> number
+  onDeleteInquiry: (askId: number) => void;
 }
 
 export default function AdminContactManagement({
@@ -39,19 +33,20 @@ export default function AdminContactManagement({
   // フィルタリングロジック
   const filteredInquiries = inquiries.filter((it) => {
     const q = searchQuery.trim().toLowerCase();
-    // status !== 'open' -> askFlag (対応済み)
+    // askFlag === true は「対応済み」なので、未対応のみ表示（showOnlyOpen）時は除外
     if (showOnlyOpen && it.askFlag) return false;
     if (!q) return true;
     return (
       it.fromName.toLowerCase().includes(q) ||
       it.email.toLowerCase().includes(q) ||
-      it.text.toLowerCase().includes(q) // message -> text
+      it.subject.toLowerCase().includes(q) || // 件名検索を追加
+      it.text.toLowerCase().includes(q)
     );
   });
 
   const handleOpenReply = (inq: Inquiry) => {
     setReplyingInquiry(inq);
-    setReplyText(inq.draft || ''); // 下書きがあればセット
+    setReplyText(inq.draft || '');
     setReplyModalOpen(true);
   };
 
@@ -59,7 +54,6 @@ export default function AdminContactManagement({
     if (!replyingInquiry) return;
     setInquiries((prev) =>
       prev.map((q) =>
-        // id -> askId, status -> askFlag
         q.askId === replyingInquiry.askId ? { ...q, askFlag: true, draft: undefined } : q
       )
     );
@@ -95,7 +89,7 @@ export default function AdminContactManagement({
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="flex items-center bg-white rounded shadow px-2 py-1 border">
+              <div className="flex items-center bg-white rounded shadow px-2 py-1 border border-slate-200">
                 <input
                   className="w-64 px-2 py-1 text-sm outline-none"
                   placeholder="検索（名前・メール・件名・本文）"
@@ -129,38 +123,45 @@ export default function AdminContactManagement({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
-                          <p className="font-medium">{inq.fromName}</p>
+                          <p className="font-medium text-slate-900">{inq.fromName}</p>
                           <Badge
-                            className={inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'}
+                            className={
+                              inq.role === 'business'
+                                ? 'bg-blue-600 shadow-none'
+                                : 'bg-slate-400 shadow-none'
+                            }
                           >
                             {inq.role === 'business' ? '事業者' : '一般'}
                           </Badge>
                           <span className="text-xs text-slate-500">{inq.date}</span>
-                          {/* askFlag === false が「未処理」 */}
-                          <Badge className={!inq.askFlag ? 'bg-red-500' : 'bg-slate-400'}>
+                          <Badge
+                            className={
+                              !inq.askFlag ? 'bg-red-500 shadow-none' : 'bg-slate-400 shadow-none'
+                            }
+                          >
                             {!inq.askFlag ? '未対応' : '対応済み'}
                           </Badge>
                           {inq.draft && (
-                            <Badge className="bg-yellow-500 text-slate-900">下書きあり</Badge>
+                            <Badge className="bg-amber-400 text-slate-900 border-none shadow-none">
+                              下書きあり
+                            </Badge>
                           )}
                         </div>
 
-                        {/* subject（件名）と text（本文）を表示 */}
                         <p className="text-sm font-bold text-slate-800 mb-1">{inq.subject}</p>
-                        <p className="text-sm text-slate-700 mb-2 whitespace-pre-wrap">
+                        <p className="text-sm text-slate-600 mb-2 whitespace-pre-wrap leading-relaxed">
                           {inq.text}
                         </p>
-                        <p className="text-xs text-slate-400">
-                          {inq.email} <span className="ml-2">| UserID: {inq.userId}</span>
+                        <p className="text-[11px] text-slate-400">
+                          {inq.email} <span className="mx-2">|</span> UserID: {inq.userId}
                         </p>
                       </div>
 
                       <div className="flex flex-col ml-4 space-y-2">
-                        {/* 未対応（false）の場合のみ返信ボタンを表示 */}
                         {!inq.askFlag && (
                           <Button
                             size="sm"
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-blue-600 hover:bg-blue-700 shadow-sm"
                             onClick={() => handleOpenReply(inq)}
                           >
                             返信
@@ -168,7 +169,8 @@ export default function AdminContactManagement({
                         )}
                         <Button
                           size="sm"
-                          variant="destructive"
+                          variant="outline"
+                          className="text-red-500 border-red-100 hover:bg-red-50 hover:text-red-600"
                           onClick={() => onDeleteInquiry(inq.askId)}
                         >
                           削除
@@ -183,44 +185,48 @@ export default function AdminContactManagement({
         </CardContent>
       </Card>
 
-      {/* 返信モーダル */}
+      {/* 返信モーダル（省略なし） */}
       {replyModalOpen && replyingInquiry && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm"
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-lg w-[640px] max-w-full p-6 shadow-lg"
+            className="bg-white rounded-xl w-[640px] max-w-full p-6 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between border-b pb-3 mb-4">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
-                <h3 className="text-lg font-bold">{`返信: ${replyingInquiry.fromName} 様`}</h3>
-                <p className="text-sm text-slate-500">
-                  宛先: {replyingInquiry.email} | 件名: {replyingInquiry.subject}
+                <h3 className="text-lg font-bold text-slate-800">{`返信: ${replyingInquiry.fromName} 様`}</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  宛先: {replyingInquiry.email} <span className="mx-1">/</span> 件名:{' '}
+                  {replyingInquiry.subject}
                 </p>
               </div>
-              <button className="text-slate-400 hover:text-slate-600" onClick={closeModal}>
+              <button
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+                onClick={closeModal}
+              >
                 ✕
               </button>
             </div>
 
             <textarea
-              className="w-full h-48 p-3 border rounded-md resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full h-48 p-4 border border-slate-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-sm leading-relaxed"
               placeholder="返信内容を入力してください..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
             />
 
-            <div className="flex justify-end space-x-3 mt-5">
-              <Button variant="ghost" onClick={closeModal}>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="ghost" onClick={closeModal} className="text-slate-600">
                 キャンセル
               </Button>
-              <Button variant="outline" onClick={handleSaveDraft}>
+              <Button variant="outline" onClick={handleSaveDraft} className="border-slate-200">
                 下書き保存
               </Button>
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200"
                 onClick={handleSendEmail}
               >
                 メールで送信
