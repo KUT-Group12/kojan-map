@@ -19,12 +19,15 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 
   // 1. 同じ位置のピンをグループ化するロジックを統合
-  const groupedPins = pins.reduce((acc, pin) => {
-    const key = `${pin.latitude.toFixed(4)}_${pin.longitude.toFixed(4)}`;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(pin);
-    return acc;
-  }, {} as Record<string, Pin[]>);
+  const groupedPins = pins.reduce(
+    (acc, pin) => {
+      const key = `${pin.latitude.toFixed(4)}_${pin.longitude.toFixed(4)}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(pin);
+      return acc;
+    },
+    {} as Record<string, Pin[]>
+  );
 
   // 2. ピンのサイズ決定ロジック
   const getPinSizeClass = (count: number, isHot: boolean) => {
@@ -40,11 +43,13 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
     const sizeClass = getPinSizeClass(count, pin.isHot);
 
     const iconHtml = renderToString(
-      <div className={`relative transition-all duration-300 ${isHovered ? 'scale-110 -translate-y-2' : ''}`}>
+      <div
+        className={`relative transition-all duration-300 ${isHovered ? 'scale-110 -translate-y-2' : ''}`}
+      >
         {/* ピン本体の描画 */}
         {pin.userRole === 'business' ? (
           <div className="relative">
-            <div 
+            <div
               className={`${sizeClass} transform rotate-45 shadow-2xl overflow-hidden border-4 border-white transition-all`}
               style={{ backgroundColor: color, boxShadow: `0 10px 25px -5px ${color}50` }}
             >
@@ -59,12 +64,17 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
           </div>
         ) : (
           <div className="relative">
-            <div 
+            <div
               className={`${sizeClass} rounded-full shadow-2xl flex items-center justify-center transition-all border-4 border-white relative`}
               style={{ backgroundColor: color, boxShadow: `0 10px 25px -5px ${color}50` }}
             >
               <MapPinIcon className="w-5 h-5 text-white" />
-              <div className="absolute inset-0 rounded-full" style={{ background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%)` }} />
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 60%)`,
+                }}
+              />
             </div>
           </div>
         )}
@@ -80,40 +90,55 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
 
     return L.divIcon({
       html: iconHtml,
-      className: '', 
+      className: '',
       iconSize: [44, 44],
-      iconAnchor: [22, 44], 
+      iconAnchor: [22, 44],
     });
   };
 
   return (
     <div className="flex-1 w-full h-full relative" style={{ zIndex: isOverlayOpen ? 0 : 10 }}>
       {/* 凡例 (変更なし) */}
-      <div 
+      <div
         className="absolute bottom-6 left-6 pointer-events-auto"
         style={{ zIndex: 99999 }} // Leafletの全レイヤー(最大1000程度)より上に配置
       >
         <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-4 border border-white/50">
           <div className="text-xs text-slate-700 mb-3 font-bold">凡例</div>
           <div className="space-y-2 text-xs">
-          <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full shadow-md" style={{ backgroundColor: '#EF4444' }} />
+            <div className="flex items-center space-x-3">
+              <div
+                className="w-6 h-6 rounded-full shadow-md"
+                style={{ backgroundColor: '#EF4444' }}
+              />
               <span className="text-slate-700">グルメ</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full shadow-md" style={{ backgroundColor: '#F59E0B' }} />
+              <div
+                className="w-6 h-6 rounded-full shadow-md"
+                style={{ backgroundColor: '#F59E0B' }}
+              />
               <span className="text-slate-700">イベント</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full shadow-md" style={{ backgroundColor: '#10B981' }} />
+              <div
+                className="w-6 h-6 rounded-full shadow-md"
+                style={{ backgroundColor: '#10B981' }}
+              />
               <span className="text-slate-700">景色</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full shadow-md" style={{ backgroundColor: '#3B82F6' }} />
+              <div
+                className="w-6 h-6 rounded-full shadow-md"
+                style={{ backgroundColor: '#3B82F6' }}
+              />
               <span className="text-slate-700">お店</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 rounded-full shadow-md" style={{ backgroundColor: '#8B5CF6' }} />
+              <div
+                className="w-6 h-6 rounded-full shadow-md"
+                style={{ backgroundColor: '#8B5CF6' }}
+              />
               <span className="text-slate-700">緊急情報</span>
             </div>
             <div className="border-t border-slate-300 my-2" />
@@ -129,16 +154,16 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
             </div>
           </div>
         </div>
-        </div>
+      </div>
 
-      <MapContainer 
-        center={[33.6071, 133.6823]} 
-        zoom={17} 
+      <MapContainer
+        center={[33.6071, 133.6823]}
+        zoom={17}
         style={{ height: '100%', width: '100%' }}
         doubleClickZoom={false}
       >
         <TileLayer
-          attribution='&copy; OpenStreetMap contributors'
+          attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
@@ -153,7 +178,7 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
             eventHandlers={{
               click: () => onPinClick(groupPins[0]),
               mouseover: () => setHoveredPinId(key),
-              mouseout: () => setHoveredPinId(null)
+              mouseout: () => setHoveredPinId(null),
             }}
           />
         ))}

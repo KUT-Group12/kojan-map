@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Search } from 'lucide-react';     //Plus, SlidersHorizontal   を削除
+import { Search } from 'lucide-react'; //Plus, SlidersHorizontal   を削除
 import { Pin, PinGenre, User } from '../types';
 import { genreLabels, genreColors } from '../lib/mockData';
 
@@ -32,30 +32,31 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
 
     // キーワード検索（型定義に合わせて description を使用）
     if (searchKeyword) {
-      filtered = filtered.filter(pin => 
-        pin.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        pin.description.toLowerCase().includes(searchKeyword.toLowerCase())
+      filtered = filtered.filter(
+        (pin) =>
+          pin.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          pin.description.toLowerCase().includes(searchKeyword.toLowerCase())
       );
     }
 
     // ジャンルフィルター（型定義に合わせて genre を使用）
     if (selectedGenre !== 'all') {
-      filtered = filtered.filter(pin => pin.genre === selectedGenre);
+      filtered = filtered.filter((pin) => pin.genre === selectedGenre);
     }
 
     // 日付フィルター（型定義に合わせて createdAt を使用）
     const now = new Date();
     if (dateFilter === 'today') {
-      filtered = filtered.filter(pin => {
+      filtered = filtered.filter((pin) => {
         const pinDate = new Date(pin.createdAt);
         return pinDate.toDateString() === now.toDateString();
       });
     } else if (dateFilter === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(pin => new Date(pin.createdAt) >= weekAgo);
+      filtered = filtered.filter((pin) => new Date(pin.createdAt) >= weekAgo);
     } else if (dateFilter === 'month') {
       const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(pin => new Date(pin.createdAt) >= monthAgo);
+      filtered = filtered.filter((pin) => new Date(pin.createdAt) >= monthAgo);
     }
 
     // 並べ替え（型定義に合わせて reactions, createdAt を使用）
@@ -74,7 +75,7 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
     const d = new Date(date);
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffHours < 1) return 'たった今';
     if (diffHours < 24) return `${diffHours}時間前`;
     const diffDays = Math.floor(diffHours / 24);
@@ -97,19 +98,29 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <Select value={selectedGenre} onValueChange={(value) => setSelectedGenre(value as PinGenre | 'all')}>
+              <Select
+                value={selectedGenre}
+                onValueChange={(value) => setSelectedGenre(value as PinGenre | 'all')}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="ジャンル" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全ジャンル</SelectItem>
                   {Object.entries(genreLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key as PinGenre}>{label}</SelectItem>
+                    <SelectItem key={key} value={key as PinGenre}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as "all" | "today" | "week" | "month")}>
+              <Select
+                value={dateFilter}
+                onValueChange={(value) =>
+                  setDateFilter(value as 'all' | 'today' | 'week' | 'month')
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="期間" />
                 </SelectTrigger>
@@ -140,7 +151,7 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
               >
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="flex-1 text-gray-900 font-medium">{pin.title}</h3>
-                  <Badge 
+                  <Badge
                     style={{ backgroundColor: genreColors[pin.genre] }}
                     className="ml-2 text-white"
                   >
@@ -149,7 +160,9 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
                 </div>
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">{pin.description}</p>
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{pin.userRole === 'business' ? (pin.businessName || pin.userName) : pin.userName}</span>
+                  <span>
+                    {pin.userRole === 'business' ? pin.businessName || pin.userName : pin.userName}
+                  </span>
                   <div className="flex items-center space-x-3">
                     <span className="flex items-center">❤️ {pin.reactions}</span>
                     <span>{formatDate(pin.createdAt)}</span>

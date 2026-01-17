@@ -23,14 +23,14 @@ export interface Pin {
 
 // 事業者申請の型定義 (管理者)
 export interface BusinessApplication {
-  applicationId: number;    // INT
-  googleId: string;         // VARCHAR(50)
-  fromName: string;         // 氏名
-  gmail: string;            // メール
-  businessName: string;     // 事業者名
-  businessPhone: string;    // 電話番号
-  businessAddress: string;  // 住所
-  applicationDate: string;  // DATETIME
+  applicationId: number; // INT
+  googleId: string; // VARCHAR(50)
+  fromName: string; // 氏名
+  gmail: string; // メール
+  businessName: string; // 事業者名
+  businessPhone: string; // 電話番号
+  businessAddress: string; // 住所
+  applicationDate: string; // DATETIME
 }
 
 // 会員情報
@@ -74,22 +74,22 @@ export interface Block {
 // お問い合わせ情報インターフェース (問い合わせ管理テーブル)
 export interface Inquiry {
   askId: number; // お問い合わせID
-  date: string; // お問い合わせ日時 
+  date: string; // お問い合わせ日時
   subject: string; // 件名
   text: string; // 内容
-  userId: string;  // ユーザーID
+  userId: string; // ユーザーID
   askFlag: boolean; // 対応済みフラグ
 }
 
 // 投稿情報インターフェース (投稿管理テーブル)
 export interface Post {
   postId: number; // 投稿ID
-  placeId: number; // 場所ID 
+  placeId: number; // 場所ID
   userId: string; // ユーザーID
   postDate: string; // 投稿日時
   title: string; // タイトル
   text: string; // 内容
-  postImage?: string; // 投稿画像 
+  postImage?: string; // 投稿画像
   numReaction: number; // リアクション数
   numView: number; // 閲覧数
   genreId: number; // ジャンルID
@@ -117,7 +117,7 @@ export interface Report {
   postId: number; // 投稿ID
   reason: string; // 通報理由
   date: string; // 通報日時
-  reportFlag: boolean;  // 対応済みフラグ
+  reportFlag: boolean; // 対応済みフラグ
   removeFlag: boolean; // 削除フラグ
 }
 

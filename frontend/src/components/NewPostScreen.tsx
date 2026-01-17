@@ -27,7 +27,13 @@ interface CreatePinModalProps {
   initialLongitude?: number;
 }
 
-export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initialLongitude }: CreatePinModalProps) {
+export function NewPostScreen({
+  user,
+  onClose,
+  onCreate,
+  initialLatitude,
+  initialLongitude,
+}: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [genre, setGenre] = useState<PinGenre>('other');
@@ -41,21 +47,21 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-  
+
     const newImages: string[] = [];
     const previewUrls: string[] = [];
-  
+
     for (const file of Array.from(files)) {
       // プレビュー用
       previewUrls.push(URL.createObjectURL(file));
-      
+
       // バックエンド送信用のBase64変換 (方法Aの場合)
       const base64 = await fileToBase64(file);
       newImages.push(base64);
     }
-  
+
     // プレビューとデータ保持を分けるか、両方管理する必要があります
-    setImages((prev) => [...prev, ...newImages]); 
+    setImages((prev) => [...prev, ...newImages]);
     e.target.value = '';
   };
 
@@ -99,7 +105,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) {
       toast.error('タイトルを入力してください');
       return;
@@ -117,11 +123,11 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
       toast.error('有効な位置情報を入力してください');
       return;
     }
-  
+
     // 送信前に数値を確定させる
     //const lat = parseFloat(latitude);
     //const lng = parseFloat(longitude);
-  
+
     // バックエンドへAPIリクエスト (onCreateの中でfetchを呼ぶ想定)
     try {
       await onCreate({
@@ -157,9 +163,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>新規投稿</DialogTitle>
-          <DialogDescription className="sr-only">
-            新しいピン投稿を作成します
-          </DialogDescription>
+          <DialogDescription className="sr-only">新しいピン投稿を作成します</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -253,7 +257,7 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                 multiple // 複数選択を許可
                 className="hidden"
               />
-              
+
               {/* プレビュー表示エリア */}
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mb-2">
@@ -275,13 +279,8 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
                   ))}
                 </div>
               )}
-              
-              <Button
-                type="button"
-                variant="outline"
-                onClick={triggerFileInput}
-                className="w-full"
-              >
+
+              <Button type="button" variant="outline" onClick={triggerFileInput} className="w-full">
                 <Upload className="w-4 h-4 mr-2" />
                 画像をアップロード
               </Button>
@@ -291,15 +290,11 @@ export function NewPostScreen({ user, onClose, onCreate, initialLatitude, initia
           {/* 投稿者情報表示 */}
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">
-                事業者として投稿されます
-              </p>
+              <p className="text-sm text-blue-800">事業者として投稿されます</p>
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <p className="text-sm text-gray-600">
-                一般ユーザーの投稿は匿名で表示されます
-              </p>
+              <p className="text-sm text-gray-600">一般ユーザーの投稿は匿名で表示されます</p>
             </div>
           )}
 

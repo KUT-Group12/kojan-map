@@ -1,10 +1,10 @@
-﻿import { useState, useEffect } from "react";
-import { LoadingScreen } from "./components/LoadingScreen";
-import { LoginScreen } from "./components/LoginScreen";
-import { MainApp } from "./components/MainApp";
-import { AdminDashboard } from "./components/AdminDashboard";
-import { Toaster } from "./components/ui/sonner";
-import { User, UserRole } from "./types";
+﻿import { useState, useEffect } from 'react';
+import { LoadingScreen } from './components/LoadingScreen';
+import { LoginScreen } from './components/LoginScreen';
+import { MainApp } from './components/MainApp';
+import { AdminDashboard } from './components/AdminDashboard';
+import { Toaster } from './components/ui/sonner';
+import { User, UserRole } from './types';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,7 @@ export default function App() {
     // モックユーザーでログイン
     const mockUser: User = {
       googleId: `user_${Date.now()}`,
-      gmail: "user@example.com",
+      gmail: 'user@example.com',
       role,
       registrationDate: new Date().toISOString(),
     };
@@ -46,7 +46,7 @@ export default function App() {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
-  if (user.role === "admin") {
+  if (user.role === 'admin') {
     return (
       <>
         <AdminDashboard user={user} onLogout={handleLogout} />

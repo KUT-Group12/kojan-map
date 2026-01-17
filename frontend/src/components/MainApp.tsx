@@ -30,8 +30,12 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createInitialLatitude, setCreateInitialLatitude] = useState<number | undefined>(undefined);
-  const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(undefined);
-  const [currentView, setCurrentView] = useState<'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'>('map');
+  const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(
+    undefined
+  );
+  const [currentView, setCurrentView] = useState<
+    'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'
+  >('map');
   const [previousView, setPreviousView] = useState<'map' | 'mypage' | 'dashboard'>('map');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [reactedPins, setReactedPins] = useState<Set<string>>(new Set());
@@ -53,10 +57,10 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
             try {
               const res = await fetch(`http://127.0.0.1:8080/api/posts/threshold?id=${pin.id}`);
               const thresholdData = await res.json();
-              return { 
-                ...pin, 
+              return {
+                ...pin,
                 isHot: thresholdData.isHot,
-                createdAt: new Date(pin.createdAt) // 日付の変換
+                createdAt: new Date(pin.createdAt), // 日付の変換
               };
             } catch {
               return { ...pin, createdAt: new Date(pin.createdAt) };
@@ -67,7 +71,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
         setPins(pinsWithStatus);
         setFilteredPins(pinsWithStatus);
       } catch (error) {
-        console.error("Fetch pins error:", error);
+        console.error('Fetch pins error:', error);
         // エラー時はモックデータなどを入れる、もしくは空にする
         setPins([]);
         setFilteredPins([]);
@@ -159,7 +163,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       });
     }
   };*/
-/*
+  /*
   const handlePinClick = async (pin: Pin) => {
     console.log("1. クリックされたピン:", pin.id);
     setSelectedPin(pin);
@@ -211,12 +215,12 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     try {
       const response = await fetch(`http://localhost:8080/api/posts/detail?id=${pin.id}`);
       const data = await response.json();
-      
+
       // 3. 取得したデータをステートに入れて、パネルを開く
       setSelectedPin(data.pin); // data.pin は Go側の PinDetailResponse 構造体の中身
       setIsDetailOpen(true);
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error('Fetch error:', error);
     }
   };
 
@@ -229,32 +233,28 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const handleReaction = (pinId: string) => {
     if (reactedPins.has(pinId)) {
       // リアクション取り消し
-      setPins(pins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p
-      ));
-      setFilteredPins(filteredPins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p
-      ));
-      setReactedPins(prev => {
+      setPins(pins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p)));
+      setFilteredPins(
+        filteredPins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p))
+      );
+      setReactedPins((prev) => {
         const next = new Set(prev);
         next.delete(pinId);
         return next;
       });
     } else {
       // リアクション追加
-      setPins(pins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p
-      ));
-      setFilteredPins(filteredPins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p
-      ));
-      setReactedPins(prev => new Set(prev).add(pinId));
+      setPins(pins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p)));
+      setFilteredPins(
+        filteredPins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p))
+      );
+      setReactedPins((prev) => new Set(prev).add(pinId));
     }
-    
+
     if (selectedPin && selectedPin.id === pinId) {
       setSelectedPin({
         ...selectedPin,
-        reactions: reactedPins.has(pinId) ? selectedPin.reactions - 1 : selectedPin.reactions + 1
+        reactions: reactedPins.has(pinId) ? selectedPin.reactions - 1 : selectedPin.reactions + 1,
       });
     }
   };
@@ -278,8 +278,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   };*/
 
   const handleDeletePin = (pinId: string) => {
-    setPins(pins.filter(p => p.id !== pinId));
-    setFilteredPins(filteredPins.filter(p => p.id !== pinId));
+    setPins(pins.filter((p) => p.id !== pinId));
+    setFilteredPins(filteredPins.filter((p) => p.id !== pinId));
     setSelectedPin(null);
   };
   /*
@@ -366,8 +366,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
         userId: user.googleId,
         userName: '匿名',
         userRole: user.role,
-        businessName: "",
-        businessIcon: "",
+        businessName: '',
+        businessIcon: '',
         reactions: 0,
         createdAt: new Date(),
         viewCount: 0,
@@ -378,8 +378,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       setFilteredPins((prev) => [pin, ...prev]);
       setIsCreateModalOpen(false);
     } catch (error) {
-      console.error("Create pin error:", error);
-      throw error; 
+      console.error('Create pin error:', error);
+      throw error;
     }
   };
 
@@ -394,8 +394,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           ? {
               ...p,
               businessIcon: undefined,
-              businessName: "",
-              userName: "",
+              businessName: '',
+              userName: '',
             }
           : p
       );
@@ -407,15 +407,14 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       setSelectedPin({
         ...selectedPin,
         businessIcon: undefined,
-        businessName: "",
-        userName: "",
+        businessName: '',
+        userName: '',
       });
     }
   };
 
-
   const handleBlockUser = (blockUserId: string) => {
-    const nextBlocked = Array.from(new Set([...([]), blockUserId]));
+    const nextBlocked = Array.from(new Set([...[], blockUserId]));
     const updatedUser: User = user;
     onUpdateUser(updatedUser);
   };
@@ -436,75 +435,72 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
 
   return (
     <div className="h-screen flex flex-col">
-      <Header 
-        user={user} 
+      <Header
+        user={user}
         onLogout={onLogout}
         onNavigate={handleNavigate}
         currentView={currentView}
         onContact={() => setIsContactModalOpen(true)}
       />
-      
+
       <div className="flex-1 flex overflow-hidden">
-      {currentView === 'map' && (
+        {currentView === 'map' && (
           <>
-            <Sidebar 
+            <Sidebar
               user={user}
               pins={pins} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
               onFilterChange={setFilteredPins}
               onCreatePin={() => setIsCreateModalOpen(true)}
               onPinClick={handlePinClick}
             />
-            <MapViewScreen 
-              pins={pins} 
+            <MapViewScreen
+              pins={pins}
               onPinClick={handlePinClick}
               onMapDoubleClick={handleMapDoubleClick}
             />
           </>
         )}
 
-        {currentView === 'mypage' && (
-          user.role === 'business' ? (
-            <BusinessDisplayMyPage 
+        {currentView === 'mypage' &&
+          (user.role === 'business' ? (
+            <BusinessDisplayMyPage
               user={user}
-              pins={pins.filter(p => p.userId === user.googleId)}
+              pins={pins.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
           ) : (
-            <UserDisplayMyPage 
+            <UserDisplayMyPage
               user={user}
-              pins={pins.filter(p => p.userId === user.googleId)}
-              reactedPins={Array.from(reactedPins).map(id => pins.find(p => p.id === id)!).filter(Boolean)}
+              pins={pins.filter((p) => p.userId === user.googleId)}
+              reactedPins={Array.from(reactedPins)
+                .map((id) => pins.find((p) => p.id === id)!)
+                .filter(Boolean)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
-          )
-        )}
+          ))}
 
         {currentView === 'dashboard' && user.role === 'business' && (
           <div className="flex-1 h-full">
-            <BusinessDashboard 
+            <BusinessDashboard
               user={user}
-              pins={pins.filter(p => p.userId === user.googleId)}
+              pins={pins.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
             />
           </div>
         )}
 
         {currentView === 'logout' && (
-          <LogoutScreen 
-            user={user}
-            onBack={handleLogoutBack}
-            onLogout={onLogout}
-          />
+          <LogoutScreen user={user} onBack={handleLogoutBack} onLogout={onLogout} />
         )}
 
         {currentView === 'deleteAccount' && (
-          <DeleteAccountScreen 
+          <DeleteAccountScreen
             user={user}
             onBack={() => setCurrentView('mypage')}
             onDeleteAccount={onLogout}
@@ -549,7 +545,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           onSelectPin={handlePinClick}
         />
       )}
-      
+
       {isCreateModalOpen && (
         <NewPostScreen
           user={user}
@@ -565,10 +561,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       )}
 
       {isContactModalOpen && (
-        <ContactModal
-          user={user}
-          onClose={() => setIsContactModalOpen(false)}
-        />
+        <ContactModal user={user} onClose={() => setIsContactModalOpen(false)} />
       )}
     </div>
   );

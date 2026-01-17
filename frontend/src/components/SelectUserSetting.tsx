@@ -9,12 +9,11 @@ interface SelectUserSettingProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function SelectUserSetting({ 
-  user, 
-  onUpdateUser, 
-  onNavigateToDeleteAccount 
+export function SelectUserSetting({
+  user,
+  onUpdateUser,
+  onNavigateToDeleteAccount,
 }: SelectUserSettingProps) {
-  
   const handleUnblock = (userId: string) => {
     // TODO: blockedUsers no longer exists in the new User type
     // const next = (user.blockedUsers || []).filter(id => id !== userId);
@@ -24,17 +23,14 @@ export function SelectUserSetting({
   return (
     <div className="space-y-4">
       {/* ブロックリスト設定 */}
-      <DisplayUserSetting 
-        title="ブロックリスト" 
-        description="ブロックしたユーザーの管理"
-      >
+      <DisplayUserSetting title="ブロックリスト" description="ブロックしたユーザーの管理">
         {/* TODO: blockedUsers no longer exists in the new User type */}
         <p className="text-gray-500 text-sm">ブロック機能は実装予定です</p>
       </DisplayUserSetting>
 
       {/* 退会設定 */}
-      <DisplayUserSetting 
-        title="退会" 
+      <DisplayUserSetting
+        title="退会"
         description="アカウントの削除"
         className="border-red-200"
         titleClassName="text-red-600"

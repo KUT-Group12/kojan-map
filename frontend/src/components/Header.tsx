@@ -53,10 +53,7 @@ export function Header({ user, onLogout, onNavigate, currentView, onContact }: H
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            onClick={onContact}
-          >
+          <Button variant="outline" onClick={onContact}>
             <Mail className="w-4 h-4 mr-2" />
             お問い合わせ
           </Button>

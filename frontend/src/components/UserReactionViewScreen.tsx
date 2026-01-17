@@ -9,11 +9,7 @@ interface UserReactionViewScreenProps {
   onPinClick: (pin: Pin) => void;
 }
 
-export function UserReactionViewScreen({ 
-  reactedPins, 
-  onPinClick 
-}: UserReactionViewScreenProps) {
-  
+export function UserReactionViewScreen({ reactedPins, onPinClick }: UserReactionViewScreenProps) {
   if (reactedPins.length === 0) {
     return (
       <Card>
@@ -27,9 +23,9 @@ export function UserReactionViewScreen({
   return (
     <div className="grid gap-4">
       {reactedPins.map((pin) => (
-        <Card 
-          key={pin.id} 
-          className="hover:shadow-md transition-shadow cursor-pointer" 
+        <Card
+          key={pin.id}
+          className="hover:shadow-md transition-shadow cursor-pointer"
           onClick={() => onPinClick(pin)}
         >
           <CardContent className="p-4">
@@ -39,9 +35,7 @@ export function UserReactionViewScreen({
                 {genreLabels[pin.genre]}
               </Badge>
             </div>
-            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-              {pin.description}
-            </p>
+            <p className="text-sm text-gray-600 mb-2 line-clamp-2">{pin.description}</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center space-x-2">
                 <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">
