@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User } from '../types';
+import { User, Report } from '../types';
 import { mockPins } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
-import AdminReport, { AdminReportProps, Report } from './AdminReport';
+import AdminReport, { AdminReportProps } from './AdminReport';
 import AdminUserManagement, { AdminUser } from './AdminUserManagement';
 import AdminContactManagement, { Inquiry } from './AdminContactManagement';
 import {

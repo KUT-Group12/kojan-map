@@ -2,21 +2,11 @@ import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Trash2, CheckCircle } from 'lucide-react';
-
-export interface Report {
-  reportId: number; // INT -> number
-  userId: string; // VARCHAR -> string (Google ID)
-  postId: number; // INT -> number
-  reason: string; // TEXT -> string
-  date: string; // DATETIME -> ISO文字列など
-  reportFlag: boolean; // BOOLEAN (対応済みフラグ)
-  removeFlag: boolean; // BOOLEAN (削除フラグ)
-}
+import { Report } from '../types';
 
 export interface AdminReportProps {
-  // exportを追加
   reports: Report[];
-  onDeletePost: (pinId: number) => void;
+  onDeletePost: (postId: number) => void;
   onResolveReport: (reportId: number) => void;
 }
 
@@ -33,7 +23,7 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
     <div className="max-w-5xl space-y-4">
       {sortedReports.map((report) => (
         <Card
-          key={report.reportId} // id -> reportId
+          key={report.reportId}
           className={`shadow-lg border-slate-200 transition-all ${
             report.reportFlag ? 'opacity-60 bg-slate-50' : 'hover:shadow-xl'
           }`}
@@ -47,7 +37,7 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
                     {!report.reportFlag ? '未処理' : '処理済み'}
                   </Badge>
                   <span className="text-sm text-slate-500">{report.date}</span>
-                  {/* 削除フラグが立っている場合の追加バッジ（任意） */}
+                  {/* 削除フラグが立っている場合の追加バッジ */}
                   {report.removeFlag && (
                     <Badge variant="outline" className="text-red-500 border-red-500">
                       投稿削除済み
@@ -59,7 +49,9 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
                 <div className="space-y-2">
                   <p className="flex items-center">
                     <span className="text-sm text-slate-600 w-24">通報者(ID):</span>
-                    <span>{report.userId}</span> {/* reporter -> userId */}
+                    <span className="font-mono text-xs bg-slate-100 px-1 rounded">
+                      {report.userId}
+                    </span>
                   </p>
 
                   <p className="flex items-center">
@@ -70,8 +62,7 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
                   </p>
                   <p className="flex items-center">
                     <span className="text-sm text-slate-600 w-24">対象投稿ID:</span>
-                    <span className="text-sm text-slate-700">{report.postId}</span>{' '}
-                    {/* pinId -> postId */}
+                    <span className="text-sm font-semibold text-slate-700">{report.postId}</span>
                   </p>
                 </div>
               </div>
@@ -82,7 +73,7 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
                   <Button
                     size="sm"
                     variant="destructive"
-                    onClick={() => onDeletePost(report.postId)} // pinId -> postId
+                    onClick={() => onDeletePost(report.postId)}
                     className="shadow-md"
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
@@ -91,7 +82,7 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => onResolveReport(report.reportId)} // id -> reportId
+                    onClick={() => onResolveReport(report.reportId)}
                     className="shadow-md"
                   >
                     <CheckCircle className="w-4 h-4 mr-1" />
@@ -105,7 +96,7 @@ export default function AdminReport({ reports, onDeletePost, onResolveReport }: 
       ))}
 
       {reports.length === 0 && (
-        <div className="text-center py-10 text-slate-500">通報はありません。</div>
+        <div className="text-center py-10 text-slate-500">現在、未処理の通報はありません。</div>
       )}
     </div>
   );
