@@ -46,28 +46,31 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [reports, setReports] = useState<Report[]>([
     {
-      id: 'r1',
-      pinId: 'pin1',
-      reporter: '山田太郎',
+      reportId: 1, // id -> reportId
+      userId: 'user_google_001', // reporter(名前)ではなくIDを保持
+      postId: 1, // pinId -> postId
       reason: '不適切な内容',
-      status: 'pending' as const,
-      date: '2025-11-03',
+      date: '2025-11-03T10:00:00', // DATETIME形式
+      reportFlag: false, // pending相当
+      removeFlag: false,
     },
     {
-      id: 'r2',
-      pinId: 'pin3',
-      reporter: '佐藤花子',
+      reportId: 2,
+      userId: 'user_google_002',
+      postId: 3,
       reason: 'スパム',
-      status: 'pending' as const,
-      date: '2025-11-02',
+      date: '2025-11-02T15:30:00',
+      reportFlag: false,
+      removeFlag: false,
     },
     {
-      id: 'r3',
-      pinId: 'pin2',
-      reporter: '鈴木一郎',
+      reportId: 3,
+      userId: 'user_google_003',
+      postId: 2,
       reason: '虚偽情報',
-      status: 'resolved' as const,
-      date: '2025-11-01',
+      date: '2025-11-01T09:00:00',
+      reportFlag: true, // resolved相当
+      removeFlag: true, // 例：削除済みとする場合
     },
   ]);
 
@@ -101,6 +104,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
 
+  /*
   const systemStats = {
     totalUsers: 1234,
     activeUsers: 856,
@@ -108,6 +112,17 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
     businessUsers: 45,
     pendingReports: reports.filter((r) => r.status === 'pending').length,
+  };*/
+
+  const systemStats = {
+    totalUsers: 1234,
+    activeUsers: 856,
+    // pinId から postId への変更に伴い、参照先も修正が必要な場合があります
+    totalPosts: mockPins.length,
+    totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
+    businessUsers: 45,
+    // status === 'pending' を reportFlag === false に修正
+    pendingReports: reports.filter((r) => r.reportFlag === false).length,
   };
 
   const weeklyActivityData = [
@@ -141,30 +156,43 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   };
 
   // 未実装の部分はコンソール表示
-  const handleResolveReport = (reportId: string) => {
+  const handleResolveReport = (reportId: number) => {
     // console.log('Resolving report:', reportId);
     // toast.success('通報を処理しました');
     setReports((prev) =>
       prev.map((report) =>
-        report.id === reportId
-          ? { ...report, status: 'resolved' as const } // ステータスを更新
+        // report.id → report.reportId に変更
+        // reportId (引数) と比較
+        report.reportId === reportId
+          ? { ...report, reportFlag: true } // status: 'resolved' → reportFlag: true に変更
           : report
       )
     );
     toast.success('通報を処理済みにしました');
   };
 
-  const handleDeletePost = (pinId: string) => {
+  const handleDeletePost = (postId: number) => {
     /*
-    if (confirm('この投稿を削除しますか？')) {
-      console.log('Resolving pin:', pinId);
-      toast.success('投稿を削除しました');
-    }*/
     if (confirm('この投稿を削除しますか？')) {
       // 対象の pinId を持つ通報をすべて処理済みに更新
       setReports((prev) =>
         prev.map((report) =>
           report.pinId === pinId ? { ...report, status: 'resolved' as const } : report
+        )
+      );
+      toast.success('投稿を削除し、関連する通報を処理済みにしました');
+    }*/
+    if (confirm('この投稿を削除しますか？')) {
+      // 対象の postId を持つ通報をすべて処理済み、かつ削除済みに更新
+      setReports((prev) =>
+        prev.map((report) =>
+          report.postId === postId // pinId から postId へ変更
+            ? {
+                ...report,
+                reportFlag: true, // status: 'resolved' の代わり
+                removeFlag: true, // 実際に削除したため true に更新
+              }
+            : report
         )
       );
       toast.success('投稿を削除し、関連する通報を処理済みにしました');
