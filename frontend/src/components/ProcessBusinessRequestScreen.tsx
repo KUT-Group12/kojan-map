@@ -1,37 +1,41 @@
-//M4-5-4 申請反映関数がAdminDashbord.tsxにも必要だったのでモジュールとは少し違います。
-import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
+import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList'; // 名前が変更されている場合は調整してください
+import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 
-export interface BusinessApplication {
-  id: string;
-  userName: string;
-  email: string;
-  ShopName: string;
-  PhoneNumber: string;
-  address: string;
-  date: string;
-}
+/**
+ * 管理画面表示用の型定義
+ * BusinessApplicationList と同じデータ構造を期待するため、ここで定義するか
+ * 頻出するなら types/index.ts に移動しても良いでしょう。
+ 
+interface AdminDisplayBusinessRequest extends BusinessRequest {
+  gmail: string;
+  applicationDate: string;
+}*/
 
-// 型の定義（親からこれらをもらうと宣言する）
 interface Props {
-  applications: BusinessApplication[]; // DashboardにあるbusinessApplicationsのこと
-  onApprove: (id: string) => void; // DashboardにあるhandleApproveのこと
-  onReject: (id: string) => void; // DashboardにあるhandleRejectのこと
+  // BusinessApplication から AdminDisplayBusinessRequest に変更
+  applications: AdminDisplayBusinessRequest[];
+  onApprove: (requestId: number) => void;
+  onReject: (requestId: number) => void;
 }
 
 export default function ProcessBusinessRequestScreen({ applications, onApprove, onReject }: Props) {
-  // ★ ここにあった useState や独自関数はすべて削除します
-
   return (
     <div className="space-y-6">
-      {/* 画面のタイトルや統計などの見た目だけを書く */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-800">事業者申請の処理</h2>
-        <p className="text-sm text-slate-500">
-          現在 {applications.length} 件の未処理案件があります
-        </p>
+        <div>
+          <h2 className="text-xl font-bold text-slate-800">事業者申請の処理</h2>
+          <p className="text-sm text-slate-500">
+            M4-5 AdminGetBusinessApplications に基づく申請管理
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-medium text-slate-600">
+            未処理案件: <span className="text-blue-600 text-lg">{applications.length}</span> 件
+          </p>
+        </div>
       </div>
 
-      {/* 実際のリスト表示は List コンポーネントに任せる */}
+      {/* 実際のリスト表示ロジック */}
       <BusinessApplicationList
         applications={applications}
         onApprove={onApprove}

@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { User } from '../types';
 import { mockPins } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
+import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 import AdminReport, { AdminReportProps, Report } from './AdminReport';
 import AdminUserManagement, { AdminUser } from './AdminUserManagement';
 import AdminContactManagement, { Inquiry } from './AdminContactManagement';
@@ -75,24 +76,31 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   ]);
 
   //データベースから持ってくるようにしなければならない？
-  const [businessApplications, setBusinessApplications] = useState([
+  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>([
     {
-      id: 'ba1',
-      userName: '田中商店',
-      email: 'tanaka@example.com',
-      ShopName: '田中商店',
-      PhoneNumber: '090-1234-5678',
-      address: '山田市1-2-3',
-      date: '2025-11-03',
+      requestId: 1, // applicationId -> requestId
+      userId: 'google-u101', // googleId -> userId
+      name: '田中商店', // businessName -> name
+      phone: 9012345678, // ハイフンなしの数値(INT)
+      address: '高知県香美市土佐山田町1-2-3', // businessAddress -> address
+
+      // AdminDisplayBusinessRequest で拡張した項目
+      gmail: 'tanaka@example.com',
+      applicationDate: '2025-11-03 10:00',
+      // もし型定義に fromName を残している場合は以下を追加
+      fromName: '田中太郎',
     },
     {
-      id: 'ba2',
-      userName: '鈴木食堂',
-      email: 'suzuki@example.com',
-      ShopName: '鈴木食堂',
-      PhoneNumber: '090-8765-4321',
-      address: '山田市4-5-6',
-      date: '2025-11-02',
+      requestId: 2,
+      userId: 'google-u102',
+      name: '鈴木食堂',
+      phone: 9087654321,
+      address: '高知県香美市土佐山田町4-5-6',
+
+      // AdminDisplayBusinessRequest で拡張した項目
+      gmail: 'suzuki@example.com',
+      applicationDate: '2025-11-02 15:30',
+      fromName: '鈴木一郎',
     },
   ]);
 
@@ -190,16 +198,26 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     { name: '緊急情報', value: 1, color: '#8B5CF6' },
   ];
 
-  //事業者申請承認時の処理
-  const handleApprove = (id: string) => {
-    setBusinessApplications((prev) => prev.filter((app) => app.id !== id));
-    toast.success('事業者アカウントを承認しました');
+  // 事業者申請承認時の処理 (M4-5-2 ProcessApplication)
+  // 引数を id: string から applicationId: number に変更
+  const handleApprove = (requestId: number) => {
+    if (confirm('この事業者を承認しますか？')) {
+      setBusinessApplications((prev) =>
+        // app.applicationId ではなく app.requestId でフィルタリング
+        prev.filter((app) => app.requestId !== requestId)
+      );
+      toast.success('事業者アカウントを承認しました');
+    }
   };
 
-  //事業者申請却下時の処理
-  const handleReject = (id: string) => {
-    setBusinessApplications((prev) => prev.filter((app) => app.id !== id));
-    toast.error('事業者申請を却下しました');
+  const handleReject = (requestId: number) => {
+    if (confirm('この申請を却下しますか？')) {
+      setBusinessApplications((prev) =>
+        // 却下時も同様に requestId でフィルタリング
+        prev.filter((app) => app.requestId !== requestId)
+      );
+      toast.error('申請を却下しました');
+    }
   };
 
   // 未実装の部分はコンソール表示
@@ -345,7 +363,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">ログイン中</p>
-            <p className="text-sm truncate">{user.name}</p>
+            <p className="text-sm font-medium">{user.fromName}</p>
           </div>
           <Button
             variant="outline"
