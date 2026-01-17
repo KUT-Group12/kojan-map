@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Label } from './ui/label';
-import { MapPin, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { User, PinGenre } from '../types';
 import { genreLabels } from '../lib/mockData';
 import { toast } from 'sonner';
@@ -38,8 +38,8 @@ export function NewPostScreen({
   const [genre, setGenre] = useState<PinGenre>('other');
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
-  const [latitude, setLatitude] = useState(String(initialLatitude ?? 35.6762));
-  const [longitude, setLongitude] = useState(String(initialLongitude ?? 139.6503));
+  const [latitude, setLatitude] = useState(String(initialLatitude ?? 33.6071));
+  const [longitude, setLongitude] = useState(String(initialLongitude ?? 133.6822));
   const [images, setImages] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,6 +86,11 @@ export function NewPostScreen({
     // バリデーション
     if (!title.trim()) {
       toast.error('タイトルを入力してください');
+      return;
+    }
+
+    if (title.length > 50) {
+      toast.error('タイトルは50文字以内で入力してください');
       return;
     }
 
@@ -198,13 +203,6 @@ export function NewPostScreen({
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm text-blue-800 flex items-start">
-              <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-              <span>実際のアプリでは、地図上でクリックまたは店舗名検索で位置を指定できます</span>
-            </p>
-          </div>
-
           {/* 画像アップロード */}
           <div>
             <Label>画像（任意）</Label>
@@ -250,9 +248,7 @@ export function NewPostScreen({
           {/* ユーザーロールに応じた表示 */}
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">
-                事業者名「{user.businessName}」として投稿されます
-              </p>
+              <p className="text-sm text-blue-800">事業者名「{user.fromName}」として投稿されます</p>
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
