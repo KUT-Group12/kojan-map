@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Button } from './ui/button';
+//import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Search, Plus, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';     //Plus, SlidersHorizontal   を削除
 import { Pin, PinGenre, User } from '../types';
 import { genreLabels, genreColors } from '../lib/mockData';
 
@@ -18,7 +18,7 @@ interface SidebarProps {
 export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'reactions' | 'distance'>('date');
+  const [sortBy, _setSortBy] = useState<'date' | 'reactions' | 'distance'>('date');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
                 </SelectContent>
               </Select>
 
-              <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as any)}>
+              <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as "all" | "today" | "week" | "month")}>
                 <SelectTrigger>
                   <SelectValue placeholder="期間" />
                 </SelectTrigger>
