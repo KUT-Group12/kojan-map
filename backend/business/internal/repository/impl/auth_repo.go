@@ -53,6 +53,15 @@ func (r *AuthRepoImpl) GetUserByID(ctx context.Context, googleID string) (interf
 	return &user, nil
 }
 
+// GetUserByGmail retrieves a user by gmail address.
+func (r *AuthRepoImpl) GetUserByGmail(ctx context.Context, gmail string) (interface{}, error) {
+	var user domain.User
+	if err := r.db.WithContext(ctx).Where("gmail = ?", gmail).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 // GetBusinessMemberByUserID retrieves business member info by user ID.
 func (r *AuthRepoImpl) GetBusinessMemberByUserID(ctx context.Context, userID string) (interface{}, error) {
 	var member domain.BusinessMember

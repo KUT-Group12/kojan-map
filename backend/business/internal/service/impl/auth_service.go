@@ -22,7 +22,8 @@ type AuthServiceImpl struct {
 }
 
 // NewAuthServiceImpl creates a new auth service.
-func NewAuthServiceImpl(authRepo repository.AuthRepo) *AuthServiceImpl {
+// tokenManager must be shared with middleware to ensure blacklist synchronization.
+func NewAuthServiceImpl(authRepo repository.AuthRepo, tokenManager *jwt.TokenManager) *AuthServiceImpl {
 	googleClientID := os.Getenv("GOOGLE_CLIENT_ID")
 	if googleClientID == "" {
 		googleClientID = "placeholder-client-id"
@@ -31,7 +32,7 @@ func NewAuthServiceImpl(authRepo repository.AuthRepo) *AuthServiceImpl {
 	return &AuthServiceImpl{
 		authRepo:      authRepo,
 		tokenVerifier: oauth.NewGoogleTokenVerifier(googleClientID),
-		tokenManager:  jwt.NewTokenManager(),
+		tokenManager:  tokenManager,
 		mfaValidator:  mfa.NewMFAValidator(),
 	}
 }
@@ -103,9 +104,8 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode stri
 		return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
 	}
 
-	// TODO: Fetch user by gmail and verify role is 'business'
-	// For now, query from database
-	user, err := s.authRepo.GetUserByID(ctx, gmail)
+	// Fetch user by gmail and verify role is 'business'
+	user, err := s.authRepo.GetUserByGmail(ctx, gmail)
 	if err != nil {
 		return nil, errors.NewAPIError(errors.ErrNotFound, "user not found")
 	}

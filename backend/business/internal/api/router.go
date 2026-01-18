@@ -17,6 +17,9 @@ import (
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api := r.Group("/api")
 
+	// Initialize TokenManager (shared across services and middleware)
+	tokenManager := jwt.NewTokenManager()
+
 	// Initialize repositories
 	authRepo := impl.NewAuthRepoImpl(db)
 	memberRepo := impl.NewBusinessMemberRepoImpl(db)
@@ -28,7 +31,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	paymentRepo := impl.NewPaymentRepoImpl(db)
 
 	// Initialize services
-	authService := svcimpl.NewAuthServiceImpl(authRepo)
+	authService := svcimpl.NewAuthServiceImpl(authRepo, tokenManager)
 	memberService := svcimpl.NewMemberServiceImpl(memberRepo, authRepo)
 	statsService := svcimpl.NewStatsServiceImpl(statsRepo)
 	postService := svcimpl.NewPostServiceImpl(postRepo)
@@ -47,14 +50,15 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	contactHandler := handler.NewContactHandler(contactService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
-	// Initialize TokenManager for middleware
-	tokenManager := jwt.NewTokenManager()
-
 	// Auth routes (public)
 	api.POST("/auth/google", authHandler.GoogleAuth)
 	api.POST("/auth/business/login", authHandler.BusinessLogin)
 	api.POST("/auth/refresh", authHandler.Refresh)
-	api.POST("/auth/logout", authHandler.Logout)
+
+	// Auth logout route (protected - requires authentication)
+	logoutRoute := api.Group("/auth")
+	logoutRoute.Use(middleware.AuthMiddleware(tokenManager))
+	logoutRoute.POST("/logout", authHandler.Logout)
 
 	// Member routes (protected)
 	memberRoutes := api.Group("/business")

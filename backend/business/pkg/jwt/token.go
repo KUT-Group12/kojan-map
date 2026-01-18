@@ -18,7 +18,12 @@ type TokenManager struct {
 func NewTokenManager() *TokenManager {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
+		// In production, fail fast if JWT_SECRET is not set
+		if os.Getenv("GO_ENV") == "production" {
+			panic("JWT_SECRET environment variable is required in production")
+		}
 		secret = "dev-secret-key-please-change-in-production"
+		// Warning: Using default secret in development environment
 	}
 	return &TokenManager{
 		secret:    secret,

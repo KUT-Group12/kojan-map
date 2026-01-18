@@ -56,6 +56,6 @@ type UpdateBusinessIconRequest struct {
 }
 
 // AnonymizeBusinessMemberRequest は匿名化のリクエスト
+// 認証コンテキストから businessID を取得するため、リクエストボディは空
 type AnonymizeBusinessMemberRequest struct {
-	GoogleID string `json:"googleId" binding:"required"`
 }

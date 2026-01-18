@@ -6,6 +6,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/idtoken"
 )
 
 // TokenVerifier defines the interface for verifying OAuth tokens.
@@ -30,28 +31,35 @@ func (v *GoogleTokenVerifier) VerifyToken(ctx context.Context, token string) (*T
 		return nil, fmt.Errorf("token is required")
 	}
 
-	// Create a token source from the token string
-	// In production, use google.VerifyIDToken or call Google's tokeninfo endpoint
-	// For now, we parse the token structure (assuming JWT format)
-	claims, err := v.parseIDToken(token)
+	// Validate ID token using Google's official idtoken package
+	// This verifies signature, expiration, issuer, and audience
+	payload, err := idtoken.Validate(ctx, token, v.clientID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse token: %w", err)
+		return nil, fmt.Errorf("failed to validate token: %w", err)
 	}
 
-	// Verify issuer
-	if claims.Issuer != "https://accounts.google.com" && claims.Issuer != "accounts.google.com" {
-		return nil, fmt.Errorf("invalid issuer: %s", claims.Issuer)
+	// Extract claims from validated payload
+	claims := &TokenClaims{
+		Sub:        payload.Subject,
+		Issuer:     payload.Issuer,
+		AUD:        payload.Audience,
+		Expiration: payload.Expires,
+		IssuedAt:   payload.IssuedAt,
 	}
 
-	// Verify client ID
-	if claims.AUD != v.clientID {
-		return nil, fmt.Errorf("invalid audience: expected %s, got %s", v.clientID, claims.AUD)
+	// Extract email (required claim)
+	if email, ok := payload.Claims["email"].(string); ok {
+		claims.Email = email
+	} else {
+		return nil, fmt.Errorf("email claim not found in token")
 	}
 
-	// Verify expiration
-	currentTime, ok := ctx.Value("currentTime").(int64)
-	if ok && claims.Expiration < currentTime {
-		return nil, fmt.Errorf("token expired")
+	// Optional: Extract additional claims if present
+	if name, ok := payload.Claims["name"].(string); ok {
+		claims.Name = name
+	}
+	if picture, ok := payload.Claims["picture"].(string); ok {
+		claims.Picture = picture
 	}
 
 	return claims, nil
@@ -67,28 +75,6 @@ type TokenClaims struct {
 	AUD        string `json:"aud"`     // Audience (client ID)
 	Expiration int64  `json:"exp"`     // Expiration time
 	IssuedAt   int64  `json:"iat"`     // Issued at time
-}
-
-// parseIDToken parses a Google ID token (simplified; uses oauth2 config for verification).
-// In production, call Google's tokeninfo endpoint or use google-idtoken library.
-func (v *GoogleTokenVerifier) parseIDToken(token string) (*TokenClaims, error) {
-	// TODO: Implement proper JWT parsing with Google's verification
-	// For now, this is a placeholder that assumes the token is valid
-	// Production code should:
-	// 1. Use google.VerifyIDToken() if available
-	// 2. Or decode JWT, verify signature with Google's public keys
-	// 3. Or call Google's tokeninfo endpoint: https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=<token>
-
-	// Placeholder: decode JWT without verification (UNSAFE for production)
-	claims := &TokenClaims{
-		Sub:        "placeholder-sub",
-		Email:      "user@example.com",
-		Issuer:     "https://accounts.google.com",
-		AUD:        v.clientID,
-		Expiration: int64(9999999999),
-	}
-
-	return claims, nil
 }
 
 // GetGoogleConfig returns OAuth2 config for Google.

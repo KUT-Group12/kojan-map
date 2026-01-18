@@ -164,9 +164,11 @@ func (h *MemberHandler) GetMemberInfo(c *gin.Context) {
 		return
 	}
 
-	// TODO: Fetch from memberRepo and return MemberInfoResponse
-	response.SendSuccess(c, http.StatusOK, gin.H{
-		"gmail": "placeholder@example.com",
-		"role":  "business",
-	})
+	details, err := h.memberService.GetBusinessDetails(c.Request.Context(), googleID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.SendSuccess(c, http.StatusOK, details)
 }
