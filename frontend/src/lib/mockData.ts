@@ -1,10 +1,10 @@
-import { Pin, PinGenre } from '../types';
+import { PinGenre } from '../types';
 
 export const genreColors: Record<PinGenre, string> = {
   food: '#EF4444', // 赤
   event: '#F59E0B', // オレンジ
-  scenery: '#10B981', // 緑
-  shop: '#3B82F6', // 青
+  scene: '#10B981', // 緑
+  store: '#3B82F6', // 青
   emergency: '#8B5CF6', // 紫
   other: '#6B7280', // グレー
 };
@@ -12,15 +12,15 @@ export const genreColors: Record<PinGenre, string> = {
 export const genreLabels: Record<PinGenre, string> = {
   food: 'グルメ',
   event: 'イベント',
-  scenery: '景色',
-  shop: 'お店',
+  scene: '景色',
+  store: 'お店',
   emergency: '緊急情報',
   other: 'その他',
 };
 
 // モックピンデータ
-
-export const mockPins: Pin[] = [
+/*
+export const mockPins: Post[] = [
   {
     id: 'pin1',
     userId: 'user1',
@@ -170,3 +170,4 @@ export const MOCK_USER = {
   // その他の必要なプロパティがあれば適宜追加
   createdAt: new Date().toISOString(),
 };
+*/
