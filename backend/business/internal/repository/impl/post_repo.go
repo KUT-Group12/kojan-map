@@ -81,24 +81,38 @@ func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int
 		return 0, fmt.Errorf("failed to create post: %w", err)
 	}
 
-	// Set genres (many-to-many) - convert string ID to int64
+	// Set genres (many-to-many)
 	if len(genreIDs) > 0 {
-		// Note: post.ID is string, need to handle type conversion
-		if err := r.SetGenres(ctx, 0, genreIDs); err != nil {
+		// Convert post.ID (string) to int64 for SetGenres
+		// Note: Assuming post.ID is numeric string after creation
+		if err := r.SetGenres(ctx, post.ID, genreIDs); err != nil {
 			return 0, err
 		}
 	}
 
-	// Parse post ID back to int64 if needed (depends on schema)
+	// TODO: Convert post.ID (string) to int64 for return value
 	// For now return 0 as placeholder
 	return 0, nil
 }
 
 // SetGenres sets genres for a post (many-to-many) (M1-8-4).
-func (r *PostRepoImpl) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
-	// TODO: Implement genre association (join table: post_genre)
-	// Expected: INSERT INTO post_genre (post_id, genre_id) VALUES (?, ?)
-	// with ON DUPLICATE KEY UPDATE or DELETE existing + INSERT new
+func (r *PostRepoImpl) SetGenres(ctx context.Context, postID interface{}, genreIDs []int64) error {
+	// Delete existing genre associations
+	if err := r.db.WithContext(ctx).Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
+		return fmt.Errorf("failed to delete existing genres: %w", err)
+	}
+
+	// Insert new genre associations
+	for _, genreID := range genreIDs {
+		postGenre := &domain.PostGenre{
+			PostID:  fmt.Sprintf("%v", postID),
+			GenreID: genreID,
+		}
+		if err := r.db.WithContext(ctx).Create(postGenre).Error; err != nil {
+			return fmt.Errorf("failed to create post_genre association: %w", err)
+		}
+	}
+
 	return nil
 }
 

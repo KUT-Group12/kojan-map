@@ -26,7 +26,10 @@ type AuthServiceImpl struct {
 func NewAuthServiceImpl(authRepo repository.AuthRepo, tokenManager *jwt.TokenManager) *AuthServiceImpl {
 	googleClientID := os.Getenv("GOOGLE_CLIENT_ID")
 	if googleClientID == "" {
-		googleClientID = "placeholder-client-id"
+		if os.Getenv("GO_ENV") == "production" {
+			panic("GOOGLE_CLIENT_ID environment variable is required in production")
+		}
+		googleClientID = "placeholder-client-id" // DEV ONLY
 	}
 
 	return &AuthServiceImpl{
