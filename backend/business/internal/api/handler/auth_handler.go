@@ -86,7 +86,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	// Extract token from Authorization header
 	token, err := h.extractTokenFromHeader(c)
 	if err != nil {
-		response.SendUnauthorized(c, fmt.Sprintf("invalid authorization: %v", err))
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", fmt.Sprintf("invalid authorization: %v", err), c.Request.URL.Path)
 		return
 	}
 
@@ -98,4 +98,22 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	response.SendOK(c, gin.H{"message": "logged out successfully"})
+}
+
+// Refresh handles POST /api/auth/refresh to refresh access token.
+// SSOT Endpoint: POST /api/auth/refresh
+func (h *AuthHandler) Refresh(c *gin.Context) {
+	var req domain.RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
+		return
+	}
+
+	result, err := h.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	response.SendOK(c, result)
 }

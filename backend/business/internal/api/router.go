@@ -53,11 +53,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	// Auth routes (public)
 	api.POST("/auth/google", authHandler.GoogleAuth)
 	api.POST("/auth/business/login", authHandler.BusinessLogin)
+	api.POST("/auth/refresh", authHandler.Refresh)
 	api.POST("/auth/logout", authHandler.Logout)
 
 	// Member routes (protected)
 	memberRoutes := api.Group("/business")
-	memberRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	memberRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	memberRoutes.GET("/mypage/details", memberHandler.GetBusinessDetails)
 	memberRoutes.PUT("/member/name", memberHandler.UpdateBusinessName)
 	memberRoutes.PUT("/member/icon", memberHandler.UpdateBusinessIcon)
@@ -66,7 +67,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Dashboard stats routes (protected)
 	statsRoutes := api.Group("/business")
-	statsRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	statsRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	statsRoutes.GET("/post/total", statsHandler.GetTotalPosts)
 	statsRoutes.GET("/reaction/total", statsHandler.GetTotalReactions)
 	statsRoutes.GET("/view/total", statsHandler.GetTotalViews)
@@ -74,7 +75,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Post routes (mostly protected)
 	postRoutes := api.Group("")
-	postRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	postRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	postRoutes.GET("/business/posts", postHandler.ListPosts)
 	postRoutes.GET("/posts/:postId", postHandler.GetPost)
 	postRoutes.POST("/posts", postHandler.CreatePost)
@@ -83,23 +84,23 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Block routes (protected)
 	blockRoutes := api.Group("")
-	blockRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	blockRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	blockRoutes.POST("/block", blockHandler.CreateBlock)
 	blockRoutes.DELETE("/block", blockHandler.DeleteBlock)
 
 	// Report routes (protected)
 	reportRoutes := api.Group("")
-	reportRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	reportRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	reportRoutes.POST("/report", reportHandler.CreateReport)
 
 	// Contact routes (protected)
 	contactRoutes := api.Group("")
-	contactRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	contactRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	contactRoutes.POST("/contact", contactHandler.CreateContact)
 
 	// Stripe redirect (protected)
 	paymentRoutes := api.Group("/business")
-	paymentRoutes.Use(middleware.AuthMiddleware(tokenManager))
+	paymentRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	paymentRoutes.POST("/stripe/redirect", paymentHandler.CreateRedirect)
 
 	// Healthcheck

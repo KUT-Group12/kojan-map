@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"kojan-map/business/pkg/errors"
@@ -36,8 +38,19 @@ func ErrorHandlingMiddleware() gin.HandlerFunc {
 // CORSMiddleware はCORSミドルウェア
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		// 環境変数から許可オリジンを取得（デフォルト: 開発環境のみ）
+		allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+		if allowedOrigins == "" {
+			allowedOrigins = "http://localhost:5173,http://localhost:3000"
+		}
+
+		origin := c.Request.Header.Get("Origin")
+		// オリジンが許可リストに含まれるか確認
+		if origin != "" && contains(strings.Split(allowedOrigins, ","), origin) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 
@@ -48,4 +61,14 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// contains は文字列スライスに特定の文字列が含まれるかチェック
+func contains(slice []string, str string) bool {
+	for _, item := range slice {
+		if strings.TrimSpace(item) == str {
+			return true
+		}
+	}
+	return false
 }

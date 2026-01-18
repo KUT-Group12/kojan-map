@@ -24,13 +24,13 @@ func NewPaymentHandler(paymentService service.PaymentService) *PaymentHandler {
 func (h *PaymentHandler) CreateRedirect(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {
-		response.SendBadRequest(c, "businessId query parameter is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId query parameter is required", c.Request.URL.Path)
 		return
 	}
 
 	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
 	if err != nil {
-		response.SendBadRequest(c, "businessId must be a valid integer")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 

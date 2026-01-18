@@ -28,23 +28,25 @@ func NewTokenManager() *TokenManager {
 
 // Claims represents JWT custom claims.
 type Claims struct {
-	UserID string `json:"userId"`
-	Gmail  string `json:"gmail"`
-	Role   string `json:"role"`
+	UserID    string `json:"userId"`
+	Gmail     string `json:"gmail"`
+	Role      string `json:"role"`
+	TokenType string `json:"tokenType"` // "access" or "refresh"
 	jwtlib.RegisteredClaims
 }
 
-// GenerateToken generates a JWT token for the user.
+// GenerateToken generates a JWT token for the user (access token, 1 hour expiry).
 func (tm *TokenManager) GenerateToken(userID, gmail, role string) (string, error) {
 	if userID == "" || gmail == "" || role == "" {
 		return "", fmt.Errorf("userId, gmail, and role are required")
 	}
 
-	expirationTime := time.Now().Add(24 * time.Hour) // Token valid for 24 hours
+	expirationTime := time.Now().Add(1 * time.Hour) // 1 hour for access token
 	claims := &Claims{
-		UserID: userID,
-		Gmail:  gmail,
-		Role:   role,
+		UserID:    userID,
+		Gmail:     gmail,
+		Role:      role,
+		TokenType: "access",
 		RegisteredClaims: jwtlib.RegisteredClaims{
 			ExpiresAt: jwtlib.NewNumericDate(expirationTime),
 			IssuedAt:  jwtlib.NewNumericDate(time.Now()),
@@ -61,8 +63,60 @@ func (tm *TokenManager) GenerateToken(userID, gmail, role string) (string, error
 	return tokenString, nil
 }
 
+// GenerateTokenPair generates both access and refresh tokens.
+func (tm *TokenManager) GenerateTokenPair(userID, gmail, role string) (accessToken, refreshToken string, err error) {
+	if userID == "" || gmail == "" || role == "" {
+		return "", "", fmt.Errorf("userId, gmail, and role are required")
+	}
+
+	// Access token: 1 hour
+	accessExpiration := time.Now().Add(1 * time.Hour)
+	accessClaims := &Claims{
+		UserID:    userID,
+		Gmail:     gmail,
+		Role:      role,
+		TokenType: "access",
+		RegisteredClaims: jwtlib.RegisteredClaims{
+			ExpiresAt: jwtlib.NewNumericDate(accessExpiration),
+			IssuedAt:  jwtlib.NewNumericDate(time.Now()),
+			Issuer:    "kojan-map-business",
+		},
+	}
+
+	accessToken, err = jwtlib.NewWithClaims(jwtlib.SigningMethodHS256, accessClaims).SignedString([]byte(tm.secret))
+	if err != nil {
+		return "", "", fmt.Errorf("failed to sign access token: %w", err)
+	}
+
+	// Refresh token: 7 days
+	refreshExpiration := time.Now().Add(7 * 24 * time.Hour)
+	refreshClaims := &Claims{
+		UserID:    userID,
+		Gmail:     gmail,
+		Role:      role,
+		TokenType: "refresh",
+		RegisteredClaims: jwtlib.RegisteredClaims{
+			ExpiresAt: jwtlib.NewNumericDate(refreshExpiration),
+			IssuedAt:  jwtlib.NewNumericDate(time.Now()),
+			Issuer:    "kojan-map-business",
+		},
+	}
+
+	refreshToken, err = jwtlib.NewWithClaims(jwtlib.SigningMethodHS256, refreshClaims).SignedString([]byte(tm.secret))
+	if err != nil {
+		return "", "", fmt.Errorf("failed to sign refresh token: %w", err)
+	}
+
+	return accessToken, refreshToken, nil
+}
+
 // VerifyToken verifies and parses a JWT token.
 func (tm *TokenManager) VerifyToken(tokenString string) (*Claims, error) {
+	return tm.VerifyTokenWithType(tokenString, "")
+}
+
+// VerifyTokenWithType verifies a token with optional type check ("access" or "refresh").
+func (tm *TokenManager) VerifyTokenWithType(tokenString, expectedType string) (*Claims, error) {
 	// Check if token is revoked first
 	if tm.blacklist.IsRevoked(tokenString) {
 		return nil, fmt.Errorf("token has been revoked")
@@ -84,6 +138,11 @@ func (tm *TokenManager) VerifyToken(tokenString string) (*Claims, error) {
 		return nil, fmt.Errorf("token is invalid")
 	}
 
+	// Check token type if specified
+	if expectedType != "" && claims.TokenType != expectedType {
+		return nil, fmt.Errorf("token type mismatch: expected %s, got %s", expectedType, claims.TokenType)
+	}
+
 	return claims, nil
 }
 
@@ -98,6 +157,9 @@ func (tm *TokenManager) RevokeToken(tokenString string) error {
 	if claims.ExpiresAt != nil {
 		tm.blacklist.RevokeToken(tokenString, claims.ExpiresAt.Time)
 	}
+
+	return nil
+}
 
 	return nil
 }

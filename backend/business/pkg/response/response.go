@@ -12,6 +12,15 @@ type SuccessResponse struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
+// ProblemDetail はRFC 7807準拠のエラーレスポンス
+type ProblemDetail struct {
+	Type     string `json:"type"`
+	Title    string `json:"title"`
+	Status   int    `json:"status"`
+	Detail   string `json:"detail"`
+	Instance string `json:"instance"`
+}
+
 // SendSuccess は成功レスポンスを送信
 func SendSuccess(c *gin.Context, statusCode int, data interface{}) {
 	if data == nil {
@@ -19,6 +28,19 @@ func SendSuccess(c *gin.Context, statusCode int, data interface{}) {
 		return
 	}
 	c.JSON(statusCode, data)
+}
+
+// SendProblem はRFC 7807準拠のエラーレスポンスを送信
+func SendProblem(c *gin.Context, status int, title, detail, instance string) {
+	problem := ProblemDetail{
+		Type:     "https://api.kojanmap.example.com/errors/" + title,
+		Title:    title,
+		Status:   status,
+		Detail:   detail,
+		Instance: instance,
+	}
+	c.Header("Content-Type", "application/problem+json")
+	c.JSON(status, problem)
 }
 
 // SendError はエラーレスポンスを送信
@@ -46,24 +68,25 @@ func SendNoContent(c *gin.Context) {
 
 // SendBadRequest は400 Bad Requestレスポンスを送信
 func SendBadRequest(c *gin.Context, message string) {
-	err := errors.NewAPIError(errors.ErrInvalidInput, message)
-	SendError(c, err)
+	SendProblem(c, http.StatusBadRequest, "bad-request", message, c.Request.URL.Path)
 }
 
 // SendUnauthorized は401 Unauthorizedレスポンスを送信
 func SendUnauthorized(c *gin.Context, message string) {
-	err := errors.NewAPIError(errors.ErrUnauthorized, message)
-	SendError(c, err)
+	SendProblem(c, http.StatusUnauthorized, "unauthorized", message, c.Request.URL.Path)
+}
+
+// SendForbidden は403 Forbiddenレスポンスを送信
+func SendForbidden(c *gin.Context, message string) {
+	SendProblem(c, http.StatusForbidden, "forbidden", message, c.Request.URL.Path)
 }
 
 // SendNotFound は404 Not Foundレスポンスを送信
 func SendNotFound(c *gin.Context, message string) {
-	err := errors.NewAPIError(errors.ErrNotFound, message)
-	SendError(c, err)
+	SendProblem(c, http.StatusNotFound, "not-found", message, c.Request.URL.Path)
 }
 
 // SendInternalServerError は500 Internal Server Errorレスポンスを送信
 func SendInternalServerError(c *gin.Context, message string) {
-	err := errors.NewAPIError(errors.ErrInternalServer, message)
-	SendError(c, err)
+	SendProblem(c, http.StatusInternalServerError, "internal-server-error", message, c.Request.URL.Path)
 }

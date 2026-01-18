@@ -130,6 +130,74 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode stri
 	return response, nil
 }
 
+// RefreshToken handles token refresh (new endpoint).
+func (s *AuthServiceImpl) RefreshToken(ctx context.Context, refreshTokenString string) (interface{}, error) {
+	if refreshTokenString == "" {
+		return nil, errors.NewAPIError(errors.ErrInvalidInput, "refreshToken is required")
+	}
+
+	// Verify refresh token
+	claims, err := s.tokenManager.VerifyTokenWithType(refreshTokenString, "refresh")
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, fmt.Sprintf("invalid refresh token: %v", err))
+	}
+
+	// Verify user still exists and has correct role
+	user, err := s.authRepo.GetUserByID(ctx, claims.UserID)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrNotFound, "user not found")
+	}
+
+	userData := user.(*domain.User)
+	if userData.Role != "business" {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, "user is not a business member")
+	}
+
+	// Generate new access token (keep same refresh token)
+	newAccessToken, err := s.tokenManager.GenerateToken(userData.ID, userData.Gmail, userData.Role)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate new access token: %v", err))
+	}
+
+	return &domain.RefreshTokenResponse{
+		AccessToken: newAccessToken,
+	}, nil
+}
+
+// RefreshToken handles token refresh (new endpoint).
+func (s *AuthServiceImpl) RefreshToken(ctx context.Context, refreshTokenString string) (interface{}, error) {
+	if refreshTokenString == "" {
+		return nil, errors.NewAPIError(errors.ErrInvalidInput, "refreshToken is required")
+	}
+
+	// Verify refresh token
+	claims, err := s.tokenManager.VerifyTokenWithType(refreshTokenString, "refresh")
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, fmt.Sprintf("invalid refresh token: %v", err))
+	}
+
+	// Verify user still exists and has correct role
+	user, err := s.authRepo.GetUserByID(ctx, claims.UserID)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrNotFound, "user not found")
+	}
+
+	userData := user.(*domain.User)
+	if userData.Role != "business" {
+		return nil, errors.NewAPIError(errors.ErrUnauthorized, "user is not a business member")
+	}
+
+	// Generate new access token (keep same refresh token)
+	newAccessToken, err := s.tokenManager.GenerateToken(userData.ID, userData.Gmail, userData.Role)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate new access token: %v", err))
+	}
+
+	return &domain.RefreshTokenResponse{
+		AccessToken: newAccessToken,
+	}, nil
+}
+
 // Logout handles logout (M1-3-3).
 // Expects session parameter to be a JWT token string.
 func (s *AuthServiceImpl) Logout(ctx context.Context, session interface{}) error {

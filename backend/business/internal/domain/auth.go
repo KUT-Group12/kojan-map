@@ -61,3 +61,23 @@ type MemberInfoResponse struct {
 	Gmail string `json:"gmail"`
 	Role  string `json:"role"`
 }
+
+// RefreshTokenRequest はトークン更新のリクエスト
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
+// RefreshTokenResponse はトークン更新のレスポンス
+type RefreshTokenResponse struct {
+	AccessToken string `json:"accessToken"`
+}
+
+// RefreshTokenRequest はトークン更新のリクエスト
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
+// RefreshTokenResponse はトークン更新のレスポンス
+type RefreshTokenResponse struct {
+	AccessToken string `json:"accessToken"`
+}

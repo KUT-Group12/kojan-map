@@ -27,14 +27,14 @@ func NewBlockHandler(blockService service.BlockService) *BlockHandler {
 func (h *BlockHandler) CreateBlock(c *gin.Context) {
 	var req domain.CreateBlockRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Extract blockerID from authenticated context
 	blockerID, ok := contextkeys.GetUserID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "user ID not found in context", c.Request.URL.Path)
 		return
 	}
 
@@ -54,14 +54,14 @@ func (h *BlockHandler) CreateBlock(c *gin.Context) {
 func (h *BlockHandler) DeleteBlock(c *gin.Context) {
 	var req domain.DeleteBlockRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Extract blockerID from authenticated context
 	blockerID, ok := contextkeys.GetUserID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "user ID not found in context", c.Request.URL.Path)
 		return
 	}
 
@@ -93,14 +93,14 @@ func NewReportHandler(reportService service.ReportService) *ReportHandler {
 func (h *ReportHandler) CreateReport(c *gin.Context) {
 	var req domain.CreateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Extract reporterID from authenticated context
 	reporterID, ok := contextkeys.GetUserID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "user ID not found in context", c.Request.URL.Path)
 		return
 	}
 

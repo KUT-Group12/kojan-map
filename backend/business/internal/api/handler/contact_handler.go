@@ -25,14 +25,14 @@ func NewContactHandler(contactService service.ContactService) *ContactHandler {
 func (h *ContactHandler) CreateContact(c *gin.Context) {
 	var req domain.CreateContactRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Extract googleID from authenticated context
 	googleID, ok := contextkeys.GetUserID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "user ID not found in context", c.Request.URL.Path)
 		return
 	}
 

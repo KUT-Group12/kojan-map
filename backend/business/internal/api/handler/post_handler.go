@@ -28,13 +28,13 @@ func NewPostHandler(postService service.PostService) *PostHandler {
 func (h *PostHandler) ListPosts(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {
-		response.SendBadRequest(c, "businessId query parameter is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId query parameter is required", c.Request.URL.Path)
 		return
 	}
 
 	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
 	if err != nil {
-		response.SendBadRequest(c, "businessId must be a valid integer")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
@@ -52,13 +52,13 @@ func (h *PostHandler) ListPosts(c *gin.Context) {
 func (h *PostHandler) GetPost(c *gin.Context) {
 	postIDStr := c.Param("postId")
 	if postIDStr == "" {
-		response.SendBadRequest(c, "postId path parameter is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "postId path parameter is required", c.Request.URL.Path)
 		return
 	}
 
 	postID, err := strconv.ParseInt(postIDStr, 10, 64)
 	if err != nil {
-		response.SendBadRequest(c, "postId must be a valid integer")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "postId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *PostHandler) GetPost(c *gin.Context) {
 func (h *PostHandler) CreatePost(c *gin.Context) {
 	var req domain.CreatePostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
@@ -111,14 +111,14 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 func (h *PostHandler) AnonymizePost(c *gin.Context) {
 	var req domain.AnonymizePostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Convert string postID to int64
 	postID, err := strconv.ParseInt(req.PostID, 10, 64)
 	if err != nil {
-		response.SendBadRequest(c, "postId must be a valid integer")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "postId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *PostHandler) AnonymizePost(c *gin.Context) {
 func (h *PostHandler) GetPostHistory(c *gin.Context) {
 	googleID := c.Query("googleId")
 	if googleID == "" {
-		response.SendBadRequest(c, "googleId query parameter is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "googleId query parameter is required", c.Request.URL.Path)
 		return
 	}
 

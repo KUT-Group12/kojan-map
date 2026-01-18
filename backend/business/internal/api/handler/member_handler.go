@@ -29,7 +29,7 @@ func NewMemberHandler(memberService service.MemberService) *MemberHandler {
 func (h *MemberHandler) GetBusinessDetails(c *gin.Context) {
 	googleID := c.Query("googleId")
 	if googleID == "" {
-		response.SendBadRequest(c, "googleId query parameter is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "googleId query parameter is required", c.Request.URL.Path)
 		return
 	}
 
@@ -48,14 +48,14 @@ func (h *MemberHandler) GetBusinessDetails(c *gin.Context) {
 func (h *MemberHandler) UpdateBusinessName(c *gin.Context) {
 	var req domain.UpdateBusinessNameRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Extract business ID from authenticated context
 	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
 
@@ -77,42 +77,42 @@ func (h *MemberHandler) UpdateBusinessName(c *gin.Context) {
 func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 	file, err := c.FormFile("icon")
 	if err != nil {
-		response.SendBadRequest(c, "icon file is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "icon file is required", c.Request.URL.Path)
 		return
 	}
 
 	// Check file size (5MB limit)
 	const maxSize = 5 * 1024 * 1024 // 5MB
 	if file.Size > maxSize {
-		response.SendBadRequest(c, fmt.Sprintf("icon file size must not exceed %dMB", maxSize/1024/1024))
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", fmt.Sprintf("icon file size must not exceed %dMB", maxSize/1024/1024), c.Request.URL.Path)
 		return
 	}
 
 	// Read file content
 	f, err := file.Open()
 	if err != nil {
-		response.SendInternalServerError(c, fmt.Sprintf("failed to open file: %v", err))
+		response.SendProblem(c, http.StatusInternalServerError, "internal-error", fmt.Sprintf("failed to open file: %v", err), c.Request.URL.Path)
 		return
 	}
 	defer f.Close()
 
 	iconData := make([]byte, file.Size)
 	if _, err := f.Read(iconData); err != nil {
-		response.SendInternalServerError(c, fmt.Sprintf("failed to read file: %v", err))
+		response.SendProblem(c, http.StatusInternalServerError, "internal-error", fmt.Sprintf("failed to read file: %v", err), c.Request.URL.Path)
 		return
 	}
 
 	// Validate MIME type (PNG or JPEG only) using file header magic numbers
 	imageValidator := validate.NewImageValidator()
 	if err := imageValidator.ValidateImage(iconData, file.Size, maxSize); err != nil {
-		response.SendBadRequest(c, fmt.Sprintf("invalid image format: %v", err))
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", fmt.Sprintf("invalid image format: %v", err), c.Request.URL.Path)
 		return
 	}
 
 	// Extract business ID from authenticated context
 	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
 
@@ -132,14 +132,14 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 func (h *MemberHandler) AnonymizeMember(c *gin.Context) {
 	var req domain.AnonymizeBusinessMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.SendBadRequest(c, err.Error())
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", err.Error(), c.Request.URL.Path)
 		return
 	}
 
 	// Extract business ID from authenticated context
 	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
 
@@ -159,7 +159,7 @@ func (h *MemberHandler) AnonymizeMember(c *gin.Context) {
 func (h *MemberHandler) GetMemberInfo(c *gin.Context) {
 	googleID := c.Query("googleId")
 	if googleID == "" {
-		response.SendBadRequest(c, "googleId query parameter is required")
+		response.SendProblem(c, http.StatusBadRequest, "bad-request", "googleId query parameter is required", c.Request.URL.Path)
 		return
 	}
 
