@@ -7,6 +7,7 @@ type AuthService interface {
 	GoogleAuth(ctx context.Context, payload interface{}) (interface{}, error)
 	BusinessLogin(ctx context.Context, gmail, mfaCode string) (interface{}, error)
 	Logout(ctx context.Context, session interface{}) error
+	RefreshToken(ctx context.Context, refreshTokenString string) (interface{}, error)
 }
 
 // MemberService handles business member operations.

@@ -17,13 +17,13 @@ func BusinessRoleRequired() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		if role != "business" {
 			response.SendProblem(c, http.StatusForbidden, "forbidden", "business role required", c.Request.URL.Path)
 			c.Abort()
 			return
 		}
-		
+
 		c.Next()
 	}
 }

@@ -161,9 +161,6 @@ func (tm *TokenManager) RevokeToken(tokenString string) error {
 	return nil
 }
 
-	return nil
-}
-
 // Stop stops the token manager (cleanup goroutines).
 func (tm *TokenManager) Stop() {
 	tm.blacklist.Stop()
