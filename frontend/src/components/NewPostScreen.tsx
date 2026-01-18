@@ -6,13 +6,14 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
-import { User, PinGenre } from '../types';
+import { User, PinGenre, Business } from '../types';
 import { genreLabels } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface CreatePinModalProps {
   user: User;
+  businessData?: Business;
   onClose: () => void;
   onCreate: (pin: {
     latitude: number;
@@ -28,6 +29,7 @@ interface CreatePinModalProps {
 
 export function NewPostScreen({
   user,
+  businessData,
   onClose,
   onCreate,
   initialLatitude,
@@ -136,6 +138,11 @@ export function NewPostScreen({
           {/* タイトル入力 */}
           <div>
             <Label htmlFor="title">タイトル *</Label>
+            <span
+              className={`text-[10px] ${title.length > 50 ? 'text-red-500 font-bold' : 'text-slate-400'}`}
+            >
+              {title.length} / 50文字
+            </span>
             <Input
               id="title"
               value={title}
@@ -248,7 +255,9 @@ export function NewPostScreen({
           {/* ユーザーロールに応じた表示 */}
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">事業者名「{user.fromName}」として投稿されます</p>
+              <p className="text-sm text-blue-800">
+                事業者名「{businessData?.businessName || user?.fromName}」として投稿されます
+              </p>
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
