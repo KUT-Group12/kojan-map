@@ -22,7 +22,7 @@ func NewStatsRepoImpl(db *gorm.DB) *StatsRepoImpl {
 func (r *StatsRepoImpl) TotalPosts(ctx context.Context, businessID int64) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&domain.Post{}).
-		Where("businessId = ?", businessID).
+		Where("author_id = ?", businessID).
 		Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("failed to count total posts: %w", err)
 	}
@@ -34,8 +34,8 @@ func (r *StatsRepoImpl) TotalReactions(ctx context.Context, businessID int64) (i
 	var count int64
 	if err := r.db.WithContext(ctx).
 		Table("reaction").
-		Joins("JOIN post ON post.id = reaction.postId").
-		Where("post.businessId = ?", businessID).
+		Joins("JOIN posts ON posts.id = reaction.post_id").
+		Where("posts.author_id = ?", businessID).
 		Count(&count).Error; err != nil {
 		return 0, fmt.Errorf("failed to count total reactions: %w", err)
 	}
@@ -47,11 +47,11 @@ func (r *StatsRepoImpl) TotalReactions(ctx context.Context, businessID int64) (i
 func (r *StatsRepoImpl) TotalViews(ctx context.Context, businessID int64) (int64, error) {
 	var totalViews int64
 
-	// Assumes posts table has a viewCount field
+	// Assumes posts table has a view_count field
 	if err := r.db.WithContext(ctx).
 		Model(&domain.Post{}).
-		Where("businessId = ?", businessID).
-		Select("COALESCE(SUM(viewCount), 0)").
+		Where("author_id = ?", businessID).
+		Select("COALESCE(SUM(view_count), 0)").
 		Row().
 		Scan(&totalViews).Error; err != nil {
 		return 0, fmt.Errorf("failed to sum total views: %w", err)
