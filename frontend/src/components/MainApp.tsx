@@ -10,8 +10,7 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Pin, User } from '../types';
-//import type { Pin, User, PinGenre } from '../types';
+import { Post, Place, User } from '../types';
 
 interface MainAppProps {
   user: User;
@@ -21,15 +20,17 @@ interface MainAppProps {
 
 interface PinDetailExtra {
   isReacted: boolean;
-  pinsAtLocation: Pin[];
+  postsAtLocation: Post[];
 }
 
 export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   // const [pins, setPins] = useState<Pin[]>(mockPins);
   // const [filteredPins, setFilteredPins] = useState<Pin[]>(mockPins);
-  const [pins, setPins] = useState<Pin[]>([]);
-  const [filteredPins, setFilteredPins] = useState<Pin[]>([]);
-  const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createInitialLatitude, setCreateInitialLatitude] = useState<number | undefined>(undefined);
   const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(
@@ -40,7 +41,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   >('map');
   const [previousView, setPreviousView] = useState<'map' | 'mypage' | 'dashboard'>('map');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [reactedPins, setReactedPins] = useState<Set<string>>(new Set());
+  const [reactedPosts, setReactedPins] = useState<Set<number>>(new Set());
   // APIからのデータを保持する
   const [detailData, setDetailData] = useState<PinDetailExtra | null>(null);
   // const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -89,8 +90,42 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     handleOpenCreateAtLocation(lat, lng);
   };
 
-  const handlePinClick = (pin: Pin) => {
-    setSelectedPin(pin);
+  const handlePinClick = async (post: Post) => {
+    /*
+    setSelectedPost(post);
+    const relatedPlace = places.find((p) => p.placeId === post.placeId);
+
+    if (relatedPlace) {
+      setSelectedPlace(relatedPlace);
+    } else {
+      // もし見つからない場合のフォールバック（デバッグ用）
+      console.warn("対応する場所情報が見つかりませんでした。placeId:", post.placeId);
+    }*/
+    try {
+      // 1. まずバックエンドに詳細データを問い合わせる
+      const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
+
+      if (!response.ok) {
+        throw new Error('サーバーからデータを取得できませんでした');
+      }
+
+      const latestPostData = await response.json();
+
+      // 2. 通信が成功した時だけ、Stateを更新して画面を開く
+      setSelectedPost(latestPostData); // サーバーからの最新データをセット
+
+      const relatedPlace = places.find((p) => p.placeId === post.placeId);
+      if (relatedPlace) {
+        setSelectedPlace(relatedPlace);
+      }
+
+      // APIから取得した詳細データ（閲覧数やリアクション状態など）をセット
+      // setDetailData(latestPostData.extra); // 必要に応じて
+    } catch (error) {
+      console.error('詳細取得エラー:', error);
+      // 失敗した時はトースト通知などを出し、setSelectedPost(null) のままにする（＝開かない）
+      alert('エラー：サーバーに接続できません。投稿を表示できませんでした。');
+    }
   };
 
   /* 最新版
@@ -113,38 +148,48 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     setIsCreateModalOpen(true);
   };
 
-  const handleReaction = (pinId: string) => {
-    if (reactedPins.has(pinId)) {
+  const handleReaction = (postId: number) => {
+    if (reactedPosts.has(postId)) {
       // リアクション取り消し
-      setPins(pins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p)));
-      setFilteredPins(
-        filteredPins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p))
+      setPosts(
+        posts.map((p) => (p.postId === postId ? { ...p, reactions: p.numReaction - 1 } : p))
+      );
+      setFilteredPosts(
+        filteredPosts.map((p) =>
+          p.postId === postId ? { ...p, numReaction: p.numReaction - 1 } : p
+        )
       );
       setReactedPins((prev) => {
         const next = new Set(prev);
-        next.delete(pinId);
+        next.delete(postId);
         return next;
       });
     } else {
       // リアクション追加
-      setPins(pins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p)));
-      setFilteredPins(
-        filteredPins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p))
+      setPosts(
+        posts.map((p) => (p.postId === postId ? { ...p, reactions: p.numReaction + 1 } : p))
       );
-      setReactedPins((prev) => new Set(prev).add(pinId));
+      setFilteredPosts(
+        filteredPosts.map((p) =>
+          p.postId === postId ? { ...p, numReaction: p.numReaction + 1 } : p
+        )
+      );
+      setReactedPins((prev) => new Set(prev).add(postId));
     }
 
-    if (selectedPin && selectedPin.id === pinId) {
-      setSelectedPin({
-        ...selectedPin,
-        reactions: reactedPins.has(pinId) ? selectedPin.reactions - 1 : selectedPin.reactions + 1,
+    if (selectedPost && selectedPost.postId === postId) {
+      setSelectedPost({
+        ...selectedPost,
+        numReaction: reactedPosts.has(postId)
+          ? selectedPost.numReaction - 1
+          : selectedPost.numReaction + 1,
       });
     }
   };
-
+  /*
   const handleCreatePin = (
     newPin: Omit<
-      Pin,
+      Post,
       | 'id'
       | 'userId'
       | 'userName'
@@ -156,27 +201,74 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       | 'businessIcon'
     >
   ) => {
-    const pin: Pin = {
+    const post: Post = {
       ...newPin,
-      id: `pin_${Date.now()}`,
-      userId: user.id,
-      userName: user.role === 'business' ? user.name : '匿名',
-      userRole: user.role,
-      businessName: user.businessName,
-      businessIcon: user.businessIcon,
-      reactions: 0,
-      createdAt: new Date(),
-      viewCount: 0,
+      postId: Date.now(),
+      userId: user.googleId,
+      // userName: user.role === 'business' ? user.name : '匿名',
+      // userRole: user.role,
+      // businessName: user.businessName,
+      // businessIcon: user.businessIcon,
+      // reactions: 0,
+      // createdAt: new Date(),
+      // viewCount: 0,
+      postDate: new Date().toISOString(),
+      numReaction: 0,
+      numView: 0,
     };
-    setPins([pin, ...pins]);
-    setFilteredPins([pin, ...filteredPins]);
+    const place: Place = {
+      placeId: Date.now(),
+      latitude: createInitialLatitude,
+      longitude: createInitialLongitude,
+      numPost: 1,
+    };
+    console.log(createInitialLatitude);
+    console.log(createInitialLongitude);
+    setPosts([post, ...posts]);
+    setPlaces([place, ...places]);
+    setFilteredPosts([post, ...filteredPosts]);
     setIsCreateModalOpen(false);
+  };*/
+  type NewPostInput = Omit<
+    Post,
+    'postId' | 'placeId' | 'userId' | 'postDate' | 'numReaction' | 'numView'
+  >;
+
+  const handleCreatePin = (newPin: NewPostInput) => {
+    // 1. 共通のIDを一度だけ生成して変数に置く
+    const sharedId = Date.now();
+
+    const post: Post = {
+      ...newPin,
+      postId: sharedId,
+      placeId: sharedId, // placeと紐付けるために同じIDにする
+      userId: user.googleId,
+      postDate: new Date().toISOString(),
+      numReaction: 0,
+      numView: 0,
+    };
+
+    const place: Place = {
+      placeId: sharedId, // postと同じIDにする
+      latitude: createInitialLatitude!, // handleOpenCreateAtLocationでセットされた値
+      longitude: createInitialLongitude!,
+      numPost: 1,
+    };
+
+    // ステート更新（すべて一度に行う）
+    setPosts([post, ...posts]);
+    setPlaces([place, ...places]);
+    setFilteredPosts([post, ...filteredPosts]);
+
+    setIsCreateModalOpen(false);
+    setCreateInitialLatitude(undefined);
+    setCreateInitialLongitude(undefined);
   };
 
-  const handleDeletePin = (pinId: string) => {
-    setPins(pins.filter((p) => p.id !== pinId));
-    setFilteredPins(filteredPins.filter((p) => p.id !== pinId));
-    setSelectedPin(null);
+  const handleDeletePin = (postId: number) => {
+    setPosts(posts.filter((p) => p.postId !== postId));
+    setFilteredPosts(filteredPosts.filter((p) => p.postId !== postId));
+    setSelectedPost(null);
   };
   /*
   const handleCreatePin = async (newPinData: {
@@ -284,9 +376,9 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     onUpdateUser(updatedUser);
 
     // 既存のピンも更新（名前／事業者名／アイコン）
-    const updatePins = (pinsArray: Pin[]) =>
+    const updatePins = (pinsArray: Post[]) =>
       pinsArray.map((p) =>
-        p.userId === updatedUser.id
+        p.userId === updatedUser.googleId
           ? {
               ...p,
               businessIcon: updatedUser.businessIcon,
@@ -296,12 +388,12 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           : p
       );
 
-    setPins(updatePins(pins));
-    setFilteredPins(updatePins(filteredPins));
+    setPosts(updatePins(posts));
+    setFilteredPosts(updatePins(filteredPosts));
 
-    if (selectedPin && selectedPin.userId === updatedUser.id) {
-      setSelectedPin({
-        ...selectedPin,
+    if (selectedPost && selectedPost.userId === updatedUser.googleId) {
+      setSelectedPost({
+        ...selectedPost,
         businessIcon: updatedUser.businessIcon,
         businessName: updatedUser.businessName,
         userName: updatedUser.name,
@@ -344,13 +436,13 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           <>
             <Sidebar
               user={user}
-              pins={pins} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
-              onFilterChange={setFilteredPins}
+              pins={posts} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
+              onFilterChange={setFilteredPosts}
               //onCreatePin={() => setIsCreateModalOpen(true)}
               onPinClick={handlePinClick}
             />
             <MapViewScreen
-              pins={pins}
+              pins={posts}
               onPinClick={handlePinClick}
               onMapDoubleClick={handleMapDoubleClick}
             />
@@ -361,7 +453,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           (user.role === 'business' ? (
             <BusinessDisplayMyPage
               user={user}
-              pins={pins.filter((p) => p.userId === user.id)}
+              pins={posts.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
@@ -370,9 +462,9 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           ) : (
             <UserDisplayMyPage
               user={user}
-              pins={pins.filter((p) => p.userId === user.id)}
-              reactedPins={Array.from(reactedPins)
-                .map((id) => pins.find((p) => p.id === id)!)
+              pins={posts.filter((p) => p.userId === user.googleId)}
+              reactedPins={Array.from(reactedPosts)
+                .map((id) => posts.find((p) => p.postId === id)!)
                 .filter(Boolean)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
@@ -385,7 +477,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           <div className="flex-1 h-full">
             <BusinessDashboard
               user={user}
-              pins={pins.filter((p) => p.userId === user.id)}
+              pins={posts.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
             />
           </div>
@@ -418,21 +510,23 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
         />
       )}*/}
 
-      {selectedPin && (
+      {selectedPost && (
         <DisplayPostList
-          pin={selectedPin}
+          post={selectedPost}
+          place={selectedPlace || { placeId: 0, latitude: 0, longitude: 0, numPost: 0 }}
           currentUser={user}
           // APIからのデータを優先し、なければフロントの状態を使う
-          isReacted={detailData ? detailData.isReacted : reactedPins.has(selectedPin.id)}
+          isReacted={detailData ? detailData.isReacted : reactedPosts.has(selectedPost.postId)}
           onClose={() => {
-            setSelectedPin(null);
+            setSelectedPost(null);
+            setSelectedPlace(null);
             setDetailData(null);
           }}
           onReaction={handleReaction}
           onDelete={handleDeletePin}
           onBlockUser={handleBlockUser}
           // APIから取得した周辺情報を渡す
-          pinsAtLocation={detailData?.pinsAtLocation || []}
+          postsAtLocation={detailData?.postsAtLocation || []}
           onOpenCreateAtLocation={(lat, lng) => {
             setCreateInitialLatitude(lat);
             setCreateInitialLongitude(lng);
