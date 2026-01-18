@@ -17,8 +17,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [isSelectingRole, setIsSelectingRole] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 取得した Google ID を一時保存
+  // 取得した Google ID と Gmail を一時保存
   const [googleId, setGoogleId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const handleGoogleLoginClick = async () => {
     if (!agreedToTerms) {
@@ -29,15 +30,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     setIsLoading(true);
 
     try {
-      // --- フロントエンドでの Google ID 取得処理のイメージ ---
-      // const response = await window.google.accounts.id.prompt();
-      // もしくは Firebase の場合は user.uid
-
-      // デモ用：1秒後に一意の識別子を取得したと仮定
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const mockGoogleId = 'user_google_123456789';
+      const mockEmail = 'example@gmail.com';
 
       setGoogleId(mockGoogleId);
+      setUserEmail(mockEmail);
       setIsSelectingRole(true); // ID取得成功後に役割選択へ
     } catch (error) {
       console.error('Auth Error:', error);
@@ -47,8 +45,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  // App.tsx 等の親コンポーネント
-  const handleLogin = async (role: string, googleId: string) => {
+  const handleLogin = async (role: UserRole, googleId: string) => {
     // 【修正箇所①】role が "general" ではない場合、処理を中断する
     if (role !== 'general') {
       console.warn('一般会員以外のログイン試行をブロックしました:', role);
@@ -56,18 +53,25 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       return; // ここで関数を終了させ、fetchを実行させない
     }
 
+    setIsLoading(true);
     try {
       // 【修正箇所②】ここから下は role が "general" の時のみ実行される
-      const response = await fetch('http://localhost:8080/api/login', {
+      const response = await fetch('http://localhost:8080/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ role, googleId }),
+        body: JSON.stringify({
+          googleId: googleId,
+          gmail: userEmail,
+        }),
       });
 
+      if (!response.ok) throw new Error('Network response was not ok');
+
       const data = await response.json();
-      console.log('Backend Response:', data);
+      onLogin(role, googleId);
+      console.log('Backend Response (SessionId):', data.sessionId);
       alert(`サーバー接続成功: ${data.message}`);
     } catch (error) {
       console.error('接続エラー:', error);
@@ -75,11 +79,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  // ...
-  <LoginScreen onLogin={handleLogin} />;
+  //<LoginScreen onLogin={handleLogin} />;
   const handleRoleSelect = (role: UserRole) => {
     if (googleId) {
-      onLogin(role, googleId);
+      handleLogin(role, googleId);
     }
   };
 
