@@ -23,8 +23,8 @@ func NewPostRepoImpl(db *gorm.DB) *PostRepoImpl {
 func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
-		Where("businessId = ? AND isActive = ?", businessID, true).
-		Order("postedAt DESC").
+		Where("author_id = ? AND is_active = ?", businessID, true).
+		Order("posted_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to list posts: %w", err)
 	}
@@ -48,7 +48,7 @@ func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) err
 	result := r.db.WithContext(ctx).
 		Model(&domain.Post{}).
 		Where("id = ?", postID).
-		UpdateColumn("viewCount", gorm.Expr("viewCount + 1"))
+		UpdateColumn("view_count", gorm.Expr("view_count + 1"))
 
 	if result.Error != nil {
 		return fmt.Errorf("failed to increment view count for post %d: %w", postID, result.Error)
@@ -129,8 +129,8 @@ func (r *PostRepoImpl) History(ctx context.Context, googleID string) (interface{
 	// TODO: Query posts by business user ID with timestamps and sorting
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
-		Where("authorId = ? AND isActive = ?", googleID, true).
-		Order("postedAt DESC").
+		Where("author_id = ? AND is_active = ?", googleID, true).
+		Order("posted_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to get post history: %w", err)
 	}
