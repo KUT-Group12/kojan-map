@@ -50,7 +50,7 @@ func (PostGenre) TableName() string {
 
 // Genre はジャンルを表すドメインモデル（プレースホルダー）
 type Genre struct {
-	ID   int64  `gorm:"primaryKey"`
+	ID   int64 `gorm:"primaryKey"`
 	Name string
 }
 
