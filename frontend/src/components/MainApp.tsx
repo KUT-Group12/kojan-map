@@ -24,6 +24,17 @@ interface PinDetailExtra {
   pinsAtLocation: Pin[];
 }
 
+/**
+ * Root React component that renders the map-based application UI and manages local app state and user interactions.
+ *
+ * Manages pins, filtered views, selection/detail state, create/delete/update flows, reactions, navigation between
+ * map/mypage/dashboard/logout/deleteAccount views, and modal visibility for creating posts and contacting support.
+ *
+ * @param user - The current authenticated user used to personalize UI and attribute created pins.
+ * @param onLogout - Callback invoked when the user completes a logout or account deletion flow.
+ * @param onUpdateUser - Callback to propagate updated user profile information to the parent application.
+ * @returns The rendered main application UI element containing header, sidebar, map view, user pages, dashboards, and modals.
+ */
 export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   // const [pins, setPins] = useState<Pin[]>(mockPins);
   // const [filteredPins, setFilteredPins] = useState<Pin[]>(mockPins);

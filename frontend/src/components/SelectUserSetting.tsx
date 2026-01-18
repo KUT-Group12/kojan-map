@@ -10,6 +10,14 @@ interface SelectUserSettingProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+/**
+ * Render the user settings UI, including a block-list view and account deletion controls.
+ *
+ * @param user - The user whose settings are being displayed and managed.
+ * @param onUpdateUser - Callback invoked with an updated `User` when user data changes (e.g., blocked users).
+ * @param onNavigateToDeleteAccount - Callback invoked to navigate to the account deletion screen.
+ * @returns The rendered JSX element for the select-user settings interface.
+ */
 export function SelectUserSetting({
   user,
   onUpdateUser,

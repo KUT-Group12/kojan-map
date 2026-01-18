@@ -8,6 +8,16 @@ interface UserBlockViewScreenProps {
   onUpdateUser: (user: User) => void;
 }
 
+/**
+ * Render the user's block-list settings view.
+ *
+ * Renders a list of blocked user IDs inside a settings container and provides controls to
+ * unlock individual users when applicable.
+ *
+ * @param user - The current user object; its `blockedUsers` array is used to build the list
+ * @param onUpdateUser - Callback invoked with an updated `User` after unblock actions
+ * @returns A JSX element rendering the block-list UI
+ */
 export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenProps) {
   return (
     <div className="space-y-4">

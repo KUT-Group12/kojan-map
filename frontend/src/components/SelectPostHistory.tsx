@@ -9,6 +9,16 @@ interface SelectPostHistoryProps {
   onDeletePin: (pinId: string) => void;
 }
 
+/**
+ * Render a list of pinned posts with controls to view or delete each entry.
+ *
+ * Renders a vertical list of history items when `pins` contains entries; when `pins` is empty, renders an empty-state card with a Japanese message.
+ *
+ * @param pins - Array of `Pin` objects to display in the list
+ * @param onPinClick - Callback invoked with a `Pin` when a pin is selected
+ * @param onDeletePin - Callback invoked with a pin `id` when a deletion is requested
+ * @returns The component's JSX: a list of post history items or an empty-state card
+ */
 export function SelectPostHistory({ pins, onPinClick, onDeletePin }: SelectPostHistoryProps) {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {

@@ -32,6 +32,16 @@ interface BusinessDashboardProps {
   onPinClick: (pin: Pin) => void;
 }
 
+/**
+ * Renders a business dashboard UI showing summary metrics, charts, and top posts with tabbed views for Overview and Billing.
+ *
+ * Displays computed metrics (total posts, reactions, views, engagement rate), a weekly trend chart (mock data), a genre distribution chart, and a Top 5 list of pins. Tabs toggle between the overview and billing details; selecting a top post invokes the provided callback.
+ *
+ * @param user - The current user or business owner (used for display text such as business name)
+ * @param pins - Array of pins used to compute metrics, charts, and populate the Top 5 list
+ * @param onPinClick - Callback invoked with the selected `Pin` when a top post is clicked
+ * @returns A React element containing the business dashboard interface
+ */
 export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 

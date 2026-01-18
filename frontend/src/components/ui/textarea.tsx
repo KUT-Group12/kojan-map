@@ -2,6 +2,15 @@ import * as React from 'react';
 
 import { cn } from './utils';
 
+/**
+ * Render a textarea element with default form styling and support for additional classes.
+ *
+ * Forwards all other props to the underlying textarea element and provides a data-slot
+ * attribute of "textarea".
+ *
+ * @param className - Additional CSS classes appended to the component's default classes
+ * @returns The rendered textarea element
+ */
 function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
   return (
     <textarea

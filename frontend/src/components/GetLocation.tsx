@@ -17,6 +17,13 @@ const roundCoord = (num: number): number => {
   return Math.round(num * 10000) / 10000;
 };
 
+/**
+ * Registers a double-click handler on the map that, when enabled, rounds the clicked coordinates to four decimal places and passes them to the provided callback.
+ *
+ * @param onLocationSelected - Callback invoked with the selected latitude and longitude (both rounded to four decimal places) when the map is double-clicked and selection is enabled.
+ * @param enabled - Enables or disables location selection via double-click.
+ * @returns null (renders nothing)
+ */
 export function GetLocation({ onLocationSelected, enabled }: GetLocationProps) {
   useMapEvents({
     dblclick(e) {

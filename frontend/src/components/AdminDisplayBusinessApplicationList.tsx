@@ -17,6 +17,14 @@ interface Props {
   onReject: (requestId: number) => void;
 }
 
+/**
+ * Render a list of business applications, each with details and approve/reject actions.
+ *
+ * @param applications - The business application entries to display.
+ * @param onApprove - Invoked with an application's `id` when the approve button is clicked.
+ * @param onReject - Invoked with an application's `id` when the reject button is clicked.
+ * @returns The rendered list of application cards; if `applications` is empty, a centered zero-state message.
+ */
 export function BusinessApplicationList({ applications, onApprove, onReject }: Props) {
   if (applications.length === 0) {
     return <div className="text-center p-8 text-gray-500">現在、未処理の申請はありません。</div>;

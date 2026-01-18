@@ -6,6 +6,11 @@ import * as ResizablePrimitive from 'react-resizable-panels';
 
 import { cn } from './utils';
 
+/**
+ * Renders a PanelGroup wrapper that forwards all props and applies a default data-slot and responsive layout classes.
+ *
+ * @returns The underlying ResizablePrimitive.PanelGroup element with a composed `className` and `data-slot="resizable-panel-group"`.
+ */
 function ResizablePanelGroup({
   className,
   ...props
@@ -19,10 +24,24 @@ function ResizablePanelGroup({
   );
 }
 
+/**
+ * Wraps and renders a ResizablePrimitive.Panel with a data-slot attribute and transparent prop forwarding.
+ *
+ * @param props - Props compatible with `ResizablePrimitive.Panel`; all props are passed through to the underlying panel.
+ * @returns The rendered `ResizablePrimitive.Panel` element with `data-slot="resizable-panel"`.
+ */
 function ResizablePanel({ ...props }: React.ComponentProps<typeof ResizablePrimitive.Panel>) {
   return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />;
 }
 
+/**
+ * Renders a panel resize handle with optional inner handle icon.
+ *
+ * When `withHandle` is true, a small bordered grip icon is rendered inside the handle.
+ *
+ * @param withHandle - If true, includes the inner grip icon element
+ * @returns The rendered React element for the panel resize handle
+ */
 function ResizableHandle({
   withHandle,
   className,

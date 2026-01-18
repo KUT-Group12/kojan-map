@@ -1,3 +1,10 @@
+/**
+ * Renders a full-screen centered loading view with a Japanese heading and three bouncing dots.
+ *
+ * The three dots use staggered animation delays to create a sequential bounce effect.
+ *
+ * @returns A JSX element representing the loading screen.
+ */
 export function LoadingScreen() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">

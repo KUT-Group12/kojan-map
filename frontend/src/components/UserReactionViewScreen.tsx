@@ -9,6 +9,13 @@ interface UserReactionViewScreenProps {
   onPinClick: (pin: Pin) => void;
 }
 
+/**
+ * Render a view showing pins the user has reacted to, or an empty-state message when there are none.
+ *
+ * @param reactedPins - Pins to display in the list.
+ * @param onPinClick - Callback invoked with a pin when its card is clicked.
+ * @returns A JSX element containing a grid of pin cards or an empty-state card.
+ */
 export function UserReactionViewScreen({ reactedPins, onPinClick }: UserReactionViewScreenProps) {
   if (reactedPins.length === 0) {
     return (

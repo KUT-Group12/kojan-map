@@ -6,7 +6,10 @@ interface LogoutButtonProps {
 }
 
 /**
- * ログアウト実行のみを担当するコンポーネント
+ * Renders a button that triggers the provided logout callback when clicked.
+ *
+ * @param onLogout - Callback invoked with no arguments when the user clicks the button
+ * @returns A Button element labeled "ログアウトする" with a logout icon that calls `onLogout` on click
  */
 export function LogoutButton({ onLogout }: LogoutButtonProps) {
   const handleLogout = () => {

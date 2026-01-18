@@ -5,6 +5,14 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 import { cn } from './utils';
 
+/**
+ * Render a Tabs root wrapper that applies default layout styling and a consistent data-slot.
+ *
+ * The component forwards all props to the underlying Radix Tabs.Root and merges the provided
+ * `className` with the default 'flex flex-col gap-2' layout classes.
+ *
+ * @returns A Tabs root element with default layout classes merged with any provided `className`
+ */
 function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {
   return (
     <TabsPrimitive.Root
@@ -15,6 +23,16 @@ function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive
   );
 }
 
+/**
+ * Renders a tabs list element with default styling and a `data-slot="tabs-list"`.
+ *
+ * Merges any provided `className` with the component's default classes and forwards all other props
+ * to the underlying element.
+ *
+ * @param className - Additional class names to merge with the default styling
+ * @param props - Props forwarded to the underlying TabsPrimitive.List element
+ * @returns A React element for the styled tabs list with merged class names and forwarded props
+ */
 function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
@@ -28,6 +46,11 @@ function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimi
   );
 }
 
+/**
+ * Renders a styled wrapper around Radix UI's Tabs Trigger, applying default classes and a `data-slot="tabs-trigger"`.
+ *
+ * @returns A React element for TabsPrimitive.Trigger with default styling merged with `className` and all props forwarded.
+ */
 function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
@@ -41,6 +64,12 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
   );
 }
 
+/**
+ * Wraps Radix TabsPrimitive.Content with default styling and a data-slot for consistent slotting.
+ *
+ * @param className - Additional CSS classes merged with the default 'flex-1 outline-none'
+ * @returns The rendered TabsPrimitive.Content element with merged classes and `data-slot="tabs-content"`
+ */
 function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Content>) {
   return (
     <TabsPrimitive.Content
