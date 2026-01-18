@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -95,8 +96,8 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 		return
 	}
 	defer f.Close()
-
-	iconData := make([]byte, file.Size)
+, err := io.ReadAll(f)
+	ifSize)
 	if _, err := f.Read(iconData); err != nil {
 		response.SendProblem(c, http.StatusInternalServerError, "internal-error", fmt.Sprintf("failed to read file: %v", err), c.Request.URL.Path)
 		return
