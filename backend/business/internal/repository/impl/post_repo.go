@@ -1,0 +1,152 @@
+package impl
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"gorm.io/gorm"
+	"kojan-map/business/internal/domain"
+)
+
+// PostRepoImpl implements the PostRepo interface using GORM.
+type PostRepoImpl struct {
+	db *gorm.DB
+}
+
+// NewPostRepoImpl creates a new post repository.
+func NewPostRepoImpl(db *gorm.DB) *PostRepoImpl {
+	return &PostRepoImpl{db: db}
+}
+
+// ListByBusiness retrieves all posts for a business (M1-6-1).
+func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
+	var posts []domain.Post
+	if err := r.db.WithContext(ctx).
+		Where("author_id = ? AND is_active = ?", businessID, true).
+		Order("posted_at DESC").
+		Find(&posts).Error; err != nil {
+		return nil, fmt.Errorf("failed to list posts: %w", err)
+	}
+	return posts, nil
+}
+
+// GetByID retrieves a post by ID (M1-7-2).
+func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, error) {
+	var post domain.Post
+	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("post not found for id %d", postID)
+		}
+		return nil, err
+	}
+	return &post, nil
+}
+
+// IncrementViewCount increments the view count for a post by 1.
+func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) error {
+	result := r.db.WithContext(ctx).
+		Model(&domain.Post{}).
+		Where("id = ?", postID).
+		UpdateColumn("view_count", gorm.Expr("view_count + 1"))
+
+	if result.Error != nil {
+		return fmt.Errorf("failed to increment view count for post %d: %w", postID, result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("post not found for id %d", postID)
+	}
+
+	return nil
+}
+
+// Create creates a new post (M1-8-4).
+// SSOT Rules: 投稿はビジネスメンバーのみ作成可能、画像は5MB以下、ジャンルは複数指定可能
+func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
+	req := payload.(*domain.CreatePostRequest)
+
+	post := &domain.Post{
+		// Note: ID generation should be handled by DB (auto-increment or UUID)
+		Title:         req.Title,
+		Description:   req.Description,
+		LocationID:    req.LocationID,
+		ViewCount:     0,
+		ReactionCount: 0,
+		IsActive:      true,
+		// PostedAt should be set in service layer or DB default
+	}
+
+	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
+		return 0, fmt.Errorf("failed to create post: %w", err)
+	}
+
+	// Set genres (many-to-many)
+	if len(genreIDs) > 0 {
+		// Convert post.ID (string) to int64 for SetGenres
+		// Note: Assuming post.ID is numeric string after creation
+		if err := r.SetGenres(ctx, post.ID, genreIDs); err != nil {
+			return 0, err
+		}
+	}
+
+	// TODO: Convert post.ID (string) to int64 for return value
+	// For now return 0 as placeholder
+	return 0, nil
+}
+
+// SetGenres sets genres for a post (many-to-many) (M1-8-4).
+func (r *PostRepoImpl) SetGenres(ctx context.Context, postID interface{}, genreIDs []int64) error {
+	// Delete existing genre associations
+	if err := r.db.WithContext(ctx).Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
+		return fmt.Errorf("failed to delete existing genres: %w", err)
+	}
+
+	// Insert new genre associations
+	for _, genreID := range genreIDs {
+		postGenre := &domain.PostGenre{
+			PostID:  fmt.Sprintf("%v", postID),
+			GenreID: genreID,
+		}
+		if err := r.db.WithContext(ctx).Create(postGenre).Error; err != nil {
+			return fmt.Errorf("failed to create post_genre association: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// Anonymize anonymizes a post (M1-13-2).
+// SSOT Rules: 投稿内容は復元不能な値に置き換える、主キーおよび外部キーは変更しない
+func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int64) error {
+	result := r.db.WithContext(ctx).Model(&domain.Post{}).
+		Where("id = ?", postID).
+		Updates(map[string]interface{}{
+			"title":        "[Anonymized]",
+			"description":  "[Anonymized]",
+			"anonymizedAt": gorm.Expr("NOW()"),
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("post not found for id %d", postID)
+	}
+
+	return nil
+}
+
+// History retrieves post history for a user (M1-14-2).
+func (r *PostRepoImpl) History(ctx context.Context, googleID string) (interface{}, error) {
+	// TODO: Query posts by business user ID with timestamps and sorting
+	var posts []domain.Post
+	if err := r.db.WithContext(ctx).
+		Where("author_id = ? AND is_active = ?", googleID, true).
+		Order("posted_at DESC").
+		Find(&posts).Error; err != nil {
+		return nil, fmt.Errorf("failed to get post history: %w", err)
+	}
+	return posts, nil
+}
