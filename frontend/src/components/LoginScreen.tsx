@@ -79,12 +79,22 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  //<LoginScreen onLogin={handleLogin} />;
   const handleRoleSelect = (role: UserRole) => {
     if (googleId) {
       handleLogin(role, googleId);
     }
-  };
+  }; 
+
+  // バックエンドなしで動くコード
+
+  // <LoginScreen onLogin={handleLogin} />;
+  /*
+  const handleRoleSelect = (role: UserRole) => {
+    if (googleId) {
+      onLogin(role, googleId);
+      console.log('email:', userEmail)
+    }
+  }; */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
