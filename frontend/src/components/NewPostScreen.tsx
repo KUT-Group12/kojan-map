@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
 import { User, PinGenre, Business } from '../types';
-import { genreLabels } from '../lib/mockData';
+import { genreLabels, GENRE_MAP } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -109,6 +109,7 @@ export function NewPostScreen({
       return;
     }
 
+    /* バックエンドなしでも動く
     try {
       await onCreate({
         latitude: lat,
@@ -123,6 +124,46 @@ export function NewPostScreen({
     } catch (error) {
       console.error(error);
       toast.error('投稿に失敗しました');
+    }*/
+
+    /* バックエンドあり */
+    try {
+      // 1. バックエンドと繋げる
+      const response = await fetch('http://localhost:8080/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          placeId: 1, // placeIdの算出 (今は1固定)
+          genreId: GENRE_MAP[genre], // 文字列を数値IDに変換
+          userId: user.googleId,
+          title: title,
+          text: description,
+          postImage: images.length > 0 ? images[0] : '', // 仕様書の string 型に対応
+        }),
+      });
+
+      if (!response.ok) throw new Error('サーバーへの投稿に失敗しました');
+
+      const data = await response.json();
+      console.log('Post created with ID:', data.postId);
+
+      // 2. コンポーネントの呼び出し
+      await onCreate({
+        latitude: lat,
+        longitude: lng,
+        title,
+        description,
+        genre,
+        images,
+      });
+
+      toast.success('投稿しました！');
+      onClose();
+    } catch (error) {
+      console.error('投稿エラー:', error);
+      toast.error('投稿に失敗しました。サーバーが起動しているか確認してください。');
     }
   };
 

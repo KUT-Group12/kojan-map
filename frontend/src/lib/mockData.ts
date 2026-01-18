@@ -10,6 +10,15 @@ export const API_GENRE_MAP: Record<number, PinGenre> = {
   // それ以外は 'other' として扱う
 };
 
+export const GENRE_MAP: Record<PinGenre, number> = {
+  food: 1,
+  event: 2,
+  scene: 3,
+  store: 4,
+  emergency: 5,
+  other: 6,
+};
+
 export const genreColors: Record<PinGenre, string> = {
   food: '#EF4444', // 赤
   event: '#F59E0B', // オレンジ
