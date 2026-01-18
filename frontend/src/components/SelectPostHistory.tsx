@@ -21,9 +21,7 @@ export function SelectPostHistory({ pins, onPinClick, onDeletePin }: SelectPostH
   if (pins.length === 0) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-gray-500">
-          まだ投稿がありません
-        </CardContent>
+        <CardContent className="py-8 text-center text-gray-500">まだ投稿がありません</CardContent>
       </Card>
     );
   }
@@ -39,10 +37,10 @@ export function SelectPostHistory({ pins, onPinClick, onDeletePin }: SelectPostH
           formatDate={formatDate}
           /* 投稿削除 */
           deleteButton={
-            <SelectPostDeletion 
-              pinId={pin.id} 
-              onDelete={(id) => onDeletePin(id)} 
-              onClose={() => {}} 
+            <SelectPostDeletion
+              pinId={pin.id}
+              onDelete={(id) => onDeletePin(id)}
+              onClose={() => {}}
             />
           }
         />

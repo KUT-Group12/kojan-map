@@ -2,8 +2,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Heart, Eye } from 'lucide-react';
-import { Pin, User } from '../types';
-import { genreLabels, genreColors } from '../lib/mockData';
+import { Post, User, Place } from '../types';
+import { genreLabels, genreColors, GENRE_MAP } from '../lib/mockData';
 import { useEffect, useRef, useState } from 'react';
 import { UserTriggerReaction } from './UserTriggerReaction';
 import { ReportScreen } from './ReportScreen';
@@ -11,31 +11,67 @@ import { SelectBlock } from './SelectBlock';
 import { SelectPostDeletion } from './SelectPostDeletion';
 
 interface PinDetailModalProps {
-  pin: Pin;
+  post: Post;
+  place: Place;
   currentUser: User;
   isReacted: boolean;
   onClose: () => void;
-  onReaction: (pinId: string) => void;
-  onDelete: (pinId: string) => void;
+  onReaction: (postId: number) => void;
+  onDelete: (postId: number) => void;
   onBlockUser?: (userId: string) => void;
   // pins at the same/similar location to allow scrolling through nearby posts
-  pinsAtLocation?: Pin[];
+  postsAtLocation?: Post[];
   // open create modal prefilled with given coordinates
   onOpenCreateAtLocation?: (lat: number, lng: number) => void;
-    // 追加：別のピンを選択するための関数
-    onSelectPin?: (pin: Pin) => void;
+  // 追加：別のピンを選択するための関数
+  onSelectPin?: (post: Post) => void;
 }
 
-export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReaction, onDelete, onBlockUser, pinsAtLocation, onOpenCreateAtLocation, onSelectPin }: PinDetailModalProps) {
+export function DisplayPostList({
+  post,
+  place,
+  currentUser,
+  isReacted,
+  onClose,
+  onReaction,
+  onDelete,
+  onBlockUser,
+  postsAtLocation,
+  onOpenCreateAtLocation,
+  onSelectPin,
+}: PinDetailModalProps) {
   const [isReporting, setIsReporting] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
+
+  useEffect(() => {
+    const fetchPostDetail = async () => {
+      try {
+        // バックエンドとの接続
+        const response = await fetch(
+          `http://localhost:8080/api/posts/detail?postId=${post.postId}`
+        );
+        if (!response.ok) throw new Error('詳細の取得に失敗しました');
+
+        const data = await response.json(); // Post オブジェクトが返る
+
+        console.log('data: ', data);
+      } catch (error) {
+        console.error('詳細取得エラー:', error);
+      }
+    };
+
+    fetchPostDetail();
+  }, [post.postId]);
+
+  // スクロール制御
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [pin.id]);
+  }, [post.postId]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString('ja-JP', {
@@ -47,7 +83,7 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
     });
   };
 
-  const isOwnPost = pin.userId === currentUser.id;
+  const isOwnPost = post.userId === currentUser.googleId;
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -55,17 +91,13 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <DialogTitle>{pin.title}</DialogTitle>
-              <DialogDescription className="sr-only">
-                投稿の詳細情報を表示します
-              </DialogDescription>
+              <DialogTitle>{post.title}</DialogTitle>
+              <DialogDescription className="sr-only">投稿の詳細情報を表示します</DialogDescription>
               <div className="flex items-center space-x-2 mt-2">
-                <Badge style={{ backgroundColor: genreColors[pin.genre] }}>
-                  {genreLabels[pin.genre]}
+                <Badge style={{ backgroundColor: genreColors[GENRE_MAP[post.genreId] || 'other'] }}>
+                  {genreLabels[GENRE_MAP[post.genreId] || 'other']}
                 </Badge>
-                {pin.userRole === 'business' && (
-                  <Badge variant="outline">事業者</Badge>
-                )}
+                {currentUser.role === 'business' && <Badge variant="outline">事業者</Badge>}
               </div>
             </div>
           </div>
@@ -76,41 +108,42 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           <div className="flex items-center justify-between pb-4 border-b">
             <div>
               <p className="text-sm">
-                {pin.userRole === 'business' ? pin.businessName : '匿名'}
+                {currentUser.role === 'business' ? currentUser.fromName : '匿名'}
               </p>
-              <p className="text-xs text-gray-500">{formatDate(pin.createdAt)}</p>
+              <p className="text-xs text-gray-500">{formatDate(new Date(post.postDate))}</p>
             </div>
-            {pin.viewCount !== undefined && (
+            {post.numView !== undefined && (
               <div className="flex items-center text-sm text-gray-500">
                 <Eye className="w-4 h-4 mr-1" />
-                {pin.viewCount} 閲覧
+                {post.numView} 閲覧
               </div>
             )}
           </div>
 
           {/* 説明文 */}
           <div>
-            <p className="text-gray-700 whitespace-pre-wrap">{pin.description}</p>
+            <p className="text-gray-700 whitespace-pre-wrap">{post.text}</p>
           </div>
 
           {/* 画像表示エリア */}
-          {pin.images.length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-              {pin.images.map((image, index) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={`投稿画像 ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-              ))}
-            </div>
-          )}
+          {post?.postImage &&
+            (Array.isArray(post.postImage) ? post.postImage : [post.postImage]).length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {post.postImage.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`投稿画像 ${index + 1}`}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                ))}
+              </div>
+            )}
 
           {/* 位置情報 */}
           <div className="bg-gray-50 p-3 rounded-lg">
             <p className="text-sm text-gray-600">
-              📍 位置: {pin.latitude.toFixed(4)}, {pin.longitude.toFixed(4)}
+              📍 位置: {place.latitude.toFixed(4)}, {place.longitude.toFixed(4)}
             </p>
           </div>
 
@@ -118,14 +151,16 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           <div className="flex items-center space-x-3 text-gray-700">
             <div className="flex items-center space-x-2">
               <Heart className={`w-5 h-5 ${isReacted ? 'fill-red-500 text-red-500' : ''}`} />
-              <span>{pin.reactions} リアクション</span>
+              <span>{post.numReaction} リアクション</span>
             </div>
 
             <div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onOpenCreateAtLocation && onOpenCreateAtLocation(pin.latitude, pin.longitude)}
+                onClick={() =>
+                  onOpenCreateAtLocation && onOpenCreateAtLocation(place.latitude, place.longitude)
+                }
               >
                 投稿を追加
               </Button>
@@ -135,12 +170,16 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           {/* アクションエリア */}
           <div className="flex items-center space-x-2 pt-4 border-t">
             {isReporting ? (
-              <ReportScreen isReporting={isReporting} setIsReporting={setIsReporting} onReportComplete={onClose} />
+              <ReportScreen
+                isReporting={isReporting}
+                setIsReporting={setIsReporting}
+                onReportComplete={onClose}
+              />
             ) : (
               <>
                 {/* 1. リアクションボタン */}
                 <UserTriggerReaction
-                  pinId={pin.id}
+                  pinId={post.postId}
                   isReacted={isReacted}
                   userRole={currentUser.role}
                   isDisabled={false}
@@ -149,20 +188,20 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
 
                 {isOwnPost ? (
                   /* 2. 削除ボタン */
-                  <SelectPostDeletion 
-                    pinId={pin.id} 
-                    onDelete={onDelete} 
-                    onClose={onClose} 
-                  />
+                  <SelectPostDeletion pinId={post.postId} onDelete={onDelete} onClose={onClose} />
                 ) : (
                   /* 3. 通報 & ブロック */
                   <>
-                    <ReportScreen isReporting={isReporting} setIsReporting={setIsReporting} onReportComplete={onClose} />
+                    <ReportScreen
+                      isReporting={isReporting}
+                      setIsReporting={setIsReporting}
+                      onReportComplete={onClose}
+                    />
                     {typeof onBlockUser === 'function' && (
-                      <SelectBlock 
-                        userId={pin.userId} 
-                        onBlockUser={onBlockUser} 
-                        onClose={onClose} 
+                      <SelectBlock
+                        userId={post.userId} // Prop名を userId に合わせる
+                        onBlockUser={onBlockUser} // Prop名を onBlockUser に合わせる
+                        onClose={onClose}
                       />
                     )}
                   </>
@@ -172,25 +211,25 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           </div>
 
           {/* 同一場所の投稿リスト（スクロール可能） */}
-          {pinsAtLocation && pinsAtLocation.length > 0 && (
+          {postsAtLocation && postsAtLocation.length > 0 && (
             <div className="mt-6 pt-6 border-t">
-            <h3 className="text-sm font-bold mb-3">この場所の他の投稿</h3>
-            <div className="space-y-2">
-                {pinsAtLocation.map((p) => (
+              <h3 className="text-sm font-bold mb-3">この場所の他の投稿</h3>
+              <div className="space-y-2">
+                {postsAtLocation.map((p) => (
                   <div
-                    key={p.id}
+                    key={p.postId}
                     onClick={() => {
-                      if (p.id !== pin.id && onSelectPin) onSelectPin(p);
+                      if (p.postId !== post.postId && onSelectPin) onSelectPin(p);
                     }}
                     className={`cursor-pointer p-3 rounded-lg border transition-colors ${
-                      p.id === pin.id 
-                        ? 'border-blue-500 bg-blue-50' 
+                      p.postId === post.postId
+                        ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">{p.title}</span>
-                      <span className="text-xs text-gray-500">{p.reactions} ❤️</span>
+                      <span className="text-xs text-gray-500">{p.numReaction} ❤️</span>
                     </div>
                   </div>
                 ))}

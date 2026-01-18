@@ -22,7 +22,8 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
   });
   const [deleteReason, setDeleteReason] = useState('');
 
-  const canDelete = confirmChecks.dataLoss && confirmChecks.noCancellation && confirmChecks.postsDeleted;
+  const canDelete =
+    confirmChecks.dataLoss && confirmChecks.noCancellation && confirmChecks.postsDeleted;
 
   const handleDelete = () => {
     if (!canDelete) return;
@@ -138,9 +139,7 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
         <Card>
           <CardHeader>
             <CardTitle>削除の確認</CardTitle>
-            <CardDescription>
-              以下のすべての項目を確認し、チェックを入れてください
-            </CardDescription>
+            <CardDescription>以下のすべての項目を確認し、チェックを入れてください</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">

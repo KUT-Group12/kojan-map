@@ -9,12 +9,12 @@ interface DisplayUserSettingProps {
   titleClassName?: string;
 }
 
-export function DisplayUserSetting({ 
-  title, 
-  description, 
-  children, 
+export function DisplayUserSetting({
+  title,
+  description,
+  children,
   className,
-  titleClassName 
+  titleClassName,
 }: DisplayUserSettingProps) {
   return (
     <Card className={className}>
@@ -22,9 +22,7 @@ export function DisplayUserSetting({
         <CardTitle className={titleClassName}>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent>
-        {children}
-      </CardContent>
+      <CardContent>{children}</CardContent>
     </Card>
   );
 }

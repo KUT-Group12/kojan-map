@@ -38,9 +38,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
             <Mail className="w-5 h-5 mr-2" />
             お問い合わせ
           </DialogTitle>
-          <DialogDescription className="sr-only">
-            運営へのお問い合わせフォーム
-          </DialogDescription>
+          <DialogDescription className="sr-only">運営へのお問い合わせフォーム</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

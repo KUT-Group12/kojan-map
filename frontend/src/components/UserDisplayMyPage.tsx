@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { SelectPostHistory } from './SelectPostHistory';
 import { UserReactionViewScreen } from './UserReactionViewScreen';
 import { SelectUserSetting } from './SelectUserSetting';
-import {UserInputBusinessApplication} from './UserInputBusinessApplication';
+import { UserInputBusinessApplication } from './UserInputBusinessApplication';
 
 interface UserDisplayMyPageProps {
   user: User;
@@ -21,8 +21,14 @@ interface UserDisplayMyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function UserDisplayMyPage({ 
-  user, pins, reactedPins, onPinClick, onDeletePin, onUpdateUser, onNavigateToDeleteAccount 
+export function UserDisplayMyPage({
+  user,
+  pins,
+  reactedPins,
+  onPinClick,
+  onDeletePin,
+  onUpdateUser,
+  onNavigateToDeleteAccount,
 }: UserDisplayMyPageProps) {
   const [showBusinessRegistration, setShowBusinessRegistration] = useState(false);
 
@@ -67,24 +73,20 @@ export function UserDisplayMyPage({
               </div>
             </div>
 
-           {!showBusinessRegistration ? (
+            {!showBusinessRegistration ? (
               <Button onClick={() => setShowBusinessRegistration(true)} variant="outline">
                 <Shield className="w-4 h-4 mr-2" />
                 事業者登録を申請
               </Button>
             ) : (
-              <UserInputBusinessApplication 
+              <UserInputBusinessApplication
                 onUpdateUser={(data) => {
-                console.log("申請データ:", data);
-                handleBusinessRegistration(); 
-                   }} 
-                onCancel={() => setShowBusinessRegistration(false)} 
-                  />
-                )}
-
-          
-
-            
+                  console.log('申請データ:', data);
+                  handleBusinessRegistration();
+                }}
+                onCancel={() => setShowBusinessRegistration(false)}
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -97,27 +99,20 @@ export function UserDisplayMyPage({
 
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-            <SelectPostHistory 
-                pins={pins} 
-                onPinClick={onPinClick} 
-                onDeletePin={onDeletePin} 
-            />
+            <SelectPostHistory pins={pins} onPinClick={onPinClick} onDeletePin={onDeletePin} />
           </TabsContent>
 
           {/* リアクション履歴 */}
           <TabsContent value="reactions" className="space-y-4">
-            <UserReactionViewScreen 
-                reactedPins={reactedPins} 
-                onPinClick={onPinClick} 
-            />
+            <UserReactionViewScreen reactedPins={reactedPins} onPinClick={onPinClick} />
           </TabsContent>
 
           {/* 設定 */}
           <TabsContent value="settings" className="space-y-4">
-            <SelectUserSetting 
-                user={user}
-                onUpdateUser={onUpdateUser}
-                onNavigateToDeleteAccount={onNavigateToDeleteAccount}
+            <SelectUserSetting
+              user={user}
+              onUpdateUser={onUpdateUser}
+              onNavigateToDeleteAccount={onNavigateToDeleteAccount}
             />
           </TabsContent>
         </Tabs>
