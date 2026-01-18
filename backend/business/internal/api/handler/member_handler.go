@@ -96,9 +96,9 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 		return
 	}
 	defer f.Close()
-, err := io.ReadAll(f)
-	ifSize)
-	if _, err := f.Read(iconData); err != nil {
+
+	iconData, err := io.ReadAll(f)
+	if err != nil {
 		response.SendProblem(c, http.StatusInternalServerError, "internal-error", fmt.Sprintf("failed to read file: %v", err), c.Request.URL.Path)
 		return
 	}
