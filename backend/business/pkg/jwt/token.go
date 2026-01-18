@@ -156,6 +156,9 @@ func (tm *TokenManager) RevokeToken(tokenString string) error {
 	// Add token to blacklist with its expiration time
 	if claims.ExpiresAt != nil {
 		tm.blacklist.RevokeToken(tokenString, claims.ExpiresAt.Time)
+	}else {
+		// Fallback: revoke with a reasonable future time if no expiration
+		tm.blacklist.RevokeToken(tokenString, time.Now().Add(24*time.Hour))
 	}
 
 	return nil

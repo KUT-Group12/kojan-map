@@ -52,7 +52,6 @@ func (r *StatsRepoImpl) TotalViews(ctx context.Context, businessID int64) (int64
 		Model(&domain.Post{}).
 		Where("author_id = ?", businessID).
 		Select("COALESCE(SUM(view_count), 0)").
-		Row().
 		Scan(&totalViews).Error; err != nil {
 		return 0, fmt.Errorf("failed to sum total views: %w", err)
 	}

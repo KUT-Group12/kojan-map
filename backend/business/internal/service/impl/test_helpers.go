@@ -1,6 +1,8 @@
 package impl
 
 import (
+	"strconv"
+
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository/mock"
 	"kojan-map/business/pkg/jwt"
@@ -94,7 +96,7 @@ func (f *TestFixtures) SetupPost(
 	viewCount int64,
 ) *domain.Post {
 	post := &domain.Post{
-		ID:          string(rune(postID)),
+		ID:          strconv.FormatInt(postID, 10),
 		AuthorID:    authorID,
 		Title:       title,
 		Description: description,
