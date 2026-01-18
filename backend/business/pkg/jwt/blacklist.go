@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// TokenBlacklist manages revoked JWT tokens
+// TokenBlacklist は失効したJWTトークンを管理します
 type TokenBlacklist struct {
 	mu       sync.RWMutex
 	tokens   map[string]time.Time // token -> revocation time
@@ -13,29 +13,29 @@ type TokenBlacklist struct {
 	stopChan chan struct{}
 }
 
-// NewTokenBlacklist creates a new token blacklist manager
+// NewTokenBlacklist はトークンブラックリストマネージャーを生成します
 func NewTokenBlacklist() *TokenBlacklist {
 	tb := &TokenBlacklist{
 		tokens:   make(map[string]time.Time),
-		ticker:   time.NewTicker(1 * time.Hour), // Cleanup every hour
+		ticker:   time.NewTicker(1 * time.Hour), // 1時間ごとにクリーンアップ
 		stopChan: make(chan struct{}),
 	}
 
-	// Start cleanup goroutine
+	// クリーンアップゴルーチンを起動
 	go tb.cleanupExpiredTokens()
 
 	return tb
 }
 
-// RevokeToken adds a token to the blacklist
-// expiresAt: the time when the token expires (no need to keep it in blacklist after expiry)
+// RevokeToken はトークンをブラックリストに追加します
+// expiresAt: トークンが期限切れになる時刻（期限後はブラックリストに保持する必要なし）
 func (tb *TokenBlacklist) RevokeToken(token string, expiresAt time.Time) {
 	tb.mu.Lock()
 	defer tb.mu.Unlock()
 	tb.tokens[token] = expiresAt
 }
 
-// IsRevoked checks if a token is revoked
+// IsRevoked はトークンが失効されているか確認します
 func (tb *TokenBlacklist) IsRevoked(token string) bool {
 	tb.mu.RLock()
 	defer tb.mu.RUnlock()
@@ -45,8 +45,8 @@ func (tb *TokenBlacklist) IsRevoked(token string) bool {
 		return false
 	}
 
-	// If token is still in map, it's revoked
-	// (expired tokens will be cleaned up by cleanup goroutine)
+	// トークンがまだマップにある場合、失効されている
+	// （期限切れトークンはクリーンアップゴルーチンによって削除される）
 	return expiresAt.After(time.Now())
 }
 

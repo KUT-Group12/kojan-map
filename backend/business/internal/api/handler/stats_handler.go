@@ -9,20 +9,19 @@ import (
 	"kojan-map/business/pkg/response"
 )
 
-// StatsHandler handles statistics-related endpoints.
+// StatsHandler は統計関連のエンドポイントを処理するハンドラーです。
 type StatsHandler struct {
 	statsService service.StatsService
 }
 
-// NewStatsHandler creates a new stats handler.
+// NewStatsHandler は新しい統計ハンドラーを作成します。
 func NewStatsHandler(statsService service.StatsService) *StatsHandler {
 	return &StatsHandler{
 		statsService: statsService,
 	}
 }
 
-// GetTotalPosts handles GET /api/business/post/total (M3-7-1).
-// SSOT Endpoint: GET /api/business/post/total
+// GetTotalPosts は GET /api/business/post/total (M3-7-1) を処理します。
 func (h *StatsHandler) GetTotalPosts(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {
@@ -45,8 +44,7 @@ func (h *StatsHandler) GetTotalPosts(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
-// GetTotalReactions handles GET /api/business/reaction/total (M3-7-2).
-// SSOT Endpoint: GET /api/business/reaction/total
+// GetTotalReactions は GET /api/business/reaction/total (M3-7-2) を処理します。
 func (h *StatsHandler) GetTotalReactions(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {
@@ -69,8 +67,7 @@ func (h *StatsHandler) GetTotalReactions(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
-// GetTotalViews handles GET /api/business/view/total (M3-7-3).
-// SSOT Endpoint: GET /api/business/view/total
+// GetTotalViews は GET /api/business/view/total (M3-7-3) を処理します。
 func (h *StatsHandler) GetTotalViews(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {
@@ -93,9 +90,8 @@ func (h *StatsHandler) GetTotalViews(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
-// GetEngagementRate handles GET /api/business/engagement (M3-7-4).
-// SSOT Endpoint: GET /api/business/engagement
-// SSOT Formula: エンゲージメント率 = (リアクション数 + ビュー数) / (投稿数 * 100)
+// GetEngagementRate は GET /api/business/engagement (M3-7-4) を処理します。
+// エンゲージメント率 = (リアクション数 + ビュー数) / (投稿数 * 100)
 func (h *StatsHandler) GetEngagementRate(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {

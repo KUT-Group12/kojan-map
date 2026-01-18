@@ -8,7 +8,7 @@ import (
 // ImageValidator provides image validation utilities
 type ImageValidator struct{}
 
-// NewImageValidator creates a new image validator
+// NewImageValidator は画像検証器を生成します
 func NewImageValidator() *ImageValidator {
 	return &ImageValidator{}
 }

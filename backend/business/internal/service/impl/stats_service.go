@@ -9,20 +9,20 @@ import (
 	"kojan-map/business/pkg/errors"
 )
 
-// StatsServiceImpl implements the StatsService interface.
+// StatsServiceImpl はStatsServiceインターフェースを実装します。
 type StatsServiceImpl struct {
 	statsRepo repository.StatsRepo
 }
 
-// NewStatsServiceImpl creates a new stats service.
+// NewStatsServiceImpl は新しい統計サービスを作成します。
 func NewStatsServiceImpl(statsRepo repository.StatsRepo) *StatsServiceImpl {
 	return &StatsServiceImpl{
 		statsRepo: statsRepo,
 	}
 }
 
-// GetTotalPosts retrieves the total number of posts (M3-7-1).
-// SSOT Rules: 掲載投稿数は投稿テーブルのレコード数
+// GetTotalPosts は投稿の総数を取得します（M3-7-1）。
+// 掲載投稿数は投稿テーブルのレコード数
 func (s *StatsServiceImpl) GetTotalPosts(ctx context.Context, businessID int64) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
@@ -39,8 +39,8 @@ func (s *StatsServiceImpl) GetTotalPosts(ctx context.Context, businessID int64) 
 	}, nil
 }
 
-// GetTotalReactions retrieves the total number of reactions (M3-7-2).
-// SSOT Rules: リアクション数は同一ユーザーが同一投稿に複数回リアクションできないため COUNT(DISTINCT reaction)
+// GetTotalReactions はリアクションの総数を取得します（M3-7-2）。
+// リアクション数は同一ユーザーが同一投稿に複数回リアクションできないため COUNT(DISTINCT reaction)
 func (s *StatsServiceImpl) GetTotalReactions(ctx context.Context, businessID int64) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
@@ -57,7 +57,7 @@ func (s *StatsServiceImpl) GetTotalReactions(ctx context.Context, businessID int
 	}, nil
 }
 
-// GetTotalViews retrieves the total number of views (M3-7-3).
+// GetTotalViews は閲覧数の総数を取得します（M3-7-3）。
 // SSOT Rules: 表示回数は各投稿のビューカウントの合計
 func (s *StatsServiceImpl) GetTotalViews(ctx context.Context, businessID int64) (interface{}, error) {
 	if businessID <= 0 {
@@ -75,7 +75,7 @@ func (s *StatsServiceImpl) GetTotalViews(ctx context.Context, businessID int64) 
 	}, nil
 }
 
-// GetEngagementRate calculates the engagement rate (M3-7-4).
+// GetEngagementRate はエンゲージメント率を計算します（M3-7-4）。
 // SSOT Rules: エンゲージメント率 = (リアクション数 + ビュー数) / (投稿数 * 100)
 func (s *StatsServiceImpl) GetEngagementRate(ctx context.Context, businessID int64) (interface{}, error) {
 	if businessID <= 0 {

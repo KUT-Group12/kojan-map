@@ -14,31 +14,31 @@ type TokenVerifier interface {
 	VerifyToken(ctx context.Context, token string) (*TokenClaims, error)
 }
 
-// GoogleTokenVerifier handles Google OAuth token verification.
+// GoogleTokenVerifier はGoogle OAuthトークン検証を処理します
 type GoogleTokenVerifier struct {
 	clientID string
 }
 
-// NewGoogleTokenVerifier creates a new Google token verifier.
+// NewGoogleTokenVerifier はGoogleトークン検証器を生成します
 func NewGoogleTokenVerifier(clientID string) *GoogleTokenVerifier {
 	return &GoogleTokenVerifier{clientID: clientID}
 }
 
-// VerifyToken verifies a Google OAuth token and returns claims.
-// Token should be an ID token from frontend Google Auth.
+// VerifyToken はGoogle OAuthトークンを検証し、クレームを返します
+// トークンはフロントエンドのGoogle認証からのIDトークンである必要があります
 func (v *GoogleTokenVerifier) VerifyToken(ctx context.Context, token string) (*TokenClaims, error) {
 	if token == "" {
 		return nil, fmt.Errorf("token is required")
 	}
 
-	// Validate ID token using Google's official idtoken package
-	// This verifies signature, expiration, issuer, and audience
+	// Googleの公式idtokenパッケージを使用してIDトークンを検証
+	// これにより署名、期限、発行者、対象者が検証されます
 	payload, err := idtoken.Validate(ctx, token, v.clientID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate token: %w", err)
 	}
 
-	// Extract claims from validated payload
+	// 検証済みペイロードからクレームを抽出
 	claims := &TokenClaims{
 		Sub:        payload.Subject,
 		Issuer:     payload.Issuer,
@@ -54,7 +54,7 @@ func (v *GoogleTokenVerifier) VerifyToken(ctx context.Context, token string) (*T
 		return nil, fmt.Errorf("email claim not found in token")
 	}
 
-	// Optional: Extract additional claims if present
+	// オプション: 存在する場合は追加のクレームを抽出
 	if name, ok := payload.Claims["name"].(string); ok {
 		claims.Name = name
 	}
@@ -65,7 +65,7 @@ func (v *GoogleTokenVerifier) VerifyToken(ctx context.Context, token string) (*T
 	return claims, nil
 }
 
-// TokenClaims represents Google ID token claims.
+// TokenClaims はGoogle IDトークンのクレームを表します
 type TokenClaims struct {
 	Sub        string `json:"sub"`     // Subject (unique user ID)
 	Email      string `json:"email"`   // Email address
@@ -77,8 +77,8 @@ type TokenClaims struct {
 	IssuedAt   int64  `json:"iat"`     // Issued at time
 }
 
-// GetGoogleConfig returns OAuth2 config for Google.
-// Used for generating auth URLs and exchanging codes for tokens.
+// GetGoogleConfig はGoogle用のOAuth2設定を返します
+// 認証URLの生成やコードとトークンの交換に使用されます
 func GetGoogleConfig(clientID, clientSecret, redirectURL string) *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     clientID,

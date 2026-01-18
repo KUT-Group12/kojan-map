@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-// MFAValidator handles MFA code verification.
+// MFAValidator はMFAコード検証を処理します
 type MFAValidator struct {
 	// In production, store MFA codes in Redis or database with TTL
 	// For now, using simple in-memory storage (not thread-safe; for dev only)
 	codes map[string]*MFACode
 }
 
-// MFACode represents a generated MFA code with metadata.
+// MFACode はメタデータ付きの生成されたMFAコードを表します
 type MFACode struct {
 	Code        string
 	ExpiresAt   time.Time
@@ -21,7 +21,7 @@ type MFACode struct {
 	MaxAttempts int
 }
 
-// NewMFAValidator creates a new MFA validator.
+// NewMFAValidator はMFA検証器を生成します
 func NewMFAValidator() *MFAValidator {
 	return &MFAValidator{
 		codes: make(map[string]*MFACode),

@@ -8,24 +8,24 @@ import (
 	"kojan-map/business/internal/domain"
 )
 
-// BlockRepoImpl implements the BlockRepo interface using GORM.
+// BlockRepoImpl は GORM を使用して BlockRepo インターフェースを実装します。
 type BlockRepoImpl struct {
 	db *gorm.DB
 }
 
-// NewBlockRepoImpl creates a new block repository.
+// NewBlockRepoImpl は新しいブロックリポジトリを作成します。
 func NewBlockRepoImpl(db *gorm.DB) *BlockRepoImpl {
 	return &BlockRepoImpl{db: db}
 }
 
-// Create creates a new block record (M1-9-2).
-// SSOT Rules: ブロック者 IDと被ブロック者 IDの組み合わせは一意
+// Create は新しいブロックレコードを作成します（M1-9-2）。
+// ブロック者 ID と被ブロック者 ID の組み合わせは一意
 func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string) error {
 	if blockerID == "" || blockedID == "" {
 		return fmt.Errorf("both blockerID and blockedID are required")
 	}
 
-	// Check if already blocked
+	// 既にブロックされているかを確認します
 	var existingBlock domain.Block
 	if err := r.db.WithContext(ctx).
 		Where("blocking_user_id = ? AND blocked_google_id = ?", blockerID, blockedID).
@@ -45,7 +45,7 @@ func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string)
 	return nil
 }
 
-// Delete removes a block record (M1-10-2).
+// Delete はブロックレコードを削除します（M1-10-2）。
 func (r *BlockRepoImpl) Delete(ctx context.Context, blockerID, blockedID string) error {
 	if blockerID == "" || blockedID == "" {
 		return fmt.Errorf("both blockerID and blockedID are required")

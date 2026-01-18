@@ -3,6 +3,20 @@ package domain
 import "time"
 
 // Post は投稿を表すドメインモデル
+// ID: 主キー
+// AuthorID: 投稿者ID
+// BusinessMember: 事業者メンバー情報
+// LocationID: 場所ID
+// Title: タイトル
+// Description: 説明
+// ViewCount: 閲覧数
+// ReactionCount: リアクション数
+// PostedAt: 投稿日時
+// UpdatedAt: 更新日時
+// AnonymizedAt: 匿名化日時（NULL可）
+// IsActive: アクティブフラグ（論理削除用）
+// Images: 投稿画像リスト（外部キー: PostID）
+// Genres: ジャンルリスト（多対多リレーション、中間テーブル: post_genre）
 type Post struct {
 	ID             string `gorm:"primaryKey"`
 	AuthorID       string
@@ -26,6 +40,9 @@ func (Post) TableName() string {
 }
 
 // PostImage は投稿画像を表すドメインモデル
+// ID: 主キー
+// PostID: 投稿ID
+// ImageURL: 画像URL
 type PostImage struct {
 	ID       string `gorm:"primaryKey"`
 	PostID   string
@@ -38,6 +55,8 @@ func (PostImage) TableName() string {
 }
 
 // PostGenre は投稿とジャンルの多対多の中間テーブル
+// PostID: 投稿ID（複合主キー）
+// GenreID: ジャンルID（複合主キー）
 type PostGenre struct {
 	PostID  string `gorm:"primaryKey"`
 	GenreID int64  `gorm:"primaryKey"`
@@ -48,7 +67,9 @@ func (PostGenre) TableName() string {
 	return "post_genre"
 }
 
-// Genre はジャンルを表すドメインモデル（プレースホルダー）
+// Genre はジャンルを表すドメインモデル
+// ID: 主キー
+// Name: ジャンル名
 type Genre struct {
 	ID   int64 `gorm:"primaryKey"`
 	Name string
@@ -60,6 +81,11 @@ func (Genre) TableName() string {
 }
 
 // CreatePostRequest は投稿作成時のリクエスト
+// locationId: 必須。場所ID
+// genreIds: 必須。ジャンルIDのリスト（最低1つ必要）
+// title: 必須。投稿タイトル
+// description: 必須。投稿の説明
+// images: 画像URLのリスト（任意）
 type CreatePostRequest struct {
 	LocationID  string   `json:"locationId" binding:"required"`
 	GenreIDs    []int64  `json:"genreIds" binding:"required,min=1"`
@@ -69,6 +95,16 @@ type CreatePostRequest struct {
 }
 
 // PostResponse は投稿情報のレスポンス
+// postId: 投稿ID
+// locationId: 場所ID
+// genreId: ジャンルID
+// title: タイトル
+// viewCount: 閲覧数
+// reactionCount: リアクション数
+// authorId: 投稿者ID
+// postedAt: 投稿日時（ISO 8601形式: YYYY-MM-DDTHH:mm）
+// description: 説明
+// images: 画像URLのリスト
 type PostResponse struct {
 	PostID        string   `json:"postId"`
 	LocationID    string   `json:"locationId"`
@@ -83,6 +119,12 @@ type PostResponse struct {
 }
 
 // PostHistoryResponse は投稿履歴のレスポンス
+// postId: 投稿ID
+// genreId: ジャンルID
+// title: タイトル
+// reactionCount: リアクション数
+// postedAt: 投稿日時（ISO 8601形式: YYYY-MM-DDTHH:mm）
+// description: 説明
 type PostHistoryResponse struct {
 	PostID        string `json:"postId"`
 	GenreID       string `json:"genreId"`
@@ -93,6 +135,7 @@ type PostHistoryResponse struct {
 }
 
 // AnonymizePostRequest は投稿匿名化のリクエスト
+// postId: 必須。匿名化する投稿のID
 type AnonymizePostRequest struct {
 	PostID string `json:"postId" binding:"required"`
 }

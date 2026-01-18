@@ -10,13 +10,13 @@ import (
 	"kojan-map/business/pkg/errors"
 )
 
-// MemberServiceImpl implements the MemberService interface.
+// MemberServiceImpl はMemberServiceインターフェースを実装します。
 type MemberServiceImpl struct {
 	memberRepo repository.BusinessMemberRepo
 	authRepo   repository.AuthRepo
 }
 
-// NewMemberServiceImpl creates a new member service.
+// NewMemberServiceImpl は新しいメンバーサービスを作成します。
 func NewMemberServiceImpl(memberRepo repository.BusinessMemberRepo, authRepo repository.AuthRepo) *MemberServiceImpl {
 	return &MemberServiceImpl{
 		memberRepo: memberRepo,
@@ -24,8 +24,8 @@ func NewMemberServiceImpl(memberRepo repository.BusinessMemberRepo, authRepo rep
 	}
 }
 
-// GetBusinessDetails retrieves business member details (M3-2-2).
-// SSOT Rules: 存在しないGoogle IDが指定された場合はエラーを返す
+// GetBusinessDetails は事業者メンバーの詳細情報を取得します（M3-2-2）。
+// 存在しないGoogle IDが指定された場合はエラーを返す
 func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID string) (interface{}, error) {
 	if googleID == "" {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "googleId is required")
@@ -36,7 +36,7 @@ func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID str
 		return nil, errors.NewAPIError(errors.ErrNotFound, fmt.Sprintf("business member not found: %v", err))
 	}
 
-	// Get user info for email
+	// メールアドレスのためにユーザー情報を取得
 	user, err := s.authRepo.GetUserByID(ctx, googleID)
 	if err != nil {
 		return nil, errors.NewAPIError(errors.ErrNotFound, "user not found")
@@ -50,18 +50,18 @@ func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID str
 		BusinessName: memberData.BusinessName,
 		Gmail:        userData.Gmail,
 		RegistDate:   memberData.RegistDate.Format(time.RFC3339),
-		IconImageURL: "", // TODO: generate signed URL or base64 from BLOB if needed
+		IconImageURL: "", // TODO: 必要に応じてBLOBから署名付きURLまたはbase64を生成
 	}, nil
 }
 
-// UpdateBusinessName updates the business name (M3-4-2).
-// SSOT Rules: 事業者名の更新は永続ストレージに反映する、空文字や不正な形式のエラーとする
+// UpdateBusinessName は事業者名を更新します（M3-4-2）。
+// 事業者名の更新は永続ストレージに反映する、空文字や不正な形式のエラーとする
 func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID int64, name string) error {
 	if name == "" || len(name) > 50 {
 		return errors.NewAPIError(errors.ErrValidationFailed, "business name must be between 1 and 50 characters")
 	}
 
-	// TODO: Check if user is authenticated and owns this business
+	// TODO: ユーザーが認証済みで、この事業者を所有しているか確認
 
 	err := s.memberRepo.UpdateName(ctx, businessID, name)
 	if err != nil {
@@ -71,8 +71,8 @@ func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID i
 	return nil
 }
 
-// UpdateBusinessIcon updates the business icon (M3-5-2).
-// SSOT Rules: 画像は PNG または JPEG のみ、5MB以下、ログイン済みかつ本人のみ更新可能
+// UpdateBusinessIcon は事業者アイコンを更新します（M3-5-2）。
+// 画像は PNG または JPEG のみ、5MB以下、ログイン済みかつ本人のみ更新可能
 func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID int64, icon []byte) error {
 	if len(icon) == 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "icon data is required")
@@ -82,7 +82,7 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 		return errors.NewAPIError(errors.ErrImageTooLarge, "image size must not exceed 5MB")
 	}
 
-	// TODO: Validate MIME type (PNG or JPEG only)
+	// TODO: MIMEタイプを検証（PNGまたはJPEGのみ）
 
 	err := s.memberRepo.UpdateIcon(ctx, businessID, icon)
 	if err != nil {
@@ -92,10 +92,10 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 	return nil
 }
 
-// AnonymizeMember anonymizes member info (M3-3).
-// SSOT Rules: 識別可能な個人情報は復元不能な値に置き換える
+// AnonymizeMember はメンバー情報を匿名化します（M3-3）。
+// 識別可能な個人情報は復元不能な値に置き換える
 func (s *MemberServiceImpl) AnonymizeMember(ctx context.Context, businessID int64) error {
-	// TODO: Check if user is authenticated and is admin or own account
+	// TODO: ユーザーが認証済みで、管理者または本人のアカウントであるか確認
 
 	err := s.memberRepo.Anonymize(ctx, businessID)
 	if err != nil {

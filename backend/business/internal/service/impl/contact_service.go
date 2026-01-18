@@ -8,17 +8,17 @@ import (
 	"kojan-map/business/pkg/errors"
 )
 
-// ContactServiceImpl implements the ContactService interface.
+// ContactServiceImpl はContactServiceインターフェースを実装します。
 type ContactServiceImpl struct {
 	contactRepo repository.ContactRepo
 }
 
-// NewContactServiceImpl creates a new contact service.
+// NewContactServiceImpl は新しいお問い合わせサービスを作成します。
 func NewContactServiceImpl(contactRepo repository.ContactRepo) *ContactServiceImpl {
 	return &ContactServiceImpl{contactRepo: contactRepo}
 }
 
-// CreateContact handles inquiry submission (M1-11-2).
+// CreateContact はお問い合わせの送信を処理します（M1-11-2）。
 func (s *ContactServiceImpl) CreateContact(ctx context.Context, googleID, subject, message string) error {
 	if subject == "" || message == "" {
 		return errors.NewAPIError(errors.ErrInvalidInput, "subject and message are required")

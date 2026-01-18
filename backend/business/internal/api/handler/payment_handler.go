@@ -9,18 +9,18 @@ import (
 	"kojan-map/business/pkg/response"
 )
 
-// PaymentHandler handles Stripe/payment-related endpoints.
+// PaymentHandler はStripe/決済関連のエンドポイントを処理するハンドラーです。
 type PaymentHandler struct {
 	paymentService service.PaymentService
 }
 
-// NewPaymentHandler creates a new payment handler.
+// NewPaymentHandler は新しい決済ハンドラーを作成します。
 func NewPaymentHandler(paymentService service.PaymentService) *PaymentHandler {
 	return &PaymentHandler{paymentService: paymentService}
 }
 
-// CreateRedirect handles POST /api/business/stripe/redirect (M1-15-3).
-// Returns a mock redirect URL without calling Stripe.
+// CreateRedirect は POST /api/business/stripe/redirect (M1-15-3) を処理します。
+// Stripeを呼び出さずにモックのリダイレクトURLを返します。
 func (h *PaymentHandler) CreateRedirect(c *gin.Context) {
 	businessIDStr := c.Query("businessId")
 	if businessIDStr == "" {

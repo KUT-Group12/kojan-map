@@ -8,17 +8,17 @@ import (
 	"kojan-map/business/internal/domain"
 )
 
-// StatsRepoImpl implements the StatsRepo interface using GORM.
+// StatsRepoImpl は GORM を使用して StatsRepo インターフェースを実装します。
 type StatsRepoImpl struct {
 	db *gorm.DB
 }
 
-// NewStatsRepoImpl creates a new stats repository.
+// NewStatsRepoImpl は新しい統計リポジトリを作成します。
 func NewStatsRepoImpl(db *gorm.DB) *StatsRepoImpl {
 	return &StatsRepoImpl{db: db}
 }
 
-// TotalPosts retrieves the total number of posts for a business (M3-7-1).
+// TotalPosts は事業者の投稿総数を取得します（M3-7-1）。
 func (r *StatsRepoImpl) TotalPosts(ctx context.Context, businessID int64) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&domain.Post{}).
@@ -29,7 +29,7 @@ func (r *StatsRepoImpl) TotalPosts(ctx context.Context, businessID int64) (int64
 	return count, nil
 }
 
-// TotalReactions retrieves the total number of reactions on posts for a business (M3-7-2).
+// TotalReactions は事業者の投稿に対するリアクション総数を取得します（M3-7-2）。
 func (r *StatsRepoImpl) TotalReactions(ctx context.Context, businessID int64) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).
@@ -42,12 +42,12 @@ func (r *StatsRepoImpl) TotalReactions(ctx context.Context, businessID int64) (i
 	return count, nil
 }
 
-// TotalViews retrieves the total number of views on posts for a business (M3-7-3).
-// TODO: Implement view counting mechanism (needs view table or post.viewCount field)
+// TotalViews は事業者の投稿に対する閲覧総数を取得します（M3-7-3）。
+// TODO: 閲覧数カウント機構を実装する必要があります（view テーブルまたは post.viewCount フィールドが必要です）
 func (r *StatsRepoImpl) TotalViews(ctx context.Context, businessID int64) (int64, error) {
 	var totalViews int64
 
-	// Assumes posts table has a view_count field
+	// posts テーブルに view_count フィールドがあることを前提としています
 	if err := r.db.WithContext(ctx).
 		Model(&domain.Post{}).
 		Where("author_id = ?", businessID).
@@ -59,8 +59,8 @@ func (r *StatsRepoImpl) TotalViews(ctx context.Context, businessID int64) (int64
 	return totalViews, nil
 }
 
-// EngagementStats retrieves engagement stats needed for calculation.
-// Returns (postCount, reactionCount, viewCount).
+// EngagementStats は計算に必要なエンゲージメント統計を取得します。
+// (投稿数、リアクション数、閲覧数) を返します。
 func (r *StatsRepoImpl) EngagementStats(ctx context.Context, businessID int64) (int64, int64, int64, error) {
 	postCount, err := r.TotalPosts(ctx, businessID)
 	if err != nil {

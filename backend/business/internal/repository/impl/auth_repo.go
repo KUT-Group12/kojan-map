@@ -8,28 +8,28 @@ import (
 	"kojan-map/business/internal/domain"
 )
 
-// AuthRepoImpl implements the AuthRepo interface using GORM.
+// AuthRepoImpl は GORM を使用して AuthRepo インターフェースを実装します。
 type AuthRepoImpl struct {
 	db *gorm.DB
 }
 
-// NewAuthRepoImpl creates a new auth repository.
+// NewAuthRepoImpl は新しい認証リポジトリを作成します。
 func NewAuthRepoImpl(db *gorm.DB) *AuthRepoImpl {
 	return &AuthRepoImpl{db: db}
 }
 
-// GetOrCreateUser retrieves or creates a user record.
+// GetOrCreateUser はユーザーレコードを取得、または作成します。
 func (r *AuthRepoImpl) GetOrCreateUser(ctx context.Context, googleID, gmail, role string) (interface{}, error) {
 	var user domain.User
 	result := r.db.WithContext(ctx).Where("id = ?", googleID).First(&user)
 
 	if result.Error == nil {
-		// User exists
+		// ユーザーが存在します
 		return &user, nil
 	}
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		// Create new user
+		// 新しいユーザーを作成します
 		user = domain.User{
 			ID:    googleID,
 			Gmail: gmail,
@@ -44,7 +44,7 @@ func (r *AuthRepoImpl) GetOrCreateUser(ctx context.Context, googleID, gmail, rol
 	return nil, result.Error
 }
 
-// GetUserByID retrieves a user by Google ID.
+// GetUserByID は Google ID を使用してユーザーを取得します。
 func (r *AuthRepoImpl) GetUserByID(ctx context.Context, googleID string) (interface{}, error) {
 	var user domain.User
 	if err := r.db.WithContext(ctx).Where("id = ?", googleID).First(&user).Error; err != nil {
@@ -53,7 +53,7 @@ func (r *AuthRepoImpl) GetUserByID(ctx context.Context, googleID string) (interf
 	return &user, nil
 }
 
-// GetUserByGmail retrieves a user by gmail address.
+// GetUserByGmail は Gmail アドレスを使用してユーザーを取得します。
 func (r *AuthRepoImpl) GetUserByGmail(ctx context.Context, gmail string) (interface{}, error) {
 	var user domain.User
 	if err := r.db.WithContext(ctx).Where("gmail = ?", gmail).First(&user).Error; err != nil {
@@ -62,7 +62,7 @@ func (r *AuthRepoImpl) GetUserByGmail(ctx context.Context, gmail string) (interf
 	return &user, nil
 }
 
-// GetBusinessMemberByUserID retrieves business member info by user ID.
+// GetBusinessMemberByUserID はユーザー ID を使用して事業者メンバー情報を取得します。
 func (r *AuthRepoImpl) GetBusinessMemberByUserID(ctx context.Context, userID string) (interface{}, error) {
 	var member domain.BusinessMember
 	if err := r.db.WithContext(ctx).Where("userId = ?", userID).First(&member).Error; err != nil {

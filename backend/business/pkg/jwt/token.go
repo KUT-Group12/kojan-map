@@ -8,22 +8,22 @@ import (
 	jwtlib "github.com/golang-jwt/jwt/v5"
 )
 
-// TokenManager handles JWT token generation and validation.
+// TokenManager はJWTトークンの生成と検証を処理します
 type TokenManager struct {
 	secret    string
 	blacklist *TokenBlacklist
 }
 
-// NewTokenManager creates a new token manager.
+// NewTokenManager はトークンマネージャーを生成します
 func NewTokenManager() *TokenManager {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		// In production, fail fast if JWT_SECRET is not set
+		// 本番環境ではJWT_SECRETが未設定の場合は起動を中止
 		if os.Getenv("GO_ENV") == "production" {
 			panic("JWT_SECRET environment variable is required in production")
 		}
 		secret = "dev-secret-key-please-change-in-production"
-		// Warning: Using default secret in development environment
+		// 警告: 開発環境でデフォルトシークレットを使用中
 	}
 	return &TokenManager{
 		secret:    secret,
@@ -31,22 +31,22 @@ func NewTokenManager() *TokenManager {
 	}
 }
 
-// Claims represents JWT custom claims.
+// Claims はJWTカスタムクレームを表します
 type Claims struct {
 	UserID    string `json:"userId"`
 	Gmail     string `json:"gmail"`
 	Role      string `json:"role"`
-	TokenType string `json:"tokenType"` // "access" or "refresh"
+	TokenType string `json:"tokenType"` // "access"または"refresh"
 	jwtlib.RegisteredClaims
 }
 
-// GenerateToken generates a JWT token for the user (access token, 1 hour expiry).
+// GenerateToken はユーザー用のJWTトークンを生成します（アクセストークン、1時間有効）
 func (tm *TokenManager) GenerateToken(userID, gmail, role string) (string, error) {
 	if userID == "" || gmail == "" || role == "" {
 		return "", fmt.Errorf("userId, gmail, and role are required")
 	}
 
-	expirationTime := time.Now().Add(1 * time.Hour) // 1 hour for access token
+	expirationTime := time.Now().Add(1 * time.Hour) // アクセストークンは1時間
 	claims := &Claims{
 		UserID:    userID,
 		Gmail:     gmail,
@@ -68,13 +68,13 @@ func (tm *TokenManager) GenerateToken(userID, gmail, role string) (string, error
 	return tokenString, nil
 }
 
-// GenerateTokenPair generates both access and refresh tokens.
+// GenerateTokenPair はアクセストークンとリフレッシュトークンの両方を生成します
 func (tm *TokenManager) GenerateTokenPair(userID, gmail, role string) (accessToken, refreshToken string, err error) {
 	if userID == "" || gmail == "" || role == "" {
 		return "", "", fmt.Errorf("userId, gmail, and role are required")
 	}
 
-	// Access token: 1 hour
+	// アクセストークン: 1時間
 	accessExpiration := time.Now().Add(1 * time.Hour)
 	accessClaims := &Claims{
 		UserID:    userID,
@@ -93,7 +93,7 @@ func (tm *TokenManager) GenerateTokenPair(userID, gmail, role string) (accessTok
 		return "", "", fmt.Errorf("failed to sign access token: %w", err)
 	}
 
-	// Refresh token: 7 days
+	// リフレッシュトークン: 7日間
 	refreshExpiration := time.Now().Add(7 * 24 * time.Hour)
 	refreshClaims := &Claims{
 		UserID:    userID,
@@ -115,14 +115,14 @@ func (tm *TokenManager) GenerateTokenPair(userID, gmail, role string) (accessTok
 	return accessToken, refreshToken, nil
 }
 
-// VerifyToken verifies and parses a JWT token.
+// VerifyToken はJWTトークンを検証してパースします
 func (tm *TokenManager) VerifyToken(tokenString string) (*Claims, error) {
 	return tm.VerifyTokenWithType(tokenString, "")
 }
 
-// VerifyTokenWithType verifies a token with optional type check ("access" or "refresh").
+// VerifyTokenWithType はトークンを検証し、オプションでタイプチェックを行います（"access"または"refresh"）
 func (tm *TokenManager) VerifyTokenWithType(tokenString, expectedType string) (*Claims, error) {
-	// Check if token is revoked first
+	// まずトークンが失効されていないか確認
 	if tm.blacklist.IsRevoked(tokenString) {
 		return nil, fmt.Errorf("token has been revoked")
 	}
@@ -143,7 +143,7 @@ func (tm *TokenManager) VerifyTokenWithType(tokenString, expectedType string) (*
 		return nil, fmt.Errorf("token is invalid")
 	}
 
-	// Check token type if specified
+	// 指定された場合はトークンタイプを確認
 	if expectedType != "" && claims.TokenType != expectedType {
 		return nil, fmt.Errorf("token type mismatch: expected %s, got %s", expectedType, claims.TokenType)
 	}
@@ -151,25 +151,25 @@ func (tm *TokenManager) VerifyTokenWithType(tokenString, expectedType string) (*
 	return claims, nil
 }
 
-// RevokeToken adds a token to the blacklist (used for logout).
+// RevokeToken はトークンをブラックリストに追加します（ログアウト用）
 func (tm *TokenManager) RevokeToken(tokenString string) error {
 	claims, err := tm.VerifyToken(tokenString)
 	if err != nil {
 		return fmt.Errorf("cannot revoke invalid token: %w", err)
 	}
 
-	// Add token to blacklist with its expiration time
+	// 有効期限と共にトークンをブラックリストに追加
 	if claims.ExpiresAt != nil {
 		tm.blacklist.RevokeToken(tokenString, claims.ExpiresAt.Time)
 	} else {
-		// Fallback: revoke with a reasonable future time if no expiration
+		// フォールバック: 有効期限がない場合は合理的な未来時間で失効
 		tm.blacklist.RevokeToken(tokenString, time.Now().Add(24*time.Hour))
 	}
 
 	return nil
 }
 
-// Stop stops the token manager (cleanup goroutines).
+// Stop はトークンマネージャーを停止します（ゴルーチンのクリーンアップ）
 func (tm *TokenManager) Stop() {
 	tm.blacklist.Stop()
 }

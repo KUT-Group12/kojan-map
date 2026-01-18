@@ -13,14 +13,14 @@ import (
 	"kojan-map/business/pkg/response"
 )
 
-// RegisterRoutes sets up route groups for business backend.
+// RegisterRoutes はビジネスバックエンドのルートグループを設定します
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	api := r.Group("/api")
 
-	// Initialize TokenManager (shared across services and middleware)
+	// TokenManagerを初期化（サービスとミドルウェア間で共有）
 	tokenManager := jwt.NewTokenManager()
 
-	// Initialize repositories
+	// リポジトリを初期化
 	authRepo := impl.NewAuthRepoImpl(db)
 	memberRepo := impl.NewBusinessMemberRepoImpl(db)
 	statsRepo := impl.NewStatsRepoImpl(db)
@@ -30,7 +30,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	contactRepo := impl.NewContactRepoImpl(db)
 	paymentRepo := impl.NewPaymentRepoImpl(db)
 
-	// Initialize services
+	// サービスを初期化
 	authService := svcimpl.NewAuthServiceImpl(authRepo, tokenManager)
 	memberService := svcimpl.NewMemberServiceImpl(memberRepo, authRepo)
 	statsService := svcimpl.NewStatsServiceImpl(statsRepo)
@@ -40,7 +40,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	contactService := svcimpl.NewContactServiceImpl(contactRepo)
 	paymentService := svcimpl.NewPaymentServiceImpl(paymentRepo)
 
-	// Initialize handlers
+	// ハンドラーを初期化
 	authHandler := handler.NewAuthHandler(authService)
 	memberHandler := handler.NewMemberHandler(memberService)
 	statsHandler := handler.NewStatsHandler(statsService)
@@ -50,17 +50,17 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	contactHandler := handler.NewContactHandler(contactService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
-	// Auth routes (public)
+	// 認証ルート（公開）
 	api.POST("/auth/google", authHandler.GoogleAuth)
 	api.POST("/auth/business/login", authHandler.BusinessLogin)
 	api.POST("/auth/refresh", authHandler.Refresh)
 
-	// Auth logout route (protected - requires authentication)
+	// 認証ログアウトルート（保護 - 認証必須）
 	logoutRoute := api.Group("/auth")
 	logoutRoute.Use(middleware.AuthMiddleware(tokenManager))
 	logoutRoute.POST("/logout", authHandler.Logout)
 
-	// Member routes (protected)
+	// メンバールート（保護）
 	memberRoutes := api.Group("/business")
 	memberRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	memberRoutes.GET("/mypage/details", memberHandler.GetBusinessDetails)
@@ -69,7 +69,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	memberRoutes.PUT("/member/anonymize", memberHandler.AnonymizeMember)
 	memberRoutes.GET("/member", memberHandler.GetMemberInfo)
 
-	// Dashboard stats routes (protected)
+	// ダッシュボード統計ルート（保護）
 	statsRoutes := api.Group("/business")
 	statsRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	statsRoutes.GET("/post/total", statsHandler.GetTotalPosts)
@@ -77,7 +77,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	statsRoutes.GET("/view/total", statsHandler.GetTotalViews)
 	statsRoutes.GET("/engagement", statsHandler.GetEngagementRate)
 
-	// Post routes (mostly protected)
+	// 投稿ルート（保護）
 	postRoutes := api.Group("")
 	postRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	postRoutes.GET("/business/posts", postHandler.ListPosts)
@@ -86,28 +86,28 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	postRoutes.PUT("/posts/anonymize", postHandler.AnonymizePost)
 	postRoutes.GET("/posts/history", postHandler.GetPostHistory)
 
-	// Block routes (protected)
+	// ブロックルート（保護）
 	blockRoutes := api.Group("")
 	blockRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	blockRoutes.POST("/block", blockHandler.CreateBlock)
 	blockRoutes.DELETE("/block", blockHandler.DeleteBlock)
 
-	// Report routes (protected)
+	// 通報ルート（保護）
 	reportRoutes := api.Group("")
 	reportRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	reportRoutes.POST("/report", reportHandler.CreateReport)
 
-	// Contact routes (protected)
+	// 問い合わせルート（保護）
 	contactRoutes := api.Group("")
 	contactRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	contactRoutes.POST("/contact", contactHandler.CreateContact)
 
-	// Stripe redirect (protected)
+	// Stripeリダイレクトルート（保護）
 	paymentRoutes := api.Group("/business")
 	paymentRoutes.Use(middleware.AuthMiddleware(tokenManager), middleware.BusinessRoleRequired())
 	paymentRoutes.POST("/stripe/redirect", paymentHandler.CreateRedirect)
 
-	// Healthcheck
+	// ヘルスチェック
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})

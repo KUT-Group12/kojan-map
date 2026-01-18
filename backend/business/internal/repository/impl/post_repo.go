@@ -9,17 +9,17 @@ import (
 	"kojan-map/business/internal/domain"
 )
 
-// PostRepoImpl implements the PostRepo interface using GORM.
+// PostRepoImpl は GORM を使用して PostRepo インターフェースを実装します。
 type PostRepoImpl struct {
 	db *gorm.DB
 }
 
-// NewPostRepoImpl creates a new post repository.
+// NewPostRepoImpl は新しい投稿リポジトリを作成します。
 func NewPostRepoImpl(db *gorm.DB) *PostRepoImpl {
 	return &PostRepoImpl{db: db}
 }
 
-// ListByBusiness retrieves all posts for a business (M1-6-1).
+// ListByBusiness は事業者のすべての投稿を取得します（M1-6-1）。
 func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
@@ -31,7 +31,7 @@ func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (in
 	return posts, nil
 }
 
-// GetByID retrieves a post by ID (M1-7-2).
+// GetByID は ID を使用して投稿を取得します（M1-7-2）。
 func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, error) {
 	var post domain.Post
 	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
@@ -43,7 +43,7 @@ func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, 
 	return &post, nil
 }
 
-// IncrementViewCount increments the view count for a post by 1.
+// IncrementViewCount は投稿の閲覧数を1増やします。
 func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) error {
 	result := r.db.WithContext(ctx).
 		Model(&domain.Post{}).
@@ -61,48 +61,48 @@ func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) err
 	return nil
 }
 
-// Create creates a new post (M1-8-4).
-// SSOT Rules: 投稿はビジネスメンバーのみ作成可能、画像は5MB以下、ジャンルは複数指定可能
+// Create は新しい投稿を作成します（M1-8-4）。
+// 投稿はビジネスメンバーのみ作成可能、画像は5MB以下、ジャンルは複数指定可能
 func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
 	req := payload.(*domain.CreatePostRequest)
 
 	post := &domain.Post{
-		// Note: ID generation should be handled by DB (auto-increment or UUID)
+		// 注意: ID の生成は DB によって処理される必要があります（自動インクリメントまたは UUID）
 		Title:         req.Title,
 		Description:   req.Description,
 		LocationID:    req.LocationID,
 		ViewCount:     0,
 		ReactionCount: 0,
 		IsActive:      true,
-		// PostedAt should be set in service layer or DB default
+		// PostedAt はサービス層または DB のデフォルト値で設定される必要があります
 	}
 
 	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
 		return 0, fmt.Errorf("failed to create post: %w", err)
 	}
 
-	// Set genres (many-to-many)
+	// ジャンルを設定します（多対多）
 	if len(genreIDs) > 0 {
-		// Convert post.ID (string) to int64 for SetGenres
-		// Note: Assuming post.ID is numeric string after creation
+		// SetGenres のために post.ID（文字列）を int64 に変換します
+		// 注意: 作成後、post.ID は数値文字列であると仮定しています
 		if err := r.SetGenres(ctx, post.ID, genreIDs); err != nil {
 			return 0, err
 		}
 	}
 
-	// TODO: Convert post.ID (string) to int64 for return value
-	// For now return 0 as placeholder
+	// TODO: 戻り値のために post.ID（文字列）を int64 に変換します
+	// 現時点では、プレースホルダーとして 0 を返します
 	return 0, nil
 }
 
-// SetGenres sets genres for a post (many-to-many) (M1-8-4).
+// SetGenres は投稿に対してジャンルを設定します（多対多）（M1-8-4）。
 func (r *PostRepoImpl) SetGenres(ctx context.Context, postID interface{}, genreIDs []int64) error {
-	// Delete existing genre associations
+	// 既存のジャンル関連付けを削除します
 	if err := r.db.WithContext(ctx).Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
 		return fmt.Errorf("failed to delete existing genres: %w", err)
 	}
 
-	// Insert new genre associations
+	// 新しいジャンル関連付けを挿入します
 	for _, genreID := range genreIDs {
 		postGenre := &domain.PostGenre{
 			PostID:  fmt.Sprintf("%v", postID),
@@ -116,8 +116,8 @@ func (r *PostRepoImpl) SetGenres(ctx context.Context, postID interface{}, genreI
 	return nil
 }
 
-// Anonymize anonymizes a post (M1-13-2).
-// SSOT Rules: 投稿内容は復元不能な値に置き換える、主キーおよび外部キーは変更しない
+// Anonymize は投稿を匿名化します（M1-13-2）。
+// 投稿内容は復元不能な値に置き換える、主キーおよび外部キーは変更しない
 func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int64) error {
 	result := r.db.WithContext(ctx).Model(&domain.Post{}).
 		Where("id = ?", postID).
@@ -138,9 +138,9 @@ func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int64) error {
 	return nil
 }
 
-// History retrieves post history for a user (M1-14-2).
+// History はユーザーの投稿履歴を取得します（M1-14-2）。
 func (r *PostRepoImpl) History(ctx context.Context, googleID string) (interface{}, error) {
-	// TODO: Query posts by business user ID with timestamps and sorting
+	// TODO: タイムスタンプとソートを使用してビジネスユーザー ID ごとに投稿をクエリします
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
 		Where("author_id = ? AND is_active = ?", googleID, true).

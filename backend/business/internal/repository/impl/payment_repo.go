@@ -6,18 +6,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// PaymentRepoImpl is a mock implementation (no external Stripe call).
+// PaymentRepoImpl はモック実装です（外部 Stripe 呼び出しは行いません）。
 type PaymentRepoImpl struct {
 	db *gorm.DB
 }
 
-// NewPaymentRepoImpl creates a new payment repository.
+// NewPaymentRepoImpl は新しい支払いリポジトリを作成します。
 func NewPaymentRepoImpl(db *gorm.DB) *PaymentRepoImpl {
 	return &PaymentRepoImpl{db: db}
 }
 
-// CreatePayment is a no-op placeholder to satisfy interface.
+// CreatePayment はインターフェースを満たすためのプレースホルダー（何も実行しません）。
 func (r *PaymentRepoImpl) CreatePayment(ctx context.Context, businessID int64, amount int64, payFlag bool) (int64, error) {
-	// No-op: Stripe integration is mocked; return dummy ID
+	// 何も実行しません: Stripe 統合はモックされており、ダミー ID を返します
 	return 0, nil
 }

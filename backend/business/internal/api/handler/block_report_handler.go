@@ -10,20 +10,19 @@ import (
 	"kojan-map/business/pkg/response"
 )
 
-// BlockHandler handles block-related endpoints.
+// BlockHandler はブロック関連のエンドポイントを処理するハンドラーです。
 type BlockHandler struct {
 	blockService service.BlockService
 }
 
-// NewBlockHandler creates a new block handler.
+// NewBlockHandler は新しいブロックハンドラーを作成します。
 func NewBlockHandler(blockService service.BlockService) *BlockHandler {
 	return &BlockHandler{
 		blockService: blockService,
 	}
 }
 
-// CreateBlock handles POST /api/block (M1-9-2).
-// SSOT Endpoint: POST /api/block
+// CreateBlock は POST /api/block (M1-9-2) を処理します。
 func (h *BlockHandler) CreateBlock(c *gin.Context) {
 	var req domain.CreateBlockRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -49,8 +48,7 @@ func (h *BlockHandler) CreateBlock(c *gin.Context) {
 	})
 }
 
-// DeleteBlock handles DELETE /api/block (M1-10-2).
-// SSOT Endpoint: DELETE /api/block
+// DeleteBlock は DELETE /api/block (M1-10-2) を処理します。
 func (h *BlockHandler) DeleteBlock(c *gin.Context) {
 	var req domain.DeleteBlockRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -76,20 +74,19 @@ func (h *BlockHandler) DeleteBlock(c *gin.Context) {
 	})
 }
 
-// ReportHandler handles report-related endpoints.
+// ReportHandler は通報関連のエンドポイントを処理するハンドラーです。
 type ReportHandler struct {
 	reportService service.ReportService
 }
 
-// NewReportHandler creates a new report handler.
+// NewReportHandler は新しい通報ハンドラーを作成します。
 func NewReportHandler(reportService service.ReportService) *ReportHandler {
 	return &ReportHandler{
 		reportService: reportService,
 	}
 }
 
-// CreateReport handles POST /api/report (M1-12-2).
-// SSOT Endpoint: POST /api/report
+// CreateReport は POST /api/report (M1-12-2) を処理します。
 func (h *ReportHandler) CreateReport(c *gin.Context) {
 	var req domain.CreateReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

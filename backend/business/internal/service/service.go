@@ -2,7 +2,7 @@ package service
 
 import "context"
 
-// AuthService handles authentication flows.
+// AuthService は認証フローを処理します。
 type AuthService interface {
 	GoogleAuth(ctx context.Context, payload interface{}) (interface{}, error)
 	BusinessLogin(ctx context.Context, gmail, mfaCode string) (interface{}, error)
@@ -10,7 +10,7 @@ type AuthService interface {
 	RefreshToken(ctx context.Context, refreshTokenString string) (interface{}, error)
 }
 
-// MemberService handles business member operations.
+// MemberService は事業者メンバーの操作を処理します。
 type MemberService interface {
 	GetBusinessDetails(ctx context.Context, googleID string) (interface{}, error)
 	UpdateBusinessName(ctx context.Context, businessID int64, name string) error
@@ -18,7 +18,7 @@ type MemberService interface {
 	AnonymizeMember(ctx context.Context, businessID int64) error
 }
 
-// StatsService handles dashboard stats.
+// StatsService はダッシュボードの統計情報を処理します。
 type StatsService interface {
 	GetTotalPosts(ctx context.Context, businessID int64) (interface{}, error)
 	GetTotalReactions(ctx context.Context, businessID int64) (interface{}, error)
@@ -26,7 +26,7 @@ type StatsService interface {
 	GetEngagementRate(ctx context.Context, businessID int64) (interface{}, error)
 }
 
-// PostService handles posts.
+// PostService は投稿を処理します。
 type PostService interface {
 	List(ctx context.Context, businessID int64) (interface{}, error)
 	Get(ctx context.Context, postID int64) (interface{}, error)
@@ -36,23 +36,23 @@ type PostService interface {
 	History(ctx context.Context, googleID string) (interface{}, error)
 }
 
-// BlockService handles block operations.
+// BlockService はブロック操作を処理します。
 type BlockService interface {
 	Block(ctx context.Context, blockerID, blockedID string) error
 	Unblock(ctx context.Context, blockerID, blockedID string) error
 }
 
-// ReportService handles reports.
+// ReportService は通報を処理します。
 type ReportService interface {
 	CreateReport(ctx context.Context, reporterID string, payload interface{}) error
 }
 
-// ContactService handles inquiries.
+// ContactService はお問い合わせを処理します。
 type ContactService interface {
 	CreateContact(ctx context.Context, googleID, subject, message string) error
 }
 
-// PaymentService handles Stripe/Payment flows.
+// PaymentService はStripe/決済フローを処理します。
 type PaymentService interface {
 	CreateRedirect(ctx context.Context, businessID int64) (string, error)
 }

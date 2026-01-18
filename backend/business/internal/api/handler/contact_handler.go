@@ -10,18 +10,17 @@ import (
 	"kojan-map/business/pkg/response"
 )
 
-// ContactHandler handles contact-related endpoints.
+// ContactHandler はお問い合わせ関連のエンドポイントを処理するハンドラーです。
 type ContactHandler struct {
 	contactService service.ContactService
 }
 
-// NewContactHandler creates a new contact handler.
+// NewContactHandler は新しいお問い合わせハンドラーを作成します。
 func NewContactHandler(contactService service.ContactService) *ContactHandler {
 	return &ContactHandler{contactService: contactService}
 }
 
-// CreateContact handles POST /api/contact (M1-11-2).
-// SSOT Endpoint: POST /api/contact
+// CreateContact は POST /api/contact (M1-11-2) を処理します。
 func (h *ContactHandler) CreateContact(c *gin.Context) {
 	var req domain.CreateContactRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -8,20 +8,20 @@ import (
 	"kojan-map/business/pkg/errors"
 )
 
-// BlockServiceImpl implements the BlockService interface.
+// BlockServiceImpl はBlockServiceインターフェースを実装します。
 type BlockServiceImpl struct {
 	blockRepo repository.BlockRepo
 }
 
-// NewBlockServiceImpl creates a new block service.
+// NewBlockServiceImpl は新しいブロックサービスを作成します。
 func NewBlockServiceImpl(blockRepo repository.BlockRepo) *BlockServiceImpl {
 	return &BlockServiceImpl{
 		blockRepo: blockRepo,
 	}
 }
 
-// Block blocks a user (M1-9-2).
-// SSOT Rules: ブロック者とブロック対象は異なるユーザー、重複ブロック防止
+// Block はユーザーをブロックします（M1-9-2）。
+// ブロック者とブロック対象は異なるユーザー、重複ブロック防止
 func (s *BlockServiceImpl) Block(ctx context.Context, blockerID, blockedID string) error {
 	if blockerID == "" || blockedID == "" {
 		return errors.NewAPIError(errors.ErrInvalidInput, "blockerID and blockedID are required")
@@ -39,7 +39,7 @@ func (s *BlockServiceImpl) Block(ctx context.Context, blockerID, blockedID strin
 	return nil
 }
 
-// Unblock removes a block (M1-10-2).
+// Unblock はブロックを解除します（M1-10-2）。
 func (s *BlockServiceImpl) Unblock(ctx context.Context, blockerID, blockedID string) error {
 	if blockerID == "" || blockedID == "" {
 		return errors.NewAPIError(errors.ErrInvalidInput, "blockerID and blockedID are required")
@@ -53,20 +53,20 @@ func (s *BlockServiceImpl) Unblock(ctx context.Context, blockerID, blockedID str
 	return nil
 }
 
-// ReportServiceImpl implements the ReportService interface.
+// ReportServiceImpl はReportServiceインターフェースを実装します。
 type ReportServiceImpl struct {
 	reportRepo repository.ReportRepo
 }
 
-// NewReportServiceImpl creates a new report service.
+// NewReportServiceImpl は新しい通報サービスを作成します。
 func NewReportServiceImpl(reportRepo repository.ReportRepo) *ReportServiceImpl {
 	return &ReportServiceImpl{
 		reportRepo: reportRepo,
 	}
 }
 
-// CreateReport creates a new report (M1-12-2).
-// SSOT Rules: 通報内容は必須フィールド全て埋める必要がある
+// CreateReport は新しい通報を作成します（M1-12-2）。
+// 通報内容は必須フィールド全て埋める必要がある
 func (s *ReportServiceImpl) CreateReport(ctx context.Context, reporterID string, payload interface{}) error {
 	if reporterID == "" {
 		return errors.NewAPIError(errors.ErrInvalidInput, "reporterID is required")

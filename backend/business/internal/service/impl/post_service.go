@@ -9,19 +9,19 @@ import (
 	"kojan-map/business/pkg/errors"
 )
 
-// PostServiceImpl implements the PostService interface.
+// PostServiceImpl はPostServiceインターフェースを実装します。
 type PostServiceImpl struct {
 	postRepo repository.PostRepo
 }
 
-// NewPostServiceImpl creates a new post service.
+// NewPostServiceImpl は新しい投稿サービスを作成します。
 func NewPostServiceImpl(postRepo repository.PostRepo) *PostServiceImpl {
 	return &PostServiceImpl{
 		postRepo: postRepo,
 	}
 }
 
-// List retrieves all posts for a business (M1-6-1).
+// List は事業者の全投稿を取得します（M1-6-1）。
 func (s *PostServiceImpl) List(ctx context.Context, businessID int64) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
@@ -35,17 +35,17 @@ func (s *PostServiceImpl) List(ctx context.Context, businessID int64) (interface
 	return posts, nil
 }
 
-// Get retrieves a post by ID (M1-7-2).
+// Get はIDで投稿を取得します（M1-7-2）。
 func (s *PostServiceImpl) Get(ctx context.Context, postID int64) (interface{}, error) {
 	if postID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
 
-	// Increment view count before returning the post
-	// If increment fails, still return the post content
+	// 投稿を返す前に閲覧数をインクリメント
+	// インクリメントが失敗しても、投稿内容は返す
 	if err := s.postRepo.IncrementViewCount(ctx, postID); err != nil {
-		// Do not fail the entire request; continue to fetch the post
-		// In production, consider logging this error
+		// リクエスト全体を失敗させない。投稿の取得を続行
+		// 本番環境では、このエラーをログに記録することを検討
 		_ = err
 	}
 
@@ -57,8 +57,8 @@ func (s *PostServiceImpl) Get(ctx context.Context, postID int64) (interface{}, e
 	return post, nil
 }
 
-// Create creates a new post (M1-8-4).
-// SSOT Rules: 画像は PNG または JPEG のみ、5MB以下
+// Create は新しい投稿を作成します（M1-8-4）。
+// 画像は PNG または JPEG のみ、5MB以下
 func (s *PostServiceImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
 	if businessID <= 0 {
 		return 0, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
@@ -66,8 +66,8 @@ func (s *PostServiceImpl) Create(ctx context.Context, businessID int64, placeID 
 
 	req := payload.(*domain.CreatePostRequest)
 
-	// TODO: Validate MIME type (PNG or JPEG only)
-	// TODO: Validate image size (5MB limit) - done in handler
+	// TODO: MIMEタイプを検証（PNGまたはJPEGのみ）
+	// TODO: 画像サイズを検証（5MB制限） - ハンドラで実施済み
 
 	postID, err := s.postRepo.Create(ctx, businessID, placeID, genreIDs, req)
 	if err != nil {
@@ -77,7 +77,7 @@ func (s *PostServiceImpl) Create(ctx context.Context, businessID int64, placeID 
 	return postID, nil
 }
 
-// SetGenres sets genres for a post (M1-8-4).
+// SetGenres は投稿のジャンルを設定します（M1-8-4）。
 func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
 	if postID <= 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
@@ -95,13 +95,13 @@ func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int64, genreIDs 
 	return nil
 }
 
-// Anonymize anonymizes a post (M1-13-2).
+// Anonymize は投稿を匿名化します（M1-13-2）。
 func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 	if postID <= 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
 
-	// TODO: Check if user is authenticated and owns this post
+	// TODO: ユーザーが認証済みで、この投稿を所有しているか確認
 
 	err := s.postRepo.Anonymize(ctx, postID)
 	if err != nil {
@@ -111,7 +111,7 @@ func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 	return nil
 }
 
-// History retrieves post history for a user (M1-14-2).
+// History はユーザーの投稿履歴を取得します（M1-14-2）。
 func (s *PostServiceImpl) History(ctx context.Context, googleID string) (interface{}, error) {
 	if googleID == "" {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "googleId is required")

@@ -11,20 +11,19 @@ import (
 	"kojan-map/business/pkg/response"
 )
 
-// AuthHandler handles authentication-related endpoints.
+// AuthHandler は認証関連のエンドポイントを処理します
 type AuthHandler struct {
 	authService service.AuthService
 }
 
-// NewAuthHandler creates a new auth handler.
+// NewAuthHandler は認証ハンドラーを生成します
 func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 	}
 }
 
-// GoogleAuth handles POST /api/auth/google (M3-1).
-// SSOT Endpoint: POST /api/auth/google
+// GoogleAuth はPOST /api/auth/google (M3-1)を処理します
 func (h *AuthHandler) GoogleAuth(c *gin.Context) {
 	var req domain.GoogleAuthRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -41,8 +40,7 @@ func (h *AuthHandler) GoogleAuth(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
-// BusinessLogin handles POST /api/auth/business/login (M1-1).
-// SSOT Endpoint: POST /api/auth/business/login
+// BusinessLogin はPOST /api/auth/business/login (M1-1)を処理します
 func (h *AuthHandler) BusinessLogin(c *gin.Context) {
 	var req domain.BusinessLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -59,8 +57,8 @@ func (h *AuthHandler) BusinessLogin(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
-// extractTokenFromHeader extracts the JWT token from Authorization header.
-// Expected format: "Authorization: Bearer <token>"
+// extractTokenFromHeader はAuthorizationヘッダーからJWTトークンを抽出します
+// 期待される形式: "Authorization: Bearer <token>"
 func (h *AuthHandler) extractTokenFromHeader(c *gin.Context) (string, error) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -80,18 +78,17 @@ func (h *AuthHandler) extractTokenFromHeader(c *gin.Context) (string, error) {
 	return token, nil
 }
 
-// Logout handles POST /api/auth/logout (M1-3-3).
-// SSOT Endpoint: POST /api/auth/logout
-// Expects Authorization header with Bearer token
+// Logout はPOST /api/auth/logout (M1-3-3)を処理します
+// Bearerトークンを含むAuthorizationヘッダーが必要です
 func (h *AuthHandler) Logout(c *gin.Context) {
-	// Extract token from Authorization header
+	// Authorizationヘッダーからトークンを抽出
 	token, err := h.extractTokenFromHeader(c)
 	if err != nil {
 		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", fmt.Sprintf("invalid authorization: %v", err), c.Request.URL.Path)
 		return
 	}
 
-	// Call logout service with token
+	// トークンを使ってログアウトサービスを呼び出す
 	err = h.authService.Logout(c.Request.Context(), token)
 	if err != nil {
 		c.Error(err)
@@ -101,8 +98,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	response.SendOK(c, gin.H{"message": "logged out successfully"})
 }
 
-// Refresh handles POST /api/auth/refresh to refresh access token.
-// SSOT Endpoint: POST /api/auth/refresh
+// Refresh はPOST /api/auth/refreshを処理し、アクセストークンを更新します
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req domain.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

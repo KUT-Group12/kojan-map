@@ -13,20 +13,19 @@ import (
 	"kojan-map/business/pkg/validate"
 )
 
-// MemberHandler handles member-related endpoints.
+// MemberHandler はメンバー関連のエンドポイントを処理するハンドラーです。
 type MemberHandler struct {
 	memberService service.MemberService
 }
 
-// NewMemberHandler creates a new member handler.
+// NewMemberHandler は新しいメンバーハンドラーを作成します。
 func NewMemberHandler(memberService service.MemberService) *MemberHandler {
 	return &MemberHandler{
 		memberService: memberService,
 	}
 }
 
-// GetBusinessDetails handles GET /api/business/mypage/details (M3-2-2).
-// SSOT Endpoint: GET /api/business/mypage/details
+// GetBusinessDetails は GET /api/business/mypage/details (M3-2-2) を処理します。
 func (h *MemberHandler) GetBusinessDetails(c *gin.Context) {
 	googleID := c.Query("googleId")
 	if googleID == "" {
@@ -43,9 +42,7 @@ func (h *MemberHandler) GetBusinessDetails(c *gin.Context) {
 	response.SendOK(c, result)
 }
 
-// UpdateBusinessName handles PUT /api/business/member/name (M3-4-2).
-// SSOT Endpoint: PUT /api/business/member/name
-// SSOT Rules: 事業者名は1文字以上50文字以下
+// UpdateBusinessName は PUT /api/business/member/name (M3-4-2) を処理します。
 func (h *MemberHandler) UpdateBusinessName(c *gin.Context) {
 	var req domain.UpdateBusinessNameRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -72,9 +69,8 @@ func (h *MemberHandler) UpdateBusinessName(c *gin.Context) {
 	})
 }
 
-// UpdateBusinessIcon handles PUT /api/business/member/icon (M3-5-2).
-// SSOT Endpoint: PUT /api/business/member/icon
-// SSOT Rules: 画像は PNG または JPEG のみ、5MB以下
+// UpdateBusinessIcon は PUT /api/business/member/icon (M3-5-2) を処理します。
+// 画像は PNG または JPEG のみ、5MB以下
 func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 	file, err := c.FormFile("icon")
 	if err != nil {
@@ -128,8 +124,7 @@ func (h *MemberHandler) UpdateBusinessIcon(c *gin.Context) {
 	})
 }
 
-// AnonymizeMember handles PUT /api/business/member/anonymize (M3-3).
-// SSOT Endpoint: PUT /api/business/member/anonymize
+// AnonymizeMember は PUT /api/business/member/anonymize (M3-3) を処理します。
 func (h *MemberHandler) AnonymizeMember(c *gin.Context) {
 	var req domain.AnonymizeBusinessMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -155,8 +150,7 @@ func (h *MemberHandler) AnonymizeMember(c *gin.Context) {
 	})
 }
 
-// GetMemberInfo handles GET /api/business/member (M1-2).
-// SSOT Endpoint: GET /api/business/member
+// GetMemberInfo は GET /api/business/member (M1-2) を処理します。
 func (h *MemberHandler) GetMemberInfo(c *gin.Context) {
 	googleID := c.Query("googleId")
 	if googleID == "" {

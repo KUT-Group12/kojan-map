@@ -9,17 +9,17 @@ import (
 	"kojan-map/business/internal/domain"
 )
 
-// ContactRepoImpl implements ContactRepo using GORM.
+// ContactRepoImpl は GORM を使用して ContactRepo を実装します。
 type ContactRepoImpl struct {
 	db *gorm.DB
 }
 
-// NewContactRepoImpl creates a new contact repository.
+// NewContactRepoImpl は新しいお問い合わせリポジトリを作成します。
 func NewContactRepoImpl(db *gorm.DB) *ContactRepoImpl {
 	return &ContactRepoImpl{db: db}
 }
 
-// Create stores a new contact inquiry (M1-11-2).
+// Create は新しいお問い合わせを保存します（M1-11-2）。
 func (r *ContactRepoImpl) Create(ctx context.Context, googleID string, subject, message string) error {
 	contact := &domain.Contact{
 		GoogleID:  googleID,
