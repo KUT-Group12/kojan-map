@@ -71,9 +71,9 @@ func (bh *BlockHandler) UnblockUser(c *gin.Context) {
 // GetBlockList ブロックリストを取得
 // GET /api/users/block/list
 func (bh *BlockHandler) GetBlockList(c *gin.Context) {
-	userID := c.Query("googleId")
+	userID := c.GetString("googleId")
 	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "googleId required"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
@@ -100,7 +100,6 @@ func NewReportHandler(reportService *services.ReportService) *ReportHandler {
 // POST /api/report
 func (rh *ReportHandler) CreateReport(c *gin.Context) {
 	var req struct {
-		UserID string `json:"userId" binding:"required"`
 		PostID int    `json:"postId" binding:"required"`
 		Reason string `json:"reason" binding:"required"`
 	}
@@ -110,7 +109,13 @@ func (rh *ReportHandler) CreateReport(c *gin.Context) {
 		return
 	}
 
-	if err := rh.reportService.CreateReport(req.UserID, req.PostID, req.Reason); err != nil {
+	reporterID := c.GetString("googleId")
+	if reporterID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := rh.reportService.CreateReport(reporterID, req.PostID, req.Reason); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -167,7 +172,7 @@ func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context)
 		UserID           string `json:"userId" binding:"required"`
 		BusinessName     string `json:"businessName" binding:"required"`
 		KanaBusinessName string `json:"kanaBusinessName" binding:"required"`
-		ZipCode          int    `json:"zipCode" binding:"required"`
+		ZipCode          string `json:"zipCode" binding:"required"`
 		Address          string `json:"address" binding:"required"`
 		Phone            string `json:"phone" binding:"required"`
 	}

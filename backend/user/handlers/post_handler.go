@@ -148,9 +148,9 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 // GetPostHistory ユーザーの投稿履歴を取得
 // GET /api/posts/history
 func (ph *PostHandler) GetPostHistory(c *gin.Context) {
-	userID := c.Query("googleId")
+	userID := c.GetString("googleId")
 	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "googleId required"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
@@ -186,8 +186,7 @@ func (ph *PostHandler) GetPinSize(c *gin.Context) {
 // POST /api/posts/reaction
 func (ph *PostHandler) AddReaction(c *gin.Context) {
 	var req struct {
-		PostID int    `json:"postId" binding:"required"`
-		UserID string `json:"userId" binding:"required"`
+		PostID int `json:"postId" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -195,7 +194,13 @@ func (ph *PostHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
-	if err := ph.postService.AddReaction(req.UserID, req.PostID); err != nil {
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := ph.postService.AddReaction(userID, req.PostID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -302,10 +307,14 @@ func (ph *PostHandler) DeletePost(c *gin.Context) {
 // GET /api/posts/reaction/status
 func (ph *PostHandler) CheckReactionStatus(c *gin.Context) {
 	postIDStr := c.Query("postId")
-	userID := c.Query("userId")
+	if postIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "postId required"})
+		return
+	}
 
-	if postIDStr == "" || userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "postId and userId required"})
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 

@@ -33,7 +33,7 @@ func RunMigrations(db *gorm.DB) error {
 	if err := createReportsTable(db); err != nil {
 		return err
 	}
-	if err := createContactsTable(db); err != nil {
+	if err := createAsksTable(db); err != nil {
 		return err
 	}
 	if err := createBusinessApplicationsTable(db); err != nil {
@@ -59,7 +59,9 @@ func createGenresTable(db *gorm.DB) error {
 
 	// 初期データ投入（既にデータがある場合はスキップ）
 	var count int64
-	db.Raw("SELECT COUNT(*) FROM genres").Scan(&count)
+	if err := db.Raw("SELECT COUNT(*) FROM genres").Scan(&count).Error; err != nil {
+		return err
+	}
 	if count == 0 {
 		if err := db.Exec(`
 		INSERT INTO genres (genreName, color) VALUES
@@ -203,8 +205,8 @@ func createReportsTable(db *gorm.DB) error {
 	`).Error
 }
 
-// createContactsTable 問い合わせテーブルを作成
-func createContactsTable(db *gorm.DB) error {
+// createAsksTable 問い合わせテーブルを作成
+func createAsksTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS asks (
 		askId INT AUTO_INCREMENT PRIMARY KEY,
@@ -229,12 +231,12 @@ func createBusinessApplicationsTable(db *gorm.DB) error {
 		businessId INT AUTO_INCREMENT PRIMARY KEY,
 		businessName VARCHAR(50) NOT NULL,
 		kanaBusinessName VARCHAR(50) NOT NULL,
-		zipCode INT NOT NULL,
+		zipCode VARCHAR(10) NOT NULL,
 		address VARCHAR(100) NOT NULL,
-		phone INT NOT NULL,
+		phone VARCHAR(20) NOT NULL,
 		registDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		profileImage BLOB,
-		userId VARCHAR(50) NOT NULL,
+		userId VARCHAR(36) NOT NULL,
 		placeId INT NOT NULL,
 		deletedAt DATETIME NULL,
 		KEY idx_userId (userId),

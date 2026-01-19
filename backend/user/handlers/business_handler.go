@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"bytes"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -75,7 +77,7 @@ func (h *BusinessHandler) UpdateBusinessProfile(c *gin.Context) {
 	var req struct {
 		BusinessName     string `json:"businessName"`
 		KanaBusinessName string `json:"kanaBusinessName"`
-		ZipCode          int    `json:"zipCode"`
+		ZipCode          string `json:"zipCode"`
 		Address          string `json:"address"`
 		Phone            string `json:"phone"`
 	}
@@ -115,13 +117,7 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 		return
 	}
 
-	// ファイル形式チェック
-	contentType := file.Header.Get("Content-Type")
-	if !strings.HasPrefix(contentType, "image/") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image"})
-		return
-	}
-
+	// ファイル形式チェック（Content-Typeヘッダに加えて実データをスニッフ）
 	imageData, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
@@ -131,7 +127,19 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 		_ = imageData.Close() // nolint:errcheck
 	}()
 
-	profileImage, err := h.businessService.UploadBusinessIcon(userID, imageData)
+	buf, err := io.ReadAll(imageData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
+		return
+	}
+
+	contentType := http.DetectContentType(buf)
+	if !strings.HasPrefix(contentType, "image/") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image"})
+		return
+	}
+
+	profileImage, err := h.businessService.UploadBusinessIcon(userID, bytes.NewReader(buf))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -179,6 +187,11 @@ func (h *BusinessHandler) GetBusinessRevenue(c *gin.Context) {
 	month, err := strconv.Atoi(c.Query("month"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "month parameter is required"})
+		return
+	}
+
+	if year < 1 || month < 1 || month > 12 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "year or month is out of range"})
 		return
 	}
 
@@ -232,7 +245,7 @@ func (h *BusinessHandler) UpdateBusinessAddress(c *gin.Context) {
 
 	var req struct {
 		Address string `json:"address" binding:"required"`
-		ZipCode int    `json:"zipCode" binding:"required"`
+		ZipCode string `json:"zipCode" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {

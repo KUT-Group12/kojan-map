@@ -73,6 +73,10 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 		return nil, errors.New("empty id token")
 	}
 
+	if as.googleClientID == "" {
+		return nil, errors.New("google client id is not configured")
+	}
+
 	url := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?id_token=%s", idToken)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -90,7 +94,7 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 		return nil, errors.New("failed to parse Google response")
 	}
 
-	if as.googleClientID != "" && googleResp.Aud != as.googleClientID {
+	if googleResp.Aud != as.googleClientID {
 		return nil, errors.New("invalid audience")
 	}
 

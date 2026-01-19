@@ -196,12 +196,12 @@ func TestUserService_DeleteUser(t *testing.T) {
 	err = db.Where("googleId = ?", "google_delete").First(&deletedUser).Error
 	assert.Error(t, err)
 
-	// セッションも削除されたか確認
+	// セッションも無効化されたか確認
 	var sessions []models.Session
 	db.Where("googleId = ?", "google_delete").Find(&sessions)
 	if len(sessions) > 0 {
 		for _, s := range sessions {
-			assert.True(t, time.Now().After(s.Expiry) || time.Now().Equal(s.Expiry))
+			assert.True(t, !s.Expiry.After(time.Now()))
 		}
 	}
 }

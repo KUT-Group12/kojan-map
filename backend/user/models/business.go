@@ -11,7 +11,7 @@ type BusinessApplication struct {
 	ID               int            `gorm:"column:businessId;primaryKey;autoIncrement" json:"businessId"`
 	BusinessName     string         `gorm:"column:businessName;type:varchar(50)" json:"businessName"`
 	KanaBusinessName string         `gorm:"column:kanaBusinessName;type:varchar(50)" json:"kanaBusinessName"`
-	ZipCode          int            `gorm:"column:zipCode" json:"zipCode"`
+	ZipCode          string         `gorm:"column:zipCode;type:varchar(10)" json:"zipCode"`
 	Address          string         `gorm:"column:address;type:varchar(100)" json:"address"`
 	Phone            string         `gorm:"column:phone;type:varchar(20)" json:"phone"`
 	RegistDate       time.Time      `gorm:"column:registDate" json:"registDate"`

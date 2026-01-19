@@ -31,7 +31,7 @@ type BusinessProfileResponse struct {
 	BusinessID       int    `json:"businessId"`
 	BusinessName     string `json:"businessName"`
 	KanaBusinessName string `json:"kanaBusinessName"`
-	ZipCode          int    `json:"zipCode"`
+	ZipCode          string `json:"zipCode"`
 	Address          string `json:"address"`
 	Phone            string `json:"phone"`
 	ProfileImage     string `json:"profileImage,omitempty"`
@@ -130,7 +130,7 @@ func (bs *BusinessService) GetBusinessProfile(userID string) (*BusinessProfileRe
 
 // UpdateBusinessProfile 事業者プロフィール情報を更新
 func (bs *BusinessService) UpdateBusinessProfile(
-	userID, businessName, kanaBusinessName string, zipCode int, address, phone string,
+	userID, businessName, kanaBusinessName, zipCode, address, phone string,
 ) (*BusinessProfileResponse, error) {
 	if userID == "" {
 		return nil, errors.New("userID is required")
@@ -147,7 +147,7 @@ func (bs *BusinessService) UpdateBusinessProfile(
 	if kanaBusinessName != "" {
 		app.KanaBusinessName = kanaBusinessName
 	}
-	if zipCode != 0 {
+	if zipCode != "" {
 		app.ZipCode = zipCode
 	}
 	if address != "" {
@@ -246,7 +246,7 @@ func (bs *BusinessService) UpdateBusinessName(userID, businessName string) error
 }
 
 // UpdateBusinessAddress 事業者の住所を更新
-func (bs *BusinessService) UpdateBusinessAddress(userID, address string, zipCode int) error {
+func (bs *BusinessService) UpdateBusinessAddress(userID, address, zipCode string) error {
 	if userID == "" || address == "" {
 		return errors.New("userID and address are required")
 	}
