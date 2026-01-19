@@ -2,60 +2,73 @@ import { useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Pin } from '../types';
-import { genreColors } from '../lib/mockData';
+import { Post, Place, User, Business } from '../types';
+import { genreColors, genreLabels } from '../lib/mockData';
 import { MapPin as MapPinIcon, Building2 } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 import { GetLocation } from './GetLocation';
 
 interface MapViewProps {
-  pins: Pin[];
-  onPinClick: (pin: Pin) => void;
+  user: User;
+  business?: Business;
+  posts: Post[];
+  places: Place[];
+  onPinClick: (post: Post) => void;
   onMapDoubleClick: (lat: number, lng: number) => void;
   isOverlayOpen?: boolean;
 }
 
-export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpen }: MapViewProps) {
-  const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
+export function MapViewScreen({
+  user,
+  business,
+  posts,
+  places,
+  onPinClick,
+  onMapDoubleClick,
+  isOverlayOpen,
+}: MapViewProps) {
+  const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
 
   // 1. 同じ位置のピンをグループ化するロジックを統合
-  const groupedPins = pins.reduce(
-    (acc, pin) => {
-      const key = `${pin.latitude.toFixed(4)}_${pin.longitude.toFixed(4)}`;
+  const groupedPosts = (posts || []).reduce(
+    (acc, post) => {
+      const key = `${post.placeId}`;
       if (!acc[key]) acc[key] = [];
-      acc[key].push(pin);
+      acc[key].push(post);
       return acc;
     },
-    {} as Record<string, Pin[]>
+    {} as Record<string, Post[]>
   );
 
   // 2. ピンのサイズ決定ロジック
-  const getPinSizeClass = (count: number, isHot: boolean) => {
-    if (isHot) return 'w-12 h-12';
+  const getPinSizeClass = (count: number) => {
+    if (count >= 50) return 'w-12 h-12';
     if (count > 1) return 'w-11 h-11';
     return 'w-10 h-10';
   };
 
-  const createCustomIcon = (groupPins: Pin[], isHovered: boolean) => {
-    const pin = groupPins[0];
-    const count = groupPins.length;
-    const color = genreColors[pin.genre];
-    const sizeClass = getPinSizeClass(count, pin.isHot);
+  const createCustomIcon = (groupPosts: Post[], isHovered: boolean) => {
+    const post = groupPosts[0];
+    const count = groupPosts.length;
+    const genreKeys = Object.keys(genreLabels);
+    const genreKey = genreKeys[post.genreId] || 'other';
+    const color = genreColors[genreKey] || '#94a3b8';
+    const sizeClass = getPinSizeClass(count);
 
     const iconHtml = renderToString(
       <div
         className={`relative transition-all duration-300 ${isHovered ? 'scale-110 -translate-y-2' : ''}`}
       >
         {/* ピン本体の描画 */}
-        {pin.userRole === 'business' ? (
+        {user.role === 'business' ? (
           <div className="relative">
             <div
               className={`${sizeClass} transform rotate-45 shadow-2xl overflow-hidden border-4 border-white transition-all`}
               style={{ backgroundColor: color, boxShadow: `0 10px 25px -5px ${color}50` }}
             >
               <div className="transform -rotate-45 w-full h-full flex items-center justify-center">
-                {pin.businessIcon ? (
-                  <img src={pin.businessIcon} alt="" className="w-full h-full object-cover" />
+                {business.profileImage ? (
+                  <img src={business.profileImage} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <Building2 className="w-5 h-5 text-white" />
                 )}
@@ -170,18 +183,23 @@ export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpe
         <GetLocation onLocationSelected={onMapDoubleClick} enabled={!isOverlayOpen} />
 
         {/* 5. グループ化したピンをマーカーとして描画 */}
-        {Object.entries(groupedPins).map(([key, groupPins]) => (
-          <Marker
-            key={key}
-            position={[groupPins[0].latitude, groupPins[0].longitude]}
-            icon={createCustomIcon(groupPins, hoveredPinId === key)}
-            eventHandlers={{
-              click: () => onPinClick(groupPins[0]),
-              mouseover: () => setHoveredPinId(key),
-              mouseout: () => setHoveredPinId(null),
-            }}
-          />
-        ))}
+        {Object.entries(groupedPosts).map(([key, groupPosts]) => {
+          const place = places.find((p) => p.placeId === groupPosts[0].placeId);
+          if (!place) return null;
+
+          return (
+            <Marker
+              key={key}
+              position={[place.latitude, place.longitude]}
+              icon={createCustomIcon(groupPosts, hoveredPostId === groupPosts[0].postId)}
+              eventHandlers={{
+                click: () => onPinClick(groupPosts[0]),
+                mouseover: () => setHoveredPostId(groupPosts[0].postId),
+                mouseout: () => setHoveredPostId(null),
+              }}
+            />
+          );
+        })}
       </MapContainer>
     </div>
   );

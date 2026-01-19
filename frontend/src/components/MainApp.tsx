@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { Header } from './Header';
 import { MapViewScreen } from './MapViewScreen';
 import { Sidebar } from './Sidebar';
@@ -10,10 +11,12 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Post, Place, User } from '../types';
+import { Post, Place, User, PinGenre, Business } from '../types';
+import { genreLabels } from '../lib/mockData';
 
 interface MainAppProps {
   user: User;
+  business: Business;
   onLogout: () => void;
   onUpdateUser: (user: User) => void;
 }
@@ -23,9 +26,7 @@ interface PinDetailExtra {
   postsAtLocation: Post[];
 }
 
-export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
-  // const [pins, setPins] = useState<Pin[]>(mockPins);
-  // const [filteredPins, setFilteredPins] = useState<Pin[]>(mockPins);
+export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
@@ -41,48 +42,55 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   >('map');
   const [previousView, setPreviousView] = useState<'map' | 'mypage' | 'dashboard'>('map');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [reactedPosts, setReactedPins] = useState<Set<number>>(new Set());
+  const [reactedPosts, setReactedPosts] = useState<Set<number>>(new Set());
   // APIからのデータを保持する
   const [detailData, setDetailData] = useState<PinDetailExtra | null>(null);
   // const [isDetailOpen, setIsDetailOpen] = useState(false);
-  /*
-  useEffect(() => {
-    const fetchPins = async () => {
-      try {
-        // 全ピン取得
-        const response = await fetch('http://127.0.0.1:8080/api/posts');
-        if (!response.ok) throw new Error('ピンの取得に失敗しました');
-        const data: Pin[] = await response.json();
 
-        // 各ピンに対して「投稿数50以上(isHot)」の状態をチェック
-        const pinsWithStatus = await Promise.all(
-          data.map(async (pin) => {
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        // 投稿一覧を取得
+        const postsRes = await fetch('http://localhost:8080/api/posts');
+        const postsData = await postsRes.json();
+
+        if (!postsData.posts) return;
+
+        // 各ピンに対して投稿数50以上かをチェック
+        const postsWithStatus = await Promise.all(
+          postsData.map(async (post: Post) => {
             try {
-              const res = await fetch(`http://127.0.0.1:8080/api/posts/threshold?id=${pin.id}`);
-              const thresholdData = await res.json();
-              return { 
-                ...pin, 
-                isHot: thresholdData.isHot,
-                createdAt: new Date(pin.createdAt) // 日付の変換
+              // 仕様書のパスとパラメータ名に合わせる
+              // placeIdでは?
+              const res = await fetch(
+                `http://127.0.0.1:8080/api/posts/pin/scale?postId=${post.postId}`
+              );
+              if (!res.ok) return post;
+
+              const scaleData = await res.json();
+              // scaleData.pinSize が 1.3 なら大きいピン、1.0 なら通常
+              return {
+                ...post,
+                pinScale: scaleData.pinSize,
               };
-            } catch {
-              return { ...pin, createdAt: new Date(pin.createdAt) };
+            } catch (e) {
+              console.log(e);
+              return post;
             }
           })
         );
 
-        setPins(pinsWithStatus);
-        setFilteredPins(pinsWithStatus);
+        if (postsData.posts) {
+          setPosts(postsWithStatus);
+          setFilteredPosts(postsData.posts);
+        }
       } catch (error) {
-        console.error("Fetch pins error:", error);
-        // エラー時はモックデータなどを入れる、もしくは空にする
-        setPins([]);
-        setFilteredPins([]);
+        console.error('データ取得失敗:', error);
       }
     };
 
-    fetchPins();
-  }, []);*/
+    fetchInitialData();
+  }, []);
 
   const handleMapDoubleClick = (lat: number, lng: number) => {
     console.log(`緯度: ${lat}, 経度: ${lng}`);
@@ -91,7 +99,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   };
 
   const handlePinClick = async (post: Post) => {
-    /*
     setSelectedPost(post);
     const relatedPlace = places.find((p) => p.placeId === post.placeId);
 
@@ -99,11 +106,13 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       setSelectedPlace(relatedPlace);
     } else {
       // もし見つからない場合のフォールバック（デバッグ用）
-      console.warn("対応する場所情報が見つかりませんでした。placeId:", post.placeId);
-    }*/
+      console.warn('対応する場所情報が見つかりませんでした。placeId:', post.placeId);
+    } /*
     try {
       // 1. まずバックエンドに詳細データを問い合わせる
-      const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
+      // const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiBaseUrl}/api/posts/detail?postId=${post.postId}`);
 
       if (!response.ok) {
         throw new Error('サーバーからデータを取得できませんでした');
@@ -120,27 +129,13 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       }
 
       // APIから取得した詳細データ（閲覧数やリアクション状態など）をセット
-      // setDetailData(latestPostData.extra); // 必要に応じて
+      setDetailData(latestPostData.extra); // 必要に応じて
     } catch (error) {
       console.error('詳細取得エラー:', error);
       // 失敗した時はトースト通知などを出し、setSelectedPost(null) のままにする（＝開かない）
       alert('エラー：サーバーに接続できません。投稿を表示できませんでした。');
-    }
+    }*/
   };
-
-  /* 最新版
-  const handlePinClick = async (pin: Pin) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/posts/detail?id=${pin.id}`);
-      const data = await response.json();
-      
-      // 3. 取得したデータをステートに入れて、パネルを開く
-      setSelectedPin(data.pin); // data.pin は Go側の PinDetailResponse 構造体の中身
-      setIsDetailOpen(true);
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };*/
 
   const handleOpenCreateAtLocation = (lat: number, lng: number) => {
     setCreateInitialLatitude(lat);
@@ -152,14 +147,14 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     if (reactedPosts.has(postId)) {
       // リアクション取り消し
       setPosts(
-        posts.map((p) => (p.postId === postId ? { ...p, reactions: p.numReaction - 1 } : p))
+        posts.map((p) => (p.postId === postId ? { ...p, numReaction: p.numReaction - 1 } : p))
       );
       setFilteredPosts(
         filteredPosts.map((p) =>
           p.postId === postId ? { ...p, numReaction: p.numReaction - 1 } : p
         )
       );
-      setReactedPins((prev) => {
+      setReactedPosts((prev) => {
         const next = new Set(prev);
         next.delete(postId);
         return next;
@@ -167,14 +162,14 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     } else {
       // リアクション追加
       setPosts(
-        posts.map((p) => (p.postId === postId ? { ...p, reactions: p.numReaction + 1 } : p))
+        posts.map((p) => (p.postId === postId ? { ...p, numReaction: p.numReaction + 1 } : p))
       );
       setFilteredPosts(
         filteredPosts.map((p) =>
           p.postId === postId ? { ...p, numReaction: p.numReaction + 1 } : p
         )
       );
-      setReactedPins((prev) => new Set(prev).add(postId));
+      setReactedPosts((prev) => new Set(prev).add(postId));
     }
 
     if (selectedPost && selectedPost.postId === postId) {
@@ -186,79 +181,46 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       });
     }
   };
-  /*
-  const handleCreatePin = (
-    newPin: Omit<
-      Post,
-      | 'id'
-      | 'userId'
-      | 'userName'
-      | 'userRole'
-      | 'reactions'
-      | 'createdAt'
-      | 'viewCount'
-      | 'businessName'
-      | 'businessIcon'
-    >
-  ) => {
-    const post: Post = {
-      ...newPin,
-      postId: Date.now(),
-      userId: user.googleId,
-      // userName: user.role === 'business' ? user.name : '匿名',
-      // userRole: user.role,
-      // businessName: user.businessName,
-      // businessIcon: user.businessIcon,
-      // reactions: 0,
-      // createdAt: new Date(),
-      // viewCount: 0,
-      postDate: new Date().toISOString(),
-      numReaction: 0,
-      numView: 0,
-    };
-    const place: Place = {
-      placeId: Date.now(),
-      latitude: createInitialLatitude,
-      longitude: createInitialLongitude,
-      numPost: 1,
-    };
-    console.log(createInitialLatitude);
-    console.log(createInitialLongitude);
-    setPosts([post, ...posts]);
-    setPlaces([place, ...places]);
-    setFilteredPosts([post, ...filteredPosts]);
-    setIsCreateModalOpen(false);
-  };*/
-  type NewPostInput = Omit<
-    Post,
-    'postId' | 'placeId' | 'userId' | 'postDate' | 'numReaction' | 'numView'
-  >;
 
-  const handleCreatePin = (newPin: NewPostInput) => {
+  const handleCreatePin = (newPost: {
+    latitude: number;
+    longitude: number;
+    title: string;
+    description: string;
+    genre: PinGenre;
+    images: string[];
+  }) => {
     // 1. 共通のIDを一度だけ生成して変数に置く
     const sharedId = Date.now();
 
     const post: Post = {
-      ...newPin,
       postId: sharedId,
-      placeId: sharedId, // placeと紐付けるために同じIDにする
+      placeId: sharedId,
       userId: user.googleId,
       postDate: new Date().toISOString(),
+      title: newPost.title,
+      text: newPost.description,
+      postImage: newPost.images,
       numReaction: 0,
       numView: 0,
+      genreId: Object.keys(genreLabels).indexOf(newPost.genre),
     };
 
     const place: Place = {
       placeId: sharedId, // postと同じIDにする
-      latitude: createInitialLatitude!, // handleOpenCreateAtLocationでセットされた値
-      longitude: createInitialLongitude!,
+      latitude: newPost.latitude,
+      longitude: newPost.longitude,
       numPost: 1,
     };
 
     // ステート更新（すべて一度に行う）
-    setPosts([post, ...posts]);
-    setPlaces([place, ...places]);
-    setFilteredPosts([post, ...filteredPosts]);
+    // setPosts([post, ...posts]);
+    // setPlaces([place, ...places]);
+    // setFilteredPosts([post, ...filteredPosts]);
+    setPosts((prev) => [post, ...prev]);
+    setPlaces((prev) => [place, ...prev]);
+    setFilteredPosts((prev) => [post, ...prev]);
+    setIsCreateModalOpen(false);
 
     setIsCreateModalOpen(false);
     setCreateInitialLatitude(undefined);
@@ -270,106 +232,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     setFilteredPosts(filteredPosts.filter((p) => p.postId !== postId));
     setSelectedPost(null);
   };
-  /*
-  const handleCreatePin = async (newPinData: {
-    latitude: number;
-    longitude: number;
-    title: string;
-    description: string;
-    genre: string;
-    images: string[];
-  }) => {
-    try {
-      // 1. GoバックエンドへPOSTリクエスト
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newPinData,
-          // 必要に応じてユーザー情報を追加で送る場合はここに入れる
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('投稿に失敗しました');
-      }
-
-      const result = await response.json(); // { status: "success", id: "..." } が返ってくる想定
-
-      // 2. サーバーから返ってきたID等を使ってフロントエンドのStateを更新
-      const pin: Pin = {
-        ...newPinData,
-        genre: newPinData.genre as any, // または newPinData.genre as PinGenre
-        id: result.id,
-        userId: user.id,
-        userName: user.role === 'business' ? user.name : '匿名',
-        userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
-        reactions: 0,
-        createdAt: new Date(),
-        viewCount: 0,
-      };
-
-      // 画面上のピン一覧に追加
-      setPins((prev) => [pin, ...prev]);
-      setFilteredPins((prev) => [pin, ...prev]);
-      
-      // モーダルを閉じる
-      setIsCreateModalOpen(false);
-      setCreateInitialLatitude(undefined);
-      setCreateInitialLongitude(undefined);
-
-    } catch (error) {
-      console.error("Create pin error:", error);
-      // CreatePinModal側でtoastを表示させるためにerrorを再送出するか、ここでtoastを出す
-      throw error; 
-    }
-  };*/
-  /*
-  const handleCreatePin = async (newPinData: {
-    latitude: number;
-    longitude: number;
-    title: string;
-    description: string;
-    genre: string;
-    images: string[];
-  }) => {
-    try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPinData),
-      });
-
-      if (!response.ok) throw new Error('投稿に失敗しました');
-      const result = await response.json();
-
-      const pin: Pin = {
-        ...newPinData,
-        genre: newPinData.genre as any,
-        id: result.id,
-        userId: user.id,
-        userName: user.role === 'business' ? user.name : '匿名',
-        userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
-        reactions: 0,
-        createdAt: new Date(),
-        viewCount: 0,
-        isHot: false, // 新規投稿はまだHotではない
-      };
-
-      setPins((prev) => [pin, ...prev]);
-      setFilteredPins((prev) => [pin, ...prev]);
-      setIsCreateModalOpen(false);
-    } catch (error) {
-      console.error("Create pin error:", error);
-      throw error; 
-    }
-  };*/
 
   const handleUpdateUser = (updatedUser: User) => {
     // Appレベルのユーザー情報を更新
@@ -436,13 +298,16 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           <>
             <Sidebar
               user={user}
-              pins={posts} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
+              posts={posts} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
               onFilterChange={setFilteredPosts}
               //onCreatePin={() => setIsCreateModalOpen(true)}
               onPinClick={handlePinClick}
             />
             <MapViewScreen
-              pins={posts}
+              user={user} // 追加
+              business={business} // (businessデータがあれば渡す)
+              posts={posts} // pins={posts} から修正
+              places={places} // 追加
               onPinClick={handlePinClick}
               onMapDoubleClick={handleMapDoubleClick}
             />
