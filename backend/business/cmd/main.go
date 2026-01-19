@@ -43,6 +43,8 @@ func (a *App) Setup() error {
 		&domain.BusinessMember{},
 		&domain.Post{},
 		&domain.PostImage{},
+		&domain.Genre{},
+		&domain.PostGenre{},
 		&domain.Block{},
 		&domain.Report{},
 		&domain.Contact{},

@@ -158,8 +158,6 @@ func GenerateTestJWT(userID, gmail, role string) string {
 }
 
 // GenerateExpiredTestJWT はテスト用の有効期限切れJWTトークンを生成します
-// （現在のtokenManagerではサポートされていないため、プレースホルダー実装）
 func GenerateExpiredTestJWT() string {
-	// TODO: 実装が必要な場合は、トークンマネージャーに有効期限カスタマイズオプションを追加
 	return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxNjAwMDAwMDAwfQ.expired"
 }

@@ -43,11 +43,10 @@ func (r *StatsRepoImpl) TotalReactions(ctx context.Context, businessID int64) (i
 }
 
 // TotalViews は事業者の投稿に対する閲覧総数を取得します（M3-7-3）。
-// TODO: 閲覧数カウント機構を実装する必要があります（view テーブルまたは post.viewCount フィールドが必要です）
+// view_count フィールドの合計を計算して返します。
 func (r *StatsRepoImpl) TotalViews(ctx context.Context, businessID int64) (int64, error) {
 	var totalViews int64
 
-	// posts テーブルに view_count フィールドがあることを前提としています
 	if err := r.db.WithContext(ctx).
 		Model(&domain.Post{}).
 		Where("author_id = ?", businessID).

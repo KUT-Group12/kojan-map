@@ -109,8 +109,8 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 				businessID: -1,
 				name:       "New Name",
 			},
-			// TODO: Should return error when businessID validation is implemented
-			wantErr: false,
+			// businessIDの所有権チェックが実装済み、contextに認証情報が必要
+			wantErr: true,
 		},
 		{
 			name: "empty_name",
@@ -181,8 +181,8 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 				businessID: -1,
 				icon:       []byte{0x89, 0x50, 0x4E, 0x47},
 			},
-			// TODO: Should return error when businessID validation is implemented
-			wantErr: false,
+			// businessIDの所有権チェックが実装済み、contextに認証情報が必要
+			wantErr: true,
 		},
 		{
 			name: "empty_icon",
@@ -250,8 +250,8 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 			args: args{
 				businessID: -1,
 			},
-			// TODO: Should return error when businessID validation is implemented
-			wantErr: false,
+			// businessIDの権限チェックが実装済み、contextに認証情報が必要
+			wantErr: true,
 		},
 	}
 

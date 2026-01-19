@@ -139,7 +139,6 @@ func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int64) error {
 
 // History はユーザーの投稿履歴を取得します（M1-14-2）。
 func (r *PostRepoImpl) History(ctx context.Context, googleID string) (interface{}, error) {
-	// TODO: タイムスタンプとソートを使用してビジネスユーザー ID ごとに投稿をクエリします
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
 		Where("author_id = ? AND is_active = ?", googleID, true).
