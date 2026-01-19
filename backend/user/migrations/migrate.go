@@ -164,17 +164,16 @@ func createUserReactionsTable(db *gorm.DB) error {
 func createUserBlocksTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS user_blocks (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id VARCHAR(36) NOT NULL,
-		blocker_id VARCHAR(36) NOT NULL,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL,
-		UNIQUE KEY unique_block (user_id, blocker_id),
-		KEY idx_user_id (user_id),
-		KEY idx_blocker_id (blocker_id),
-		KEY idx_deleted_at (deleted_at),
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-		FOREIGN KEY (blocker_id) REFERENCES users(id) ON DELETE CASCADE
+		blockId INT AUTO_INCREMENT PRIMARY KEY,
+		blockerId VARCHAR(36) NOT NULL,
+		blockedId VARCHAR(36) NOT NULL,
+		deletedAt TIMESTAMP NULL,
+		UNIQUE KEY unique_block (blockerId, blockedId),
+		KEY idx_blockerId (blockerId),
+		KEY idx_blockedId (blockedId),
+		KEY idx_deletedAt (deletedAt),
+		FOREIGN KEY (blockerId) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (blockedId) REFERENCES users(id) ON DELETE CASCADE
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
