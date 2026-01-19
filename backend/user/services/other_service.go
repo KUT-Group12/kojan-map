@@ -6,6 +6,8 @@ import (
 
 	"kojan-map/user/config"
 	"kojan-map/user/models"
+
+	"gorm.io/gorm"
 )
 
 // BlockService ブロック関連のビジネスロジック
@@ -26,6 +28,9 @@ func (bs *BlockService) BlockUser(userID, blockerID string) error {
 	result := config.DB.Where("blockerId = ? AND blockedId = ?", blockerID, userID).First(&existingBlock)
 	if result.Error == nil {
 		return errors.New("user already blocked")
+	}
+	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return errors.New("failed to check existing block")
 	}
 
 	block := models.UserBlock{
@@ -76,8 +81,8 @@ type ReportService struct{}
 
 // CreateReport 通報を作成
 func (rs *ReportService) CreateReport(userID string, postID int, reason string) error {
-	if reason == "" {
-		return errors.New("reason is required")
+	if userID == "" || postID == 0 || reason == "" {
+		return errors.New("userID, postID, and reason are required")
 	}
 
 	report := models.Report{
@@ -96,8 +101,8 @@ type ContactService struct{}
 
 // CreateContact 問い合わせを作成
 func (cs *ContactService) CreateContact(userID, subject, text string) error {
-	if subject == "" || text == "" {
-		return errors.New("subject and text are required")
+	if userID == "" || subject == "" || text == "" {
+		return errors.New("userID, subject and text are required")
 	}
 
 	contact := models.Contact{

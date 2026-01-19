@@ -274,13 +274,13 @@ func TestUserService_Logout(t *testing.T) {
 	// ログアウト実行
 	err := service.Logout(sessionID)
 	assert.NoError(t, err)
+	logoutTime := time.Now()
 
-	// セッションが無効化されたか確認（RevokedAtが設定されている）
+	// セッションが無効化されたか確認（Expiry を現在時刻で無効化する仕様）
 	var revokedSession models.Session
 	err = db.Where("sessionId = ?", sessionID).First(&revokedSession).Error
 	assert.NoError(t, err)
-	// expiry を現在時刻に更新して無効化する仕様
-	assert.True(t, time.Now().After(revokedSession.Expiry) || time.Now().Equal(revokedSession.Expiry))
+	assert.True(t, revokedSession.Expiry.Before(logoutTime) || revokedSession.Expiry.Equal(logoutTime))
 }
 
 func TestUserService_Logout_NotFound(t *testing.T) {

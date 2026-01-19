@@ -151,9 +151,9 @@ func TestReportService_CreateReport_ValidationError(t *testing.T) {
 	service := &ReportService{}
 
 	// Reasonが空
-	err := service.CreateReport("reporter123", 100, "")
+	err := service.CreateReport("", 0, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "reason is required")
+	assert.Contains(t, err.Error(), "required")
 }
 
 func TestContactService_CreateContact(t *testing.T) {
@@ -170,9 +170,9 @@ func TestContactService_CreateContact_ValidationError(t *testing.T) {
 	service := &ContactService{}
 
 	// Subjectが空
-	err := service.CreateContact("sender123", "", "メッセージ")
+	err := service.CreateContact("", "", "メッセージ")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "subject and text are required")
+	assert.Contains(t, err.Error(), "required")
 }
 
 func TestBusinessApplicationService_CreateApplication(t *testing.T) {

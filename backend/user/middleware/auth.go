@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"kojan-map/user/models"
 )
 
 var jwtSecret []byte
@@ -61,7 +62,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, ok := token.Claims.(*JWTClaims)
+		claims, ok := token.Claims.(*models.JWTClaims)
 		if !ok || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 			c.Abort()
@@ -71,7 +72,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// セッション無効化チェック（revoked_at は使用しない仕様のためスキップ）
 
 		// セッション有効期限チェック
-		if time.Now().After(claims.ExpiresAt.Time) {
+		if claims.ExpiresAt == nil || time.Now().After(claims.ExpiresAt.Time) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})
 			c.Abort()
 			return

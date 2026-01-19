@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -58,15 +59,6 @@ type AuthResponse struct {
 	User     *models.User `json:"user"`
 }
 
-// JWTClaims - Custom JWT claims
-type JWTClaims struct {
-	UserID   string `json:"user_id"`
-	GoogleID string `json:"google_id"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
-}
-
 // VerifyGoogleToken - Verify Google ID token via tokeninfo endpoint
 func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, error) {
 	if idToken == "" {
@@ -78,7 +70,13 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 	}
 
 	url := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?id_token=%s", idToken)
-	resp, err := http.Get(url)
+	client := &http.Client{Timeout: 5 * time.Second}
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+	if err != nil {
+		return nil, errors.New("failed to create request")
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, errors.New("failed to contact Google tokeninfo")
 	}
@@ -165,7 +163,7 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 
 // GenerateJWT - Generate JWT token for user
 func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
-	claims := JWTClaims{
+	claims := models.JWTClaims{
 		UserID:   user.ID,
 		GoogleID: user.GoogleID,
 		Email:    user.Gmail,
@@ -181,8 +179,8 @@ func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
 }
 
 // VerifyJWT - Verify and parse JWT token
-func (as *AuthService) VerifyJWT(tokenString string) (*JWTClaims, error) {
-	claims := &JWTClaims{}
+func (as *AuthService) VerifyJWT(tokenString string) (*models.JWTClaims, error) {
+	claims := &models.JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		// HS256アルゴリズムのみ許可（Algorithm Confusion Attack対策）
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

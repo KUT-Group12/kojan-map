@@ -16,7 +16,7 @@ if ! docker ps | grep -q kojan-db; then
     -e MYSQL_DATABASE=kojanmap \
     -p 3306:3306 \
     mysql:8.0
-  
+
   echo "⏳ データベースの準備を待っています（30秒）..."
   sleep 30
 fi
