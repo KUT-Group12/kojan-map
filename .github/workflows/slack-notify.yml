@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Notify Slack on PR to master
 
 on:
@@ -66,3 +67,73 @@ jobs:
             }')
 
           curl -X POST -H 'Content-type: application/json' --data "${payload}" "$SLACK_WEBHOOK_URL"
+=======
+name: Notify Slack on PR to master
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          REPO_NAME: ${{ github.repository }}
+          SLACK_USER1_ID: ${{ secrets.SLACK_URL_SATO }}
+          SLACK_USER2_ID: ${{ secrets.SLACK_URL_IWAMURA }}
+        run: |
+
+          USER1="<@${SLACK_USER1_ID}>"
+          USER2="<@${SLACK_USER2_ID}>"
+
+          USER1="<@${SLACK_USER1_ID}>"
+          USER2="<@${SLACK_USER2_ID}>"
+
+          payload=$(jq -n \
+            --arg user1 "$USER1" \
+            --arg user2 "$USER2" \
+            --arg pr_user "$PR_USER" \
+            --arg repo "$REPO_NAME" \
+            --arg title "$PR_TITLE" \
+            --arg url "$PR_URL" \
+            '{
+              text: ":bell: *Pull Request 通知*",
+              username: "PR Bot",
+              icon_emoji: ":github:",
+              blocks: [
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: "\($user1) \($user2)\n:bell: *\($pr_user)* さんが *\($repo)* に Pull Request を作成しました．"
+                  }
+                },
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: "*タイトル:* \($title)"
+                  }
+                },
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: "*リンク:* <\($url)|PRを開く>"
+                  }
+                }
+              ]
+            }')
+
+          curl -X POST -H 'Content-type: application/json' --data "${payload}" "$SLACK_WEBHOOK_URL"
+>>>>>>> origin/main

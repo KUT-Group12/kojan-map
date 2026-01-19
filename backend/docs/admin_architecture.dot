@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 digraph AdminBackendArchitecture {
     // グラフ設定
     rankdir=TB;
@@ -135,3 +136,142 @@ digraph AdminBackendArchitecture {
     BusinessMemberRepo -> BusinessMember [style=dashed];
     AskRepo -> Ask [style=dashed];
 }
+=======
+digraph AdminBackendArchitecture {
+    // グラフ設定
+    rankdir=TB;
+    node [shape=box, fontname="Helvetica"];
+    edge [fontname="Helvetica", fontsize=10];
+    
+    // サブグラフ: エントリーポイント
+    subgraph cluster_entry {
+        label="エントリーポイント";
+        style=filled;
+        color=lightgrey;
+        main [label="main.go\nmain()"];
+    }
+    
+    // サブグラフ: Router
+    subgraph cluster_router {
+        label="Router";
+        style=filled;
+        color=lightyellow;
+        SetupAdminRoutes [label="SetupAdminRoutes()"];
+    }
+    
+    // サブグラフ: Handler
+    subgraph cluster_handler {
+        label="admin/handler";
+        style=filled;
+        color=lightblue;
+        
+        DashboardHandler [label="AdminDashboardHandler\n・GetSummary()"];
+        ReportHandler [label="AdminReportHandler\n・GetReports()\n・HandleReport()"];
+        BusinessHandler [label="AdminBusinessHandler\n・GetApplications()\n・ApproveApplication()\n・RejectApplication()"];
+        UserHandler [label="AdminUserHandler\n・GetUsers()\n・DeleteUser()"];
+        ContactHandler [label="AdminContactHandler\n・GetInquiries()\n・ApproveInquiry()\n・RejectInquiry()"];
+    }
+    
+    // サブグラフ: Service
+    subgraph cluster_service {
+        label="admin/service";
+        style=filled;
+        color=lightgreen;
+        
+        DashboardService [label="AdminDashboardService\n・GetSummary()"];
+        ReportService [label="AdminReportService\n・GetReports()\n・MarkAsHandled()"];
+        BusinessService [label="AdminBusinessService\n・GetApplications()\n・ApproveApplication()\n・RejectApplication()"];
+        UserService [label="AdminUserService\n・GetUsers()\n・DeleteUser()"];
+        ContactService [label="AdminContactService\n・GetInquiries()\n・ApproveInquiry()\n・RejectInquiry()"];
+    }
+    
+    // サブグラフ: Admin Repository
+    subgraph cluster_admin_repo {
+        label="admin/repository";
+        style=filled;
+        color=lightsalmon;
+        
+        ReportRepo [label="ReportRepository\n・FindAll()\n・FindByID()\n・MarkAsHandled()\n・CountUnprocessed()"];
+        BusinessRequestRepo [label="BusinessRequestRepository\n・FindAll()\n・FindByID()\n・UpdateStatus()"];
+        BusinessMemberRepo [label="BusinessMemberRepository\n・CountAll()\n・Create()"];
+        AskRepo [label="AskRepository\n・FindAll()\n・FindByID()\n・MarkAsHandled()\n・MarkAsRejected()"];
+    }
+    
+    // サブグラフ: Shared Repository
+    subgraph cluster_shared_repo {
+        label="shared/repository";
+        style=filled;
+        color=lightpink;
+        
+        UserRepo [label="UserRepository\n・FindAll()\n・FindByGoogleID()\n・CountAll()\n・CountByRole()\n・SoftDelete()"];
+        PostRepo [label="PostRepository\n・CountAll()\n・SumReactions()"];
+    }
+    
+    // サブグラフ: Models
+    subgraph cluster_models {
+        label="shared/models";
+        style=filled;
+        color=white;
+        
+        User [label="User"];
+        Report [label="Report"];
+        BusinessRequest [label="BusinessRequest"];
+        BusinessMember [label="BusinessMember"];
+        Ask [label="Ask"];
+        Post [label="Post"];
+    }
+    
+    // サブグラフ: Config
+    subgraph cluster_config {
+        label="shared/config";
+        style=filled;
+        color=lavender;
+        
+        Config [label="Config\n・Load()"];
+        Database [label="Database\n・ConnectDB()"];
+    }
+    
+    // エッジ: main → Router/Config
+    main -> Config [label="Load()"];
+    main -> Database [label="ConnectDB()"];
+    main -> SetupAdminRoutes [label="ルート設定"];
+    
+    // エッジ: Router → Handler
+    SetupAdminRoutes -> DashboardHandler [label="New...Handler()"];
+    SetupAdminRoutes -> ReportHandler [label="New...Handler()"];
+    SetupAdminRoutes -> BusinessHandler [label="New...Handler()"];
+    SetupAdminRoutes -> UserHandler [label="New...Handler()"];
+    SetupAdminRoutes -> ContactHandler [label="New...Handler()"];
+    
+    // エッジ: Handler → Service
+    DashboardHandler -> DashboardService [label="GetSummary()"];
+    ReportHandler -> ReportService [label="GetReports()\nMarkAsHandled()"];
+    BusinessHandler -> BusinessService [label="GetApplications()\nApprove/Reject()"];
+    UserHandler -> UserService [label="GetUsers()\nDeleteUser()"];
+    ContactHandler -> ContactService [label="GetInquiries()\nApprove/Reject()"];
+    
+    // エッジ: Service → Repository
+    DashboardService -> UserRepo [label="CountAll()\nCountByRole()"];
+    DashboardService -> PostRepo [label="CountAll()\nSumReactions()"];
+    DashboardService -> ReportRepo [label="CountUnprocessed()"];
+    DashboardService -> BusinessMemberRepo [label="CountAll()"];
+    
+    ReportService -> ReportRepo [label="FindAll()\nMarkAsHandled()"];
+    
+    BusinessService -> BusinessRequestRepo [label="FindAll()\nUpdateStatus()"];
+    BusinessService -> UserRepo [label="FindByGoogleID()"];
+    BusinessService -> BusinessMemberRepo [label="Create()"];
+    
+    UserService -> UserRepo [label="FindAll()\nSoftDelete()"];
+    
+    ContactService -> AskRepo [label="FindAll()\nMarkAs...()"];
+    
+    // エッジ: Repository → Models
+    UserRepo -> User [style=dashed];
+    PostRepo -> Post [style=dashed];
+    ReportRepo -> Report [style=dashed];
+    BusinessRequestRepo -> BusinessRequest [style=dashed];
+    BusinessMemberRepo -> BusinessMember [style=dashed];
+    AskRepo -> Ask [style=dashed];
+}
+>>>>>>> origin/main
