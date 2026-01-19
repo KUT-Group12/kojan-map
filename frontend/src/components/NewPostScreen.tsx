@@ -279,6 +279,7 @@ export function NewPostScreen({
                         type="button"
                         onClick={() => handleRemoveImage(index)}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`画像 ${index + 1} を削除`}
                       >
                         ×
                       </button>
