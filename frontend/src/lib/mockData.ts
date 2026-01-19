@@ -1,12 +1,12 @@
 import { Pin, PinGenre } from '../types';
 
 export const genreColors: Record<PinGenre, string> = {
-  food: '#EF4444',      // 赤
-  event: '#F59E0B',     // オレンジ
-  scenery: '#10B981',   // 緑
-  shop: '#3B82F6',      // 青
+  food: '#EF4444', // 赤
+  event: '#F59E0B', // オレンジ
+  scenery: '#10B981', // 緑
+  shop: '#3B82F6', // 青
   emergency: '#8B5CF6', // 紫
-  other: '#6B7280',     // グレー
+  other: '#6B7280', // グレー
 };
 
 export const genreLabels: Record<PinGenre, string> = {
