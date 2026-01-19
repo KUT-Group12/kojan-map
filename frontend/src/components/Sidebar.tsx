@@ -86,7 +86,7 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
     5: 'other',      // ジャンルID 5 -> 'other'
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
