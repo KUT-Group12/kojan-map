@@ -210,6 +210,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
       const data = await response.json();
+      if (!data?.pin) throw new Error('詳細データが不正です');
 
       // 取得したデータを正規化して設定
       const normalizedPin: Pin = {
