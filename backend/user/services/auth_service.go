@@ -101,6 +101,14 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 
 // ExchangeTokenForUser - Exchange Google token for User and JWT
 func (as *AuthService) ExchangeTokenForUser(googleToken, role string) (*AuthResponse, error) {
+	// Validate role
+	switch role {
+	case "general", "business":
+		// ok
+	default:
+		return nil, errors.New("invalid role")
+	}
+
 	// Verify Google ID token via tokeninfo endpoint
 	googleResp, err := as.VerifyGoogleToken(googleToken)
 	if err != nil {

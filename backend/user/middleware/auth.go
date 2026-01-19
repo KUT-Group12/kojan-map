@@ -47,7 +47,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &models.JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 			// [must] アルゴリズム検証: HMACのみを許可
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -83,13 +83,4 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("user", claims)
 		c.Next()
 	}
-}
-
-// JWTClaims - Custom JWT claims
-type JWTClaims struct {
-	UserID   string `json:"user_id"`
-	GoogleID string `json:"google_id"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
 }

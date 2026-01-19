@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit 1
 
 echo "🏗️  バックエンドをビルド中..."
 docker build -t kojan-map-backend .

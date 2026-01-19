@@ -237,13 +237,13 @@ func createBusinessApplicationsTable(db *gorm.DB) error {
 		registDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		profileImage BLOB,
 		userId VARCHAR(36) NOT NULL,
-		placeId INT NOT NULL,
+		placeId INT NULL,
 		deletedAt DATETIME NULL,
 		KEY idx_userId (userId),
 		KEY idx_placeId (placeId),
 		KEY idx_deletedAt (deletedAt),
 		FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-		FOREIGN KEY (placeId) REFERENCES places(placeId) ON DELETE CASCADE
+		FOREIGN KEY (placeId) REFERENCES places(placeId) ON DELETE SET NULL
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
