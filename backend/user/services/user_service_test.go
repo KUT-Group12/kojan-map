@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 
 	"kojan-map/user/config"
