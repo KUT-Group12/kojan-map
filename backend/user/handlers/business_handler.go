@@ -126,7 +126,11 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
 		return
 	}
-	defer imageData.Close()
+	defer func() {
+		if err := imageData.Close(); err != nil {
+			// ログに記録するが、既にレスポンスを送っている場合は無視
+		}
+	}()
 
 	profileImage, err := h.businessService.UploadBusinessIcon(userID, imageData)
 	if err != nil {
