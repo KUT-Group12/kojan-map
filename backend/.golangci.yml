@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   timeout: 5m
   tests: true
@@ -8,6 +10,9 @@ linters:
     - errcheck   # エラーハンドリングチェック
     - staticcheck # 静的解析（gosimple, unusedを含む）
     - ineffassign # 無駄な代入検出
+
+formatters:
+  enable:
     - gofmt      # コードフォーマットチェック
     - goimports  # import文の整理
 
