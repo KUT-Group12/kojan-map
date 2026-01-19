@@ -97,11 +97,12 @@ export function Sidebar({
     <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
       {/* 検索・フィルター */}
       <div className="p-4 border-b border-gray-200 space-y-3">
-        {/*}
+        {/*
         <Button onClick={onCreatePin} className="w-full">
           <Plus className="w-4 h-4 mr-2" />
           新規投稿
-        </Button>*/}
+        </Button>
+        */}
         {user.role !== 'business' && (
           <>
             <div className="relative">

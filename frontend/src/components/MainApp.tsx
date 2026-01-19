@@ -200,14 +200,26 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   };*/
 
   const handlePinClick = async (pin: Pin) => {
+    setDetailData(null);
     try {
       const response = await fetch(`http://localhost:8080/api/posts/detail?id=${pin.id}`);
       if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
       const data = await response.json();
 
-      // 3. 取得したデータをステートに入れて、パネルを開く
-      setSelectedPin(data.pin); // data.pin は Go側の PinDetailResponse 構造体の中身
+      // 取得したデータを正規化して設定
+      const normalizedPin: Pin = {
+        ...data.pin,
+        createdAt: new Date(data.pin.createdAt),
+      };
+      setSelectedPin(normalizedPin);
+      setDetailData({
+        isReacted: data.isReacted ?? reactedPins.has(pin.id),
+        pinsAtLocation: (data.pinsAtLocation ?? []).map((p: Pin) => ({
+          ...p,
+          createdAt: new Date(p.createdAt),
+        })),
+      });
       // 詳細パネルはselectedPinの有無で制御するため、フラグは不要
     } catch (error) {
       console.error('Fetch error:', error);
@@ -436,13 +448,13 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           <>
             <Sidebar
               user={user}
-              pins={pins} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
+              pins={pins}
               onFilterChange={setFilteredPins}
               onCreatePin={() => setIsCreateModalOpen(true)}
               onPinClick={handlePinClick}
             />
             <MapViewScreen
-              pins={pins}
+              pins={filteredPins}
               onPinClick={handlePinClick}
               onMapDoubleClick={handleMapDoubleClick}
             />

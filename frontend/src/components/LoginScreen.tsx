@@ -50,6 +50,41 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const googleInitializedRef = useRef(false);
 
+  const handleGoogleSignInCallback = useCallback(
+    async (response: GoogleSignInResponse) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        if (response.credential) {
+          const token = response.credential;
+
+          // トークンをデコード（署名検証はバックエンドで行う）
+          // base64url形式をbase64に正規化してからデコード
+          const base64url = token.split('.')[1];
+          const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+
+          // すべての新規会員は一般会員として登録する
+          const result = await exchangeGoogleTokenForJWT(token, 'general');
+
+          storeJWT(result.jwt_token);
+          storeUser(result.user);
+
+          if (payload.sub) {
+            onLogin('general', payload.sub);
+          }
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'トークン取得に失敗しました';
+        setError(errorMsg);
+        console.error('Callback Error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onLogin]
+  );
+
   // Google Identity Services スクリプトが読み込まれたかを検知
   useEffect(() => {
     const timer = setInterval(() => {
@@ -93,41 +128,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
     googleInitializedRef.current = true;
   }, [agreedToTerms, googleReady, handleGoogleSignInCallback]);
-
-  const handleGoogleSignInCallback = useCallback(
-    async (response: GoogleSignInResponse) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        if (response.credential) {
-          const token = response.credential;
-
-          // トークンをデコード（署名検証はバックエンドで行う）
-          // base64url形式をbase64に正規化してからデコード
-          const base64url = token.split('.')[1];
-          const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-          const payload = JSON.parse(atob(base64));
-
-          // すべての新規会員は一般会員として登録する
-          const result = await exchangeGoogleTokenForJWT(token, 'general');
-
-          storeJWT(result.jwt_token);
-          storeUser(result.user);
-
-          if (payload.sub) {
-            onLogin('general', payload.sub);
-          }
-        }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'トークン取得に失敗しました';
-        setError(errorMsg);
-        console.error('Callback Error:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [onLogin]
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">

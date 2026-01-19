@@ -58,7 +58,6 @@ export default function App() {
   const handleLogout = () => {
     // ローカルストレージから JWT とユーザー情報を削除
     authLogout();
-    setJwtToken(null);
     setUser(null);
   };
 
