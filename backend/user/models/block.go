@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -9,6 +11,7 @@ type UserBlock struct {
 	BlockId   int            `gorm:"column:blockId;primaryKey" json:"blockId"`
 	BlockerId string         `gorm:"column:blockerId;index" json:"blockerId"`
 	BlockedId string         `gorm:"column:blockedId;index" json:"blockedId"`
+	CreatedAt time.Time      `gorm:"column:createdAt" json:"createdAt"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
 }
 

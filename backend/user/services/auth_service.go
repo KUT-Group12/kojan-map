@@ -128,7 +128,7 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 	var user models.User
 
 	// Check if user with this Google ID exists
-	result := as.db.Where("google_id = ?", googleResp.Sub).First(&user)
+	result := as.db.Where("googleId = ?", googleResp.Sub).First(&user)
 
 	if result.Error == nil {
 		// User exists, update last login
