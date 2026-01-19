@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { User, Pin } from '../types';
+import { User, Post, Business } from '../types';
 import {
   TrendingUp,
   Eye,
@@ -24,37 +24,28 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { genreColors, genreLabels } from '../lib/mockData';
+import { genreColors, genreLabels, API_GENRE_MAP } from '../lib/mockData';
 
 interface BusinessDashboardProps {
+  business: Business;
   user: User;
-  pins: Pin[];
-  onPinClick: (pin: Pin) => void;
+  posts: Post[];
+  onPostClick: (post: Post) => void;
 }
 
-export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardProps) {
+export function BusinessDashboard({ business, user, posts, onPostClick }: BusinessDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  // モック統計データ
-  /*
-  const weeklyData = [
-    { date: '10/28', reactions: 12, views: 45 },
-    { date: '10/29', reactions: 18, views: 67 },
-    { date: '10/30', reactions: 15, views: 52 },
-    { date: '10/31', reactions: 24, views: 89 },
-    { date: '11/01', reactions: 31, views: 112 },
-    { date: '11/02', reactions: 28, views: 98 },
-    { date: '11/03', reactions: 35, views: 134 },
-  ];*/
   const weeklyData = [];
 
-  const genreStats = pins.reduce(
-    (acc, pin) => {
-      if (!acc[pin.genre]) {
-        acc[pin.genre] = { genre: genreLabels[pin.genre], count: 0, reactions: 0 };
+  const genreStats = posts.reduce(
+    (acc, post) => {
+      const genreKey = API_GENRE_MAP[post.genreId] || 'other';
+      if (!acc[genreKey]) {
+        acc[genreKey] = { genre: genreLabels[genreKey], count: 0, reactions: 0 };
       }
-      acc[pin.genre].count++;
-      acc[pin.genre].reactions += pin.reactions;
+      acc[genreKey].count++;
+      acc[genreKey].reactions += post.numReaction;
       return acc;
     },
     {} as Record<string, { genre: string; count: number; reactions: number }>
@@ -62,11 +53,11 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
 
   const genreStatsArray = Object.values(genreStats);
 
-  const totalReactions = pins.reduce((sum, pin) => sum + pin.reactions, 0);
-  const totalViews = pins.reduce((sum, pin) => sum + (pin.viewCount || 0), 0);
-  const avgReactions = pins.length > 0 ? Math.round(totalReactions / pins.length) : 0;
+  const totalReactions = posts.reduce((sum, post) => sum + post.numReaction, 0);
+  const totalViews = posts.reduce((sum, post) => sum + (post.numView || 0), 0);
+  const avgReactions = posts.length > 0 ? Math.round(totalReactions / posts.length) : 0;
 
-  const topPosts = [...pins].sort((a, b) => b.reactions - a.reactions).slice(0, 5);
+  const topPosts = [...posts].sort((a, b) => b.numReaction - a.numReaction).slice(0, 5);
 
   return (
     <div className="flex w-full h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -87,22 +78,20 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('billing')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'billing'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'billing'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <CreditCard className="w-5 h-5" />
             <span>支払い情報</span>
@@ -112,7 +101,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <div className="mt-auto p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">事業者名</p>
-            <p className="text-sm truncate">{user.businessName || user.name}</p>
+            <p className="text-sm truncate">{business.businessName || user.fromName}</p>
           </div>
         </div>
       </div>
@@ -128,7 +117,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                 {activeTab === 'billing' && '支払い情報'}
               </h1>
               <p className="text-sm text-slate-600 mt-1">
-                {activeTab === 'overview' && user.businessName}
+                {activeTab === 'overview' && business.businessName}
                 {activeTab === 'billing' && (
                   <>
                     <Clock className="w-3 h-3 inline mr-1" />
@@ -155,7 +144,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <div className="text-3xl">{pins.length}</div>
+                    <div className="text-3xl">{posts.length}</div>
                     <p className="text-xs opacity-75 mt-1">投稿</p>
                   </CardContent>
                 </Card>
@@ -266,42 +255,45 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     <p className="text-slate-500 text-center py-8">まだ投稿がありません</p>
                   ) : (
                     <div className="space-y-3">
-                      {topPosts.map((pin, index) => (
-                        <button
-                          key={pin.id}
-                          onClick={() => onPinClick(pin)}
-                          className="w-full p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start space-x-3 flex-1">
-                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white">
-                                {index + 1}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <h4>{pin.title}</h4>
-                                  <Badge style={{ backgroundColor: genreColors[pin.genre] }}>
-                                    {genreLabels[pin.genre]}
-                                  </Badge>
+                      {topPosts.map((post, index) => {
+                        const genreKey = API_GENRE_MAP[post.genreId] || 'other';
+                        return (
+                          <button
+                            key={post.postId}
+                            onClick={() => onPostClick(post)}
+                            className="w-full p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start space-x-3 flex-1">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white">
+                                  {index + 1}
                                 </div>
-                                <p className="text-sm text-slate-600 line-clamp-1">
-                                  {pin.description}
-                                </p>
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 mb-1">
+                                    <h4>{post.title}</h4>
+                                    <Badge style={{ backgroundColor: genreColors[genreKey] }}>
+                                      {genreLabels[genreKey]}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-slate-600 line-clamp-1">
+                                    {post.text}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right ml-4">
+                                <div className="flex items-center text-red-500">
+                                  <Heart className="w-4 h-4 mr-1" />
+                                  <span>{post.numReaction}</span>
+                                </div>
+                                <div className="flex items-center text-blue-500 text-sm mt-1">
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  <span>{post.numView || 0}</span>
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right ml-4">
-                              <div className="flex items-center text-red-500">
-                                <Heart className="w-4 h-4 mr-1" />
-                                <span>{pin.reactions}</span>
-                              </div>
-                              <div className="flex items-center text-blue-500 text-sm mt-1">
-                                <Eye className="w-3 h-3 mr-1" />
-                                <span>{pin.viewCount || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        )
+                      })}
                     </div>
                   )}
                 </CardContent>

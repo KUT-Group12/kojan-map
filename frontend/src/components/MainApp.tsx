@@ -10,8 +10,7 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Pin, User } from '../types';
-//import type { Pin, User, PinGenre } from '../types';
+import { Pin, User, Business } from '../types';
 
 interface MainAppProps {
   user: User;
@@ -329,10 +328,23 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     setCurrentView(previousView);
   };
 
+  const mockBusiness: Business = {
+    businessId: 0,
+    businessName: user.role === 'business' ? (user as any).businessName || '未設定' : '',
+    kanaBusinessName: '',
+    zipCode: 0,
+    address: '',
+    phone: 0,
+    registDate: '',
+    userId: user.googleId,
+    placeId: 0,
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <Header
         user={user}
+        business={mockBusiness}
         // onLogout={onLogout}
         onNavigate={handleNavigate}
         currentView={currentView}
@@ -388,9 +400,10 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
         {currentView === 'dashboard' && user.role === 'business' && (
           <div className="flex-1 h-full">
             <BusinessDashboard
+              business={mockBusiness}
               user={user}
-              pins={pins.filter((p) => p.userId === user.id)}
-              onPinClick={handlePinClick}
+              posts={pins.filter((p) => p.userId === user.id)}
+              onPostClick={handlePinClick}
             />
           </div>
         )}
