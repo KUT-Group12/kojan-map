@@ -1,17 +1,16 @@
 package services
 
 import (
-	"encoding/json"
+	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
+	"google.golang.org/api/idtoken"
 
 	"kojan-map/user/models"
 )
@@ -28,28 +27,26 @@ func init() {
 }
 
 type AuthService struct {
-	db *gorm.DB
+	db             *gorm.DB
+	googleClientID string
 }
 
-func NewAuthService(db *gorm.DB) *AuthService {
-	return &AuthService{db: db}
+func NewAuthService(db *gorm.DB, googleClientID string) *AuthService {
+	return &AuthService{db: db, googleClientID: googleClientID}
 }
 
 // Google OAuth Token response
 type GoogleTokenResponse struct {
-	Iss           string `json:"iss"`
-	Azp           string `json:"azp"`
-	Aud           string `json:"aud"`
-	Sub           string `json:"sub"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	AtHash        string `json:"at_hash"`
-	Picture       string `json:"picture"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Iat           int64  `json:"iat"`
-	Exp           int64  `json:"exp"`
+	Iss           string
+	Azp           string
+	Aud           string
+	Sub           string
+	Email         string
+	EmailVerified bool
+	Picture       string
+	Name          string
+	Iat           int64
+	Exp           int64
 }
 
 // Request body for token exchange
@@ -73,37 +70,38 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// VerifyGoogleToken - Verify Google OAuth token
-// Note: This is a simplified verification. For production, use google-auth-library-golang
-func (as *AuthService) VerifyGoogleToken(token string) (*GoogleTokenResponse, error) {
-	// Google tokeninfo endpoint to verify token
-	url := fmt.Sprintf("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s", token)
+// VerifyGoogleToken - Verify Google ID token with audience check
+func (as *AuthService) VerifyGoogleToken(ctx context.Context, token string) (*GoogleTokenResponse, error) {
+	if as.googleClientID == "" {
+		return nil, errors.New("google client id is not configured")
+	}
 
-	resp, err := http.Get(url)
+	payload, err := idtoken.Validate(ctx, token, as.googleClientID)
 	if err != nil {
-		return nil, errors.New("failed to verify token with Google")
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("google token verification failed: %s", string(body))
+		return nil, fmt.Errorf("google token verification failed: %w", err)
 	}
 
-	var googleResp GoogleTokenResponse
-	if err := json.NewDecoder(resp.Body).Decode(&googleResp); err != nil {
-		return nil, errors.New("failed to parse Google response")
-	}
+	name, _ := payload.Claims["name"].(string)
+	picture, _ := payload.Claims["picture"].(string)
 
-	return &googleResp, nil
+	return &GoogleTokenResponse{
+		Iss:           payload.Issuer,
+		Azp:           payload.AuthorizedParty,
+		Aud:           payload.Audience,
+		Sub:           payload.Subject,
+		Email:         payload.Email,
+		EmailVerified: payload.EmailVerified,
+		Picture:       picture,
+		Name:          name,
+		Iat:           payload.IssuedAt.Unix(),
+		Exp:           payload.Expires.Unix(),
+	}, nil
 }
 
 // ExchangeTokenForUser - Exchange Google token for User and JWT
 func (as *AuthService) ExchangeTokenForUser(googleToken, role string) (*AuthResponse, error) {
-	// Verify Google token
-	googleResp, err := as.VerifyGoogleToken(googleToken)
+	// Verify Google token (ID token) with audience check
+	googleResp, err := as.VerifyGoogleToken(context.Background(), googleToken)
 	if err != nil {
 		return nil, fmt.Errorf("google token verification failed: %w", err)
 	}

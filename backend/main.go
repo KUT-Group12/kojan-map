@@ -59,7 +59,7 @@ func main() {
 	router.SetupAdminRoutes(r, db)
 
 	// Setup user routes (一般会員用)
-	setupUserRoutes(r, db, middleware.AuthMiddleware())
+	setupUserRoutes(r, db, middleware.AuthMiddleware(), cfg.GoogleClientID)
 
 	// Start server
 	port := cfg.ServerPort
@@ -82,10 +82,11 @@ func setupUserRoutes(
 	router *gin.Engine,
 	db *gorm.DB,
 	authMiddleware gin.HandlerFunc,
+	googleClientID string,
 ) {
 	// サービスとハンドラーを初期化
 	userService := &services.UserService{}
-	authService := services.NewAuthService(db)
+	authService := services.NewAuthService(db, googleClientID)
 	authHandler := handlers.NewAuthHandler(userService, authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postService := &services.PostService{}
