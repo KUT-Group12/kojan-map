@@ -1,0 +1,76 @@
+flowchart TB
+    subgraph TB1["Trust Boundary 1: インターネット"]
+        EU["🧑 一般ユーザー"]
+        EB["🏢 事業者"]
+        EA["👤 管理者"]
+    end
+    
+    subgraph TB2["Trust Boundary 2: フロントエンド (React)"]
+        FE["1.0<br/>フロントエンド<br/>SPA"]
+    end
+    
+    subgraph TB3["Trust Boundary 3: バックエンド (Go/Gin)"]
+        subgraph Middleware
+            P1["1.1<br/>認証<br/>ミドルウェア"]
+            P2["1.2<br/>認可<br/>ミドルウェア"]
+        end
+        
+        subgraph Handlers
+            P3["2.0<br/>投稿<br/>ハンドラー"]
+            P4["3.0<br/>ユーザー<br/>ハンドラー"]
+            P5["4.0<br/>通報<br/>ハンドラー"]
+            P6["5.0<br/>事業者申請<br/>ハンドラー"]
+            P7["6.0<br/>問い合わせ<br/>ハンドラー"]
+            P8["7.0<br/>ダッシュボード<br/>ハンドラー"]
+        end
+        
+        subgraph Services
+            S1["2.1<br/>投稿<br/>サービス"]
+            S2["3.1<br/>ユーザー<br/>サービス"]
+            S3["4.1<br/>通報<br/>サービス"]
+            S4["5.1<br/>事業者申請<br/>サービス"]
+            S5["6.1<br/>問い合わせ<br/>サービス"]
+            S6["7.1<br/>ダッシュボード<br/>サービス"]
+        end
+    end
+    
+    subgraph TB4["Trust Boundary 4: データベース (MySQL)"]
+        D1[("D1<br/>Users")]
+        D2[("D2<br/>Posts")]
+        D3[("D3<br/>Reports")]
+        D4[("D4<br/>BusinessRequests")]
+        D5[("D5<br/>BusinessMembers")]
+        D6[("D6<br/>Asks")]
+    end
+    
+    subgraph TB5["Trust Boundary 5: 外部サービス"]
+        EG["🔐 Google OAuth"]
+    end
+    
+    %% External → Frontend
+    EU & EB & EA -->|"HTTPリクエスト"| FE
+    FE -->|"HTTPレスポンス"| EU & EB & EA
+    
+    %% Frontend → Backend
+    FE -->|"API リクエスト<br/>(JSON/REST)"| P1
+    
+    %% Auth Flow
+    P1 -->|"認証済みリクエスト"| P2
+    P2 -->|"認可済みリクエスト"| P3 & P4 & P5 & P6 & P7 & P8
+    P1 <-->|"トークン検証"| EG
+    
+    %% Handler → Service
+    P3 --> S1
+    P4 --> S2
+    P5 --> S3
+    P6 --> S4
+    P7 --> S5
+    P8 --> S6
+    
+    %% Service → Database
+    S1 <-->|"CRUD"| D2
+    S2 <-->|"CRUD"| D1
+    S3 <-->|"CRUD"| D3
+    S4 <-->|"CRUD"| D4 & D5
+    S5 <-->|"CRUD"| D6
+    S6 -->|"READ"| D1 & D2 & D3 & D5

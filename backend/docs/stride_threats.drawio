@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-01-18T12:00:00.000Z" agent="kojan-map STRIDE Analysis" version="21.0.0" type="device">
+  <diagram name="STRIDE Threat Analysis" id="stride-threats">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ヘッダー -->
+        <mxCell id="header" value="🔒 STRIDE脅威分析 - こじゃんとやまっぷ" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 一般ユーザー向け脅威 -->
+        <!-- ============================================ -->
+        <mxCell id="user_section" value="👤 一般ユーザー (User) 向け脅威" style="text;html=1;strokeColor=none;fillColor=#E3F2FD;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=14;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="u1" value="U1: 投稿機能&#xa;&#xa;[S] Spoofing&#xa;  • 他ユーザーになりすまして投稿&#xa;  • セッション乗っ取り&#xa;&#xa;[T] Tampering&#xa;  • 投稿内容の改ざん&#xa;  • 位置情報の偽装&#xa;&#xa;[R] Repudiation&#xa;  • 「投稿していない」と否認&#xa;&#xa;対策: 認証必須, 投稿者検証, 操作ログ" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="200" height="220" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="u2" value="U2: リアクション/通報&#xa;&#xa;[S] Spoofing&#xa;  • 複数アカウントで自演&#xa;  • 虚偽通報&#xa;&#xa;[T] Tampering&#xa;  • 通報理由の改ざん&#xa;&#xa;[D] Denial of Service&#xa;  • 大量通報によるシステム負荷&#xa;  • スパムリアクション&#xa;&#xa;対策: レート制限, 重複検知" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="260" y="120" width="200" height="200" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="u3" value="U3: 事業者申請&#xa;&#xa;[S] Spoofing&#xa;  • 虚偽の事業者情報&#xa;  • 実在しない事業者なりすまし&#xa;&#xa;[I] Information Disclosure&#xa;  • 他者の申請内容閲覧&#xa;&#xa;対策: 証明書類確認, 申請履歴監査" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="480" y="120" width="200" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 事業者向け脅威 -->
+        <!-- ============================================ -->
+        <mxCell id="biz_section" value="🏢 事業者 (Business) 向け脅威" style="text;html=1;strokeColor=none;fillColor=#E8F5E9;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=14;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="b1" value="B1: 事業者マイページ&#xa;&#xa;[S] Spoofing&#xa;  • 他事業者マイページへアクセス&#xa;  • アカウント乗っ取り&#xa;&#xa;[T] Tampering&#xa;  • 店舗情報の不正変更&#xa;  • 営業時間・価格の改ざん&#xa;&#xa;[I] Information Disclosure&#xa;  • 売上情報・統計の漏洩&#xa;&#xa;[E] Elevation of Privilege&#xa;  • 一般ユーザーが事業者機能にアクセス&#xa;&#xa;対策: 事業者認証強化, アクセス制御" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="220" height="260" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="b2" value="B2: 事業者投稿&#xa;&#xa;[S] Spoofing&#xa;  • 競合他社による偽投稿&#xa;  • 悪意ある宣伝投稿&#xa;&#xa;[T] Tampering&#xa;  • 投稿内容・画像の改ざん&#xa;&#xa;[R] Repudiation&#xa;  • 「投稿していない」と否認&#xa;&#xa;対策: 投稿承認フロー, 二段階認証" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="400" width="200" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 管理者向け脅威 -->
+        <!-- ============================================ -->
+        <mxCell id="admin_section" value="👔 管理者 (Admin) 向け脅威" style="text;html=1;strokeColor=none;fillColor=#FFF3E0;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=14;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="700" y="80" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a1" value="A1: 管理者権限&#xa;&#xa;[S] Spoofing&#xa;  • 管理者アカウント乗っ取り&#xa;  • 内部犯行&#xa;&#xa;[E] Elevation of Privilege&#xa;  • 一般ユーザーが管理者機能アクセス&#xa;  • ⚠️現状: スタブ実装で全員admin&#xa;&#xa;[R] Repudiation&#xa;  • 管理操作の否認&#xa;  • 監査ログ改ざん&#xa;&#xa;対策: MFA必須, IP制限, ログ改ざん防止" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="700" y="120" width="240" height="240" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a2" value="A2: ユーザー管理&#xa;&#xa;[T] Tampering&#xa;  • 不正なユーザー情報変更&#xa;  • ロール権限の不正変更&#xa;&#xa;[I] Information Disclosure&#xa;  • 個人情報の漏洩&#xa;  • ユーザー一覧の外部流出&#xa;&#xa;[D] Denial of Service&#xa;  • 正当なユーザーの削除&#xa;&#xa;対策: 変更承認フロー, マスキング" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="120" width="220" height="220" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a3" value="A3: 申請承認&#xa;&#xa;[S] Spoofing&#xa;  • 承認権限のなりすまし&#xa;&#xa;[T] Tampering&#xa;  • 承認/却下状態の改ざん&#xa;&#xa;[R] Repudiation&#xa;  • 承認操作の否認&#xa;&#xa;対策: 承認者記録, 二人承認制" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="700" y="380" width="200" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 信頼境界横断脅威 -->
+        <!-- ============================================ -->
+        <mxCell id="boundary_section" value="🚧 信頼境界横断の脅威" style="text;html=1;strokeColor=none;fillColor=#FFEBEE;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=14;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="360" width="300" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tb_threat" value="TB1→TB3: インターネット → バックエンド&#xa;&#xa;[S] 認証バイパス試行&#xa;[T] リクエスト改ざん&#xa;[R] 操作否認&#xa;[I] データ盗聴&#xa;[D] API過負荷攻撃&#xa;[E] 権限昇格&#xa;&#xa;TB3↔TB5: バックエンド ↔ Google OAuth&#xa;&#xa;[S] 偽OAuthプロバイダー&#xa;[T] トークン改ざん&#xa;[I] トークン漏洩" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#FFEBEE;strokeColor=#F44336;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="400" width="180" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 緊急警告 -->
+        <!-- ============================================ -->
+        <mxCell id="critical" value="⚠️ 緊急: 現在の重大な脆弱性&#xa;&#xa;認証ミドルウェア (auth.go)&#xa;がスタブ実装&#xa;&#xa;→ 全ユーザーがadmin権限で&#xa;   アクセス可能&#xa;&#xa;→ 本番環境前に&#xa;   Google OAuth実装必須" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;size=15;fillColor=#FFCDD2;strokeColor=#D32F2F;strokeWidth=3;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="920" y="380" width="200" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 対策サマリー -->
+        <!-- ============================================ -->
+        <mxCell id="mitigation_section" value="🛡️ 推奨対策サマリー" style="text;html=1;strokeColor=none;fillColor=#E8F5E9;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=14;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="680" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="mitigations" value="優先度: 高&#xa;1. Google OAuth認証の実装&#xa;2. ロールベースアクセス制御&#xa;3. 入力バリデーション&#xa;4. レートリミット&#xa;&#xa;優先度: 中&#xa;5. 監査ログの導入&#xa;6. 個人情報の暗号化&#xa;7. MFA&#xa;&#xa;優先度: 低&#xa;8. セッション管理強化&#xa;9. 二人承認制" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=left;spacingTop=8;spacingLeft=8;fillColor=#E8F5E9;strokeColor=#4CAF50;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="720" width="180" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- 凡例 -->
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="720" width="380" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend_title" value="STRIDE凡例" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="725" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend_text" value="[S] Spoofing - なりすまし&#xa;[T] Tampering - 改ざん&#xa;[R] Repudiation - 否認&#xa;[I] Information Disclosure - 情報漏洩&#xa;[D] Denial of Service - サービス拒否&#xa;[E] Elevation of Privilege - 権限昇格" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="270" y="750" width="360" height="70" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

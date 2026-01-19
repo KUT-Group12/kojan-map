@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-01-18T11:25:30.000Z" agent="kojan-map STRIDE Analysis" version="21.0.0" type="device">
+  <diagram name="Level 0 DFD - All User Roles" id="dfd-level0-stride-complete">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ============================================ -->
+        <!-- 信頼境界 1: インターネット (Untrusted) -->
+        <!-- ============================================ -->
+        <mxCell id="tb1" value="Trust Boundary 1: インターネット (Untrusted)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#F44336;strokeWidth=3;dashed=1;dashPattern=8 8;verticalAlign=top;fontStyle=1;fontSize=14;labelBackgroundColor=#FFEBEE;" vertex="1" parent="1">
+          <mxGeometry x="50" y="30" width="700" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================== -->
+        <!-- 外部エンティティ（長方形） -->
+        <!-- ============================== -->
+        <!-- 一般ユーザー -->
+        <mxCell id="eu" value="👤 一般ユーザー&#xa;(User)&#xa;&#xa;・投稿閲覧/作成&#xa;・リアクション送信&#xa;・通報機能&#xa;・事業者申請" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=3;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="80" y="70" width="150" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- 事業者 -->
+        <mxCell id="eb" value="🏢 事業者&#xa;(Business)&#xa;&#xa;・一般ユーザー機能全て&#xa;・事業者マイページ&#xa;・店舗情報管理&#xa;・プロモーション投稿" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=3;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="280" y="70" width="170" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- 管理者 -->
+        <mxCell id="ea" value="👔 管理者&#xa;(Admin)&#xa;&#xa;・ダッシュボード表示&#xa;・ユーザー管理/削除&#xa;・通報処理&#xa;・事業者申請承認/却下&#xa;・問い合わせ対応" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=3;fontStyle=1;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="500" y="70" width="180" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 信頼境界 5: 外部サービス -->
+        <!-- ============================================ -->
+        <mxCell id="tb5" value="Trust Boundary 5: 外部サービス" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9C27B0;strokeWidth=3;dashed=1;dashPattern=8 8;verticalAlign=top;fontStyle=1;fontSize=14;labelBackgroundColor=#F3E5F5;" vertex="1" parent="1">
+          <mxGeometry x="800" y="30" width="200" height="150" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="eg" value="🔐 Google OAuth&#xa;Provider" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;strokeWidth=2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 信頼境界 3: システム (Trusted) -->
+        <!-- ============================================ -->
+        <mxCell id="tb3" value="Trust Boundary 3: バックエンド (Trusted)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#4CAF50;strokeWidth=3;dashed=1;dashPattern=8 8;verticalAlign=top;fontStyle=1;fontSize=14;labelBackgroundColor=#E8F5E9;" vertex="1" parent="1">
+          <mxGeometry x="200" y="380" width="400" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================== -->
+        <!-- プロセス（楕円） -->
+        <!-- ============================== -->
+        <mxCell id="p0" value="0&#xa;&#xa;こじゃんとやまっぷ&#xa;システム" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#FBC02D;strokeWidth=3;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="300" y="430" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================== -->
+        <!-- データフロー（矢印）- 一般ユーザー -->
+        <!-- ============================== -->
+        <mxCell id="df_eu_in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976D2;entryX=0;entryY=0.3;" edge="1" parent="1" source="eu" target="p0">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="155" y="350" />
+              <mxPoint x="250" y="350" />
+              <mxPoint x="250" y="466" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_eu_in_label" value="投稿作成要求&#xa;リアクション&#xa;通報&#xa;事業者申請" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df_eu_in">
+          <mxGeometry x="-0.3" relative="1" as="geometry">
+            <mxPoint x="-30" y="20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="df_eu_out" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#1976D2;dashed=1;exitX=0;exitY=0.7;" edge="1" parent="1" source="p0" target="eu">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="514" />
+              <mxPoint x="200" y="600" />
+              <mxPoint x="50" y="600" />
+              <mxPoint x="50" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_eu_out_label" value="投稿データ&#xa;マップデータ&#xa;通知" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df_eu_out">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="-30" y="40" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ============================== -->
+        <!-- データフロー（矢印）- 事業者 -->
+        <!-- ============================== -->
+        <mxCell id="df_eb_in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#388E3C;entryX=0.5;entryY=0;" edge="1" parent="1" source="eb" target="p0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df_eb_in_label" value="一般機能全て&#xa;マイページ更新&#xa;店舗情報管理" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="df_eb_in">
+          <mxGeometry x="-0.3" relative="1" as="geometry">
+            <mxPoint x="50" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="df_eb_out" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#388E3C;dashed=1;exitX=0.3;exitY=0;" edge="1" parent="1" source="p0" target="eb">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="360" y="400" />
+              <mxPoint x="360" y="280" />
+              <mxPoint x="365" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_eb_out_label" value="投稿データ&#xa;マイページ情報&#xa;申請状態" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="df_eb_out">
+          <mxGeometry x="0.3" relative="1" as="geometry">
+            <mxPoint x="-50" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ============================== -->
+        <!-- データフロー（矢印）- 管理者 -->
+        <!-- ============================== -->
+        <mxCell id="df_ea_in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#F57C00;entryX=1;entryY=0.3;" edge="1" parent="1" source="ea" target="p0">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="320" />
+              <mxPoint x="550" y="320" />
+              <mxPoint x="550" y="466" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_ea_in_label" value="管理操作&#xa;承認/却下&#xa;ユーザー削除&#xa;通報処理" style="edgeLabel;html=1;align=right;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="df_ea_in">
+          <mxGeometry x="-0.3" relative="1" as="geometry">
+            <mxPoint x="30" y="20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="df_ea_out" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#F57C00;dashed=1;exitX=1;exitY=0.7;" edge="1" parent="1" source="p0" target="ea">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="514" />
+              <mxPoint x="600" y="600" />
+              <mxPoint x="750" y="600" />
+              <mxPoint x="750" y="145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_ea_out_label" value="ダッシュボード&#xa;通報一覧&#xa;申請一覧&#xa;ユーザー一覧" style="edgeLabel;html=1;align=right;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="df_ea_out">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="30" y="40" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ============================== -->
+        <!-- データフロー（矢印）- Google OAuth -->
+        <!-- ============================== -->
+        <mxCell id="df_google" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#C2185B;" edge="1" parent="1" source="p0" target="eg">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="490" />
+              <mxPoint x="700" y="490" />
+              <mxPoint x="700" y="110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_google_label" value="認証要求/検証&#xa;ユーザー情報取得" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;labelBackgroundColor=#FCE4EC;" vertex="1" connectable="0" parent="df_google">
+          <mxGeometry x="0.3" relative="1" as="geometry">
+            <mxPoint y="-30" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- STRIDE脅威分析セクション -->
+        <!-- ============================================ -->
+        <mxCell id="stride_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="30" width="450" height="750" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="stride_header" value="🔒 STRIDE脅威分析" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="40" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- 一般ユーザー向け脅威 -->
+        <mxCell id="user_header" value="👤 一般ユーザー向け脅威" style="text;html=1;strokeColor=none;fillColor=#E3F2FD;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=12;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="80" width="200" height="25" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="user_threats" value="[S] 他ユーザーへのなりすまし投稿&#xa;[T] 投稿内容・位置情報の改ざん&#xa;[R] 投稿/リアクションの否認&#xa;[D] スパム投稿によるDoS&#xa;[E] 事業者権限への不正昇格" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=5;spacingLeft=5;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="110" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- 事業者向け脅威 -->
+        <mxCell id="biz_header" value="🏢 事業者向け脅威" style="text;html=1;strokeColor=none;fillColor=#E8F5E9;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=12;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="80" width="200" height="25" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="biz_threats" value="[S] 競合他社によるなりすまし&#xa;[T] 店舗情報・価格の改ざん&#xa;[I] 売上統計・顧客データ漏洩&#xa;[R] プロモーション投稿の否認&#xa;[E] 管理者権限への不正昇格" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=5;spacingLeft=5;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="110" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- 管理者向け脅威 -->
+        <mxCell id="admin_header" value="👔 管理者向け脅威" style="text;html=1;strokeColor=none;fillColor=#FFF3E0;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=12;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="230" width="200" height="25" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="admin_threats" value="[S] 管理者アカウント乗っ取り&#xa;[T] 承認状態・ユーザーデータ改ざん&#xa;[R] 管理操作の否認&#xa;[I] 全ユーザー個人情報漏洩&#xa;[D] ユーザー一括削除&#xa;[E] 内部犯行による権限濫用" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=5;spacingLeft=5;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="260" width="200" height="110" as="geometry" />
+        </mxCell>
+        
+        <!-- 境界横断脅威 -->
+        <mxCell id="boundary_header" value="🚧 信頼境界横断の脅威" style="text;html=1;strokeColor=none;fillColor=#FFEBEE;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=12;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="230" width="200" height="25" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="boundary_threats" value="TB1→TB3: インターネット→バックエンド&#xa;  ・不正リクエスト送信&#xa;  ・認証バイパス試行&#xa;  ・APIレート攻撃&#xa;&#xa;TB3↔TB5: バックエンド↔Google&#xa;  ・OAuthトークン漏洩&#xa;  ・リプレイ攻撃" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=5;spacingLeft=5;fillColor=#FFEBEE;strokeColor=#F44336;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="260" width="200" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- 緊急警告 -->
+        <mxCell id="critical_warning" value="⚠️ 緊急: 現在の重大な脆弱性&#xa;&#xa;認証ミドルウェア (auth.go) が&#xa;スタブ実装&#xa;&#xa;→ 全ユーザーがadmin権限で&#xa;   アクセス可能&#xa;&#xa;→ 本番環境前に&#xa;   Google OAuth実装必須" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;size=15;fillColor=#FFCDD2;strokeColor=#D32F2F;strokeWidth=3;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="400" width="200" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- 対策サマリー -->
+        <mxCell id="mitigation_header" value="🛡️ 推奨対策" style="text;html=1;strokeColor=none;fillColor=#E8F5E9;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontStyle=1;fontSize=12;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="420" width="200" height="25" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="mitigations" value="1. Google OAuth認証の実装&#xa;2. ロールベースアクセス制御強化&#xa;3. 入力バリデーション&#xa;4. レートリミット実装&#xa;5. 監査ログの導入&#xa;6. 個人情報の暗号化&#xa;7. MFA（多要素認証）の導入&#xa;8. セッション管理の強化" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=5;spacingLeft=5;fillColor=#E8F5E9;strokeColor=#4CAF50;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="450" width="200" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 凡例 -->
+        <!-- ============================================ -->
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="650" width="700" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend_title" value="凡例" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="60" y="658" width="50" height="25" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l1" value="外部&#xa;エンティティ" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0E0E0;strokeColor=#616161;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="700" width="80" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l2" value="プロセス" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#FBC02D;strokeWidth=2;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="160" y="700" width="80" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l3" value="信頼境界&#xa;(Trust Boundary)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#F44336;strokeWidth=2;dashed=1;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="260" y="700" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l4_user" value="一般&#xa;ユーザー" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="380" y="700" width="60" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l4_biz" value="事業者" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="450" y="700" width="60" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l4_admin" value="管理者" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="520" y="700" width="60" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l5" value="STRIDE脅威" style="shape=note;whiteSpace=wrap;html=1;size=10;fillColor=#FFEBEE;strokeColor=#F44336;strokeWidth=2;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="600" y="700" width="70" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l6" value="データフロー →" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="680" y="710" width="90" height="30" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-01-19T01:20:00.000Z" agent="kojan-map" version="21.0.0" type="device">
+  <diagram name="Level 1 DFD with STRIDE" id="dfd-stride-spaced">
+    <mxGraphModel dx="4000" dy="3000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="5000" pageHeight="4000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ============================================ -->
+        <!-- TB1: インターネット (非信頼) -->
+        <!-- ============================================ -->
+        <mxCell id="tb1" value="TB1: インターネット (非信頼)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#F44336;strokeWidth=4;dashed=1;dashPattern=10 10;verticalAlign=top;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="2200" height="350" as="geometry" />
+        </mxCell>
+        
+        <!-- 外部エンティティ - 大きく間隔を取る -->
+        <mxCell id="eu" value="一般ユーザー&#xa;(User)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=3;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="100" y="150" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="eb" value="事業者&#xa;(Business)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=3;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="600" y="150" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ea" value="管理者&#xa;(Admin)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=3;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="150" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="eg" value="Google OAuth&#xa;Provider" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;strokeWidth=3;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="150" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- TB3: バックエンド (信頼) -->
+        <!-- ============================================ -->
+        <mxCell id="tb3" value="TB3: バックエンド (信頼)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#4CAF50;strokeWidth=4;dashed=1;dashPattern=10 10;verticalAlign=top;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="480" width="2200" height="1200" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 一般ユーザー向けプロセス (左側上段) -->
+        <!-- ============================================ -->
+        <mxCell id="p2" value="2.0 投稿管理" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="100" y="600" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="T2: S,T,R,D" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="560" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p3" value="3.0 リアクション" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="100" y="800" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" value="T3: S,T,D" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="760" width="90" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p4" value="4.0 通報処理" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1000" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t4" value="T4: S,T,R,D" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="960" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 事業者向けプロセス (中央) -->
+        <!-- ============================================ -->
+        <mxCell id="p5" value="5.0 事業者&#xa;マイページ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="600" y="600" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" value="T5: S,T,I,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="560" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p6" value="6.0 事業者申請" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="600" y="800" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t6" value="T6: S,T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="760" width="90" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 管理者向けプロセス (右側) -->
+        <!-- ============================================ -->
+        <mxCell id="p7" value="7.0 ユーザー管理" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="600" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t7" value="T7: S,T,I,D,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="560" width="110" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p8" value="8.0 通報管理" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="800" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t8" value="T8: S,T,I,D" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="760" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p9" value="9.0 申請承認" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1000" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t9" value="T9: S,T,R,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="960" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p10" value="10.0 ダッシュボード" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1200" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t10" value="T10: I,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="1160" width="80" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="p11" value="11.0 問い合わせ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1400" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t11" value="T11: T,I,R" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="1360" width="90" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 認証プロセス (右端) -->
+        <!-- ============================================ -->
+        <mxCell id="p1" value="1.0 認証処理" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="600" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" value="T1: S,T,R,I,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=20;position=0.5;base=20;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1800" y="560" width="110" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- TB4: データベース (高信頼) -->
+        <!-- ============================================ -->
+        <mxCell id="tb4" value="TB4: データベース (高信頼)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#2196F3;strokeWidth=4;dashed=1;dashPattern=10 10;verticalAlign=top;fontStyle=1;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1780" width="2200" height="280" as="geometry" />
+        </mxCell>
+        
+        <!-- データストア - 広く配置 -->
+        <mxCell id="d1" value="D1 Users" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1900" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="td1" value="D1: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1850" width="70" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d2" value="D2 Posts" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1900" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="td2" value="D2: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1850" width="70" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d3" value="D3 Reports" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1900" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="td3" value="D3: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1850" width="70" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d4" value="D4 BizRequests" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="1900" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="td4" value="D4: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="1850" width="70" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d5" value="D5 BizMembers" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1900" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="td5" value="D5: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1850" width="70" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="d6" value="D6 Asks" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="1900" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="td6" value="D6: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="1850" width="70" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- データフロー: EU → プロセス -->
+        <!-- ============================================ -->
+        
+        <!-- EU → P2 (投稿) -->
+        <mxCell id="df1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#1976D2;" edge="1" parent="1" source="eu" target="p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df1_l" value="投稿データ" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df1">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df1_t" value="DF1: S,T,R,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=12;position=0.3;base=12;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="420" width="90" height="35" as="geometry" />
+        </mxCell>
+        
+        <!-- P2 → EU (投稿一覧) -->
+        <mxCell id="df2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#1976D2;dashed=1;" edge="1" parent="1" source="p2" target="eu">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="40" y="650" /><mxPoint x="40" y="210" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df2_l" value="投稿一覧" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df2">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df2_t" value="DF2: I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry y="420" width="50" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- EU → P3 (リアクション) -->
+        <mxCell id="df3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#1976D2;" edge="1" parent="1" source="eu" target="p3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="200" y="400" /><mxPoint x="350" y="400" /><mxPoint x="350" y="850" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df3_l" value="リアクション種別" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df3">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df3_t" value="DF3: S,T,D" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="580" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P3 → EU -->
+        <mxCell id="df4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#1976D2;dashed=1;" edge="1" parent="1" source="p3" target="eu">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="380" y="850" /><mxPoint x="380" y="420" /><mxPoint x="200" y="420" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df4_l" value="リアクション数" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df4">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- EU → P4 (通報) -->
+        <mxCell id="df5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#1976D2;" edge="1" parent="1" source="eu" target="p4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="200" y="430" /><mxPoint x="410" y="430" /><mxPoint x="410" y="1050" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df5_l" value="通報データ" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df5">
+          <mxGeometry x="0.6" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df5_t" value="DF5: S,T,R" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="720" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P4 → EU -->
+        <mxCell id="df6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#1976D2;dashed=1;" edge="1" parent="1" source="p4" target="eu">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="440" y="1050" /><mxPoint x="440" y="450" /><mxPoint x="200" y="450" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df6_l" value="受付完了" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="df6">
+          <mxGeometry x="0.6" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- データフロー: EB → プロセス -->
+        <!-- ============================================ -->
+        
+        <!-- EB → P5 -->
+        <mxCell id="df7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#388E3C;" edge="1" parent="1" source="eb" target="p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df7_l" value="店舗情報更新" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="df7">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df7_t" value="DF7: S,T,I,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="420" width="90" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P5 → EB -->
+        <mxCell id="df8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#388E3C;dashed=1;" edge="1" parent="1" source="p5" target="eb">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="540" y="650" /><mxPoint x="540" y="210" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df8_l" value="マイページ表示" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="df8">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df8_t" value="DF8: I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="420" width="50" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- EU → P6 (事業者申請) -->
+        <mxCell id="df_eu_p6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#388E3C;" edge="1" parent="1" source="eu" target="p6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="300" y="210" /><mxPoint x="480" y="210" /><mxPoint x="480" y="850" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df_eu_p6_l" value="申請情報" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="df_eu_p6">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df_eu_p6_t" value="DF6A: S,T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="490" y="480" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- データフロー: EA → プロセス (管理者) -->
+        <!-- ============================================ -->
+        
+        <!-- EA → P7 -->
+        <mxCell id="df9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#F57C00;" edge="1" parent="1" source="ea" target="p7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df9_l" value="削除指示" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="df9">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df9_t" value="DF9: S,T,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="420" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P7 → EA -->
+        <mxCell id="df10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#F57C00;dashed=1;" edge="1" parent="1" source="p7" target="ea">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1040" y="650" /><mxPoint x="1040" y="210" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df10_l" value="ユーザー一覧" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="df10">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df10_t" value="DF10: I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="420" width="55" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- EA → P8 -->
+        <mxCell id="df11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#F57C00;" edge="1" parent="1" source="ea" target="p8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1200" y="400" /><mxPoint x="1400" y="400" /><mxPoint x="1400" y="850" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df11_l" value="処理指示" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="df11">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df11_t" value="DF11: S,T,E" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1410" y="580" width="85" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P8 → EA -->
+        <mxCell id="df12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#F57C00;dashed=1;" edge="1" parent="1" source="p8" target="ea">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1430" y="850" /><mxPoint x="1430" y="420" /><mxPoint x="1200" y="420" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df12_l" value="通報一覧" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="df12">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df12_t" value="DF12: I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="620" width="55" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- データフロー: 認証 ↔ Google OAuth -->
+        <!-- ============================================ -->
+        
+        <!-- P1 → EG -->
+        <mxCell id="df13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#C2185B;" edge="1" parent="1" source="p1" target="eg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df13_l" value="トークン検証" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#FCE4EC;" vertex="1" connectable="0" parent="df13">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df13_t" value="DF13: S,T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1620" y="420" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- EG → P1 -->
+        <mxCell id="df14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#C2185B;dashed=1;" edge="1" parent="1" source="eg" target="p1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1860" y="210" /><mxPoint x="1860" y="650" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df14_l" value="ユーザー情報" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#FCE4EC;" vertex="1" connectable="0" parent="df14">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df14_t" value="DF14: S,T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1870" y="420" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- データフロー: プロセス → データストア -->
+        <!-- ============================================ -->
+        
+        <!-- P2 → D2 -->
+        <mxCell id="df15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;" edge="1" parent="1" source="p2" target="d2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="190" y="1700" /><mxPoint x="490" y="1700" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df15_l" value="CRUD" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df15">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df15_t" value="DF15: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1670" width="70" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- D2 → P2 -->
+        <mxCell id="df16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;dashed=1;" edge="1" parent="1" source="d2" target="p2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="490" y="1730" /><mxPoint x="190" y="1730" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df16_l" value="投稿データ" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df16">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- P4 → D3 -->
+        <mxCell id="df17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;" edge="1" parent="1" source="p4" target="d3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="190" y="1720" /><mxPoint x="790" y="1720" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df17_l" value="通報登録" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df17">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df17_t" value="DF17: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="1690" width="70" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P5 → D5 -->
+        <mxCell id="df18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;" edge="1" parent="1" source="p5" target="d5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="700" y="1740" /><mxPoint x="1420" y="1740" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df18_l" value="情報更新" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df18">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df18_t" value="DF18: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="1710" width="70" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- D5 → P5 -->
+        <mxCell id="df19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;dashed=1;" edge="1" parent="1" source="d5" target="p5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1420" y="1760" /><mxPoint x="700" y="1760" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df19_l" value="店舗情報" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df19">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- P6 → D4 -->
+        <mxCell id="df20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;" edge="1" parent="1" source="p6" target="d4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="700" y="1700" /><mxPoint x="1100" y="1700" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df20_l" value="申請登録" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df20">
+          <mxGeometry x="0.3" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df20_t" value="DF20: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="1670" width="70" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P7 → D1 -->
+        <mxCell id="df22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;" edge="1" parent="1" source="p7" target="d1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1200" y="1680" /><mxPoint x="190" y="1680" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df22_l" value="削除更新" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df22">
+          <mxGeometry x="0.5" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df22_t" value="DF22: T,I,D" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="1650" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- P1 → D1 -->
+        <mxCell id="df24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;" edge="1" parent="1" source="p1" target="d1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1700" y="1660" /><mxPoint x="190" y="1660" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df24_l" value="登録/更新" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df24">
+          <mxGeometry x="0.6" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="df24_t" value="DF24: T,I" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=10;position=0.3;base=10;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="1630" width="70" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- D1 → P1 -->
+        <mxCell id="df25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;strokeColor=#7B1FA2;dashed=1;" edge="1" parent="1" source="d1" target="p1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="190" y="2010" /><mxPoint x="1700" y="2010" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="df25_l" value="ユーザー情報" style="edgeLabel;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;labelBackgroundColor=#F3E5F5;" vertex="1" connectable="0" parent="df25">
+          <mxGeometry x="0.6" relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- ============================================ -->
+        <!-- 凡例 -->
+        <!-- ============================================ -->
+        <mxCell id="legend" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1950" y="600" width="280" height="500" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend_title" value="凡例" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="2040" y="620" width="100" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l1" value="外部エンティティ" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0E0E0;strokeColor=#616161;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="680" width="140" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l2" value="プロセス" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#FBC02D;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="740" width="120" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l3" value="データストア" style="shape=partialRectangle;whiteSpace=wrap;html=1;left=0;right=0;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="810" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l4" value="信頼境界" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#F44336;strokeWidth=2;dashed=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="870" width="120" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="l5" value="脅威ID" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;size=15;position=0.5;base=15;fillColor=#FFCDD2;strokeColor=#D32F2F;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="930" width="100" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="stride_legend" value="STRIDE:&#xa;S=なりすまし&#xa;T=改ざん&#xa;R=否認&#xa;I=情報漏洩&#xa;D=サービス拒否&#xa;E=権限昇格" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=13;spacingLeft=5;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1980" y="990" width="160" height="130" as="geometry" />
+        </mxCell>
+        
+        <!-- 緊急警告 -->
+        <mxCell id="warning" value="緊急: auth.goがスタブ実装!&#xa;&#xa;全ユーザー=admin状態&#xa;本番前に要修正" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;size=25;fillColor=#FFCDD2;strokeColor=#D32F2F;strokeWidth=3;fontSize=14;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1950" y="1150" width="280" height="140" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

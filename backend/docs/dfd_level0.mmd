@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph External Entities
+        EU["一般ユーザー<br/>(User)"]
+        EB["事業者<br/>(Business)"]
+        EA["管理者<br/>(Admin)"]
+        EG["Google OAuth<br/>Provider"]
+    end
+    
+    KM(["0<br/>こじゃんとやまっぷ<br/>システム"])
+    
+    EU -->|"投稿作成/閲覧要求<br/>リアクション<br/>通報"| KM
+    KM -->|"投稿データ<br/>マップデータ<br/>通知"| EU
+    
+    EB -->|"投稿作成/閲覧要求<br/>事業者申請<br/>マイページ更新"| KM
+    KM -->|"投稿データ<br/>マップデータ<br/>申請状態"| EB
+    
+    EA -->|"管理操作<br/>承認/却下<br/>ユーザー管理"| KM
+    KM -->|"ダッシュボード<br/>通報一覧<br/>申請一覧"| EA
+    
+    EG <-->|"認証トークン<br/>ユーザー情報"| KM

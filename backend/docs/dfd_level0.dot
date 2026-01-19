@@ -1,0 +1,56 @@
+digraph DFD_Level0 {
+    // グラフ設定
+    rankdir=TB;
+    splines=ortho;
+    nodesep=1.0;
+    ranksep=1.2;
+    fontname="Helvetica";
+    bgcolor="white";
+    
+    // ノードのデフォルトスタイル
+    node [fontname="Helvetica", fontsize=12];
+    edge [fontname="Helvetica", fontsize=10];
+    
+    // 外部エンティティ（長方形）
+    EU [label="一般ユーザー\n(User)", shape=box, style=filled, fillcolor="#E3F2FD", color="#1976D2", penwidth=2];
+    EB [label="事業者\n(Business)", shape=box, style=filled, fillcolor="#E8F5E9", color="#388E3C", penwidth=2];
+    EA [label="管理者\n(Admin)", shape=box, style=filled, fillcolor="#FFF3E0", color="#F57C00", penwidth=2];
+    EG [label="Google OAuth\nProvider", shape=box, style=filled, fillcolor="#FCE4EC", color="#C2185B", penwidth=2];
+    
+    // プロセス（円/楕円）
+    P0 [label="0\n\nこじゃんとやまっぷ\nシステム", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2, width=2.5, height=1.5];
+    
+    // データフロー（矢印）
+    // 一般ユーザー
+    EU -> P0 [label="投稿作成要求\n投稿閲覧要求\nリアクション\n通報", labeldistance=2];
+    P0 -> EU [label="投稿データ\nマップデータ\n通知"];
+    
+    // 事業者
+    EB -> P0 [label="投稿作成要求\n事業者申請\nマイページ更新"];
+    P0 -> EB [label="投稿データ\nマップデータ\n申請状態"];
+    
+    // 管理者
+    EA -> P0 [label="管理操作\n承認/却下\nユーザー管理"];
+    P0 -> EA [label="ダッシュボード\n通報一覧\n申請一覧"];
+    
+    // Google OAuth
+    EG -> P0 [label="ユーザー情報\nアクセストークン"];
+    P0 -> EG [label="認証要求\nトークン検証"];
+    
+    // 凡例
+    subgraph cluster_legend {
+        label="凡例";
+        style=dashed;
+        color=gray;
+        fontsize=10;
+        
+        L1 [label="外部エンティティ", shape=box, style=filled, fillcolor="#E0E0E0"];
+        L2 [label="プロセス", shape=ellipse, style=filled, fillcolor="#FFFDE7"];
+        L3 [label="データフロー", shape=plaintext];
+        L4 [label="→", shape=plaintext];
+        
+        L1 -> L2 [style=invis];
+        L2 -> L3 [style=invis];
+        L3 -> L4 [style=invis];
+    }
+}

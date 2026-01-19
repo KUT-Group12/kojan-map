@@ -1,0 +1,153 @@
+digraph DFD_Level1 {
+    // グラフ設定
+    rankdir=TB;
+    splines=polyline;
+    nodesep=0.8;
+    ranksep=1.0;
+    fontname="Helvetica";
+    bgcolor="white";
+    compound=true;
+    
+    // ノードのデフォルトスタイル
+    node [fontname="Helvetica", fontsize=11];
+    edge [fontname="Helvetica", fontsize=9];
+    
+    // ========================================
+    // 外部エンティティ（長方形）
+    // ========================================
+    EU [label="一般ユーザー\n(User)", shape=box, style=filled, fillcolor="#E3F2FD", color="#1976D2", penwidth=2];
+    EB [label="事業者\n(Business)", shape=box, style=filled, fillcolor="#E8F5E9", color="#388E3C", penwidth=2];
+    EA [label="管理者\n(Admin)", shape=box, style=filled, fillcolor="#FFF3E0", color="#F57C00", penwidth=2];
+    EG [label="Google OAuth\nProvider", shape=box, style=filled, fillcolor="#FCE4EC", color="#C2185B", penwidth=2];
+    
+    // ========================================
+    // プロセス（円/楕円）
+    // ========================================
+    P1 [label="1.0\n\n認証処理", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    P2 [label="2.0\n\n投稿管理", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    P3 [label="3.0\n\nユーザー管理", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    P4 [label="4.0\n\n通報処理", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    P5 [label="5.0\n\n事業者申請処理", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    P6 [label="6.0\n\n問い合わせ処理", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    P7 [label="7.0\n\nダッシュボード", shape=ellipse, style=filled, fillcolor="#FFFDE7", color="#FBC02D", penwidth=2];
+    
+    // ========================================
+    // データストア（平行線 - recordで表現）
+    // ========================================
+    D1 [label="D1 | Users", shape=record, style=filled, fillcolor="#F3E5F5", color="#7B1FA2", penwidth=2];
+    D2 [label="D2 | Posts", shape=record, style=filled, fillcolor="#F3E5F5", color="#7B1FA2", penwidth=2];
+    D3 [label="D3 | Reports", shape=record, style=filled, fillcolor="#F3E5F5", color="#7B1FA2", penwidth=2];
+    D4 [label="D4 | BusinessRequests", shape=record, style=filled, fillcolor="#F3E5F5", color="#7B1FA2", penwidth=2];
+    D5 [label="D5 | BusinessMembers", shape=record, style=filled, fillcolor="#F3E5F5", color="#7B1FA2", penwidth=2];
+    D6 [label="D6 | Asks", shape=record, style=filled, fillcolor="#F3E5F5", color="#7B1FA2", penwidth=2];
+    
+    // ========================================
+    // 信頼境界（破線のクラスター）
+    // ========================================
+    subgraph cluster_internet {
+        label="Trust Boundary 1: インターネット";
+        style=dashed;
+        color="#F44336";
+        penwidth=2;
+        EU; EB; EA;
+    }
+    
+    subgraph cluster_external {
+        label="Trust Boundary 5: 外部サービス";
+        style=dashed;
+        color="#9C27B0";
+        penwidth=2;
+        EG;
+    }
+    
+    subgraph cluster_backend {
+        label="Trust Boundary 3: バックエンド";
+        style=dashed;
+        color="#4CAF50";
+        penwidth=2;
+        P1; P2; P3; P4; P5; P6; P7;
+    }
+    
+    subgraph cluster_database {
+        label="Trust Boundary 4: データベース";
+        style=dashed;
+        color="#2196F3";
+        penwidth=2;
+        D1; D2; D3; D4; D5; D6;
+    }
+    
+    // ========================================
+    // データフロー（矢印）
+    // ========================================
+    
+    // 外部エンティティ → プロセス
+    EU -> P1 [label="認証要求"];
+    EU -> P2 [label="投稿要求\nリアクション"];
+    EU -> P4 [label="通報"];
+    
+    EB -> P1 [label="認証要求"];
+    EB -> P2 [label="投稿要求"];
+    EB -> P5 [label="事業者申請"];
+    
+    EA -> P1 [label="認証要求"];
+    EA -> P3 [label="ユーザー管理"];
+    EA -> P4 [label="通報処理"];
+    EA -> P5 [label="申請承認/却下"];
+    EA -> P6 [label="問い合わせ対応"];
+    EA -> P7 [label="統計要求"];
+    
+    // プロセス → 外部エンティティ
+    P2 -> EU [label="投稿データ"];
+    P2 -> EB [label="投稿データ"];
+    P5 -> EB [label="申請状態"];
+    P7 -> EA [label="統計データ"];
+    P4 -> EA [label="通報一覧"];
+    P5 -> EA [label="申請一覧"];
+    P6 -> EA [label="問い合わせ一覧"];
+    
+    // プロセス ↔ Google OAuth
+    P1 -> EG [label="トークン検証"];
+    EG -> P1 [label="ユーザー情報"];
+    
+    // プロセス ↔ データストア
+    P1 -> D1 [label="ユーザー照会/作成"];
+    D1 -> P1 [label="ユーザー情報"];
+    
+    P2 -> D2 [label="投稿CRUD"];
+    D2 -> P2 [label="投稿データ"];
+    
+    P3 -> D1 [label="ユーザーCRUD"];
+    D1 -> P3 [label="ユーザー一覧"];
+    
+    P4 -> D3 [label="通報処理"];
+    D3 -> P4 [label="通報データ"];
+    
+    P5 -> D4 [label="申請処理"];
+    D4 -> P5 [label="申請データ"];
+    P5 -> D5 [label="事業者登録"];
+    
+    P6 -> D6 [label="問い合わせ処理"];
+    D6 -> P6 [label="問い合わせデータ"];
+    
+    P7 -> D1 [label="統計照会"];
+    P7 -> D2 [label="統計照会"];
+    P7 -> D3 [label="統計照会"];
+    P7 -> D5 [label="統計照会"];
+    
+    // ========================================
+    // 凡例
+    // ========================================
+    subgraph cluster_legend {
+        label="凡例";
+        style=rounded;
+        color=gray;
+        fontsize=10;
+        
+        L1 [label="外部エンティティ", shape=box, style=filled, fillcolor="#E0E0E0"];
+        L2 [label="プロセス", shape=ellipse, style=filled, fillcolor="#FFFDE7"];
+        L3 [label="D | データストア", shape=record, style=filled, fillcolor="#F3E5F5"];
+        
+        L1 -> L2 [style=invis];
+        L2 -> L3 [style=invis];
+    }
+}
