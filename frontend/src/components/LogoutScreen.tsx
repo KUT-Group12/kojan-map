@@ -27,7 +27,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
             <CardDescription>
               {/* テストが期待する文言に修正 */}
               {user.name && (
-                <span className="block font-bold text-gray-900 mb-1">{user.name} 様</span>
+                <span className="block font-bold text-gray-900 mb-1">{user.name}様</span>
               )}
               ログアウトしてもよろしいですか？
             </CardDescription>
@@ -39,7 +39,11 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-500">会員区分</span>
                 <span className="font-medium text-blue-800">
-                  {user.role === 'business' ? 'ビジネス会員' : '一般会員'}
+                  {user.role === 'business'
+                    ? 'ビジネス会員'
+                    : user.role === 'admin'
+                      ? '管理者'
+                      : '一般会員'}
                 </span>
               </div>
               <div className="flex justify-between text-sm">

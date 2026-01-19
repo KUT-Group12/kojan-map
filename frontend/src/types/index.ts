@@ -1,37 +1,6 @@
 export type UserRole = 'general' | 'business' | 'admin';
 
 export type PinGenre = 'food' | 'event' | 'scene' | 'store' | 'emergency' | 'other';
-/*
-export interface Pin {
-  id: string;
-  userId: string;
-  userName: string;
-  userRole: UserRole;
-  businessName?: string;
-  businessIcon?: string;
-  latitude: number;
-  longitude: number;
-  title: string;
-  description: string;
-  genre: PinGenre;
-  images: string[];
-  reactions: number;
-  createdAt: Date;
-  viewCount?: number;
-  isHot?: boolean; // 投稿数がしきい値を超えたかどうか
-} */
-
-// 事業者申請の型定義 (管理者)
-export interface BusinessApplication {
-  applicationId: number; // INT
-  googleId: string; // VARCHAR(50)
-  fromName: string; // 氏名
-  gmail: string; // メール
-  businessName: string; // 事業者名
-  businessPhone: string; // 電話番号
-  businessAddress: string; // 住所
-  applicationDate: string; // DATETIME
-}
 
 // 会員情報
 export interface User {
@@ -89,7 +58,7 @@ export interface Post {
   postDate: string; // 投稿日時
   title: string; // タイトル
   text: string; // 内容
-  postImage?: string; // 投稿画像
+  postImage?: string[]; // 投稿画像
   numReaction: number; // リアクション数
   numView: number; // 閲覧数
   genreId: number; // ジャンルID

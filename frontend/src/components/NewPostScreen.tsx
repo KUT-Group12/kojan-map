@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
 import { User, PinGenre, Business } from '../types';
-import { genreLabels, GENRE_MAP } from '../lib/mockData';
+import { genreLabels } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -19,7 +19,7 @@ interface CreatePinModalProps {
     latitude: number;
     longitude: number;
     title: string;
-    description: string;
+    text: string;
     genre: PinGenre;
     images: string[];
   }) => void;
@@ -36,7 +36,7 @@ export function NewPostScreen({
   initialLongitude,
 }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [text, setText] = useState('');
   const [genre, setGenre] = useState<PinGenre>('other');
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
@@ -96,7 +96,7 @@ export function NewPostScreen({
       return;
     }
 
-    if (!description.trim()) {
+    if (!text.trim()) {
       toast.error('説明を入力してください');
       return;
     }
@@ -109,13 +109,13 @@ export function NewPostScreen({
       return;
     }
 
-    /* バックエンドなしでも動く
+    /* バックエンドなしでも動く */
     try {
       await onCreate({
         latitude: lat,
         longitude: lng,
         title,
-        description,
+        text,
         genre,
         images,
       });
@@ -124,9 +124,10 @@ export function NewPostScreen({
     } catch (error) {
       console.error(error);
       toast.error('投稿に失敗しました');
-    }*/
+    }
+  };
 
-    /* バックエンドあり */
+  /* バックエンドあり 
     try {
       // 1. バックエンドと繋げる
       const response = await fetch('http://localhost:8080/api/posts', {
@@ -165,7 +166,7 @@ export function NewPostScreen({
       console.error('投稿エラー:', error);
       toast.error('投稿に失敗しました。サーバーが起動しているか確認してください。');
     }
-  };
+  };*/
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -198,8 +199,8 @@ export function NewPostScreen({
             <Label htmlFor="description">説明 *</Label>
             <Textarea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
               placeholder="詳しい説明を入力してください"
               rows={4}
               required

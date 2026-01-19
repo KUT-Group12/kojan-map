@@ -4,7 +4,8 @@ import { LoginScreen } from './components/LoginScreen';
 import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
-
+import { UserRole, User } from './types';
+/*
 type UserRole = 'general' | 'business' | 'admin';
 
 interface User {
@@ -15,7 +16,7 @@ interface User {
   businessName?: string;
   businessIcon?: string;
   createdAt: Date;
-}
+}*/
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,16 +33,16 @@ export default function App() {
   const handleLogin = (role: UserRole, googleId: string) => {
     // バックエンドと繋がるまでは、モックデータが必要
     const userData: User = {
-      id: googleId, // Googleから取得したIDを使用
-      email: `${googleId}@example.com`, // 本来はGoogleから取得するが、今は仮のメール
-      name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '一般ユーザー',
+      googleId: googleId, // Googleから取得したIDを使用
+      gmail: `${googleId}@example.com`, // 本来はGoogleから取得するが、今は仮のメール
+      // name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '一般ユーザー',
       role: role,
-      businessName: role === 'business' ? '山田商店' : undefined,
-      businessIcon:
-        role === 'business'
-          ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?w=100'
-          : undefined,
-      createdAt: new Date(),
+      // businessName: role === 'business' ? '山田商店' : undefined,
+      // businessIcon:
+      // role === 'business'
+      // ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?w=100'
+      // : undefined,
+      registrationDate: new Date().toLocaleDateString(),
     };
 
     // userDataをセットすることで、!user の条件が外れ、画面が切り替わります

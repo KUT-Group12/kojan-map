@@ -61,7 +61,7 @@ export function Header({ user, onNavigate, currentView, onContact }: HeaderProps
           <div className="border-l pl-2 ml-2">
             {/* 一般会員はユーザー名を表示しない */}
             {user.role !== 'general' && (
-              <span className="text-sm text-gray-700 mr-3">{user.name}</span>
+              <span className="text-sm text-gray-700 mr-3">{user.fromName}</span>
             )}
             <Button variant="outline" onClick={() => onNavigate('logout')}>
               <LogOut className="w-4 h-4 mr-2" />

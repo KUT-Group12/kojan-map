@@ -2,7 +2,6 @@
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { CheckCircle, XCircle } from 'lucide-react';
-// import { BusinessApplication } from '../types';
 import { BusinessRequest } from '../types';
 
 export interface AdminDisplayBusinessRequest extends BusinessRequest {

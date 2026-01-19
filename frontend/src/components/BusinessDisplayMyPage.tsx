@@ -13,7 +13,7 @@ interface BusinessDisplayMyPageProps {
   user: User;
   pins: Pin[];
   onPinClick: (pin: Pin) => void;
-  onDeletePin: (pinId: string) => void;
+  onDeletePin: (pinId: number) => void;
   onUpdateUser: (user: User) => void;
   onNavigateToDeleteAccount: () => void;
 }

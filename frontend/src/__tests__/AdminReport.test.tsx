@@ -51,7 +51,7 @@ describe('AdminReport コンポーネント', () => {
     expect(screen.getByText('ユーザーC')).toBeInTheDocument();
 
     // ソートの確認: pending の中で最新の 'ユーザーC' が最初に来ているか
-    const reportCards = screen.getAllByText(/通報者:/).map(el => el.parentElement?.textContent);
+    const reportCards = screen.getAllByText(/通報者:/).map((el) => el.parentElement?.textContent);
     expect(reportCards[0]).toContain('ユーザーC'); // pending 且つ 日付が新しい
     expect(reportCards[1]).toContain('ユーザーA'); // pending
     expect(reportCards[2]).toContain('ユーザーB'); // resolved なので最後

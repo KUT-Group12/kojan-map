@@ -98,9 +98,11 @@ describe('AdminContactManagement コンポーネント', () => {
     // ID:2 の「株式会社テスト」には下書きがある想定（respondedだが実装上statusチェックに注意）
     // ※ コンポーネントの実装では inq.status === 'open' の時だけ返信ボタンが出るため、
     // 田中 太郎（open）の方で検証します。
-    const tanakaCard = screen.getByText('田中 太郎').closest('.card') || screen.getByText('田中 太郎').parentElement?.parentElement?.parentElement!;
+    const tanakaCard =
+      screen.getByText('田中 太郎').closest('.card') ||
+      screen.getByText('田中 太郎').parentElement?.parentElement?.parentElement!;
     const replyButton = within(tanakaCard as HTMLElement).getByRole('button', { name: '返信' });
-    
+
     fireEvent.click(replyButton);
 
     expect(screen.getByText('返信: 田中 太郎 様')).toBeInTheDocument();

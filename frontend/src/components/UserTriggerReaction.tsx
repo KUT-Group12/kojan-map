@@ -2,11 +2,11 @@ import { Heart } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface UserTriggerReactionProps {
-  pinId: string;
+  pinId: number;
   isReacted: boolean;
   userRole: string;
   isDisabled: boolean;
-  onReaction: (pinId: string) => void;
+  onReaction: (pinId: number) => void;
 }
 
 export function UserTriggerReaction({

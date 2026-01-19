@@ -3,8 +3,8 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 
 interface SelectPostDeletionProps {
-  pinId: string;
-  onDelete: (pinId: string) => void;
+  pinId: number;
+  onDelete: (pinId: number) => void;
   onClose: () => void;
 }
 

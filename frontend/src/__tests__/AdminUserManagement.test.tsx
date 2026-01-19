@@ -53,8 +53,10 @@ describe('AdminUserManagement コンポーネント', () => {
     fireEvent.click(deleteButtons[0]);
 
     // 1. confirm が正しいメッセージで呼ばれたか
-    expect(window.confirm).toHaveBeenCalledWith('山田 太郎 さんのアカウントを削除してもよろしいですか？');
-    
+    expect(window.confirm).toHaveBeenCalledWith(
+      '山田 太郎 さんのアカウントを削除してもよろしいですか？'
+    );
+
     // 2. 親から渡された削除関数が正しいIDで呼ばれたか
     expect(mockOnDeleteAccount).toHaveBeenCalledWith('user-1');
   });
@@ -74,7 +76,7 @@ describe('AdminUserManagement コンポーネント', () => {
 
   test('ユーザーが空の場合、メッセージが表示されること', () => {
     render(<AdminUserManagement users={[]} onDeleteAccount={mockOnDeleteAccount} />);
-    
+
     expect(screen.getByText('該当するユーザーが見つかりません。')).toBeInTheDocument();
   });
 });

@@ -45,13 +45,16 @@ export function DisplayPostList({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
+  const API_BASE_URL = 'http://localhost:8080';
 
   useEffect(() => {
+    if (!post?.postId) return;
     const fetchPostDetail = async () => {
       try {
         // バックエンドとの接続
         const response = await fetch(
-          `http://localhost:8080/api/posts/detail?postId=${post.postId}`
+          //`http://localhost:8080/api/posts/detail?postId=${post.postId}`
+          `${API_BASE_URL}/api/posts/detail`
         );
         if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
@@ -64,7 +67,7 @@ export function DisplayPostList({
     };
 
     fetchPostDetail();
-  }, [post.postId]);
+  }, [post?.postId]);
 
   // スクロール制御
   useEffect(() => {
@@ -73,8 +76,8 @@ export function DisplayPostList({
     }
   }, [post.postId]);
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleString('ja-JP', {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('ja-JP', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -110,7 +113,7 @@ export function DisplayPostList({
               <p className="text-sm">
                 {currentUser.role === 'business' ? currentUser.fromName : '匿名'}
               </p>
-              <p className="text-xs text-gray-500">{formatDate(new Date(post.postDate))}</p>
+              <p className="text-xs text-gray-500">{formatDate(post.postDate)}</p>
             </div>
             {post.numView !== undefined && (
               <div className="flex items-center text-sm text-gray-500">
@@ -126,19 +129,20 @@ export function DisplayPostList({
           </div>
 
           {/* 画像表示エリア */}
-          {post?.postImage &&
-            (Array.isArray(post.postImage) ? post.postImage : [post.postImage]).length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
-                {post.postImage.map((image, index) => (
+          {post?.postImage && (
+            <div className="grid grid-cols-2 gap-2">
+              {(Array.isArray(post.postImage) ? post.postImage : [post.postImage]).map(
+                (image, index) => (
                   <img
                     key={index}
                     src={image}
                     alt={`投稿画像 ${index + 1}`}
                     className="w-full h-48 object-cover rounded-lg"
                   />
-                ))}
-              </div>
-            )}
+                )
+              )}
+            </div>
+          )}
 
           {/* 位置情報 */}
           <div className="bg-gray-50 p-3 rounded-lg">

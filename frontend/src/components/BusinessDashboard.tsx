@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { User, Pin } from '../types';
+import { User } from '../types';
 import {
   TrendingUp,
   Eye,
@@ -112,7 +112,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <div className="mt-auto p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">事業者名</p>
-            <p className="text-sm truncate">{user.businessName || user.name}</p>
+            <p className="text-sm truncate">{user.businessName || user.fromName}</p>
           </div>
         </div>
       </div>

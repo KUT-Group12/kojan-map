@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { User, Report } from '../types';
-import { mockPins } from '../lib/mockData';
+// import { mockPins } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 import AdminReport, { AdminReportProps } from './AdminReport';
@@ -356,7 +356,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
-            {inquiries.length > 0 && <Badge className="bg-emerald-500">{inquiries.length}</Badge>}
+            {inquiries.filter((q) => !q.askFlag).length > 0 && (
+              <Badge className="bg-emerald-500">{inquiries.filter((q) => !q.askFlag).length}</Badge>
+            )}
           </button>
         </nav>
 
@@ -386,8 +388,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 {activeTab === 'overview' && 'ダッシュボード概要'}
                 {activeTab === 'reports' && '通報管理'}
                 {activeTab === 'business' && '事業者申請'}
-                {activeTab === 'posts' && '投稿管理'}
                 {activeTab === 'users' && 'ユーザー管理'}
+                {activeTab === 'inquiries' && 'お問い合わせ管理'}
               </h1>
               <p className="text-sm text-slate-600 mt-1">
                 <Clock className="w-3 h-3 inline mr-1" />
