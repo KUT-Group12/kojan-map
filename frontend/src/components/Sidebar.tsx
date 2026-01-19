@@ -14,7 +14,13 @@ interface SidebarProps {
   onPinClick: (pin: Pin) => void;
 }
 
-export function Sidebar({ user, pins, onFilterChange, onCreatePin: _onCreatePin, onPinClick }: SidebarProps) {
+export function Sidebar({
+  user,
+  pins,
+  onFilterChange,
+  onCreatePin: _onCreatePin,
+  onPinClick,
+}: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
   const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
