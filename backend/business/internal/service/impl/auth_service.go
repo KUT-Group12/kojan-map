@@ -18,12 +18,12 @@ import (
 
 // AuthServiceImpl はAuthServiceインターフェースを実装します。
 type AuthServiceImpl struct {
-	authRepo             repository.AuthRepo
-	tokenVerifier        oauth.TokenVerifier
-	tokenManager         *jwt.TokenManager
-	mfaValidator         *mfa.MFAValidator
-	notificationService  notification.NotificationService
-	sessionStore         *session.SessionStore
+	authRepo            repository.AuthRepo
+	tokenVerifier       oauth.TokenVerifier
+	tokenManager        *jwt.TokenManager
+	mfaValidator        *mfa.MFAValidator
+	notificationService notification.NotificationService
+	sessionStore        *session.SessionStore
 }
 
 // NewAuthServiceImpl は新しい認証サービスを作成します。
@@ -38,12 +38,12 @@ func NewAuthServiceImpl(authRepo repository.AuthRepo, tokenManager *jwt.TokenMan
 	}
 
 	return &AuthServiceImpl{
-		authRepo:             authRepo,
-		tokenVerifier:        oauth.NewGoogleTokenVerifier(googleClientID),
-		tokenManager:         tokenManager,
-		mfaValidator:         mfa.NewMFAValidator(),
-		notificationService:  notification.NewEmailNotificationService(),
-		sessionStore:         session.NewSessionStore(),
+		authRepo:            authRepo,
+		tokenVerifier:       oauth.NewGoogleTokenVerifier(googleClientID),
+		tokenManager:        tokenManager,
+		mfaValidator:        mfa.NewMFAValidator(),
+		notificationService: notification.NewEmailNotificationService(),
+		sessionStore:        session.NewSessionStore(),
 	}
 }
 
@@ -96,15 +96,15 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 	if isProduction {
 		// 本番環境: セッションIDを生成し、MFAコードは帯域外で送信
 		sessionID = fmt.Sprintf("session_%s_%d", req.GoogleID, time.Now().Unix())
-		
+
 		// セッション情報を保存（5分間有効）
 		s.sessionStore.CreateSession(sessionID, req.Gmail, mfaCode, req.GoogleID, 5*time.Minute)
-		
+
 		// MFAコードをメールで送信
 		if err := s.notificationService.SendMFACode(req.Gmail, mfaCode); err != nil {
 			return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to send MFA code: %v", err))
 		}
-		
+
 		// セキュリティ: MFAコードはレスポンスに含めない
 	} else {
 		// 開発環境: MFAコードをセッションIDとして返却（テスト用）

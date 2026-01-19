@@ -76,7 +76,6 @@ func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int
 		IsActive:      true,
 		PostedAt:      time.Now(),
 		UpdatedAt:     time.Now(),
-
 	}
 
 	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
@@ -115,7 +114,6 @@ func (r *PostRepoImpl) SetGenres(ctx context.Context, postID string, genreIDs []
 		return nil
 	})
 }
-
 
 // Anonymize は投稿を匿名化します（M1-13-2）。
 // 投稿内容は復元不能な値に置き換える、主キーおよび外部キーは変更しない

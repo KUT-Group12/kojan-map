@@ -1,9 +1,15 @@
 package notification
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
+	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 )
 
 // NotificationService はMFAコードなどの通知を送信するインターフェース
@@ -34,39 +40,65 @@ func (s *EmailNotificationService) SendMFACode(email string, code string) error 
 		return nil
 	}
 
-	// 本番環境: 実際のメール送信
-	// TODO: AWS SES, SendGrid などの実装
-	// 例:
-	// return s.sesClient.SendEmail(email, "Your MFA Code", fmt.Sprintf("Your code is: %s", code))
+	// 本番環境: AWS SESを使用してメール送信
+	sesRegion := os.Getenv("AWS_REGION")
+	if sesRegion == "" {
+		sesRegion = "ap-northeast-1" // デフォルトリージョン
+	}
 
-	// 暫定: ログ出力（本番では削除）
-	log.Printf("[PRODUCTION] Sending MFA code to %s (実装が必要)", email)
-	
-	// 実装例（AWS SESを使用する場合）:
-	/*
-	sess := session.Must(session.NewSession())
-	svc := ses.New(sess)
-	
+	sesFromEmail := os.Getenv("SES_FROM_EMAIL")
+	if sesFromEmail == "" {
+		return fmt.Errorf("SES_FROM_EMAIL environment variable not set")
+	}
+
+	// AWS SDKの設定
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(sesRegion))
+	if err != nil {
+		return fmt.Errorf("failed to load AWS config: %w", err)
+	}
+
+	sesClient := ses.NewFromConfig(cfg)
+
+	// メール本文の作成
+	subject := "Kojan-Map 多要素認証コード"
+	body := fmt.Sprintf(`
+Kojan-Mapをご利用いただきありがとうございます。
+
+あなたの多要素認証コードは以下です：
+
+%s
+
+このコードは5分間有効です。
+第三者と共有しないでください。
+
+※このメールに心当たりがない場合は、削除してください。
+`, code)
+
+	// メール送信リクエストの作成
 	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			ToAddresses: []*string{aws.String(email)},
+		Source: aws.String(sesFromEmail),
+		Destination: &types.Destination{
+			ToAddresses: []string{email},
 		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Text: &ses.Content{
-					Data: aws.String(fmt.Sprintf("Your MFA code is: %s", code)),
+		Message: &types.Message{
+			Subject: &types.Content{
+				Data:    aws.String(subject),
+				Charset: aws.String("UTF-8"),
+			},
+			Body: &types.Body{
+				Text: &types.Content{
+					Data:    aws.String(body),
+					Charset: aws.String("UTF-8"),
 				},
 			},
-			Subject: &ses.Content{
-				Data: aws.String("Your MFA Code"),
-			},
 		},
-		Source: aws.String(os.Getenv("SES_FROM_EMAIL")),
 	}
-	
-	_, err := svc.SendEmail(input)
-	return err
-	*/
 
-	return fmt.Errorf("本番用メール送信の実装が必要です")
-}
+	// メール送信
+	_, err = sesClient.SendEmail(context.TODO(), input)
+	if err != nil {
+		return fmt.Errorf("failed to send email via SES: %w", err)
+	}
+
+	log.Printf("[PROD] MFA code sent to %s via AWS SES", email)
+	return nil
