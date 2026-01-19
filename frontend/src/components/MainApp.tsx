@@ -427,7 +427,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     <div className="h-screen flex flex-col">
       <Header
         user={user}
-        onLogout={onLogout}
         onNavigate={handleNavigate}
         currentView={currentView}
         onContact={() => setIsContactModalOpen(true)}
