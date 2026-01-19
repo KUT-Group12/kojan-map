@@ -113,17 +113,10 @@ func createUsersTable(db *gorm.DB) error {
 func createSessionsTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS sessions (
-		id VARCHAR(36) PRIMARY KEY,
-		google_id VARCHAR(255) NOT NULL,
-		expiry TIMESTAMP NOT NULL,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		revoked_at TIMESTAMP NULL,
-		KEY idx_google_id (google_id),
-		KEY idx_revoked_at (revoked_at)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-	`).Error
-}
-
+		sessionId VARCHAR(255) PRIMARY KEY,
+		googleId VARCHAR(50) NOT NULL,
+		expiry DATETIME NOT NULL,
+		KEY idx_googleId (googleId)
 // createPostsTable 投稿テーブルを作成
 func createPostsTable(db *gorm.DB) error {
 	return db.Exec(`
