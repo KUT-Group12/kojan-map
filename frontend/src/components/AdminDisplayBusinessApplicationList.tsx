@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 //データの型を定義
-export interface UserInputBusiness{
+export interface UserInputBusiness {
   id: string;
   userName: string;
   email: string;
@@ -14,20 +14,14 @@ export interface UserInputBusiness{
   date: string;
 }
 
-
 interface Props {
-  applications: UserInputBusiness[];//データの配列
-  onApprove: (id: string) => void;//承諾ボタン
-  onReject: (id: string) => void;//キャンセルボタン
+  applications: UserInputBusiness[]; //データの配列
+  onApprove: (id: string) => void; //承諾ボタン
+  onReject: (id: string) => void; //キャンセルボタン
 }
 
-export function BusinessApplicationList({
-  applications,
-  onApprove,
-  onReject,
-}: Props) {
-
-    //もし申請がゼロ件の時
+export function BusinessApplicationList({ applications, onApprove, onReject }: Props) {
+  //もし申請がゼロ件の時
   if (applications.length === 0) {
     return <div className="text-center p-8 text-gray-500">現在、未処理の申請はありません。</div>;
   }
@@ -35,10 +29,7 @@ export function BusinessApplicationList({
   return (
     <div className="max-w-5xl space-y-4">
       {applications.map((app) => (
-        <Card
-          key={app.id}
-          className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow"
-        >
+        <Card key={app.id} className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1 grid grid-cols-2 gap-4">

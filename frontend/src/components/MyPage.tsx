@@ -18,7 +18,15 @@ interface MyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpdateUser, onNavigateToDeleteAccount }: MyPageProps) {
+export function MyPage({
+  user,
+  pins,
+  reactedPins,
+  onPinClick,
+  onDeletePin,
+  onUpdateUser,
+  onNavigateToDeleteAccount,
+}: MyPageProps) {
   const [showBusinessRegistration, setShowBusinessRegistration] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
@@ -66,13 +74,13 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
     if (!selectedIcon) return;
 
     setIsUploadingIcon(true);
-    
+
     // アイコンを保存
     const updatedUser = {
       ...user,
       businessIcon: selectedIcon,
     };
-    
+
     onUpdateUser(updatedUser);
     toast.success('アイコンを更新しました');
     setIsUploadingIcon(false);
@@ -105,21 +113,33 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                           value={editingNameValue}
                           onChange={(e) => setEditingNameValue(e.target.value)}
                         />
-                        <Button size="sm" onClick={() => {
-                          const updatedUser = { ...user, name: editingNameValue };
-                          onUpdateUser(updatedUser);
-                          setIsEditingName(false);
-                        }}>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const updatedUser = { ...user, name: editingNameValue };
+                            onUpdateUser(updatedUser);
+                            setIsEditingName(false);
+                          }}
+                        >
                           保存
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => { setIsEditingName(false); setEditingNameValue(user.name); }}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditingName(false);
+                            setEditingNameValue(user.name);
+                          }}
+                        >
                           キャンセル
                         </Button>
                       </>
                     ) : (
                       <>
                         <p>{user.name}</p>
-                        <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>編集</Button>
+                        <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>
+                          編集
+                        </Button>
                       </>
                     )}
                   </div>
@@ -177,7 +197,11 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                   <Button onClick={handleBusinessRegistration} size="sm">
                     申請する
                   </Button>
-                  <Button onClick={() => setShowBusinessRegistration(false)} variant="outline" size="sm">
+                  <Button
+                    onClick={() => setShowBusinessRegistration(false)}
+                    variant="outline"
+                    size="sm"
+                  >
                     キャンセル
                   </Button>
                 </div>
@@ -200,9 +224,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                   <p className="text-sm text-gray-600 mb-2">現在のアイコン</p>
                   <div className="w-32 h-32 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
                     {user.businessIcon ? (
-                      <img 
-                        src={user.businessIcon} 
-                        alt="事業者アイコン" 
+                      <img
+                        src={user.businessIcon}
+                        alt="事業者アイコン"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -219,9 +243,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                   <div className="flex-shrink-0">
                     <p className="text-sm text-gray-600 mb-2">プレビュー</p>
                     <div className="w-32 h-32 rounded-lg border-2 border-blue-500 overflow-hidden">
-                      <img 
-                        src={selectedIcon} 
-                        alt="プレビュー" 
+                      <img
+                        src={selectedIcon}
+                        alt="プレビュー"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -235,12 +259,8 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
                       <label htmlFor="icon-upload" className="cursor-pointer">
                         <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600 mb-1">
-                          クリックして画像を選択
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          推奨: 正方形の画像、最大5MB
-                        </p>
+                        <p className="text-sm text-gray-600 mb-1">クリックして画像を選択</p>
+                        <p className="text-xs text-gray-500">推奨: 正方形の画像、最大5MB</p>
                         <input
                           id="icon-upload"
                           type="file"
@@ -253,14 +273,14 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
 
                     {selectedIcon && (
                       <div className="flex space-x-2">
-                        <Button 
+                        <Button
                           onClick={handleSaveIcon}
                           disabled={isUploadingIcon}
                           className="flex-1"
                         >
                           {isUploadingIcon ? '保存中...' : 'アイコンを保存'}
                         </Button>
-                        <Button 
+                        <Button
                           onClick={handleCancelIconUpload}
                           variant="outline"
                           disabled={isUploadingIcon}
@@ -285,7 +305,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
 
         {/* タブコンテンツ */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className={`grid w-full ${user.role === 'business' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          <TabsList
+            className={`grid w-full ${user.role === 'business' ? 'grid-cols-2' : 'grid-cols-3'}`}
+          >
             <TabsTrigger value="posts">投稿履歴 ({pins.length})</TabsTrigger>
             {user.role !== 'business' && (
               <TabsTrigger value="reactions">リアクション履歴 ({reactedPins.length})</TabsTrigger>
@@ -355,7 +377,11 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
               ) : (
                 <div className="grid gap-4">
                   {reactedPins.map((pin) => (
-                    <Card key={pin.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onPinClick(pin)}>
+                    <Card
+                      key={pin.id}
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => onPinClick(pin)}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center space-x-2 mb-2">
                           <h3>{pin.title}</h3>
@@ -365,7 +391,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                         </div>
                         <p className="text-sm text-gray-600 mb-2">{pin.description}</p>
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>{pin.userRole === 'business' ? pin.businessName : pin.userName}</span>
+                          <span>
+                            {pin.userRole === 'business' ? pin.businessName : pin.userName}
+                          </span>
                           <span className="flex items-center">
                             <Heart className="w-4 h-4 mr-1 fill-red-500 text-red-500" />
                             {pin.reactions}
@@ -387,25 +415,32 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                 <CardDescription>ブロックしたユーザーの管理</CardDescription>
               </CardHeader>
               <CardContent>
-                {(!user.blockedUsers || user.blockedUsers.length === 0) ? (
+                {!user.blockedUsers || user.blockedUsers.length === 0 ? (
                   <p className="text-gray-500 text-sm">ブロックしたユーザーはいません</p>
                 ) : (
                   <div className="space-y-2">
                     {user.blockedUsers.map((userId) => (
-                          <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center space-x-2">
-                              <UserX className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm">ユーザーID: {userId}</span>
-                            </div>
-                            <Button size="sm" variant="outline" onClick={() => {
-                              const next = (user.blockedUsers || []).filter(id => id !== userId);
-                              const updatedUser = { ...user, blockedUsers: next };
-                              onUpdateUser(updatedUser);
-                            }}>
-                              ブロック解除
-                            </Button>
-                          </div>
-                        ))}
+                      <div
+                        key={userId}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <UserX className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm">ユーザーID: {userId}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const next = (user.blockedUsers || []).filter((id) => id !== userId);
+                            const updatedUser = { ...user, blockedUsers: next };
+                            onUpdateUser(updatedUser);
+                          }}
+                        >
+                          ブロック解除
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>

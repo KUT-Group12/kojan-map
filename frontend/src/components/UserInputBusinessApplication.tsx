@@ -4,8 +4,8 @@ import { Button } from './ui/button';
 import { Shield } from 'lucide-react';
 
 interface UserInputBusinessApplicationProps {
-    onUpdateUser: (data: BusinessData) => void;//申請処理
-    onCancel: () => void;//キャンセル処理
+  onUpdateUser: (data: BusinessData) => void; //申請処理
+  onCancel: () => void; //キャンセル処理
 }
 
 //データ型の定義
@@ -15,28 +15,28 @@ interface BusinessData {
   address: string;
 }
 
-export function UserInputBusinessApplication ({
-    onUpdateUser,
-    onCancel,
+export function UserInputBusinessApplication({
+  onUpdateUser,
+  onCancel,
 }: UserInputBusinessApplicationProps) {
-    //状態管理の追加
-    const [formData, setFormData] = useState<BusinessData>({
-      ShopName:'',
-      PhoneNumber:'',
-      address:'',
-    });
+  //状態管理の追加
+  const [formData, setFormData] = useState<BusinessData>({
+    ShopName: '',
+    PhoneNumber: '',
+    address: '',
+  });
 
-    // 送信ハンドラ
-    const handleSubmit = () => {
-        // バリデーション（任意）
-        if (!formData.ShopName || !formData.PhoneNumber || !formData.address) {
-            alert("すべての項目を入力してください");
-            return;
-        }
-        onUpdateUser(formData);
-    };
+  // 送信ハンドラ
+  const handleSubmit = () => {
+    // バリデーション（任意）
+    if (!formData.ShopName || !formData.PhoneNumber || !formData.address) {
+      alert('すべての項目を入力してください');
+      return;
+    }
+    onUpdateUser(formData);
+  };
 
-    return (
+  return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
       <p className="text-sm flex items-center gap-2">
         <Shield className="w-4 h-4" />

@@ -2,18 +2,29 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { User, Pin } from '../types';
-import { 
-  TrendingUp, 
-  Eye, 
-  Heart, 
-  Calendar, 
-  CreditCard, 
+import {
+  TrendingUp,
+  Eye,
+  Heart,
+  Calendar,
+  CreditCard,
   BarChart3,
   MapPin,
   Building2,
-  Clock
+  Clock,
 } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import { genreColors, genreLabels } from '../lib/mockData';
 
 interface BusinessDashboardProps {
@@ -36,14 +47,17 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
     { date: '11/03', reactions: 35, views: 134 },
   ];
 
-  const genreStats = pins.reduce((acc, pin) => {
-    if (!acc[pin.genre]) {
-      acc[pin.genre] = { genre: genreLabels[pin.genre], count: 0, reactions: 0 };
-    }
-    acc[pin.genre].count++;
-    acc[pin.genre].reactions += pin.reactions;
-    return acc;
-  }, {} as Record<string, { genre: string; count: number; reactions: number }>);
+  const genreStats = pins.reduce(
+    (acc, pin) => {
+      if (!acc[pin.genre]) {
+        acc[pin.genre] = { genre: genreLabels[pin.genre], count: 0, reactions: 0 };
+      }
+      acc[pin.genre].count++;
+      acc[pin.genre].reactions += pin.reactions;
+      return acc;
+    },
+    {} as Record<string, { genre: string; count: number; reactions: number }>
+  );
 
   const genreStatsArray = Object.values(genreStats);
 
@@ -73,8 +87,8 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
           <button
             onClick={() => setActiveTab('overview')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'overview'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -84,8 +98,8 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
           <button
             onClick={() => setActiveTab('billing')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'billing' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'billing'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -206,7 +220,12 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="reactions" stroke="#ef4444" name="リアクション" />
+                        <Line
+                          type="monotone"
+                          dataKey="reactions"
+                          stroke="#ef4444"
+                          name="リアクション"
+                        />
                         <Line type="monotone" dataKey="views" stroke="#3b82f6" name="閲覧数" />
                       </LineChart>
                     </ResponsiveContainer>
@@ -264,7 +283,9 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                                     {genreLabels[pin.genre]}
                                   </Badge>
                                 </div>
-                                <p className="text-sm text-slate-600 line-clamp-1">{pin.description}</p>
+                                <p className="text-sm text-slate-600 line-clamp-1">
+                                  {pin.description}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right ml-4">
@@ -322,7 +343,10 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                         { date: '2025年10月1日', amount: '¥2,000', status: '完了' },
                         { date: '2025年9月1日', amount: '¥2,000', status: '完了' },
                       ].map((payment, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                        >
                           <div className="flex items-center space-x-3">
                             <Calendar className="w-4 h-4 text-slate-500" />
                             <span className="text-sm">{payment.date}</span>
