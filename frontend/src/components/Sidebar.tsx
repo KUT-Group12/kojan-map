@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 import { Search } from 'lucide-react';
 import { Post, PinGenre, User } from '../types';
-import { genreLabels, genreColors } from '../lib/mockData';
+import { genreLabels, genreColors, GENRE_MAP } from '../lib/mockData';
 
 interface SidebarProps {
   user: User;
@@ -17,74 +17,57 @@ interface SidebarProps {
 export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
-  const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
+  // const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
   //const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+  // 検索結果を格納する
+  // const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts);
 
   type DateFilterType = 'all' | 'today' | 'week' | 'month';
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
 
-  useEffect(() => {
-    // 事業者ユーザーの場合、検索・絞り込み・並び替えの機能を無効化（全件表示）
-    if (user.role === 'business') {
-      onFilterChange([...posts]);
-      return;
-    }
-
-    let filtered = [...posts];
-
-    // キーワード検索
-    if (searchKeyword) {
-      filtered = filtered.filter(
-        (post) =>
-          post.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          post.text.toLowerCase().includes(searchKeyword.toLowerCase())
-      );
-    }
-
-    // ジャンルフィルター
-    if (selectedGenre !== 'all') {
-      filtered = filtered.filter(
-        (post) => genreLabels[post.genreId] === genreLabels[selectedGenre]
-      );
-    }
-
-    // 日付フィルター
-    const now = new Date();
-    if (dateFilter === 'today') {
-      filtered = filtered.filter((post) => {
-        const pinDate = new Date(post.postDate);
-        return pinDate.toDateString() === now.toDateString();
-      });
-    } else if (dateFilter === 'week') {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter((post) => new Date(post.postDate) >= weekAgo);
-    } else if (dateFilter === 'month') {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter((post) => new Date(post.postDate) >= monthAgo);
-    }
-
-    /*
-    // 並べ替え
-    if (sortBy === 'date') {
-      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } else if (sortBy === 'reactions') {
-      filtered.sort((a, b) => b.reactions - a.reactions);
-    } else if (sortBy === 'distance') {
-      // 距離順は簡易的に緯度経度で計算（実際は現在地からの距離を計算する）
-      filtered.sort((a, b) => a.latitude - b.latitude);
-    }*/
-
-    onFilterChange(filtered);
-  }, [searchKeyword, selectedGenre, sortBy, dateFilter, posts, onFilterChange, user.role]);
-
-  const genreIdToKey: Record<number, PinGenre> = {
-    0: 'food', // ジャンルID 0 -> 'food'
-    1: 'event', // ジャンルID 1 -> 'event'
-    2: 'scene', // ジャンルID 2 -> 'scene'
-    3: 'store', // ジャンルID 3 -> 'store'
-    4: 'emergency', // ジャンルID 4 -> 'emergency'
-    5: 'other', // ジャンルID 5 -> 'other'
+  const genreIdToKey = (genreId: number): PinGenre => {
+    const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
+    return (entry?.[0] as PinGenre) ?? 'other';
   };
+
+  // 1. レンダリングの中で直接計算する (useMemoを使用)
+  const filteredPosts = useMemo(() => {
+    if (user.role === 'business') return [...posts];
+
+    return posts.filter((post) => {
+      // 1. キーワード検索 (安全に文字列を扱う)
+      const matchesKeyword =
+        !searchKeyword ||
+        post.title?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        post.text?.toLowerCase().includes(searchKeyword.toLowerCase());
+
+      // 2. ジャンルフィルター
+      const matchesGenre =
+        selectedGenre === 'all' || genreLabels[post.genreId] === genreLabels[selectedGenre];
+
+      // 3. 日付フィルター
+      const postDate = new Date(post.postDate);
+      const now = new Date();
+      let matchesDate = true;
+
+      if (dateFilter === 'today') {
+        matchesDate = postDate.toDateString() === now.toDateString();
+      } else if (dateFilter === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        matchesDate = postDate >= weekAgo;
+      } else if (dateFilter === 'month') {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        matchesDate = postDate >= monthAgo;
+      }
+
+      return matchesKeyword && matchesGenre && matchesDate;
+    });
+  }, [searchKeyword, selectedGenre, dateFilter, posts, user.role]);
+
+  // 2. 親コンポーネント（onFilterChange）への通知だけを useEffect で行う
+  useEffect(() => {
+    onFilterChange(filteredPosts);
+  }, [filteredPosts, onFilterChange]);
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
@@ -105,11 +88,6 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
     <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
       {/* 検索・フィルター */}
       <div className="p-4 border-b border-gray-200 space-y-3">
-        {/*}
-        <Button onClick={onCreatePin} className="w-full">
-          <Plus className="w-4 h-4 mr-2" />
-          新規投稿
-        </Button>*/}
         {user.role !== 'business' && (
           <>
             <div className="relative">
@@ -155,31 +133,19 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
                 </SelectContent>
               </Select>
             </div>
-            {/*
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
-              <SelectTrigger>
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="並べ替え" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date">新着順</SelectItem>
-                <SelectItem value="reactions">リアクション順</SelectItem>
-                <SelectItem value="distance">距離順</SelectItem>
-              </SelectContent>
-            </Select>*/}
           </>
         )}
       </div>
 
       {/* ピンリスト */}
       <div className="flex-1 overflow-y-auto">
-        {posts.length === 0 ? (
+        {filteredPosts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p>該当する投稿が見つかりませんでした</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {posts.map((post) => (
+            {filteredPosts.map((post) => (
               <button
                 key={post.postId}
                 onClick={() => onPinClick(post)}
