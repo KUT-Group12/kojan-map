@@ -30,7 +30,7 @@ func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string)
 	err := r.db.WithContext(ctx).
 		Where("blocking_user_id = ? AND blocked_google_id = ?", blockerID, blockedID).
 		First(&existingBlock).Error
-+	if err == nil {
+	if err == nil {
 		return fmt.Errorf("user already blocked")
 	}
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {

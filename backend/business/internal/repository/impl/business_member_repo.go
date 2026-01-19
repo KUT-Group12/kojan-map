@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"unicode/utf8"
 	"gorm.io/gorm"
 	"kojan-map/business/internal/domain"
+	"unicode/utf8"
 )
 
 // BusinessMemberRepoImpl は GORM を使用して BusinessMemberRepo インターフェースを実装します。

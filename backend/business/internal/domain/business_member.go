@@ -52,7 +52,7 @@ type CreateBusinessMemberRequest struct {
 	KanaBusinessName string `json:"kanaBusinessName" binding:"required,max=50"`
 	ZipCode          string `json:"zipCode" binding:"required"`
 	Address          string `json:"address" binding:"required,max=100"`
-	Phone            string    `json:"phone" binding:"required"`
+	Phone            string `json:"phone" binding:"required"`
 	UserID           string `json:"userId" binding:"required"`
 	PlaceID          int64  `json:"placeId" binding:"required"`
 }

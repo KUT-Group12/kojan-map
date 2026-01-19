@@ -1,10 +1,10 @@
 package mfa
 
 import (
+	"crypto/rand"
 	"fmt"
 	"math/big"
 	"time"
-	"crypto/rand"
 )
 
 // MFAValidator はMFAコード検証を処理します

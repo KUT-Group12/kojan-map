@@ -54,7 +54,6 @@ func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID str
 		return nil, errors.NewAPIError(errors.ErrOperationFailed, "invalid user type")
 	}
 
-
 	// アイコン画像URLの生成（BLOBデータをbase64エンコードしてdata URIとして返す）
 	var iconImageURL string
 	if len(memberData.ProfileImage) > 0 {
@@ -112,9 +111,9 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 	}
 
 	contentType := http.DetectContentType(icon)
-		if contentType != "image/png" && contentType != "image/jpeg" {
-			return errors.NewAPIError(errors.ErrInvalidInput, "icon must be PNG or JPEG")
-		}
+	if contentType != "image/png" && contentType != "image/jpeg" {
+		return errors.NewAPIError(errors.ErrInvalidInput, "icon must be PNG or JPEG")
+	}
 
 	err := s.memberRepo.UpdateIcon(ctx, businessID, icon)
 	if err != nil {

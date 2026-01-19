@@ -102,3 +102,4 @@ Kojan-Mapをご利用いただきありがとうございます。
 
 	log.Printf("[PROD] MFA code sent to %s via AWS SES", email)
 	return nil
+}
