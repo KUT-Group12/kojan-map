@@ -1,12 +1,12 @@
 import { PinGenre } from '../types';
 
 export const GENRE_MAP: Record<PinGenre, number> = {
-  food: 1,
-  event: 2,
-  scene: 3,
-  store: 4,
-  emergency: 5,
-  other: 6,
+  food: 0,
+  event: 1,
+  scene: 2,
+  store: 3,
+  emergency: 4,
+  other: 5,
 };
 
 export const genreColors: Record<PinGenre, string> = {
