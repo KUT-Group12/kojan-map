@@ -6,6 +6,8 @@ import (
 
 	"kojan-map/user/config"
 	"kojan-map/user/models"
+
+	"gorm.io/gorm"
 )
 
 // PostService 投稿関連のビジネスロジック
@@ -62,8 +64,8 @@ func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error)
 		return nil, errors.New("post not found")
 	}
 
-	// 閲覧数をインクリメント
-	config.DB.Model(&post).Update("numView", post.NumView+1)
+	// 閲覧数をインクリメント（アトミックに実行）
+	config.DB.Model(&post).UpdateColumn("numView", gorm.Expr("numView + ?", 1))
 
 	// ユーザー情報を取得
 	user := models.User{}
@@ -87,7 +89,7 @@ func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error)
 		"postImage":   post.PostImage,
 		"numView":     post.NumView,
 		"numReaction": post.NumReaction,
-		"postData":    post.PostDate,
+		"postDate":    post.PostDate,
 		"latitude":    place.Latitude,
 		"longitude":   place.Longitude,
 		"genreName":   genre.GenreName,

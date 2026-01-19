@@ -379,7 +379,7 @@ func TestPostService_GetPostTimestamp(t *testing.T) {
 	assert.NotNil(t, detail)
 
 	// PostDateフィールドが含まれていることを確認
-	assert.NotNil(t, detail["postData"])
+	assert.NotNil(t, detail["postDate"])
 }
 
 // TestPostService_GetReactionList - ユーザーのリアクション履歴を取得

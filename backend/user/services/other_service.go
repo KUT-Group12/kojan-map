@@ -115,7 +115,7 @@ type BusinessApplicationService struct{}
 
 // CreateBusinessApplication 事業者申請を作成
 func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName string, zipCode int, address string, phone string) error {
-	if businessName == "" || kanaBusinessName == "" || address == "" || zipCode == 0 || phone == "" {
+	if userID == "" || businessName == "" || kanaBusinessName == "" || address == "" || zipCode == 0 || phone == "" {
 		return errors.New("all fields are required")
 	}
 
