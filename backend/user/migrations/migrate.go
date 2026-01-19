@@ -3,40 +3,40 @@ package migrations
 import (
 	"log"
 
-	"kojan-map/user/config"
+	"gorm.io/gorm"
 )
 
 // RunMigrations すべてのマイグレーションを実行
-func RunMigrations() error {
+func RunMigrations(db *gorm.DB) error {
 	// テーブルを順に作成（外部キー制約を考慮）
-	if err := createGenresTable(); err != nil {
+	if err := createGenresTable(db); err != nil {
 		return err
 	}
-	if err := createPlacesTable(); err != nil {
+	if err := createPlacesTable(db); err != nil {
 		return err
 	}
-	if err := createUsersTable(); err != nil {
+	if err := createUsersTable(db); err != nil {
 		return err
 	}
-	if err := createSessionsTable(); err != nil {
+	if err := createSessionsTable(db); err != nil {
 		return err
 	}
-	if err := createPostsTable(); err != nil {
+	if err := createPostsTable(db); err != nil {
 		return err
 	}
-	if err := createUserReactionsTable(); err != nil {
+	if err := createUserReactionsTable(db); err != nil {
 		return err
 	}
-	if err := createUserBlocksTable(); err != nil {
+	if err := createUserBlocksTable(db); err != nil {
 		return err
 	}
-	if err := createReportsTable(); err != nil {
+	if err := createReportsTable(db); err != nil {
 		return err
 	}
-	if err := createContactsTable(); err != nil {
+	if err := createContactsTable(db); err != nil {
 		return err
 	}
-	if err := createBusinessApplicationsTable(); err != nil {
+	if err := createBusinessApplicationsTable(db); err != nil {
 		return err
 	}
 
@@ -45,9 +45,9 @@ func RunMigrations() error {
 }
 
 // createGenresTable ジャンルテーブルを作成
-func createGenresTable() error {
+func createGenresTable(db *gorm.DB) error {
 	// テーブル作成
-	if err := config.DB.Exec(`
+	if err := db.Exec(`
 	CREATE TABLE IF NOT EXISTS genre (
 		genre_id INT PRIMARY KEY AUTO_INCREMENT,
 		genre_name VARCHAR(50) NOT NULL UNIQUE
@@ -58,9 +58,9 @@ func createGenresTable() error {
 
 	// 初期データ投入（既にデータがある場合はスキップ）
 	var count int64
-	config.DB.Raw("SELECT COUNT(*) FROM genre").Scan(&count)
+	db.Raw("SELECT COUNT(*) FROM genre").Scan(&count)
 	if count == 0 {
-		if err := config.DB.Exec(`
+		if err := db.Exec(`
 		INSERT INTO genre (genre_id, genre_name) VALUES
 		(1, 'グルメ'),
 		(2, 'イベント'),
@@ -78,8 +78,8 @@ func createGenresTable() error {
 }
 
 // createPlacesTable 場所テーブルを作成
-func createPlacesTable() error {
-	return config.DB.Exec(`
+func createPlacesTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS place (
 		place_id INT PRIMARY KEY AUTO_INCREMENT,
 		num_post INT NOT NULL DEFAULT 0,
@@ -91,8 +91,8 @@ func createPlacesTable() error {
 }
 
 // createUsersTable ユーザーテーブルを作成
-func createUsersTable() error {
-	return config.DB.Exec(`
+func createUsersTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS users (
 		id VARCHAR(36) PRIMARY KEY,
 		google_id VARCHAR(255) NOT NULL UNIQUE,
@@ -110,8 +110,8 @@ func createUsersTable() error {
 }
 
 // createSessionsTable セッションテーブルを作成
-func createSessionsTable() error {
-	return config.DB.Exec(`
+func createSessionsTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS sessions (
 		id VARCHAR(36) PRIMARY KEY,
 		google_id VARCHAR(255) NOT NULL,
@@ -125,8 +125,8 @@ func createSessionsTable() error {
 }
 
 // createPostsTable 投稿テーブルを作成
-func createPostsTable() error {
-	return config.DB.Exec(`
+func createPostsTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS posts (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		place_id INT NOT NULL,
@@ -153,8 +153,8 @@ func createPostsTable() error {
 }
 
 // createUserReactionsTable ユーザーリアクションテーブルを作成
-func createUserReactionsTable() error {
-	return config.DB.Exec(`
+func createUserReactionsTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS user_reactions (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		post_id INT NOT NULL,
@@ -168,8 +168,8 @@ func createUserReactionsTable() error {
 }
 
 // createUserBlocksTable ユーザーブロックテーブルを作成
-func createUserBlocksTable() error {
-	return config.DB.Exec(`
+func createUserBlocksTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS user_blocks (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		user_id VARCHAR(36) NOT NULL,
@@ -187,8 +187,8 @@ func createUserBlocksTable() error {
 }
 
 // createReportsTable 通報テーブルを作成
-func createReportsTable() error {
-	return config.DB.Exec(`
+func createReportsTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS reports (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		user_id VARCHAR(36) NOT NULL,
@@ -209,8 +209,8 @@ func createReportsTable() error {
 }
 
 // createContactsTable 問い合わせテーブルを作成
-func createContactsTable() error {
-	return config.DB.Exec(`
+func createContactsTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS contacts (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		user_id VARCHAR(36) NOT NULL,
@@ -228,8 +228,8 @@ func createContactsTable() error {
 }
 
 // createBusinessApplicationsTable 事業者申請テーブルを作成
-func createBusinessApplicationsTable() error {
-	return config.DB.Exec(`
+func createBusinessApplicationsTable(db *gorm.DB) error {
+	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS business_applications (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		user_id VARCHAR(36) NOT NULL,
