@@ -48,8 +48,17 @@ export function ReportScreen({ isReporting, setIsReporting, onReportComplete }: 
         className="bg-white"
       />
       <div className="flex gap-2">
-        <Button onClick={handleReport} variant="destructive" size="sm" className="flex-1">送信</Button>
-        <Button onClick={() => setIsReporting(false)} variant="outline" size="sm" className="flex-1">キャンセル</Button>
+        <Button onClick={handleReport} variant="destructive" size="sm" className="flex-1">
+          送信
+        </Button>
+        <Button
+          onClick={() => setIsReporting(false)}
+          variant="outline"
+          size="sm"
+          className="flex-1"
+        >
+          キャンセル
+        </Button>
       </div>
     </div>
   );

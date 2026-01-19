@@ -14,7 +14,12 @@ interface DisplayPostHistoryProps {
   deleteButton: ReactNode;
 }
 
-export function DisplayPostHistory({ pin, onPinClick, formatDate, deleteButton }: DisplayPostHistoryProps) {
+export function DisplayPostHistory({
+  pin,
+  onPinClick,
+  formatDate,
+  deleteButton,
+}: DisplayPostHistoryProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4 flex justify-between items-start">
@@ -34,9 +39,7 @@ export function DisplayPostHistory({ pin, onPinClick, formatDate, deleteButton }
             <span>{formatDate(pin.createdAt)}</span>
           </div>
         </div>
-        <div className="ml-4">
-          {deleteButton}
-        </div>
+        <div className="ml-4">{deleteButton}</div>
       </CardContent>
     </Card>
   );
