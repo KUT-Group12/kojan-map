@@ -13,6 +13,12 @@ func TestBlockService_BlockUser(t *testing.T) {
 	db := setupTestDB(t)
 	service := &BlockService{}
 
+	// テストユーザーを作成（外部キー制約対応）
+	blocker := models.User{ID: "blocker123", GoogleID: "blocker123", Gmail: "blocker@example.com", Role: "user"}
+	blocked := models.User{ID: "blocked456", GoogleID: "blocked456", Gmail: "blocked@example.com", Role: "user"}
+	db.Create(&blocker)
+	db.Create(&blocked)
+
 	// ユーザーをブロック
 	err := service.BlockUser("blocked456", "blocker123")
 	assert.NoError(t, err)
@@ -39,6 +45,12 @@ func TestBlockService_BlockUser_Duplicate(t *testing.T) {
 	db := setupTestDB(t)
 	service := &BlockService{}
 
+	// テストユーザーを作成（外部キー制約対応）
+	blocker := models.User{ID: "blocker123", GoogleID: "blocker123", Gmail: "blocker@example.com", Role: "user"}
+	blocked := models.User{ID: "blocked456", GoogleID: "blocked456", Gmail: "blocked@example.com", Role: "user"}
+	db.Create(&blocker)
+	db.Create(&blocked)
+
 	// 初回ブロック
 	block := models.UserBlock{
 		BlockedId: "blocked456",
@@ -55,6 +67,12 @@ func TestBlockService_BlockUser_Duplicate(t *testing.T) {
 func TestBlockService_UnblockUser(t *testing.T) {
 	db := setupTestDB(t)
 	service := &BlockService{}
+
+	// テストユーザーを作成（外部キー制約対応）
+	blocker := models.User{ID: "blocker123", GoogleID: "blocker123", Gmail: "blocker@example.com", Role: "user"}
+	blocked := models.User{ID: "blocked456", GoogleID: "blocked456", Gmail: "blocked@example.com", Role: "user"}
+	db.Create(&blocker)
+	db.Create(&blocked)
 
 	// ブロックを作成
 	block := models.UserBlock{
@@ -86,6 +104,12 @@ func TestBlockService_UnblockUser_NotFound(t *testing.T) {
 func TestBlockService_GetBlockList(t *testing.T) {
 	db := setupTestDB(t)
 	service := &BlockService{}
+
+	// ブロッカーユーザーを作成（外部キー制約対応）
+	blocker := models.User{ID: "blocker123", GoogleID: "blocker123", Gmail: "blocker@example.com", Role: "user"}
+	otherUser := models.User{ID: "other_user", GoogleID: "other_user", Gmail: "other@example.com", Role: "user"}
+	db.Create(&blocker)
+	db.Create(&otherUser)
 
 	// テストユーザーを作成
 	users := []models.User{
