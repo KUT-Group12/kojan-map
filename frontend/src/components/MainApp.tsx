@@ -10,7 +10,7 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Pin, User } from '../types';
+import { Pin, User, PinGenre } from '../types';
 //import type { Pin, User, PinGenre } from '../types';
 
 interface MainAppProps {
@@ -46,30 +46,19 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   useEffect(() => {
     const fetchPins = async () => {
       try {
-        // 全ピン取得
         const response = await fetch('http://127.0.0.1:8080/api/posts');
         if (!response.ok) throw new Error('ピンの取得に失敗しました');
         const data: Pin[] = await response.json();
 
-        // 各ピンに対して「投稿数50以上(isHot)」の状態をチェック
-        const pinsWithStatus = await Promise.all(
-          data.map(async (pin) => {
-            try {
-              const res = await fetch(`http://127.0.0.1:8080/api/posts/threshold?id=${pin.id}`);
-              const thresholdData = await res.json();
-              return {
-                ...pin,
-                isHot: thresholdData.isHot,
-                createdAt: new Date(pin.createdAt), // 日付の変換
-              };
-            } catch {
-              return { ...pin, createdAt: new Date(pin.createdAt) };
-            }
-          })
-        );
+        // 1回のレスポンスに含まれるフィールドをそのまま利用（N+1回の /threshold 呼び出しを削除）
+        const normalizedPins = data.map((pin) => ({
+          ...pin,
+          createdAt: new Date(pin.createdAt),
+          isHot: pin.isHot ?? false,
+        }));
 
-        setPins(pinsWithStatus);
-        setFilteredPins(pinsWithStatus);
+        setPins(normalizedPins);
+        setFilteredPins(normalizedPins);
       } catch (error) {
         console.error('Fetch pins error:', error);
         // エラー時はモックデータなどを入れる、もしくは空にする
@@ -214,6 +203,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const handlePinClick = async (pin: Pin) => {
     try {
       const response = await fetch(`http://localhost:8080/api/posts/detail?id=${pin.id}`);
+      if (!response.ok) throw new Error('詳細の取得に失敗しました');
+
       const data = await response.json();
 
       // 3. 取得したデータをステートに入れて、パネルを開く
@@ -288,7 +279,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     longitude: number;
     title: string;
     description: string;
-    genre: string;
+    genre: PinGenre;
     images: string[];
   }) => {
     try {
@@ -361,7 +352,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
 
       const pin: Pin = {
         ...newPinData,
-        genre: newPinData.genre as Genre,
         id: result.id,
         userId: user.id,
         userName: user.role === 'business' ? user.name : '匿名',
