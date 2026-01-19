@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User } from '../types';
 import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
 import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
@@ -14,7 +13,6 @@ import {
   UserCheck,
   Trash2,
   CheckCircle,
-  XCircle,
   LogOut,
   Activity,
   BarChart3,
@@ -128,11 +126,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     { name: '緊急情報', value: 1, color: '#8B5CF6' },
   ];
 
-  const handleApproveBusinessAccount = (appId: string) => {
+  const handleApproveBusinessAccount = (_appId: string) => {
+    // TODO: API を呼び出して承認状態を更新
     toast.success('事業者アカウントを承認しました');
   };
 
-  const handleRejectBusinessAccount = (appId: string) => {
+  const handleRejectBusinessAccount = (_appId: string) => {
+    // TODO: API を呼び出して却下状態を更新
     toast.success('事業者申請を却下しました');
   };
 

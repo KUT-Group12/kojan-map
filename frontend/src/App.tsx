@@ -19,9 +19,7 @@ interface User {
 }
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
-  const [jwtToken, setJwtToken] = useState<string | null>(null);
 
   useEffect(() => {
     // 初期化：ローカルストレージから JWT とユーザー情報を復元
@@ -29,7 +27,6 @@ export default function App() {
     const storedUser = getStoredUser();
 
     if (token && storedUser) {
-      setJwtToken(token);
       // ストレージのユーザー情報を App の User 型に変換
       const appUser: User = {
         id: storedUser.id,
@@ -40,22 +37,14 @@ export default function App() {
       };
       setUser(appUser);
     }
-
-    // ロード画面を2秒間表示
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (role: UserRole, googleId: string) => {
+  const handleLogin = () => {
     // JWT とユーザー情報は LoginScreen で既に保存済み
     const token = getStoredJWT();
     const storedUserData = getStoredUser();
 
     if (token && storedUserData) {
-      setJwtToken(token);
       const appUser: User = {
         id: storedUserData.id,
         email: storedUserData.email,
@@ -77,10 +66,6 @@ export default function App() {
   const handleUpdateUser = (updatedUser: User) => {
     setUser(updatedUser);
   };
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
 
   if (!user) {
     return <LoginScreen onLogin={handleLogin} />;

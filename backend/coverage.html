@@ -1,0 +1,589 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>services: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">kojan-map/user/services/other_service.go (84.2%)</option>
+				
+				<option value="file1">kojan-map/user/services/post_service.go (60.7%)</option>
+				
+				<option value="file2">kojan-map/user/services/user_service.go (55.9%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package services
+
+import (
+        "errors"
+        "time"
+
+        "kojan-map/user/config"
+        "kojan-map/user/models"
+)
+
+// BlockService ブロック関連のビジネスロジック
+type BlockService struct{}
+
+// BlockUser ユーザーをブロック
+func (bs *BlockService) BlockUser(userID, blockerID string) error <span class="cov8" title="1">{
+        if userID == "" || blockerID == "" </span><span class="cov0" title="0">{
+                return errors.New("userID and blockerID are required")
+        }</span>
+
+        <span class="cov8" title="1">if userID == blockerID </span><span class="cov8" title="1">{
+                return errors.New("cannot block yourself")
+        }</span>
+
+        // 既にブロック済みか確認
+        <span class="cov8" title="1">var existingBlock models.UserBlock
+        result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).First(&amp;existingBlock)
+        if result.Error == nil </span><span class="cov8" title="1">{
+                return errors.New("user already blocked")
+        }</span>
+
+        <span class="cov8" title="1">block := models.UserBlock{
+                UserID:    userID,
+                BlockerID: blockerID,
+        }
+        if err := config.DB.Create(&amp;block).Error; err != nil </span><span class="cov0" title="0">{
+                return errors.New("failed to block user")
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+// UnblockUser ブロック解除
+func (bs *BlockService) UnblockUser(userID, blockerID string) error <span class="cov8" title="1">{
+        if userID == "" || blockerID == "" </span><span class="cov0" title="0">{
+                return errors.New("userID and blockerID are required")
+        }</span>
+
+        <span class="cov8" title="1">result := config.DB.Where("user_id = ? AND blocker_id = ?", userID, blockerID).
+                Delete(&amp;models.UserBlock{})
+        
+        if result.Error != nil </span><span class="cov0" title="0">{
+                return errors.New("failed to unblock user")
+        }</span>
+        <span class="cov8" title="1">if result.RowsAffected == 0 </span><span class="cov8" title="1">{
+                return errors.New("block relationship not found")
+        }</span>
+        
+        <span class="cov8" title="1">return nil</span>
+}
+
+// GetBlockList ブロックリストを取得
+func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) <span class="cov8" title="1">{
+        if userID == "" </span><span class="cov0" title="0">{
+                return nil, errors.New("userID is required")
+        }</span>
+
+        <span class="cov8" title="1">var blocks []models.UserBlock
+        if err := config.DB.Where("blocker_id = ?", userID).
+                Order("created_at DESC").
+                Find(&amp;blocks).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, errors.New("failed to fetch block list")
+        }</span>
+        <span class="cov8" title="1">return blocks, nil</span>
+}
+
+// ReportService 通報関連のビジネスロジック
+type ReportService struct{}
+
+// CreateReport 通報を作成
+func (rs *ReportService) CreateReport(userID string, postID int, reason string) error <span class="cov8" title="1">{
+        if reason == "" </span><span class="cov8" title="1">{
+                return errors.New("reason is required")
+        }</span>
+
+        <span class="cov8" title="1">report := models.Report{
+                UserID:     userID,
+                PostID:     postID,
+                Reason:     reason,
+                ReportDate: time.Now(),
+                Status:     "pending",
+        }
+        return config.DB.Create(&amp;report).Error</span>
+}
+
+// ContactService 問い合わせ関連のビジネスロジック
+type ContactService struct{}
+
+// CreateContact 問い合わせを作成
+func (cs *ContactService) CreateContact(userID, subject, text string) error <span class="cov8" title="1">{
+        if subject == "" || text == "" </span><span class="cov8" title="1">{
+                return errors.New("subject and text are required")
+        }</span>
+
+        <span class="cov8" title="1">contact := models.Contact{
+                UserID:  userID,
+                Subject: subject,
+                Text:    text,
+                Status:  "pending",
+        }
+        return config.DB.Create(&amp;contact).Error</span>
+}
+
+// BusinessApplicationService 事業者申請関連のビジネスロジック
+type BusinessApplicationService struct{}
+
+// CreateBusinessApplication 事業者申請を作成
+func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, address, phone string) error <span class="cov8" title="1">{
+        if businessName == "" || address == "" || phone == "" </span><span class="cov8" title="1">{
+                return errors.New("businessName, address, and phone are required")
+        }</span>
+
+        <span class="cov8" title="1">app := models.BusinessApplication{
+                UserID:       userID,
+                BusinessName: businessName,
+                Address:      address,
+                Phone:        phone,
+                Status:       "pending",
+        }
+        return config.DB.Create(&amp;app).Error</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package services
+
+import (
+        "errors"
+        "time"
+
+        "kojan-map/user/config"
+        "kojan-map/user/models"
+)
+
+// PostService 投稿関連のビジネスロジック
+type PostService struct{}
+
+// GetAllPosts 投稿一覧を取得
+func (ps *PostService) GetAllPosts() ([]models.Post, error) <span class="cov8" title="1">{
+        var posts []models.Post
+        if err := config.DB.Where("is_anonymized = ?", false).
+                Order("created_at DESC").
+                Find(&amp;posts).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return posts, nil</span>
+}
+
+// GetPostDetail 投稿詳細を取得
+func (ps *PostService) GetPostDetail(postID int) (*models.Post, error) <span class="cov8" title="1">{
+        post := models.Post{}
+        if err := config.DB.Where("id = ?", postID).First(&amp;post).Error; err != nil </span><span class="cov8" title="1">{
+                return nil, errors.New("post not found")
+        }</span>
+
+        // 閲覧数をインクリメント
+        <span class="cov8" title="1">config.DB.Model(&amp;post).Update("num_view", post.NumView+1)
+
+        return &amp;post, nil</span>
+}
+
+// CreatePost 投稿を作成
+func (ps *PostService) CreatePost(post *models.Post) error <span class="cov8" title="1">{
+        if post.Title == "" || post.Text == "" </span><span class="cov8" title="1">{
+                return errors.New("title and text are required")
+        }</span>
+        <span class="cov8" title="1">return config.DB.Create(post).Error</span>
+}
+
+// AnonymizePost 投稿を匿名化（削除）
+func (ps *PostService) AnonymizePost(postID int) error <span class="cov8" title="1">{
+        return config.DB.Model(&amp;models.Post{}).
+                Where("id = ?", postID).
+                Updates(map[string]interface{}{
+                        "is_anonymized": true,
+                        "title":         "[削除されました]",
+                        "text":          "[削除されました]",
+                        "post_image":    "",
+                }).Error
+}</span>
+
+// GetUserPostHistory ユーザーの投稿履歴を取得
+func (ps *PostService) GetUserPostHistory(userID string) ([]models.Post, error) <span class="cov0" title="0">{
+        var posts []models.Post
+        if err := config.DB.Where("user_id = ? AND deleted_at IS NULL", userID).
+                Order("post_date DESC").
+                Find(&amp;posts).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return posts, nil</span>
+}
+
+// GetPinSize ピンサイズを判定（投稿数が50以上で1.3倍）
+func (ps *PostService) GetPinSize(postID int) (float64, error) <span class="cov0" title="0">{
+        var count int64
+        if err := config.DB.Model(&amp;models.Post{}).
+                Where("id = ?", postID).
+                Count(&amp;count).Error; err != nil </span><span class="cov0" title="0">{
+                return 1.0, err
+        }</span>
+
+        <span class="cov0" title="0">if count &gt;= 50 </span><span class="cov0" title="0">{
+                return 1.3, nil
+        }</span>
+        <span class="cov0" title="0">return 1.0, nil</span>
+}
+
+// AddReaction リアクションを追加
+func (ps *PostService) AddReaction(userID string, postID int) error <span class="cov8" title="1">{
+        if userID == "" </span><span class="cov0" title="0">{
+                return errors.New("userID is required")
+        }</span>
+
+        // 既にリアクション済みか確認
+        <span class="cov8" title="1">var existingReaction models.UserReaction
+        result := config.DB.Where("user_id = ? AND post_id = ?", userID, postID).
+                First(&amp;existingReaction)
+
+        if result.Error == nil </span><span class="cov8" title="1">{
+                // 既にリアクション済みの場合は削除（トグル）
+                if err := config.DB.Delete(&amp;existingReaction).Error; err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                // リアクション数をデクリメント
+                <span class="cov8" title="1">return config.DB.Model(&amp;models.Post{}).
+                        Where("id = ?", postID).
+                        UpdateColumn("num_reaction", config.DB.Raw("num_reaction - 1")).Error</span>
+        }
+
+        // リアクションを追加
+        <span class="cov8" title="1">reaction := models.UserReaction{
+                UserID: userID,
+                PostID: postID,
+        }
+        if err := config.DB.Create(&amp;reaction).Error; err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // リアクション数をインクリメント
+        <span class="cov8" title="1">return config.DB.Model(&amp;models.Post{}).
+                Where("id = ?", postID).
+                UpdateColumn("num_reaction", config.DB.Raw("num_reaction + 1")).Error</span>
+}
+
+// SearchPostsByKeyword キーワード検索
+func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, error) <span class="cov8" title="1">{
+        var posts []models.Post
+        if err := config.DB.Where("(title LIKE ? OR text LIKE ?) AND is_anonymized = ?", 
+                "%"+keyword+"%", "%"+keyword+"%", false).
+                Order("created_at DESC").
+                Find(&amp;posts).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return posts, nil</span>
+}
+
+// SearchPostsByGenre ジャンルで検索
+func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) <span class="cov8" title="1">{
+        var posts []models.Post
+        if err := config.DB.Where("genre_id = ? AND is_anonymized = ?", genreID, false).
+                Order("created_at DESC").
+                Find(&amp;posts).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return posts, nil</span>
+}
+
+// SearchPostsByPeriod 期間で検索
+func (ps *PostService) SearchPostsByPeriod(startDate, endDate time.Time) ([]models.Post, error) <span class="cov0" title="0">{
+        var posts []models.Post
+        if err := config.DB.Where("post_date BETWEEN ? AND ? AND is_anonymized = ?", 
+                startDate, endDate, false).
+                Order("created_at DESC").
+                Find(&amp;posts).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return posts, nil</span>
+}
+
+// DeletePost 投稿を削除（ソフトデリート）
+func (ps *PostService) DeletePost(postID int, userID string) error <span class="cov8" title="1">{
+        if userID == "" </span><span class="cov0" title="0">{
+                return errors.New("userID is required")
+        }</span>
+
+        <span class="cov8" title="1">var post models.Post
+        if err := config.DB.Where("id = ?", postID).First(&amp;post).Error; err != nil </span><span class="cov0" title="0">{
+                return errors.New("post not found")
+        }</span>
+
+        // 投稿者本人かチェック
+        <span class="cov8" title="1">if post.UserID != userID </span><span class="cov8" title="1">{
+                return errors.New("unauthorized: you can only delete your own posts")
+        }</span>
+
+        // ソフトデリート
+        <span class="cov8" title="1">if err := config.DB.Delete(&amp;post).Error; err != nil </span><span class="cov0" title="0">{
+                return errors.New("failed to delete post")
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// IsUserReacted ユーザーがリアクション済みかチェック
+func (ps *PostService) IsUserReacted(userID string, postID int) (bool, error) <span class="cov8" title="1">{
+        var count int64
+        if err := config.DB.Model(&amp;models.UserReaction{}).
+                Where("user_id = ? AND post_id = ?", userID, postID).
+                Count(&amp;count).Error; err != nil </span><span class="cov0" title="0">{
+                return false, err
+        }</span>
+        <span class="cov8" title="1">return count &gt; 0, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package services
+
+import (
+        "errors"
+        "fmt"
+        "time"
+
+        "github.com/google/uuid"
+        "gorm.io/gorm"
+        "kojan-map/user/config"
+        "kojan-map/user/models"
+)
+
+// UserService ユーザー関連のビジネスロジック
+type UserService struct{}
+
+// RegisterOrLogin Google認証でユーザーを登録またはログイン
+func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session, error) <span class="cov8" title="1">{
+        if googleID == "" </span><span class="cov8" title="1">{
+                return nil, errors.New("googleID is required")
+        }</span>
+        <span class="cov8" title="1">if email == "" </span><span class="cov8" title="1">{
+                return nil, errors.New("email is required")
+        }</span>
+
+        <span class="cov8" title="1">var user models.User
+
+        // ユーザーが既に存在するか確認
+        result := config.DB.Where("google_id = ?", googleID).First(&amp;user)
+
+        if result.Error != nil </span><span class="cov8" title="1">{
+                if result.Error == gorm.ErrRecordNotFound </span><span class="cov8" title="1">{
+                        // 新規ユーザーの登録
+                        user = models.User{
+                                ID:               uuid.New().String(),
+                                GoogleID:         googleID,
+                                Email:            email,
+                                Role:             "user",
+                                RegistrationDate: time.Now(),
+                        }
+
+                        if err := config.DB.Create(&amp;user).Error; err != nil </span><span class="cov0" title="0">{
+                                return nil, fmt.Errorf("failed to create user: %w", err)
+                        }</span>
+                } else<span class="cov0" title="0"> {
+                        return nil, fmt.Errorf("database error: %w", result.Error)
+                }</span>
+        }
+
+        // 既存の有効なセッションを確認
+        <span class="cov8" title="1">var existingSession models.Session
+        if err := config.DB.Where("user_id = ? AND expires_at &gt; ?", user.ID, time.Now()).First(&amp;existingSession).Error; err == nil </span><span class="cov8" title="1">{
+                // 有効なセッションが存在する場合は延長
+                existingSession.ExpiresAt = time.Now().Add(24 * time.Hour)
+                if err := config.DB.Save(&amp;existingSession).Error; err != nil </span><span class="cov0" title="0">{
+                        return nil, fmt.Errorf("failed to update session: %w", err)
+                }</span>
+                <span class="cov8" title="1">return &amp;existingSession, nil</span>
+        }
+
+        // 新しいセッションIDを生成
+        <span class="cov8" title="1">session := models.Session{
+                ID:        uuid.New().String(),
+                UserID:    user.ID,
+                SessionID: uuid.New().String(),
+                ExpiresAt: time.Now().Add(24 * time.Hour),
+        }
+
+        if err := config.DB.Create(&amp;session).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create session: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;session, nil</span>
+}
+
+// GetUserInfo ユーザー情報を取得
+func (us *UserService) GetUserInfo(googleID string) (*models.UserInfo, error) <span class="cov8" title="1">{
+        if googleID == "" </span><span class="cov0" title="0">{
+                return nil, errors.New("googleID is required")
+        }</span>
+
+        <span class="cov8" title="1">var user models.User
+        if err := config.DB.Where("google_id = ?", googleID).First(&amp;user).Error; err != nil </span><span class="cov8" title="1">{
+                if err == gorm.ErrRecordNotFound </span><span class="cov8" title="1">{
+                        return nil, errors.New("user not found")
+                }</span>
+                <span class="cov0" title="0">return nil, fmt.Errorf("database error: %w", err)</span>
+        }
+
+        <span class="cov8" title="1">return &amp;models.UserInfo{
+                UserID:           user.ID,
+                Email:            user.Email,
+                Role:             user.Role,
+                RegistrationDate: user.RegistrationDate,
+        }, nil</span>
+}
+
+// GetUserByID ユーザーIDからユーザー情報を取得
+func (us *UserService) GetUserByID(userID string) (*models.User, error) <span class="cov0" title="0">{
+        if userID == "" </span><span class="cov0" title="0">{
+                return nil, errors.New("userID is required")
+        }</span>
+
+        <span class="cov0" title="0">var user models.User
+        if err := config.DB.Where("id = ?", userID).First(&amp;user).Error; err != nil </span><span class="cov0" title="0">{
+                if err == gorm.ErrRecordNotFound </span><span class="cov0" title="0">{
+                        return nil, errors.New("user not found")
+                }</span>
+                <span class="cov0" title="0">return nil, fmt.Errorf("database error: %w", err)</span>
+        }
+
+        <span class="cov0" title="0">return &amp;user, nil</span>
+}
+
+// Logout ログアウト処理
+func (us *UserService) Logout(sessionID string) error <span class="cov0" title="0">{
+        if sessionID == "" </span><span class="cov0" title="0">{
+                return errors.New("sessionID is required")
+        }</span>
+
+        <span class="cov0" title="0">result := config.DB.Where("session_id = ?", sessionID).Delete(&amp;models.Session{})
+        if result.Error != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to logout: %w", result.Error)
+        }</span>
+        <span class="cov0" title="0">if result.RowsAffected == 0 </span><span class="cov0" title="0">{
+                return errors.New("session not found")
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// DeleteUser ユーザーを削除（退会）
+func (us *UserService) DeleteUser(googleID string) error <span class="cov8" title="1">{
+        if googleID == "" </span><span class="cov0" title="0">{
+                return errors.New("googleID is required")
+        }</span>
+
+        // トランザクション処理
+        <span class="cov8" title="1">return config.DB.Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                var user models.User
+                if err := tx.Where("google_id = ?", googleID).First(&amp;user).Error; err != nil </span><span class="cov8" title="1">{
+                        if err == gorm.ErrRecordNotFound </span><span class="cov8" title="1">{
+                                return errors.New("user not found")
+                        }</span>
+                        <span class="cov0" title="0">return fmt.Errorf("database error: %w", err)</span>
+                }
+
+                // 関連するセッションを削除
+                <span class="cov8" title="1">if err := tx.Where("user_id = ?", user.ID).Delete(&amp;models.Session{}).Error; err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to delete sessions: %w", err)
+                }</span>
+
+                // ユーザーを削除（ソフトデリート）
+                <span class="cov8" title="1">if err := tx.Delete(&amp;user).Error; err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to delete user: %w", err)
+                }</span>
+
+                <span class="cov8" title="1">return nil</span>
+        })
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
