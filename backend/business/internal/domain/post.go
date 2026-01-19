@@ -45,7 +45,7 @@ func (Post) TableName() string {
 // ImageURL: 画像URL
 type PostImage struct {
 	ID       string `gorm:"primaryKey"`
-	PostID   string
+	PostID   int64
 	ImageURL string
 }
 
@@ -58,8 +58,8 @@ func (PostImage) TableName() string {
 // PostID: 投稿ID（複合主キー）
 // GenreID: ジャンルID（複合主キー）
 type PostGenre struct {
-	PostID  string `gorm:"primaryKey"`
-	GenreID int64  `gorm:"primaryKey"`
+	PostID   int64   `gorm:"primaryKey"`
+	GenreIDs []int64 `json:"genreIds"`
 }
 
 // TableName は対応するテーブル名を指定
@@ -106,7 +106,7 @@ type CreatePostRequest struct {
 // description: 説明
 // images: 画像URLのリスト
 type PostResponse struct {
-	PostID        string   `json:"postId"`
+	PostID        int64    `json:"postId"`
 	LocationID    string   `json:"locationId"`
 	GenreIDs      []int64  `json:"genreIds"`
 	Title         string   `json:"title"`
@@ -126,16 +126,16 @@ type PostResponse struct {
 // postedAt: 投稿日時（ISO 8601形式: YYYY-MM-DDTHH:mm）
 // description: 説明
 type PostHistoryResponse struct {
-	PostID        string `json:"postId"`
-	GenreID       string `json:"genreId"`
-	Title         string `json:"title"`
-	ReactionCount int64  `json:"reactionCount"`
-	PostedAt      string `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
-	Description   string `json:"description"`
+	PostID        int64   `json:"postId"`
+	GenreIDs      []int64 `json:"genreIds"`
+	Title         string  `json:"title"`
+	ReactionCount int64   `json:"reactionCount"`
+	PostedAt      string  `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
+	Description   string  `json:"description"`
 }
 
 // AnonymizePostRequest は投稿匿名化のリクエスト
 // postId: 必須。匿名化する投稿のID
 type AnonymizePostRequest struct {
-	PostID string `json:"postId" binding:"required"`
+	PostID int64 `json:"postId" binding:"required"`
 }

@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
@@ -77,7 +79,7 @@ func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID str
 // UpdateBusinessName は事業者名を更新します（M3-4-2）。
 // 事業者名の更新は永続ストレージに反映する、空文字や不正な形式のエラーとする
 func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID int64, name string) error {
-	if name == "" || len(name) > 50 {
+	if strings.TrimSpace(name) == "" || utf8.RuneCountInString(name) > 50 {
 		return errors.NewAPIError(errors.ErrValidationFailed, "business name must be between 1 and 50 characters")
 	}
 
@@ -108,6 +110,16 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 
 	if len(icon) > 5*1024*1024 { // 5MB
 		return errors.NewAPIError(errors.ErrImageTooLarge, "image size must not exceed 5MB")
+	}
+
+	// 事業者の所有権チェック
+	ctxBusinessID, ok := contextkeys.GetBusinessID(ctx)
+	if !ok {
+		return errors.NewAPIError(errors.ErrUnauthorized, "business ID not found in context")
+	}
+
+	if ctxBusinessID != businessID {
+		return errors.NewAPIError(errors.ErrForbidden, "you are not authorized to update this business icon")
 	}
 
 	contentType := http.DetectContentType(icon)

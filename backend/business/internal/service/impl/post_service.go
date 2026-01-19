@@ -117,10 +117,19 @@ func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 		return errors.NewAPIError(errors.ErrNotFound, fmt.Sprintf("post not found: %v", err))
 	}
 
+	// 型アサーション
+	postData, ok := post.(*domain.Post)
+	if !ok {
+		return errors.NewAPIError(errors.ErrOperationFailed, "invalid post type")
+	}
 	// 投稿の作成者とログインユーザーが一致するか確認
-	authorID, _ := strconv.ParseInt(post.AuthorID, 10, 64)
+	authorID, err := strconv.ParseInt(postData.AuthorID, 10, 64)
+	if err != nil {
+		return errors.NewAPIError(errors.ErrOperationFailed, "invalid authorId")
+	}
+
 	if authorID != businessID {
-		return errors.NewAPIError(errors.ErrForbidden, "you are not authorized to anonymize this post")
+		return errors.NewAPIError(errors.ErrUnauthorized, "you are not authorized to anonymize this post")
 	}
 
 	err = s.postRepo.Anonymize(ctx, postID)

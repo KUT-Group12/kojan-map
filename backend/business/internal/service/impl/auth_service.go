@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"time"
@@ -24,6 +26,14 @@ type AuthServiceImpl struct {
 	mfaValidator        *mfa.MFAValidator
 	notificationService notification.NotificationService
 	sessionStore        *session.SessionStore
+}
+
+func generateSecureSessionID() (string, error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }
 
 // NewAuthServiceImpl は新しい認証サービスを作成します。
@@ -95,7 +105,11 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 
 	if isProduction {
 		// 本番環境: セッションIDを生成し、MFAコードは帯域外で送信
-		sessionID = fmt.Sprintf("session_%s_%d", req.GoogleID, time.Now().Unix())
+		var err error
+		sessionID, err = generateSecureSessionID()
+		if err != nil {
+			return nil, errors.NewAPIError(errors.ErrOperationFailed, "failed to generate session ID")
+		}
 
 		// セッション情報を保存（5分間有効）
 		s.sessionStore.CreateSession(sessionID, req.Gmail, mfaCode, req.GoogleID, 5*time.Minute)

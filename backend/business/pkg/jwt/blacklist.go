@@ -46,9 +46,8 @@ func (tb *TokenBlacklist) IsRevoked(token string) bool {
 		return false
 	}
 
-	// トークンがまだマップにある場合、失効されている
-	// （期限切れトークンはクリーンアップゴルーチンによって削除される）
-	return expiresAt.After(time.Now())
+	// 期限内のみ失効扱い（期限切れは false。後続のクリーンアップで削除）
+	return time.Now().Before(expiresAt)
 }
 
 // cleanupExpiredTokens periodically removes expired tokens from blacklist

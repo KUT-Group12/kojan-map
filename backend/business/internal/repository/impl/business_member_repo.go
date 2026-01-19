@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"gorm.io/gorm"
 	"kojan-map/business/internal/domain"
 	"unicode/utf8"
+
+	"gorm.io/gorm"
 )
 
 // BusinessMemberRepoImpl は GORM を使用して BusinessMemberRepo インターフェースを実装します。
@@ -85,7 +86,7 @@ func (r *BusinessMemberRepoImpl) Anonymize(ctx context.Context, businessID int64
 		Updates(map[string]interface{}{
 			"businessName":     "[Anonymized]",
 			"kanaBusinessName": "[Anonymized]",
-			"phone":            0,
+			"phone":            "[Anonymized]",
 			"address":          "[Anonymized]",
 			"profileImage":     nil,
 			"anonymizedAt":     gorm.Expr("NOW()"),

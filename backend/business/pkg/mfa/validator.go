@@ -63,19 +63,19 @@ func (m *MFAValidator) VerifyCode(email, providedCode string) (bool, error) {
 
 	mfaCode, exists := m.codes[email]
 	if !exists {
-		return false, fmt.Errorf("no MFA code found for email: %s", email)
+		return false, fmt.Errorf("invalid MFA code")
 	}
 
 	// Check if code expired
 	if time.Now().After(mfaCode.ExpiresAt) {
 		delete(m.codes, email)
-		return false, fmt.Errorf("MFA code expired")
+		return false, fmt.Errorf("invalid MFA code")
 	}
 
 	// Check if max attempts exceeded
 	if mfaCode.Attempts >= mfaCode.MaxAttempts {
 		delete(m.codes, email)
-		return false, fmt.Errorf("max MFA attempts exceeded")
+		return false, fmt.Errorf("invalid MFA code")
 	}
 
 	// Increment attempt count

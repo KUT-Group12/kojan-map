@@ -2,11 +2,13 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"gorm.io/gorm"
 	"kojan-map/business/internal/domain"
+
+	"gorm.io/gorm"
 )
 
 // ReportRepoImpl は GORM を使用して ReportRepo インターフェースを実装します。
@@ -39,11 +41,14 @@ func (r *ReportRepoImpl) Create(ctx context.Context, reporterID string, payload 
 
 	// 重複する通報が存在するかを確認します（同じ通報者、通報対象ユーザー、投稿）
 	var existingReport domain.Report
-	if err := r.db.WithContext(ctx).
-		Where("reporter_google_id = ? AND reported_google_id = ? AND target_post_id = ?",
-			reporterID, req.ReportedGoogleID, req.TargetPostID).
-		First(&existingReport).Error; err == nil {
+	err := r.db.WithContext(ctx).
+		Where("reporter_google_id = ? AND reported_google_id = ? AND target_post_id = ?", reporterID, req.ReportedGoogleID, req.TargetPostID).
+		First(&existingReport).Error
+	if err == nil {
 		return fmt.Errorf("duplicate report already exists")
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("failed to check existing report: %w", err)
 	}
 
 	report := &domain.Report{

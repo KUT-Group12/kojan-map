@@ -1,6 +1,7 @@
 package session
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"sync"
 	"time"
@@ -21,6 +22,7 @@ type SessionStore struct {
 	sessions map[string]*MFASession
 	ticker   *time.Ticker
 	stopChan chan struct{}
+	stopOnce sync.Once
 }
 
 // NewSessionStore はセッションストアを生成します
@@ -82,7 +84,7 @@ func (s *SessionStore) ValidateMFACode(sessionID, mfaCode string) (*MFASession, 
 		return nil, err
 	}
 
-	if session.MFACode != mfaCode {
+	if subtle.ConstantTimeCompare([]byte(session.MFACode), []byte(mfaCode)) != 1 {
 		return nil, fmt.Errorf("MFAコードが一致しません")
 	}
 
@@ -110,6 +112,8 @@ func (s *SessionStore) cleanupExpiredSessions() {
 
 // Stop はセッションストアを停止します
 func (s *SessionStore) Stop() {
-	s.ticker.Stop()
-	close(s.stopChan)
+	s.stopOnce.Do(func() {
+		s.ticker.Stop()
+		close(s.stopChan)
+	})
 }
