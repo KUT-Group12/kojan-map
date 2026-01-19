@@ -1,7 +1,11 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { LoginScreen } from './components/LoginScreen';
-const MainApp = lazy(() => import('./components/MainApp'));
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const MainApp = lazy(() =>
+  import('./components/MainApp').then((m) => ({ default: m.MainApp }))
+);
+const AdminDashboard = lazy(() =>
+  import('./components/AdminDashboard').then((m) => ({ default: m.AdminDashboard }))
+);
 import { Toaster } from './components/ui/sonner';
 import { getStoredJWT, getStoredUser, logout as authLogout } from './lib/auth';
 

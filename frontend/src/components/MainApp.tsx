@@ -227,7 +227,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       // 詳細パネルはselectedPinの有無で制御するため、フラグは不要
     } catch (error) {
       console.error('Fetch error:', error);
-      setSelectedPin(null);
       setDetailData(null);
     }
   };
@@ -384,6 +383,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       setPins((prev) => [pin, ...prev]);
       setFilteredPins((prev) => [pin, ...prev]);
       setIsCreateModalOpen(false);
+      setCreateInitialLatitude(undefined);
+      setCreateInitialLongitude(undefined);
     } catch (error) {
       console.error('Create pin error:', error);
       throw error;
