@@ -8,14 +8,14 @@ import (
 
 // User 一般会員モデル
 type User struct {
-	ID               string         `gorm:"primaryKey" json:"id"`
-	GoogleID         string         `gorm:"uniqueIndex" json:"googleId"`
-	Email            string         `gorm:"uniqueIndex" json:"gmail"`
-	Role             string         `json:"role"` // "user", "business", "admin"
-	RegistrationDate time.Time      `json:"registrationDate"`
-	CreatedAt        time.Time      `json:"createdAt"`
-	UpdatedAt        time.Time      `json:"updatedAt"`
-	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
+	ID               string         `gorm:"column:id;primaryKey" json:"id"`
+	GoogleID         string         `gorm:"column:googleId;uniqueIndex" json:"googleId"`
+	Gmail            string         `gorm:"column:gmail;uniqueIndex" json:"gmail"`
+	Role             string         `gorm:"column:role" json:"role"` // "general", "business", "admin"
+	RegistrationDate time.Time      `gorm:"column:registrationDate" json:"registrationDate"`
+	CreatedAt        time.Time      `gorm:"column:createdAt" json:"createdAt"`
+	UpdatedAt        time.Time      `gorm:"column:updatedAt" json:"updatedAt"`
+	DeletedAt        gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
 }
 
 // TableName テーブル名を指定
@@ -25,11 +25,11 @@ func (User) TableName() string {
 
 // Session セッション情報モデル
 type Session struct {
-	ID        string     `gorm:"column:id;primaryKey" json:"sessionId"`
-	GoogleID  string     `gorm:"column:google_id;index" json:"googleId"`
+	ID        string     `gorm:"column:sessionId;primaryKey" json:"sessionId"`
+	GoogleID  string     `gorm:"column:googleId;index" json:"googleId"`
 	Expiry    time.Time  `gorm:"column:expiry" json:"expiry"`
-	CreatedAt time.Time  `gorm:"column:created_at" json:"createdAt"`
-	RevokedAt *time.Time `gorm:"column:revoked_at" json:"revokedAt,omitempty"`
+	CreatedAt time.Time  `gorm:"column:createdAt" json:"createdAt"`
+	RevokedAt *time.Time `gorm:"column:revokedAt" json:"revokedAt,omitempty"`
 }
 
 // TableName テーブル名を指定
@@ -39,8 +39,8 @@ func (Session) TableName() string {
 
 // UserInfo ユーザー情報レスポンス
 type UserInfo struct {
-	UserID           string    `json:"userId"`
-	Email            string    `json:"gmail"`
+	UserID           string    `json:"id"`
+	Gmail            string    `json:"gmail"`
 	Role             string    `json:"role"`
 	RegistrationDate time.Time `json:"registrationDate"`
 }
