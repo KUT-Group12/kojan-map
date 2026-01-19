@@ -25,10 +25,11 @@ func SetupAdminRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Initialize services
 	dashboardService := service.NewAdminDashboardService(userRepo, postRepo, reportRepo, businessMemberRepo)
-	reportService := service.NewAdminReportService(reportRepo)
+	reportService := service.NewAdminReportService(reportRepo, db)
 	businessService := service.NewAdminBusinessService(businessRequestRepo, userRepo, businessMemberRepo)
 	userService := service.NewAdminUserService(userRepo)
 	contactService := service.NewAdminContactService(askRepo)
+	postService := service.NewAdminPostService(db)
 
 	// Initialize handlers
 	dashboardHandler := handler.NewAdminDashboardHandler(dashboardService)
@@ -36,45 +37,39 @@ func SetupAdminRoutes(r *gin.Engine, db *gorm.DB) {
 	businessHandler := handler.NewAdminBusinessHandler(businessService)
 	userHandler := handler.NewAdminUserHandler(userService)
 	contactHandler := handler.NewAdminContactHandler(contactService)
+	postHandler := handler.NewAdminPostHandler(postService)
 
 	// Apply middleware
-	admin := r.Group("/")
+	admin := r.Group("/api/admin")
 	admin.Use(middleware.AuthMiddleware())
 	admin.Use(middleware.AdminOnlyMiddleware())
 
-	// Admin API routes
-	api := admin.Group("/api")
+	// Admin API routes - 統一されたパス構造
 	{
 		// Dashboard
-		api.GET("/admin/summary", dashboardHandler.GetSummary)
+		admin.GET("/summary", dashboardHandler.GetSummary)
 
-		// Report Management
-		api.GET("/admin/reports", reportHandler.GetReports)
-		api.PUT("/admin/reports/:id/handle", reportHandler.HandleReport)
+		// Report Management (通報管理)
+		admin.GET("/reports", reportHandler.GetReports)
+		admin.GET("/reports/:id", reportHandler.GetReportDetail)
+		admin.PUT("/reports/:id/handle", reportHandler.HandleReport)
 
-		// Business Application Management
-		api.GET("/admin/request", businessHandler.GetApplications)
+		// Business Application Management (事業者申請管理)
+		admin.GET("/applications", businessHandler.GetApplications)
+		admin.PUT("/applications/:id/approve", businessHandler.ApproveApplication)
+		admin.PUT("/applications/:id/reject", businessHandler.RejectApplication)
 
-		// User Management
-		api.GET("/users", userHandler.GetUsers)
-	}
+		// User Management (ユーザー管理)
+		admin.GET("/users", userHandler.GetUsers)
+		admin.DELETE("/users/:userId", userHandler.DeleteUser)
 
-	// Application routes (slightly different path)
-	applications := admin.Group("/api/applications")
-	{
-		applications.PUT("/:id/approve", businessHandler.ApproveApplication)
-		applications.PUT("/:id/reject", businessHandler.RejectApplication)
-	}
+		// Post Management (投稿管理)
+		admin.GET("/posts/:postId", postHandler.GetPostByID)
+		admin.DELETE("/posts/:postId", postHandler.DeletePost)
 
-	// Internal API routes
-	internal := admin.Group("/internal")
-	{
-		// User deletion
-		internal.POST("/users/:userId", userHandler.DeleteUser)
-
-		// Contact/Inquiry Management
-		internal.GET("/asks", contactHandler.GetInquiries)
-		internal.POST("/requests/:requestId/approve", contactHandler.ApproveInquiry)
-		internal.POST("/requests/:requestId/reject", contactHandler.RejectInquiry)
+		// Contact/Inquiry Management (問い合わせ管理)
+		admin.GET("/inquiries", contactHandler.GetInquiries)
+		admin.PUT("/inquiries/:id/approve", contactHandler.ApproveInquiry)
+		admin.PUT("/inquiries/:id/reject", contactHandler.RejectInquiry)
 	}
 }

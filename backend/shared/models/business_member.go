@@ -15,7 +15,7 @@ type BusinessMember struct {
 	RegistDate       time.Time `gorm:"column:registDate;not null" json:"registDate"`
 	ProfileImage     []byte    `gorm:"column:profileImage;type:blob" json:"-"`
 	UserID           string    `gorm:"column:userId;not null;size:50" json:"userId"`
-	PlaceID          int       `gorm:"column:placeId;not null" json:"placeId"`
+	PlaceID          *int      `gorm:"column:placeId" json:"placeId,omitempty"`
 }
 
 // TableName specifies the table name for BusinessMember

@@ -5,6 +5,8 @@ import (
 
 	adminrepo "kojan-map/admin/repository"
 	"kojan-map/shared/models"
+
+	"gorm.io/gorm"
 )
 
 // ReportListResponse represents the paginated report list response
@@ -15,14 +17,40 @@ type ReportListResponse struct {
 	PageSize int             `json:"pageSize"`
 }
 
+// ReportDetailResponse represents detailed report information with target post
+type ReportDetailResponse struct {
+	ReportID     int    `json:"reportId"`
+	ReporterID   string `json:"reporterGoogleId"`
+	TargetPostID int    `json:"targetPostId"`
+	Reason       string `json:"reason"`
+	ReportedAt   string `json:"reportedAt"`
+	Handled      bool   `json:"handled"`
+	Deleted      bool   `json:"deleted"`
+	// Target post details
+	Post *PostInfo `json:"post,omitempty"`
+}
+
+// PostInfo represents basic post information for report detail
+type PostInfo struct {
+	PostID   int    `json:"postId"`
+	Title    string `json:"title"`
+	Text     string `json:"text"`
+	UserID   string `json:"userId"`
+	PostDate string `json:"postDate"`
+}
+
 // AdminReportService handles admin report management business logic
 type AdminReportService struct {
 	reportRepo *adminrepo.ReportRepository
+	db         *gorm.DB
 }
 
 // NewAdminReportService creates a new AdminReportService
-func NewAdminReportService(reportRepo *adminrepo.ReportRepository) *AdminReportService {
-	return &AdminReportService{reportRepo: reportRepo}
+func NewAdminReportService(reportRepo *adminrepo.ReportRepository, db *gorm.DB) *AdminReportService {
+	return &AdminReportService{
+		reportRepo: reportRepo,
+		db:         db,
+	}
 }
 
 // GetReports retrieves reports with pagination and optional filter
@@ -45,6 +73,38 @@ func (s *AdminReportService) GetReports(page, pageSize int, handled *bool) (*Rep
 		Page:     page,
 		PageSize: pageSize,
 	}, nil
+}
+
+// GetReportDetail retrieves a report with target post information
+func (s *AdminReportService) GetReportDetail(reportID int) (*ReportDetailResponse, error) {
+	report, err := s.reportRepo.FindByID(reportID)
+	if err != nil {
+		return nil, errors.New("report not found")
+	}
+
+	response := &ReportDetailResponse{
+		ReportID:     report.ReportID,
+		ReporterID:   report.UserID,
+		TargetPostID: report.PostID,
+		Reason:       report.Reason,
+		ReportedAt:   report.Date.Format("2006-01-02T15:04:05Z07:00"),
+		Handled:      report.ReportFlag,
+		Deleted:      report.RemoveFlag,
+	}
+
+	// Get target post information
+	var post models.Post
+	if err := s.db.Where("postId = ?", report.PostID).First(&post).Error; err == nil {
+		response.Post = &PostInfo{
+			PostID:   post.PostID,
+			Title:    post.Title,
+			Text:     post.Text,
+			UserID:   post.UserID,
+			PostDate: post.PostDate.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
+	return response, nil
 }
 
 // MarkAsHandled marks a report as handled

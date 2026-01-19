@@ -39,6 +39,23 @@ func (h *AdminReportHandler) GetReports(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// GetReportDetail handles GET /api/admin/reports/:id
+func (h *AdminReportHandler) GetReportDetail(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid report ID"})
+		return
+	}
+
+	result, err := h.service.GetReportDetail(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
 // HandleReport handles PUT /api/admin/reports/:id/handle
 func (h *AdminReportHandler) HandleReport(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
