@@ -22,8 +22,7 @@ func NewBlockHandler(blockService *services.BlockService) *BlockHandler {
 // POST /api/users/block
 func (bh *BlockHandler) BlockUser(c *gin.Context) {
 	var req struct {
-		UserID    string `json:"userId" binding:"required"`
-		BlockerID string `json:"blockerId" binding:"required"`
+		UserID string `json:"userId" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -31,7 +30,14 @@ func (bh *BlockHandler) BlockUser(c *gin.Context) {
 		return
 	}
 
-	if err := bh.blockService.BlockUser(req.UserID, req.BlockerID); err != nil {
+	// 認証済みコンテキストから blockerId を取得
+	blockerID := c.GetString("googleId")
+	if blockerID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := bh.blockService.BlockUser(req.UserID, blockerID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

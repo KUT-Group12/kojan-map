@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"kojan-map/user/services"
 
@@ -116,7 +117,7 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 
 	// ファイル形式チェック
 	contentType := file.Header.Get("Content-Type")
-	if contentType == "" || (contentType[:6] != "image/") {
+	if !strings.HasPrefix(contentType, "image/") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image"})
 		return
 	}

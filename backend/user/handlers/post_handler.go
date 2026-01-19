@@ -275,8 +275,7 @@ func (ph *PostHandler) SearchByPeriod(c *gin.Context) {
 // DELETE /api/posts
 func (ph *PostHandler) DeletePost(c *gin.Context) {
 	var req struct {
-		PostID int    `json:"postId" binding:"required"`
-		UserID string `json:"userId" binding:"required"`
+		PostID int `json:"postId" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -284,7 +283,14 @@ func (ph *PostHandler) DeletePost(c *gin.Context) {
 		return
 	}
 
-	if err := ph.postService.DeletePost(req.PostID, req.UserID); err != nil {
+	// 認証済みコンテキストから userID を取得
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := ph.postService.DeletePost(req.PostID, userID); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	}

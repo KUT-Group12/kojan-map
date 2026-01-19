@@ -72,16 +72,14 @@ func (ah *AuthHandler) Logout(c *gin.Context) {
 // Withdrawal 退会処理
 // PUT /api/auth/withdrawal
 func (ah *AuthHandler) Withdrawal(c *gin.Context) {
-	var req struct {
-		GoogleID string `json:"googleId" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 認証済みコンテキストから googleId を取得（認可を保証）
+	googleID := c.GetString("googleId")
+	if googleID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	if err := ah.userService.DeleteUser(req.GoogleID); err != nil {
+	if err := ah.userService.DeleteUser(googleID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
