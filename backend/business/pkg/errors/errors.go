@@ -13,6 +13,7 @@ const (
 	ErrInvalidCredentials ErrorCode = "INVALID_CREDENTIALS"
 	ErrMissingMFA         ErrorCode = "MISSING_MFA"
 	ErrUnauthorized       ErrorCode = "UNAUTHORIZED"
+	ErrForbidden          ErrorCode = "FORBIDDEN"
 	ErrTokenExpired       ErrorCode = "TOKEN_EXPIRED"
 
 	// リソース関連
@@ -61,6 +62,8 @@ func getStatusCode(code ErrorCode) int {
 	switch code {
 	case ErrInvalidCredentials, ErrMissingMFA, ErrUnauthorized, ErrTokenExpired:
 		return http.StatusUnauthorized
+	case ErrForbidden:
+		return http.StatusForbidden
 	case ErrNotFound:
 		return http.StatusNotFound
 	case ErrAlreadyExists, ErrDuplicate:

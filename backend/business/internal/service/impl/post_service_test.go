@@ -4,9 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"kojan-map/business/internal/domain"
+	"kojan-map/business/pkg/contextkeys"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"kojan-map/business/internal/domain"
 )
 
 // TestPostServiceImpl_List tests retrieving posts by business ID.
@@ -166,7 +168,7 @@ func TestPostServiceImpl_Create(t *testing.T) {
 				genreIDs:   []int64{1, 2},
 				payload: &domain.CreatePostRequest{
 					LocationID:  "loc-123",
-					GenreID:     "genre-1",
+					GenreIDs:    []int64{1},
 					Title:       "Test Post",
 					Description: "Test Description",
 					Images:      []string{"img1.png"},
@@ -182,7 +184,7 @@ func TestPostServiceImpl_Create(t *testing.T) {
 				genreIDs:   []int64{1},
 				payload: &domain.CreatePostRequest{
 					LocationID:  "loc-123",
-					GenreID:     "genre-1",
+					GenreIDs:    []int64{1},
 					Title:       "Test Post",
 					Description: "Test Description",
 				},
@@ -297,6 +299,7 @@ func TestPostServiceImpl_Anonymize(t *testing.T) {
 		args         args
 		wantErr      bool
 		setupFixture func(f *TestFixtures)
+		setupContext func() context.Context
 	}{
 		{
 			name: "valid_anonymize",
@@ -306,7 +309,11 @@ func TestPostServiceImpl_Anonymize(t *testing.T) {
 			wantErr: false,
 			setupFixture: func(f *TestFixtures) {
 				// Setup existing post for anonymization
-				f.SetupPost(1, "author-1", "Original Title", "Original Content", 10)
+				f.SetupPost(1, "1", "Original Title", "Original Content", 10)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
 			},
 		},
 		{
@@ -315,6 +322,10 @@ func TestPostServiceImpl_Anonymize(t *testing.T) {
 				postID: -1,
 			},
 			wantErr: true,
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
+			},
 		},
 	}
 
@@ -333,8 +344,14 @@ func TestPostServiceImpl_Anonymize(t *testing.T) {
 				postRepo: fixtures.PostRepo,
 			}
 
+			// Setup context
+			ctx := context.Background()
+			if tt.setupContext != nil {
+				ctx = tt.setupContext()
+			}
+
 			// Execute and verify
-			err := svc.Anonymize(context.Background(), tt.args.postID)
+			err := svc.Anonymize(ctx, tt.args.postID)
 
 			if tt.wantErr {
 				assert.Error(t, err, "Anonymize should return error for invalid input")

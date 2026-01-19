@@ -1,8 +1,6 @@
 package impl
 
 import (
-	"strconv"
-
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository/mock"
 	"kojan-map/business/pkg/jwt"
@@ -48,7 +46,7 @@ func NewTestFixtures() *TestFixtures {
 		ReportRepo:     reportRepo,
 		ContactRepo:    contactRepo,
 		PaymentRepo:    paymentRepo,
-		AuthService:    NewAuthServiceImpl(authRepo),
+		AuthService:    NewAuthServiceImpl(authRepo, jwt.NewTokenManager()),
 		MemberService:  NewMemberServiceImpl(memberRepo, authRepo),
 		PostService:    NewPostServiceImpl(postRepo),
 		StatsService:   NewStatsServiceImpl(statsRepo),
@@ -84,6 +82,7 @@ func (f *TestFixtures) SetupBusinessMember(
 		ProfileImage: profileImage,
 	}
 	f.MemberRepo.Members[businessID] = member
+	f.AuthRepo.BusinessMembers[googleID] = member
 	return member
 }
 
@@ -96,7 +95,7 @@ func (f *TestFixtures) SetupPost(
 	viewCount int64,
 ) *domain.Post {
 	post := &domain.Post{
-		ID:          strconv.FormatInt(postID, 10),
+		ID:          postID,
 		AuthorID:    authorID,
 		Title:       title,
 		Description: description,

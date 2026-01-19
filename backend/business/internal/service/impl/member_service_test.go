@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"kojan-map/business/pkg/contextkeys"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -90,6 +91,7 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 		args         args
 		wantErr      bool
 		setupFixture func(f *TestFixtures)
+		setupContext func() context.Context
 	}{
 		{
 			name: "valid_name_update",
@@ -101,6 +103,10 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 			setupFixture: func(f *TestFixtures) {
 				// Setup existing member for update
 				f.SetupBusinessMember(1, "user-123", "Old Business Name", nil)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
 			},
 		},
 		{
@@ -119,6 +125,10 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 				name:       "",
 			},
 			wantErr: true,
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
+			},
 		},
 	}
 
@@ -137,8 +147,14 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 				memberRepo: fixtures.MemberRepo,
 			}
 
+			// Setup context
+			ctx := context.Background()
+			if tt.setupContext != nil {
+				ctx = tt.setupContext()
+			}
+
 			// Execute and verify
-			err := svc.UpdateBusinessName(context.Background(), tt.args.businessID, tt.args.name)
+			err := svc.UpdateBusinessName(ctx, tt.args.businessID, tt.args.name)
 
 			if tt.wantErr {
 				assert.Error(t, err, "UpdateBusinessName should return error for invalid input")
@@ -162,17 +178,22 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 		args         args
 		wantErr      bool
 		setupFixture func(f *TestFixtures)
+		setupContext func() context.Context
 	}{
 		{
 			name: "valid_icon_update",
 			args: args{
 				businessID: 1,
-				icon:       []byte{0x89, 0x50, 0x4E, 0x47}, // PNG magic number
+				icon:       []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}, // Valid PNG header
 			},
 			wantErr: false,
 			setupFixture: func(f *TestFixtures) {
 				// Setup existing member for icon update
 				f.SetupBusinessMember(1, "user-123", "Test Business", nil)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
 			},
 		},
 		{
@@ -191,6 +212,10 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 				icon:       []byte{},
 			},
 			wantErr: true,
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
+			},
 		},
 	}
 
@@ -209,8 +234,14 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 				memberRepo: fixtures.MemberRepo,
 			}
 
+			// Setup context
+			ctx := context.Background()
+			if tt.setupContext != nil {
+				ctx = tt.setupContext()
+			}
+
 			// Execute and verify
-			err := svc.UpdateBusinessIcon(context.Background(), tt.args.businessID, tt.args.icon)
+			err := svc.UpdateBusinessIcon(ctx, tt.args.businessID, tt.args.icon)
 
 			if tt.wantErr {
 				assert.Error(t, err, "UpdateBusinessIcon should return error for invalid input")
@@ -233,6 +264,7 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 		args         args
 		wantErr      bool
 		setupFixture func(f *TestFixtures)
+		setupContext func() context.Context
 	}{
 		{
 			name: "valid_anonymize",
@@ -243,6 +275,10 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 			setupFixture: func(f *TestFixtures) {
 				// Setup existing member for anonymization
 				f.SetupBusinessMember(1, "user-123", "Test Business", nil)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
 			},
 		},
 		{
@@ -270,8 +306,14 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 				memberRepo: fixtures.MemberRepo,
 			}
 
+			// Setup context
+			ctx := context.Background()
+			if tt.setupContext != nil {
+				ctx = tt.setupContext()
+			}
+
 			// Execute and verify
-			err := svc.AnonymizeMember(context.Background(), tt.args.businessID)
+			err := svc.AnonymizeMember(ctx, tt.args.businessID)
 
 			if tt.wantErr {
 				assert.Error(t, err, "AnonymizeMember should return error for invalid input")

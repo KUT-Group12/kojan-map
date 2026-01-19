@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
 	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 // PostHandler は投稿関連のエンドポイントを処理するハンドラーです。
@@ -111,14 +112,10 @@ func (h *PostHandler) AnonymizePost(c *gin.Context) {
 		return
 	}
 
-	// Convert string postID to int64
-	postID, err := strconv.ParseInt(req.PostID, 10, 64)
-	if err != nil {
-		response.SendProblem(c, http.StatusBadRequest, "bad-request", "postId must be a valid integer", c.Request.URL.Path)
-		return
-	}
+	// PostID is already int64 in request struct
+	postID := req.PostID
 
-	err = h.postService.Anonymize(c.Request.Context(), postID)
+	err := h.postService.Anonymize(c.Request.Context(), postID)
 	if err != nil {
 		c.Error(err)
 		return

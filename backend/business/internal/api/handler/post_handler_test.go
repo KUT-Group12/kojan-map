@@ -7,11 +7,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"kojan-map/business/internal/domain"
 	svcimpl "kojan-map/business/internal/service/impl"
 	"kojan-map/business/pkg/contextkeys"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestPostHandler_CreatePost tests CreatePost endpoint (M3-6-2).
@@ -22,7 +23,7 @@ func TestPostHandler_CreatePost(t *testing.T) {
 	// Create request
 	req := domain.CreatePostRequest{
 		LocationID:  "loc-123",
-		GenreID:     "genre-456",
+		GenreIDs:    []int64{1, 2},
 		Title:       "Test Post Title",
 		Description: "Test post description",
 		Images:      []string{"image1.jpg", "image2.jpg"},
@@ -57,7 +58,7 @@ func TestPostHandler_CreatePost_MissingAuth(t *testing.T) {
 
 	req := domain.CreatePostRequest{
 		LocationID:  "loc-123",
-		GenreID:     "genre-456",
+		GenreIDs:    []int64{1, 2},
 		Title:       "Test Post Title",
 		Description: "Test post description",
 	}

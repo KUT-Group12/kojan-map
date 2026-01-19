@@ -2,10 +2,12 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"gorm.io/gorm"
 	"kojan-map/business/internal/domain"
+
+	"gorm.io/gorm"
 )
 
 // BlockRepoImpl は GORM を使用して BlockRepo インターフェースを実装します。

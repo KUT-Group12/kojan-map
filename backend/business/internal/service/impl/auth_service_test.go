@@ -4,12 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/pkg/jwt"
 	"kojan-map/business/pkg/mfa"
 	"kojan-map/business/pkg/oauth"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestAuthServiceImpl_GoogleAuth tests the Google OAuth authentication flow.
@@ -165,6 +166,11 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 
 			// Create test user in repository (use gmail as googleID for mock)
 			fixtures.SetupUser(tt.args.gmail, tt.args.gmail)
+
+			// Setup Business Member for successful login cases
+			if !tt.wantErr {
+				fixtures.SetupBusinessMember(1, tt.args.gmail, "Test Busines", nil)
+			}
 
 			// Execute and verify
 			result, err := svc.BusinessLogin(context.Background(), tt.args.gmail, mfaCode)

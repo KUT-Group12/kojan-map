@@ -7,11 +7,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"kojan-map/business/internal/domain"
 	svcimpl "kojan-map/business/internal/service/impl"
 	"kojan-map/business/pkg/contextkeys"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestBlockHandler_CreateBlock tests CreateBlock endpoint (M1-9-2).
@@ -158,7 +159,7 @@ func TestReportHandler_CreateReport(t *testing.T) {
 	// Create request
 	req := domain.CreateReportRequest{
 		ReportedGoogleID: "reported-user-id",
-		TargetPostID:     "123",
+		TargetPostID:     123,
 		ReportReason:     "inappropriate content",
 		ReportedAt:       "2026-01-12T10:00:00Z",
 	}
@@ -193,7 +194,7 @@ func TestReportHandler_CreateReport_MissingAuth(t *testing.T) {
 
 	req := domain.CreateReportRequest{
 		ReportedGoogleID: "reported-user-id",
-		TargetPostID:     "post-123",
+		TargetPostID:     123,
 		ReportReason:     "inappropriate",
 		ReportedAt:       "2026-01-12T10:00:00Z",
 	}

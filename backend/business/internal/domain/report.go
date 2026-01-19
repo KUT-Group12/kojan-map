@@ -15,7 +15,7 @@ type Report struct {
 	ID               string `gorm:"primaryKey"`
 	ReporterGoogleID string // 通報した事業者のGoogleID
 	ReportedGoogleID string // 通報対象のGoogleID
-	TargetPostID     string
+	TargetPostID     int64
 	ReportReason     string
 	ReportedAt       time.Time
 	CreatedAt        time.Time
@@ -34,7 +34,7 @@ func (Report) TableName() string {
 // reportedAt: 必須。通報日時（ISO 8601形式）
 type CreateReportRequest struct {
 	ReportedGoogleID string `json:"reportedGoogleId" binding:"required"`
-	TargetPostID     string `json:"targetPostId" binding:"required"`
+	TargetPostID     int64  `json:"targetPostId" binding:"required"`
 	ReportReason     string `json:"reportReason" binding:"required"`
 	ReportedAt       string `json:"reportedAt" binding:"required"` // ISO 8601形式
 }

@@ -13,14 +13,16 @@ import (
 // MockAuthRepo mocks AuthRepo interface for testing user authentication operations.
 // It uses an in-memory map to store users, with thread-safety via sync.Mutex.
 type MockAuthRepo struct {
-	mu    sync.Mutex
-	Users map[string]*domain.User // Key: googleID, Value: User
+	mu              sync.Mutex
+	Users           map[string]*domain.User           // Key: googleID, Value: User
+	BusinessMembers map[string]*domain.BusinessMember // Key: userID, Value: BusinessMember
 }
 
 // NewMockAuthRepo creates a new MockAuthRepo with an empty user map.
 func NewMockAuthRepo() *MockAuthRepo {
 	return &MockAuthRepo{
-		Users: make(map[string]*domain.User),
+		Users:           make(map[string]*domain.User),
+		BusinessMembers: make(map[string]*domain.BusinessMember),
 	}
 }
 
@@ -55,9 +57,28 @@ func (m *MockAuthRepo) GetUserByID(ctx context.Context, googleID string) (interf
 	return nil, nil
 }
 
+// GetUserByGmail retrieves a user by Gmail.
+// Iterates through map to find match.
+func (m *MockAuthRepo) GetUserByGmail(ctx context.Context, gmail string) (interface{}, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	for _, user := range m.Users {
+		if user.Gmail == gmail {
+			return user, nil
+		}
+	}
+	return nil, nil
+}
+
 // GetBusinessMemberByUserID retrieves a business member by user ID.
-// This is a stub implementation for the mock.
 func (m *MockAuthRepo) GetBusinessMemberByUserID(ctx context.Context, userID string) (interface{}, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if member, exists := m.BusinessMembers[userID]; exists {
+		return member, nil
+	}
 	return nil, nil
 }
 
@@ -194,7 +215,7 @@ func (m *MockPostRepo) Create(ctx context.Context, businessID int64, placeID int
 	m.NextID++
 
 	post := &domain.Post{
-		ID:            string(rune(postID)),
+		ID:            postID,
 		Title:         req.Title,
 		Description:   req.Description,
 		LocationID:    req.LocationID,

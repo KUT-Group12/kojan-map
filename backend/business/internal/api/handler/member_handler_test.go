@@ -8,11 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"kojan-map/business/internal/domain"
 	svcimpl "kojan-map/business/internal/service/impl"
 	"kojan-map/business/pkg/contextkeys"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestMemberHandler_UpdateBusinessName tests UpdateBusinessName endpoint (M3-4-2).
@@ -166,9 +167,7 @@ func TestMemberHandler_AnonymizeMember(t *testing.T) {
 	fixtures := svcimpl.NewTestFixtures()
 	memberHandler := NewMemberHandler(fixtures.MemberService)
 
-	req := domain.AnonymizeBusinessMemberRequest{
-		GoogleID: "test-user-id",
-	}
+	req := domain.AnonymizeBusinessMemberRequest{}
 	reqBody, _ := json.Marshal(req)
 
 	w := httptest.NewRecorder()
@@ -195,9 +194,7 @@ func TestMemberHandler_AnonymizeMember_MissingAuth(t *testing.T) {
 	fixtures := svcimpl.NewTestFixtures()
 	memberHandler := NewMemberHandler(fixtures.MemberService)
 
-	req := domain.AnonymizeBusinessMemberRequest{
-		GoogleID: "test-user-id",
-	}
+	req := domain.AnonymizeBusinessMemberRequest{}
 	reqBody, _ := json.Marshal(req)
 
 	w := httptest.NewRecorder()

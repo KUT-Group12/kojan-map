@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
+	"kojan-map/business/internal/domain"
 
 	"gorm.io/gorm"
-	"kojan-map/business/internal/domain"
 )
 
 // PostRepoImpl は GORM を使用して PostRepo インターフェースを実装します。
@@ -20,10 +22,15 @@ func NewPostRepoImpl(db *gorm.DB) *PostRepoImpl {
 }
 
 // ListByBusiness は事業者のすべての投稿を取得します（M1-6-1）。
-func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID string) (interface{}, error) {
+func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
 	var posts []domain.Post
+	// businessID is int64, but AuthorID in DB might be string. Ensure consistency.
+	// Assuming AuthorID is string in domain.Post as per previous view.
+	// If needed convert int64 to string for query if column is VARCHAR.
+	// Since Post.AuthorID is string, we convert:
+	bidStr := fmt.Sprintf("%d", businessID)
 	if err := r.db.WithContext(ctx).
-		Where("author_id = ? AND is_active = ?", businessID, true).
+		Where("author_id = ? AND is_active = ?", bidStr, true).
 		Order("posted_at DESC").
 		Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to list posts: %w", err)
@@ -32,7 +39,7 @@ func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID string) (i
 }
 
 // GetByID は ID を使用して投稿を取得します（M1-7-2）。
-func (r *PostRepoImpl) GetByID(ctx context.Context, postID string) (interface{}, error) {
+func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, error) {
 	var post domain.Post
 	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -94,23 +101,36 @@ func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int
 }
 
 // SetGenres は投稿に対してジャンルを設定します（多対多）（M1-8-4）。
-func (r *PostRepoImpl) SetGenres(ctx context.Context, postID string, genreIDs []int64) error {
+// PostGenreは {PostID, GenreIDs} なので、1行で複数のGenreIDを持つ構造（JSON等）か、
+// あるいはアプリケーション側で無理やり合わせるかですが、
+// ユーザー指定の `GenreIDs []int64` フィールドを持つ構造体を使うため、
+// 単に Create/Save する形になります。
+// Note: GORMのMany2Many標準とは異なる独自テーブル構造のようです。
+func (r *PostRepoImpl) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Delete existing genre associations
+		// Delete existing genre associations for this post
+		// Since primary key is PostID, deletion is straightforward
 		if err := tx.Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
 			return fmt.Errorf("failed to delete existing genres: %w", err)
 		}
 
-		// Insert new genre associations
-		for _, genreID := range genreIDs {
-			postGenre := &domain.PostGenre{
-				PostID:  postID,
-				GenreID: genreID,
-			}
-			if err := tx.Create(postGenre).Error; err != nil {
-				return fmt.Errorf("failed to create post_genre association: %w", err)
-			}
+		if len(genreIDs) == 0 {
+			return nil
 		}
+
+		// Insert new record
+		// ユーザー定義の PostGenre は PostID (int64) と GenreIDs ([]int64) を持ちます。
+		// GORMがスライスをJSONとして保存できるよう設定されているか、
+		// あるいはフック等が必要かもしれませんが、ここでは単純に保存します。
+		// *注意*: MySQLでJSON型カラムとして定義されていることを期待します。
+		postGenre := &domain.PostGenre{
+			PostID:   postID,
+			GenreIDs: genreIDs,
+		}
+		if err := tx.Create(postGenre).Error; err != nil {
+			return fmt.Errorf("failed to create post_genre association: %w", err)
+		}
+
 		return nil
 	})
 }

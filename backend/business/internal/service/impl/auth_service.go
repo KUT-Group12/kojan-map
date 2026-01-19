@@ -167,6 +167,9 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode stri
 	if err != nil {
 		return nil, errors.NewAPIError(errors.ErrNotFound, fmt.Sprintf("business member not found for user: %v", err))
 	}
+	if businessMember == nil {
+		return nil, errors.NewAPIError(errors.ErrNotFound, "business member not found for user")
+	}
 
 	member := businessMember.(*domain.BusinessMember)
 
