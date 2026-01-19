@@ -8,13 +8,7 @@ export default tseslint.config(
   // 1. 無視するディレクトリの設定
   // ここに書かれたパスは、プロジェクト全体で ESLint の対象外になります
   {
-    ignores: [
-      '**/__tests__/**',
-      '**/*.test.tsx',
-      '**/*.test.ts',
-      'node_modules/**',
-      'dist/**', // 'dist' だけでなく 'dist/**' と書くのが一般的です
-    ],
+    ignores: ['**/__tests__/**', '**/*.test.tsx', '**/*.test.ts', 'node_modules/**', 'dist/**'],
   },
 
   // 2. TypeScript/React 向けの設定
@@ -35,6 +29,15 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
+  {
+    files: ['**/*.{test,spec}.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.jest,
+      },
     },
   }
 );
