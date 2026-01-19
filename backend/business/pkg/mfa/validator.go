@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 )
 
@@ -11,6 +12,7 @@ import (
 type MFAValidator struct {
 	// In production, store MFA codes in Redis or database with TTL
 	// For now, using simple in-memory storage (not thread-safe; for dev only)
+	mu    sync.RWMutex
 	codes map[string]*MFACode
 }
 
@@ -42,6 +44,9 @@ func (m *MFAValidator) GenerateCode(email string) (string, error) {
 	}
 	code := fmt.Sprintf("%06d", n.Int64())
 
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	// Store code with 10-minute expiration
 	m.codes[email] = &MFACode{
 		Code:        code,
@@ -61,6 +66,9 @@ func (m *MFAValidator) VerifyCode(email, providedCode string) (bool, error) {
 		return false, fmt.Errorf("email and code are required")
 	}
 
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	mfaCode, exists := m.codes[email]
 	if !exists {
 		return false, fmt.Errorf("invalid MFA code")
@@ -75,11 +83,8 @@ func (m *MFAValidator) VerifyCode(email, providedCode string) (bool, error) {
 	// Check if max attempts exceeded
 	if mfaCode.Attempts >= mfaCode.MaxAttempts {
 		delete(m.codes, email)
-		return false, fmt.Errorf("invalid MFA code")
+		return false, fmt.Errorf("invalid MFA code: max attempts exceeded")
 	}
-
-	// Increment attempt count
-	mfaCode.Attempts++
 
 	// Verify code
 	if mfaCode.Code == providedCode {
@@ -87,11 +92,23 @@ func (m *MFAValidator) VerifyCode(email, providedCode string) (bool, error) {
 		return true, nil
 	}
 
+	// Increment attempt count on failure
+	mfaCode.Attempts++
+
+	// If max attempts reached after this failure, invalidate immediately
+	if mfaCode.Attempts >= mfaCode.MaxAttempts {
+		delete(m.codes, email)
+		return false, fmt.Errorf("invalid MFA code: max attempts exceeded")
+	}
+
 	return false, fmt.Errorf("invalid MFA code")
 }
 
 // CleanupExpiredCodes removes expired codes from storage.
 func (m *MFAValidator) CleanupExpiredCodes() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	now := time.Now()
 	for email, code := range m.codes {
 		if now.After(code.ExpiresAt) {

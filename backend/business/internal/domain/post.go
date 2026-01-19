@@ -58,8 +58,8 @@ func (PostImage) TableName() string {
 // PostID: 投稿ID（複合主キー）
 // GenreID: ジャンルID（複合主キー）
 type PostGenre struct {
-	PostID   int64   `gorm:"primaryKey"`
-	GenreIDs []int64 `json:"genreIds"`
+	PostID  int64 `gorm:"primaryKey"`
+	GenreID int64 `json:"genreIds"`
 }
 
 // TableName は対応するテーブル名を指定
@@ -97,7 +97,7 @@ type CreatePostRequest struct {
 // PostResponse は投稿情報のレスポンス
 // postId: 投稿ID
 // locationId: 場所ID
-// genreId: ジャンルID
+// genreIds: ジャンルIDのリスト
 // title: タイトル
 // viewCount: 閲覧数
 // reactionCount: リアクション数
@@ -120,7 +120,7 @@ type PostResponse struct {
 
 // PostHistoryResponse は投稿履歴のレスポンス
 // postId: 投稿ID
-// genreId: ジャンルID
+// genreIds: ジャンルIDのリスト
 // title: タイトル
 // reactionCount: リアクション数
 // postedAt: 投稿日時（ISO 8601形式: YYYY-MM-DDTHH:mm）

@@ -3,7 +3,6 @@ package impl
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
@@ -106,10 +105,10 @@ func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
 
-	// 投稿の所有者チェック
-	businessID, ok := contextkeys.GetBusinessID(ctx)
+	// 認証済みユーザーのUserID（GoogleID）を取得
+	userID, ok := contextkeys.GetUserID(ctx)
 	if !ok {
-		return errors.NewAPIError(errors.ErrUnauthorized, "business ID not found in context")
+		return errors.NewAPIError(errors.ErrUnauthorized, "user ID not found in context")
 	}
 
 	post, err := s.postRepo.GetByID(ctx, postID)
@@ -122,13 +121,9 @@ func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 	if !ok {
 		return errors.NewAPIError(errors.ErrOperationFailed, "invalid post type")
 	}
-	// 投稿の作成者とログインユーザーが一致するか確認
-	authorID, err := strconv.ParseInt(postData.AuthorID, 10, 64)
-	if err != nil {
-		return errors.NewAPIError(errors.ErrOperationFailed, "invalid authorId")
-	}
 
-	if authorID != businessID {
+	// 投稿の作成者（AuthorID）とログインユーザー（UserID）が一致するか確認
+	if postData.AuthorID != userID {
 		return errors.NewAPIError(errors.ErrUnauthorized, "you are not authorized to anonymize this post")
 	}
 

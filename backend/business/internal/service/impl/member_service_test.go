@@ -145,6 +145,7 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 			// Create service
 			svc := &MemberServiceImpl{
 				memberRepo: fixtures.MemberRepo,
+				authRepo:   fixtures.AuthRepo,
 			}
 
 			// Setup context
@@ -232,6 +233,7 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 			// Create service
 			svc := &MemberServiceImpl{
 				memberRepo: fixtures.MemberRepo,
+				authRepo:   fixtures.AuthRepo,
 			}
 
 			// Setup context
@@ -304,6 +306,7 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 			// Create service
 			svc := &MemberServiceImpl{
 				memberRepo: fixtures.MemberRepo,
+				authRepo:   fixtures.AuthRepo,
 			}
 
 			// Setup context

@@ -169,7 +169,7 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 
 			// Setup Business Member for successful login cases
 			if !tt.wantErr {
-				fixtures.SetupBusinessMember(1, tt.args.gmail, "Test Busines", nil)
+				fixtures.SetupBusinessMember(1, tt.args.gmail, "Test Business", nil)
 			}
 
 			// Execute and verify
@@ -193,16 +193,18 @@ func TestAuthServiceImpl_Logout(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name       string
+		args       args
+		wantErr    bool
+		setupToken bool // Add setupToken field
 	}{
 		{
 			name: "valid_logout",
 			args: args{
-				token: "valid-jwt-token",
+				token: "", // Will be set dynamically
 			},
-			wantErr: false,
+			wantErr:    false,
+			setupToken: true, // Add flag to generate real token
 		},
 		{
 			name: "empty_token",
@@ -227,6 +229,12 @@ func TestAuthServiceImpl_Logout(t *testing.T) {
 				authRepo:     fixtures.AuthRepo,
 				tokenManager: tokenManager,
 				mfaValidator: mfaValidator,
+			}
+
+			// Generate token if requested
+			if tt.setupToken {
+				token, _ := tokenManager.GenerateToken("test-user", "test@example.com", "user")
+				tt.args.token = token
 			}
 
 			err := svc.Logout(context.Background(), tt.args.token)

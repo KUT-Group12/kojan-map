@@ -238,3 +238,13 @@ func (s *AuthServiceImpl) Logout(ctx context.Context, session interface{}) error
 
 	return nil
 }
+
+// Close はAuthServiceのリソースをクリーンアップします（グレースフルシャットダウン用）
+func (s *AuthServiceImpl) Close() {
+	if s.sessionStore != nil {
+		s.sessionStore.Stop()
+	}
+	if s.tokenManager != nil {
+		s.tokenManager.Stop()
+	}
+}

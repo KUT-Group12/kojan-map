@@ -18,20 +18,20 @@ import "time"
 // CreatedAt: 作成日時
 // UpdatedAt: 更新日時
 type BusinessMember struct {
-	ID               int64     `gorm:"primaryKey;autoIncrement;column:id"`
-	BusinessName     string    `gorm:"column:businessName;type:varchar(50);not null"`
-	KanaBusinessName string    `gorm:"column:kanaBusinessName;type:varchar(50);not null"`
-	ZipCode          string    `gorm:"column:zipCode;type:varchar(10);not null"`
-	Address          string    `gorm:"column:address;type:varchar(100);not null"`
-	Phone            string    `gorm:"column:phone;type:varchar(20);not null"`
-	RegistDate       time.Time `gorm:"column:registDate;not null"`
-	ProfileImage     []byte    `gorm:"column:profileImage;type:blob"`
-	UserID           string    `gorm:"column:userId;type:varchar(50);index;not null"`
-	PlaceID          int64     `gorm:"column:placeId;not null"`
-	AnonymizedAt     *time.Time
-	IsActive         bool
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID               int64      `gorm:"primaryKey;autoIncrement;column:id"`
+	BusinessName     string     `gorm:"column:businessName;type:varchar(50);not null"`
+	KanaBusinessName string     `gorm:"column:kanaBusinessName;type:varchar(50);not null"`
+	ZipCode          string     `gorm:"column:zipCode;type:varchar(10);not null"`
+	Address          string     `gorm:"column:address;type:varchar(100);not null"`
+	Phone            string     `gorm:"column:phone;type:varchar(20);not null"`
+	RegistDate       time.Time  `gorm:"column:registDate;not null"`
+	ProfileImage     []byte     `gorm:"column:profileImage;type:blob"`
+	UserID           string     `gorm:"column:userId;type:varchar(50);index;not null"`
+	PlaceID          int64      `gorm:"column:placeId;not null"`
+	AnonymizedAt     *time.Time `gorm:"column:anonymizedAt"`
+	IsActive         bool       `gorm:"column:isActive"`
+	CreatedAt        time.Time  `gorm:"column:createdAt"`
+	UpdatedAt        time.Time  `gorm:"column:updatedAt"`
 }
 
 // TableName は対応するテーブル名を指定

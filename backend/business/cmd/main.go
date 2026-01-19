@@ -1,16 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"kojan-map/business/internal/api"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/middleware"
 	"kojan-map/business/pkg/logger"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // App はアプリケーション全体を管理する構造体
@@ -104,18 +110,51 @@ func main() {
 		os.Exit(1)
 	}
 
-	// ルーティング登録（実装は後続タスクで追加予定）
-	api.RegisterRoutes(app.Engine, app.DB)
+	// ルーティング登録とAuthServiceの取得
+	authService := api.RegisterRoutes(app.Engine, app.DB)
 
-	// アプリケーション起動
+	// HTTPサーバーの設定
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
 	addr := fmt.Sprintf(":%s", port)
-	if err := app.Run(addr); err != nil {
-		log.Error("Application runtime error: %v", err)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: app.Engine,
+	}
+
+	// サーバーを別ゴルーチンで起動
+	go func() {
+		log.Info("Starting application on %s", addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("Application runtime error: %v", err)
+			os.Exit(1)
+		}
+	}()
+
+	// グレースフルシャットダウンのためのシグナルハンドリング
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Info("Shutting down server...")
+
+	// リソースのクリーンアップ
+	if authService != nil {
+		authService.Close()
+		log.Info("AuthService resources cleaned up")
+	}
+
+	// HTTPサーバーのグレースフルシャットダウン（5秒のタイムアウト）
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("Server forced to shutdown: %v", err)
 		os.Exit(1)
 	}
+
+	log.Info("Server exited gracefully")
 }

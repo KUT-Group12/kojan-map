@@ -9,8 +9,8 @@ import "time"
 // CreatedAt: 作成日時
 type Block struct {
 	ID              string `gorm:"primaryKey"`
-	BlockingUserID  string // ブロックを実行した事業者のGoogleID
-	BlockedGoogleID string // ブロック対象のGoogleID
+	BlockingUserID  string `gorm:"uniqueIndex:idx_block_pair"` // ブロックを実行した事業者のGoogleID
+	BlockedGoogleID string `gorm:"uniqueIndex:idx_block_pair"` // ブロック対象のGoogleID
 	CreatedAt       time.Time
 }
 

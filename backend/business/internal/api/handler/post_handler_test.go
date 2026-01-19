@@ -98,8 +98,8 @@ func TestPostHandler_CreatePost_InvalidRequest(t *testing.T) {
 
 	postHandler.CreatePost(c)
 
-	// Should return error response
-	assert.NotEqual(t, http.StatusCreated, w.Code)
+	// Should return 400 Bad Request for invalid JSON
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 // TestPostHandler_ListPosts tests ListPosts endpoint (M3-6-1).
@@ -163,8 +163,8 @@ func TestPostHandler_GetPost(t *testing.T) {
 	// Call handler
 	postHandler.GetPost(c)
 
-	// Assert response (may be 200 or error based on business logic)
-	assert.True(t, w.Code >= 200 && w.Code < 500)
+	// Assert response - mock returns success with empty/default post
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 // TestPostHandler_AnonymizePost tests AnonymizePost endpoint (M3-6-4).
@@ -193,8 +193,8 @@ func TestPostHandler_AnonymizePost(t *testing.T) {
 	// Call handler
 	postHandler.AnonymizePost(c)
 
-	// Assert response (may vary based on implementation)
-	assert.True(t, w.Code >= 200 && w.Code < 500)
+	// Assert response - mock returns success
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 // TestPostHandler_GetPostHistory tests GetPostHistory endpoint.
@@ -216,6 +216,6 @@ func TestPostHandler_GetPostHistory(t *testing.T) {
 	// Call handler
 	postHandler.GetPostHistory(c)
 
-	// Assert response
-	assert.True(t, w.Code >= 200 && w.Code < 500)
+	// Assert response - mock returns empty list successfully
+	assert.Equal(t, http.StatusOK, w.Code)
 }

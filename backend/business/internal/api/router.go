@@ -3,18 +3,19 @@ package api
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"kojan-map/business/internal/api/handler"
 	"kojan-map/business/internal/api/middleware"
 	"kojan-map/business/internal/repository/impl"
 	svcimpl "kojan-map/business/internal/service/impl"
 	"kojan-map/business/pkg/jwt"
 	"kojan-map/business/pkg/response"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // RegisterRoutes はビジネスバックエンドのルートグループを設定します
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB) *svcimpl.AuthServiceImpl {
 	api := r.Group("/api")
 
 	// TokenManagerを初期化（サービスとミドルウェア間で共有）
@@ -111,6 +112,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+
+	return authService
 }
 
 func notImplemented(c *gin.Context) {

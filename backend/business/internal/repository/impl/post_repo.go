@@ -43,7 +43,7 @@ func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, 
 	var post domain.Post
 	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("post not found for id %d", postID)
+			return nil, fmt.Errorf("post not found for id %s", postID)
 		}
 		return nil, err
 	}
@@ -71,7 +71,10 @@ func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) err
 // Create は新しい投稿を作成します（M1-8-4）。
 // 投稿はビジネスメンバーのみ作成可能、画像は5MB以下、ジャンルは複数指定可能
 func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
-	req := payload.(*domain.CreatePostRequest)
+	req, ok := payload.(*domain.CreatePostRequest)
+	if !ok {
+		return 0, fmt.Errorf("invalid payload type: expected *domain.CreatePostRequest")
+	}
 
 	post := &domain.Post{
 		AuthorID:      fmt.Sprintf("%d", businessID), // or use string businessID
@@ -101,15 +104,10 @@ func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int
 }
 
 // SetGenres は投稿に対してジャンルを設定します（多対多）（M1-8-4）。
-// PostGenreは {PostID, GenreIDs} なので、1行で複数のGenreIDを持つ構造（JSON等）か、
-// あるいはアプリケーション側で無理やり合わせるかですが、
-// ユーザー指定の `GenreIDs []int64` フィールドを持つ構造体を使うため、
-// 単に Create/Save する形になります。
-// Note: GORMのMany2Many標準とは異なる独自テーブル構造のようです。
+// PostGenreは中間テーブルで、各行が1つのPostIDと1つのGenreIDのペアを表します。
 func (r *PostRepoImpl) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Delete existing genre associations for this post
-		// Since primary key is PostID, deletion is straightforward
+		// 既存のジャンル関連付けを削除
 		if err := tx.Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
 			return fmt.Errorf("failed to delete existing genres: %w", err)
 		}
@@ -118,17 +116,15 @@ func (r *PostRepoImpl) SetGenres(ctx context.Context, postID int64, genreIDs []i
 			return nil
 		}
 
-		// Insert new record
-		// ユーザー定義の PostGenre は PostID (int64) と GenreIDs ([]int64) を持ちます。
-		// GORMがスライスをJSONとして保存できるよう設定されているか、
-		// あるいはフック等が必要かもしれませんが、ここでは単純に保存します。
-		// *注意*: MySQLでJSON型カラムとして定義されていることを期待します。
-		postGenre := &domain.PostGenre{
-			PostID:   postID,
-			GenreIDs: genreIDs,
-		}
-		if err := tx.Create(postGenre).Error; err != nil {
-			return fmt.Errorf("failed to create post_genre association: %w", err)
+		// 各genreIDに対して個別のPostGenre行を作成
+		for _, genreID := range genreIDs {
+			postGenre := &domain.PostGenre{
+				PostID:  postID,
+				GenreID: genreID,
+			}
+			if err := tx.Create(postGenre).Error; err != nil {
+				return fmt.Errorf("failed to create post_genre association for genreID %d: %w", genreID, err)
+			}
 		}
 
 		return nil

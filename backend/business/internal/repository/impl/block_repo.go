@@ -27,24 +27,17 @@ func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string)
 		return fmt.Errorf("both blockerID and blockedID are required")
 	}
 
-	// 既にブロックされているかを確認します
-	var existingBlock domain.Block
-	err := r.db.WithContext(ctx).
-		Where("blocking_user_id = ? AND blocked_google_id = ?", blockerID, blockedID).
-		First(&existingBlock).Error
-	if err == nil {
-		return fmt.Errorf("user already blocked")
-	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("failed to check existing block: %w", err)
-	}
-
 	block := &domain.Block{
 		BlockingUserID:  blockerID,
 		BlockedGoogleID: blockedID,
 	}
 
 	if err := r.db.WithContext(ctx).Create(block).Error; err != nil {
+		// MySQL unique constraint violation error code: 1062
+		// Check if it's a duplicate key error
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return fmt.Errorf("user already blocked")
+		}
 		return fmt.Errorf("failed to create block: %w", err)
 	}
 
