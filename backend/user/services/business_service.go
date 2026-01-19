@@ -67,7 +67,7 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 		TotalReactions:   totalReactions,
 		TotalViews:       totalViews,
 		AverageReactions: avgReactions,
-		WeeklyData:       []struct {
+		WeeklyData: []struct {
 			Date      string `json:"date"`
 			Reactions int    `json:"reactions"`
 			Views     int    `json:"views"`

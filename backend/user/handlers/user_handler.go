@@ -28,12 +28,12 @@ func (uh *UserHandler) getUserInfoHandler(c *gin.Context) (*models.UserInfo, err
 	if !exists {
 		return nil, errors.New("unauthorized: googleId not found in JWT")
 	}
-	
+
 	googleIDStr, ok := googleID.(string)
 	if !ok {
 		return nil, errors.New("invalid googleId format")
 	}
-	
+
 	return uh.userService.GetUserInfo(googleIDStr)
 }
 

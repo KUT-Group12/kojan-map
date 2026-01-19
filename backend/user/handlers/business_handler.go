@@ -127,9 +127,7 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 		return
 	}
 	defer func() {
-		if err := imageData.Close(); err != nil {
-			// ログに記録するが、既にレスポンスを送っている場合は無視
-		}
+		_ = imageData.Close() // nolint:errcheck
 	}()
 
 	profileImage, err := h.businessService.UploadBusinessIcon(userID, imageData)
@@ -139,7 +137,7 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success":       true,
+		"success":      true,
 		"profileImage": profileImage,
 	})
 }

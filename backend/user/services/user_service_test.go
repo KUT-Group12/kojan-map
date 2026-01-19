@@ -99,8 +99,8 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 
 	oldSession := models.Session{
 		SessionID: uuid.New().String(),
-		GoogleID: "google789",
-		Expiry:   time.Now().Add(1 * time.Hour),
+		GoogleID:  "google789",
+		Expiry:    time.Now().Add(1 * time.Hour),
 	}
 	db.Create(&oldSession)
 
@@ -182,8 +182,8 @@ func TestUserService_DeleteUser(t *testing.T) {
 
 	session := models.Session{
 		SessionID: uuid.New().String(),
-		GoogleID: "google_delete",
-		Expiry:   time.Now().Add(24 * time.Hour),
+		GoogleID:  "google_delete",
+		Expiry:    time.Now().Add(24 * time.Hour),
 	}
 	db.Create(&session)
 
@@ -266,8 +266,8 @@ func TestUserService_Logout(t *testing.T) {
 	sessionID := uuid.New().String()
 	session := models.Session{
 		SessionID: sessionID,
-		GoogleID: "google_logout",
-		Expiry:   time.Now().Add(24 * time.Hour),
+		GoogleID:  "google_logout",
+		Expiry:    time.Now().Add(24 * time.Hour),
 	}
 	db.Create(&session)
 
