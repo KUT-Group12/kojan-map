@@ -12,6 +12,8 @@ type BackendUser = {
   gmail?: string;
   email?: string;
   role: string;
+  businessName?: string;
+  businessIcon?: string;
   registrationDate?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -41,8 +43,8 @@ const toStoredUser = (user: BackendUser): StoredUser => {
     googleId: user.googleId,
     email,
     role: (user.role as UserRole) || 'general',
-    businessName: (user as any).businessName,
-    businessIcon: (user as any).businessIcon,
+    businessName: user.businessName,
+    businessIcon: user.businessIcon,
     createdAt,
   };
 };
