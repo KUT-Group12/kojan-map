@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User, Report } from '../types';
-import { mockPins } from '../lib/mockData';
+import { User, Report, Post } from '../types';
+import { API_GENRE_MAP, genreColors, genreLabels } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 import AdminReport, { AdminReportProps } from './AdminReport';
@@ -45,6 +45,23 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8080/api/posts');
+        if (response.ok) {
+          const data = await response.json();
+          setPosts(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch posts", error);
+      }
+    };
+    fetchPosts();
+  }, []);
+
   const [reports, setReports] = useState<Report[]>([
     {
       reportId: 1, // id -> reportId
@@ -173,8 +190,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     totalUsers: 1234,
     activeUsers: 856,
     // pinId から postId への変更に伴い、参照先も修正が必要な場合があります
-    totalPosts: mockPins.length,
-    totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
+    totalPosts: posts.length,
+    totalReactions: posts.reduce((sum, post) => sum + post.numReaction, 0),
     businessUsers: 45,
     // status === 'pending' を reportFlag === false に修正
     pendingReports: reports.filter((r) => r.reportFlag === false).length,
@@ -190,13 +207,23 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     { date: '11/03', users: 856, posts: 58, reactions: 315 },
   ];
 
-  const genreDistribution = [
-    { name: 'グルメ', value: 2, color: '#EF4444' },
-    { name: 'イベント', value: 1, color: '#F59E0B' },
-    { name: '景色', value: 1, color: '#10B981' },
-    { name: 'お店', value: 1, color: '#3B82F6' },
-    { name: '緊急情報', value: 1, color: '#8B5CF6' },
-  ];
+  // Postデータからジャンル分布を計算
+  const genreCounts = posts.reduce((acc, post) => {
+    const genreKey = API_GENRE_MAP[post.genreId] || 'other';
+    acc[genreKey] = (acc[genreKey] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const genreDistribution = Object.entries(genreCounts).map(([key, value]) => ({
+    name: genreLabels[key as any] || key,
+    value: value,
+    color: genreColors[key as any] || '#6B7280'
+  }));
+
+  // データがない場合のデフォルト表示
+  if (genreDistribution.length === 0) {
+    genreDistribution.push({ name: 'なし', value: 1, color: '#e5e7eb' });
+  }
 
   // 事業者申請承認時の処理 (M4-5-2 ProcessApplication)
   // 引数を id: string から applicationId: number に変更
@@ -241,10 +268,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         prev.map((report) =>
           report.postId === postId // pinId から postId へ変更
             ? {
-                ...report,
-                reportFlag: true, // status: 'resolved' の代わり
-                removeFlag: true, // 実際に削除したため true に更新
-              }
+              ...report,
+              reportFlag: true, // status: 'resolved' の代わり
+              removeFlag: true, // 実際に削除したため true に更新
+            }
             : report
         )
       );
@@ -298,22 +325,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'reports'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'reports'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <AlertTriangle className="w-5 h-5" />
             <span className="flex-1 text-left">通報管理</span>
@@ -323,11 +348,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('business')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'business'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'business'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
@@ -337,22 +361,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'users'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'users'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <Users className="w-5 h-5" />
             <span>ユーザー管理</span>
           </button>
           <button
             onClick={() => setActiveTab('inquiries')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'inquiries'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'inquiries'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
