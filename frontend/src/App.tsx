@@ -4,6 +4,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
+import { getStoredJWT, getStoredUser, logout as authLogout } from './lib/auth';
 
 type UserRole = 'general' | 'business' | 'admin';
 
@@ -20,8 +21,26 @@ interface User {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [jwtToken, setJwtToken] = useState<string | null>(null);
 
   useEffect(() => {
+    // 初期化：ローカルストレージから JWT とユーザー情報を復元
+    const token = getStoredJWT();
+    const storedUser = getStoredUser();
+
+    if (token && storedUser) {
+      setJwtToken(token);
+      // ストレージのユーザー情報を App の User 型に変換
+      const appUser: User = {
+        id: storedUser.id,
+        email: storedUser.email,
+        name: storedUser.email ? storedUser.email.split('@')[0] : 'ユーザー',
+        role: storedUser.role as UserRole,
+        createdAt: new Date(storedUser.createdAt),
+      };
+      setUser(appUser);
+    }
+
     // ロード画面を2秒間表示
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -30,22 +49,28 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (role: UserRole) => {
-    // モックユーザーでログイン
-    const mockUser: User = {
-      id: `user_${Date.now()}`,
-      email: 'user@example.com',
-      // 一般会員はユーザー名を不要にするため空文字にする
-      name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '',
-      role,
-      businessName: role === 'business' ? '山田商店' : undefined,
-      businessIcon: role === 'business' ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzaG9wJTIwbG9nbyUyMGljb258ZW58MXx8fHwxNzYyMjQxOTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080' : undefined,
-      createdAt: new Date(),
-    };
-    setUser(mockUser);
+  const handleLogin = (role: UserRole, googleId: string) => {
+    // JWT とユーザー情報は LoginScreen で既に保存済み
+    const token = getStoredJWT();
+    const storedUserData = getStoredUser();
+
+    if (token && storedUserData) {
+      setJwtToken(token);
+      const appUser: User = {
+        id: storedUserData.id,
+        email: storedUserData.email,
+        name: storedUserData.email ? storedUserData.email.split('@')[0] : 'ユーザー',
+        role: storedUserData.role as UserRole,
+        createdAt: new Date(storedUserData.createdAt),
+      };
+      setUser(appUser);
+    }
   };
 
   const handleLogout = () => {
+    // ローカルストレージから JWT とユーザー情報を削除
+    authLogout();
+    setJwtToken(null);
     setUser(null);
   };
 
