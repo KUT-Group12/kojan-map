@@ -89,9 +89,9 @@ func TestBlockService_GetBlockList(t *testing.T) {
 
 	// テストユーザーを作成
 	users := []models.User{
-		{ID: uuid.New().String(), GoogleID: "blocked1", Email: "blocked1@example.com", Role: "user"},
-		{ID: uuid.New().String(), GoogleID: "blocked2", Email: "blocked2@example.com", Role: "user"},
-		{ID: uuid.New().String(), GoogleID: "blocked3", Email: "blocked3@example.com", Role: "user"},
+		{ID: uuid.New().String(), GoogleID: "blocked1", Gmail: "blocked1@example.com", Role: "user"},
+		{ID: uuid.New().String(), GoogleID: "blocked2", Gmail: "blocked2@example.com", Role: "user"},
+		{ID: uuid.New().String(), GoogleID: "blocked3", Gmail: "blocked3@example.com", Role: "user"},
 	}
 	for _, u := range users {
 		db.Create(&u)

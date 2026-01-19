@@ -52,7 +52,7 @@ func TestUserService_RegisterOrLogin_NewUser(t *testing.T) {
 	var user models.User
 	err = db.Where("google_id = ?", session.GoogleID).First(&user).Error
 	assert.NoError(t, err)
-	assert.Equal(t, "test@example.com", user.Email)
+	assert.Equal(t, "test@example.com", user.Gmail)
 	assert.Equal(t, "user", user.Role)
 }
 
@@ -64,7 +64,7 @@ func TestUserService_RegisterOrLogin_ExistingUser(t *testing.T) {
 	existingUser := models.User{
 		ID:               uuid.New().String(),
 		GoogleID:         "google456",
-		Email:            "existing@example.com",
+		Gmail:            "existing@example.com",
 		Role:             "user",
 		RegistrationDate: time.Now(),
 	}
@@ -91,7 +91,7 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	user := models.User{
 		ID:               uuid.New().String(),
 		GoogleID:         "google789",
-		Email:            "session@example.com",
+		Gmail:            "session@example.com",
 		Role:             "user",
 		RegistrationDate: time.Now(),
 	}
@@ -140,7 +140,7 @@ func TestUserService_GetUserInfo(t *testing.T) {
 	user := models.User{
 		ID:               uuid.New().String(),
 		GoogleID:         "google_info",
-		Email:            "info@example.com",
+		Gmail:            "info@example.com",
 		Role:             "user",
 		RegistrationDate: time.Now(),
 	}
@@ -152,7 +152,7 @@ func TestUserService_GetUserInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, userInfo)
 	assert.Equal(t, user.ID, userInfo.UserID)
-	assert.Equal(t, "info@example.com", userInfo.Email)
+	assert.Equal(t, "info@example.com", userInfo.Gmail)
 	assert.Equal(t, "user", userInfo.Role)
 }
 
@@ -174,7 +174,7 @@ func TestUserService_DeleteUser(t *testing.T) {
 	user := models.User{
 		ID:               uuid.New().String(),
 		GoogleID:         "google_delete",
-		Email:            "delete@example.com",
+		Gmail:            "delete@example.com",
 		Role:             "user",
 		RegistrationDate: time.Now(),
 	}
@@ -220,7 +220,7 @@ func TestUserService_GetUserByID(t *testing.T) {
 	user := models.User{
 		ID:               uuid.New().String(),
 		GoogleID:         "google_id_test",
-		Email:            "byid@example.com",
+		Gmail:            "byid@example.com",
 		Role:             "user",
 		RegistrationDate: time.Now(),
 	}
@@ -231,7 +231,7 @@ func TestUserService_GetUserByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, retrieved)
 	assert.Equal(t, user.ID, retrieved.ID)
-	assert.Equal(t, "byid@example.com", retrieved.Email)
+	assert.Equal(t, "byid@example.com", retrieved.Gmail)
 }
 
 func TestUserService_GetUserByID_NotFound(t *testing.T) {

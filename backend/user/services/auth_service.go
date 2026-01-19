@@ -145,7 +145,7 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 	newUser := models.User{
 		ID:               fmt.Sprintf("user_%d", time.Now().UnixNano()),
 		GoogleID:         googleResp.Sub,
-		Email:            googleResp.Email,
+		Gmail:            googleResp.Email,
 		Role:             role,
 		RegistrationDate: time.Now(),
 		CreatedAt:        time.Now(),
@@ -164,7 +164,7 @@ func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
 	claims := JWTClaims{
 		UserID:   user.ID,
 		GoogleID: user.GoogleID,
-		Email:    user.Email,
+		Email:    user.Gmail,
 		Role:     user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // 24時間有効

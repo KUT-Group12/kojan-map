@@ -53,8 +53,8 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 	totalReactions := 0
 	totalViews := 0
 	for _, post := range posts {
-		totalReactions += post.Reactions
-		totalViews += post.ViewCount
+		totalReactions += post.NumReaction
+		totalViews += post.NumView
 	}
 
 	avgReactions := 0
@@ -83,9 +83,9 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 		dayReactions := 0
 		dayViews := 0
 		for _, post := range posts {
-			if post.PostedTime.After(dayStart) && post.PostedTime.Before(dayEnd) {
-				dayReactions += post.Reactions
-				dayViews += post.ViewCount
+			if post.PostDate.After(dayStart) && post.PostDate.Before(dayEnd) {
+				dayReactions += post.NumReaction
+				dayViews += post.NumView
 			}
 		}
 

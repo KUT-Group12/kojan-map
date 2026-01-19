@@ -37,7 +37,7 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 		user = models.User{
 			ID:               uuid.New().String(),
 			GoogleID:         googleID,
-			Email:            email,
+			Gmail:            email,
 			Role:             "user",
 			RegistrationDate: time.Now(),
 		}
@@ -84,7 +84,7 @@ func (us *UserService) GetUserInfo(googleID string) (*models.UserInfo, error) {
 
 	return &models.UserInfo{
 		UserID:           user.ID,
-		Email:            user.Email,
+		Gmail:            user.Gmail,
 		Role:             user.Role,
 		RegistrationDate: user.RegistrationDate,
 	}, nil
