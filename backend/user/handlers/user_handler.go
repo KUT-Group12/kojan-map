@@ -62,34 +62,36 @@ func (uh *UserHandler) GetMypageDetails(c *gin.Context) {
 // GetReactionHistory リアクション履歴を取得
 // GET /api/posts/history/reactions
 func (uh *UserHandler) GetReactionHistory(c *gin.Context) {
-	googleID := c.Query("googleId")
-	if googleID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "googleId required"})
-		return
-	}
-
-	// ユーザー情報を取得
-	userInfo, err := uh.userService.GetUserInfo(googleID)
+	userInfo, err := uh.getUserInfoHandler(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	// リアクション履歴に基づいて投稿を取得
 	var reactions []models.UserReaction
-	if err := config.DB.Where("user_id = ?", userInfo.UserID).
-		Order("created_at DESC").
+	if err := config.DB.Where("userId = ?", userInfo.UserID).
+		Order("createdAt DESC").
 		Find(&reactions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch reactions"})
 		return
 	}
 
-	// リアクション済みの投稿IDを取得
-	var reactionedPosts []models.Post
+	postIDs := make([]int, 0, len(reactions))
+	seen := make(map[int]struct{})
 	for _, reaction := range reactions {
-		var post models.Post
-		if err := config.DB.Where("id = ?", reaction.PostID).First(&post).Error; err == nil {
-			reactionedPosts = append(reactionedPosts, post)
+		if _, ok := seen[reaction.PostID]; ok {
+			continue
+		}
+		seen[reaction.PostID] = struct{}{}
+		postIDs = append(postIDs, reaction.PostID)
+	}
+
+	var reactionedPosts []models.Post
+	if len(postIDs) > 0 {
+		if err := config.DB.Where("postId IN ?", postIDs).Find(&reactionedPosts).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch reactioned posts"})
+			return
 		}
 	}
 

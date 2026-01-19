@@ -27,8 +27,7 @@ func NewAuthHandler(userService *services.UserService, authService *services.Aut
 // POST /api/users/register
 func (ah *AuthHandler) Register(c *gin.Context) {
 	var req struct {
-		GoogleToken string `json:"googleId" binding:"required"`
-		Email       string `json:"gmail" binding:"required"`
+		GoogleToken string `json:"google_token" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -39,7 +38,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 	// Google トークンを検証
 	googleResp, err := ah.authService.VerifyGoogleToken(req.GoogleToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid google token"})
 		return
 	}
 

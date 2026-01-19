@@ -47,7 +47,7 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 	}
 
 	var posts []models.Post
-	if err := config.DB.Where("user_id = ?", userID).Find(&posts).Error; err != nil {
+	if err := config.DB.Where("userId = ?", userID).Find(&posts).Error; err != nil {
 		return nil, errors.New("failed to fetch posts")
 	}
 
@@ -111,7 +111,7 @@ func (bs *BusinessService) GetBusinessProfile(userID string) (*BusinessProfileRe
 	}
 
 	var app models.BusinessApplication
-	if err := config.DB.Where("user_id = ?", userID).First(&app).Error; err != nil {
+	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
 		return nil, errors.New("business application not found")
 	}
 
@@ -137,7 +137,7 @@ func (bs *BusinessService) UpdateBusinessProfile(
 	}
 
 	var app models.BusinessApplication
-	if err := config.DB.Where("user_id = ?", userID).First(&app).Error; err != nil {
+	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
 		return nil, errors.New("business application not found")
 	}
 
@@ -187,7 +187,7 @@ func (bs *BusinessService) UploadBusinessIcon(userID string, fileData io.Reader)
 	}
 
 	var app models.BusinessApplication
-	if err := config.DB.Where("user_id = ?", userID).First(&app).Error; err != nil {
+	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
 		return "", errors.New("business application not found")
 	}
 
@@ -208,7 +208,7 @@ func (bs *BusinessService) GetBusinessPostCount(userID string) (int, error) {
 	}
 
 	var count int64
-	if err := config.DB.Model(&models.Post{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
+	if err := config.DB.Model(&models.Post{}).Where("userId = ?", userID).Count(&count).Error; err != nil {
 		return 0, errors.New("failed to fetch post count")
 	}
 
@@ -233,7 +233,7 @@ func (bs *BusinessService) UpdateBusinessName(userID, businessName string) error
 	}
 
 	var app models.BusinessApplication
-	if err := config.DB.Where("user_id = ?", userID).First(&app).Error; err != nil {
+	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
 		return errors.New("business application not found")
 	}
 
@@ -252,7 +252,7 @@ func (bs *BusinessService) UpdateBusinessAddress(userID, address string, zipCode
 	}
 
 	var app models.BusinessApplication
-	if err := config.DB.Where("user_id = ?", userID).First(&app).Error; err != nil {
+	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
 		return errors.New("business application not found")
 	}
 

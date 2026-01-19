@@ -48,9 +48,10 @@ func RunMigrations(db *gorm.DB) error {
 func createGenresTable(db *gorm.DB) error {
 	// テーブル作成
 	if err := db.Exec(`
-	CREATE TABLE IF NOT EXISTS genre (
-		genre_id INT PRIMARY KEY AUTO_INCREMENT,
-		genre_name VARCHAR(50) NOT NULL UNIQUE
+	CREATE TABLE IF NOT EXISTS genres (
+		genreId INT PRIMARY KEY AUTO_INCREMENT,
+		genreName VARCHAR(50) NOT NULL UNIQUE,
+		color VARCHAR(6) NOT NULL DEFAULT '000000'
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error; err != nil {
 		return err
@@ -58,16 +59,16 @@ func createGenresTable(db *gorm.DB) error {
 
 	// 初期データ投入（既にデータがある場合はスキップ）
 	var count int64
-	db.Raw("SELECT COUNT(*) FROM genre").Scan(&count)
+	db.Raw("SELECT COUNT(*) FROM genres").Scan(&count)
 	if count == 0 {
 		if err := db.Exec(`
-		INSERT INTO genre (genre_id, genre_name) VALUES
-		(1, 'グルメ'),
-		(2, 'イベント'),
-		(3, '景色'),
-		(4, 'お店'),
-		(5, '緊急情報'),
-		(6, 'その他');
+		INSERT INTO genres (genreName) VALUES
+		('food'),
+		('event'),
+		('scene'),
+		('store'),
+		('emergency'),
+		('other');
 		`).Error; err != nil {
 			return err
 		}
@@ -80,9 +81,9 @@ func createGenresTable(db *gorm.DB) error {
 // createPlacesTable 場所テーブルを作成
 func createPlacesTable(db *gorm.DB) error {
 	return db.Exec(`
-	CREATE TABLE IF NOT EXISTS place (
-		place_id INT PRIMARY KEY AUTO_INCREMENT,
-		num_post INT NOT NULL DEFAULT 0,
+	CREATE TABLE IF NOT EXISTS places (
+		placeId INT PRIMARY KEY AUTO_INCREMENT,
+		numPost INT NOT NULL DEFAULT 0,
 		latitude DOUBLE NOT NULL,
 		longitude DOUBLE NOT NULL,
 		KEY idx_location (latitude, longitude)
@@ -95,16 +96,16 @@ func createUsersTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS users (
 		id VARCHAR(36) PRIMARY KEY,
-		google_id VARCHAR(255) NOT NULL UNIQUE,
-		email VARCHAR(255) NOT NULL UNIQUE,
+		googleId VARCHAR(50) NOT NULL UNIQUE,
+		gmail VARCHAR(100) NOT NULL UNIQUE,
 		role VARCHAR(50) NOT NULL DEFAULT 'user',
-		registration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL,
-		KEY idx_google_id (google_id),
-		KEY idx_email (email),
-		KEY idx_deleted_at (deleted_at)
+		registrationDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		deletedAt DATETIME NULL,
+		KEY idx_googleId (googleId),
+		KEY idx_gmail (gmail),
+		KEY idx_deletedAt (deletedAt)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
@@ -125,26 +126,24 @@ func createSessionsTable(db *gorm.DB) error {
 func createPostsTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS posts (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		place_id INT NOT NULL,
-		genre_id INT NOT NULL,
-		user_id VARCHAR(36) NOT NULL,
+		postId INT AUTO_INCREMENT PRIMARY KEY,
+		placeId INT NOT NULL,
+		genreId INT NOT NULL,
+		userId VARCHAR(36) NOT NULL,
 		title VARCHAR(255) NOT NULL,
 		text LONGTEXT,
-		post_image LONGTEXT,
-		num_view INT DEFAULT 0,
-		num_reaction INT DEFAULT 0,
-		post_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		is_anonymized BOOLEAN DEFAULT FALSE,
-		location JSON,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL,
-		KEY idx_user_id (user_id),
-		KEY idx_genre_id (genre_id),
-		KEY idx_place_id (place_id),
-		KEY idx_deleted_at (deleted_at),
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+		postImage LONGBLOB,
+		numView INT DEFAULT 0,
+		numReaction INT DEFAULT 0,
+		postDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		deletedAt DATETIME NULL,
+		KEY idx_userId (userId),
+		KEY idx_genreId (genreId),
+		KEY idx_placeId (placeId),
+		KEY idx_deletedAt (deletedAt),
+		FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (genreId) REFERENCES genres(genreId) ON DELETE RESTRICT,
+		FOREIGN KEY (placeId) REFERENCES places(placeId) ON DELETE CASCADE
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
@@ -152,14 +151,14 @@ func createPostsTable(db *gorm.DB) error {
 // createUserReactionsTable ユーザーリアクションテーブルを作成
 func createUserReactionsTable(db *gorm.DB) error {
 	return db.Exec(`
-	CREATE TABLE IF NOT EXISTS user_reactions (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		post_id INT NOT NULL,
-		user_id VARCHAR(36) NOT NULL,
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		UNIQUE KEY unique_post_user (post_id, user_id),
-		FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	CREATE TABLE IF NOT EXISTS reactions (
+		reactionId INT AUTO_INCREMENT PRIMARY KEY,
+		postId INT NOT NULL,
+		userId VARCHAR(36) NOT NULL,
+		createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE KEY unique_post_user (postId, userId),
+		FOREIGN KEY (postId) REFERENCES posts(postId) ON DELETE CASCADE,
+		FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
@@ -171,7 +170,8 @@ func createUserBlocksTable(db *gorm.DB) error {
 		blockId INT AUTO_INCREMENT PRIMARY KEY,
 		blockerId VARCHAR(36) NOT NULL,
 		blockedId VARCHAR(36) NOT NULL,
-		deletedAt TIMESTAMP NULL,
+		createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		deletedAt DATETIME NULL,
 		UNIQUE KEY unique_block (blockerId, blockedId),
 		KEY idx_blockerId (blockerId),
 		KEY idx_blockedId (blockedId),
@@ -186,20 +186,19 @@ func createUserBlocksTable(db *gorm.DB) error {
 func createReportsTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS reports (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id VARCHAR(36) NOT NULL,
-		post_id INT NOT NULL,
-		reason VARCHAR(255) NOT NULL,
-		report_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		status VARCHAR(50) DEFAULT 'pending',
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL,
-		KEY idx_user_id (user_id),
-		KEY idx_post_id (post_id),
-		KEY idx_status (status),
-		KEY idx_deleted_at (deleted_at),
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-		FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+		reportId INT AUTO_INCREMENT PRIMARY KEY,
+		userId VARCHAR(36) NOT NULL,
+		postId INT NOT NULL,
+		reason TEXT NOT NULL,
+		date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		reportFlag BOOLEAN NOT NULL DEFAULT FALSE,
+		removeFlag BOOLEAN NOT NULL DEFAULT FALSE,
+		deletedAt DATETIME NULL,
+		KEY idx_userId (userId),
+		KEY idx_postId (postId),
+		KEY idx_deletedAt (deletedAt),
+		FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (postId) REFERENCES posts(postId) ON DELETE CASCADE
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
@@ -207,18 +206,18 @@ func createReportsTable(db *gorm.DB) error {
 // createContactsTable 問い合わせテーブルを作成
 func createContactsTable(db *gorm.DB) error {
 	return db.Exec(`
-	CREATE TABLE IF NOT EXISTS contacts (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id VARCHAR(36) NOT NULL,
-		subject VARCHAR(255) NOT NULL,
-		text LONGTEXT,
-		status VARCHAR(50) DEFAULT 'pending',
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL,
-		KEY idx_user_id (user_id),
-		KEY idx_status (status),
-		KEY idx_deleted_at (deleted_at),
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	CREATE TABLE IF NOT EXISTS asks (
+		askId INT AUTO_INCREMENT PRIMARY KEY,
+		date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		subject VARCHAR(100) NOT NULL,
+		text TEXT,
+		userId VARCHAR(36) NOT NULL,
+		askFlag BOOLEAN NOT NULL DEFAULT FALSE,
+		deletedAt DATETIME NULL,
+		KEY idx_userId (userId),
+		KEY idx_askFlag (askFlag),
+		KEY idx_deletedAt (deletedAt),
+		FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
@@ -227,19 +226,22 @@ func createContactsTable(db *gorm.DB) error {
 func createBusinessApplicationsTable(db *gorm.DB) error {
 	return db.Exec(`
 	CREATE TABLE IF NOT EXISTS business_applications (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		user_id VARCHAR(36) NOT NULL,
-		business_name VARCHAR(255) NOT NULL,
-		address VARCHAR(255) NOT NULL,
+		businessId INT AUTO_INCREMENT PRIMARY KEY,
+		businessName VARCHAR(50) NOT NULL,
+		kanaBusinessName VARCHAR(50) NOT NULL,
+		zipCode INT NOT NULL,
+		address VARCHAR(100) NOT NULL,
 		phone VARCHAR(20) NOT NULL,
-		status VARCHAR(50) DEFAULT 'pending',
-		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP NULL,
-		KEY idx_user_id (user_id),
-		KEY idx_status (status),
-		KEY idx_deleted_at (deleted_at),
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+		profileImage LONGBLOB,
+		userId VARCHAR(36) NOT NULL,
+		placeId INT NOT NULL,
+		registDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		deletedAt DATETIME NULL,
+		KEY idx_userId (userId),
+		KEY idx_placeId (placeId),
+		KEY idx_deletedAt (deletedAt),
+		FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (placeId) REFERENCES places(placeId) ON DELETE CASCADE
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 	`).Error
 }
