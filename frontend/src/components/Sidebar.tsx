@@ -3,18 +3,18 @@ import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 import { Search } from 'lucide-react';
-import { Pin, PinGenre, User } from '../types';
+import { Post, PinGenre, User } from '../types';
 import { genreLabels, genreColors } from '../lib/mockData';
 
 interface SidebarProps {
   user: User;
-  pins: Pin[];
-  onFilterChange: (filteredPins: Pin[]) => void;
+  posts: Post[];
+  onFilterChange: (filteredPosts: Post[]) => void;
   // onCreatePin: () => void;
-  onPinClick: (pin: Pin) => void;
+  onPinClick: (post: Post) => void;
 }
 
-export function Sidebar({ user, pins, onFilterChange, onPinClick }: SidebarProps) {
+export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
   const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
@@ -26,39 +26,41 @@ export function Sidebar({ user, pins, onFilterChange, onPinClick }: SidebarProps
   useEffect(() => {
     // 事業者ユーザーの場合、検索・絞り込み・並び替えの機能を無効化（全件表示）
     if (user.role === 'business') {
-      onFilterChange([...pins]);
+      onFilterChange([...posts]);
       return;
     }
 
-    let filtered = [...pins];
+    let filtered = [...posts];
 
     // キーワード検索
     if (searchKeyword) {
       filtered = filtered.filter(
-        (pin) =>
-          pin.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          pin.description.toLowerCase().includes(searchKeyword.toLowerCase())
+        (post) =>
+          post.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          post.text.toLowerCase().includes(searchKeyword.toLowerCase())
       );
     }
 
     // ジャンルフィルター
     if (selectedGenre !== 'all') {
-      filtered = filtered.filter((pin) => pin.genre === selectedGenre);
+      filtered = filtered.filter(
+        (post) => genreLabels[post.genreId] === genreLabels[selectedGenre]
+      );
     }
 
     // 日付フィルター
     const now = new Date();
     if (dateFilter === 'today') {
-      filtered = filtered.filter((pin) => {
-        const pinDate = new Date(pin.createdAt);
+      filtered = filtered.filter((post) => {
+        const pinDate = new Date(post.postDate);
         return pinDate.toDateString() === now.toDateString();
       });
     } else if (dateFilter === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter((pin) => new Date(pin.createdAt) >= weekAgo);
+      filtered = filtered.filter((post) => new Date(post.postDate) >= weekAgo);
     } else if (dateFilter === 'month') {
       const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter((pin) => new Date(pin.createdAt) >= monthAgo);
+      filtered = filtered.filter((post) => new Date(post.postDate) >= monthAgo);
     }
 
     /*
@@ -73,10 +75,10 @@ export function Sidebar({ user, pins, onFilterChange, onPinClick }: SidebarProps
     }*/
 
     onFilterChange(filtered);
-  }, [searchKeyword, selectedGenre, sortBy, dateFilter, pins, onFilterChange, user.role]);
+  }, [searchKeyword, selectedGenre, sortBy, dateFilter, posts, onFilterChange, user.role]);
 
   const formatDate = (date: Date) => {
-    const d = new Date(date);
+    const d = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
 
@@ -162,30 +164,36 @@ export function Sidebar({ user, pins, onFilterChange, onPinClick }: SidebarProps
 
       {/* ピンリスト */}
       <div className="flex-1 overflow-y-auto">
-        {pins.length === 0 ? (
+        {posts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p>該当する投稿が見つかりませんでした</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {pins.map((pin) => (
+            {posts.map((post) => (
               <button
-                key={pin.id}
-                onClick={() => onPinClick(pin)}
+                key={post.postId}
+                onClick={() => onPinClick(post)}
                 className="w-full p-4 hover:bg-gray-50 text-left transition-colors"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="flex-1 text-gray-900">{pin.title}</h3>
-                  <Badge style={{ backgroundColor: genreColors[pin.genre] }} className="ml-2">
-                    {genreLabels[pin.genre]}
+                  <h3 className="flex-1 text-gray-900">{post.title}</h3>
+                  <Badge
+                    style={{
+                      backgroundColor:
+                        genreColors[Object.keys(genreLabels)[post.genreId] || 'other'],
+                    }}
+                    className="ml-2"
+                  >
+                    {genreLabels[Object.keys(genreLabels)[post.genreId] || 'other']}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{pin.description}</p>
+                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</p>
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{pin.userRole === 'business' ? pin.businessName : '匿名'}</span>
+                  <span>{user.role === 'business' ? user.fromName : '匿名'}</span>
                   <div className="flex items-center space-x-3">
-                    <span>❤️ {pin.reactions}</span>
-                    <span>{formatDate(pin.createdAt)}</span>
+                    <span>❤️ {post.numReaction}</span>
+                    <span>{formatDate(new Date(post.postDate))}</span>
                   </div>
                 </div>
               </button>
