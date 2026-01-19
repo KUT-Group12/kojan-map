@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/base64"
 	"errors"
 	"io"
 	"time"
@@ -196,7 +197,8 @@ func (bs *BusinessService) UploadBusinessIcon(userID string, fileData io.Reader)
 	}
 
 	// Base64エンコードして返す
-	return "data:image/jpeg;base64,..." + string(imageBytes[:20]), nil
+	encodedImage := base64.StdEncoding.EncodeToString(imageBytes)
+	return "data:image/jpeg;base64," + encodedImage, nil
 }
 
 // GetBusinessPostCount 事業者の投稿数を取得

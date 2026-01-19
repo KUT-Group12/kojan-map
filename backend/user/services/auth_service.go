@@ -180,6 +180,10 @@ func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
 func (as *AuthService) VerifyJWT(tokenString string) (*JWTClaims, error) {
 	claims := &JWTClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		// HS256アルゴリズムのみ許可（Algorithm Confusion Attack対策）
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return as.jwtSecret, nil
 	})
 

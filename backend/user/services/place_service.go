@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"math"
 
 	"gorm.io/gorm"
@@ -33,7 +34,9 @@ func (ps *PlaceService) FindOrCreatePlace(latitude, longitude float64) (int, err
 
 	if err == nil {
 		// 既存の場所が見つかった場合、投稿数をインクリメント
-		ps.db.Model(&place).Update("num_post", gorm.Expr("num_post + 1"))
+		if updateErr := ps.db.Model(&place).Update("numPost", gorm.Expr("numPost + 1")).Error; updateErr != nil {
+			return 0, fmt.Errorf("failed to update place post count: %w", updateErr)
+		}
 		return place.ID, nil
 	}
 
