@@ -417,6 +417,6 @@ func TestPostService_GetReactionList(t *testing.T) {
 
 	// リアクション情報をDBから取得
 	var reactions []models.UserReaction
-	db.Where("user_id = ?", "user123").Find(&reactions)
+	db.Where("userId = ?", "user123").Find(&reactions)
 	assert.Greater(t, len(reactions), 0)
 }

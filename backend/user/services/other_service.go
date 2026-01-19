@@ -23,14 +23,14 @@ func (bs *BlockService) BlockUser(userID, blockerID string) error {
 
 	// 既にブロック済みか確認
 	var existingBlock models.UserBlock
-	result := config.DB.Where("blocker_id = ? AND blocked_id = ?", blockerID, userID).First(&existingBlock)
+	result := config.DB.Where("blockerId = ? AND blockedId = ?", blockerID, userID).First(&existingBlock)
 	if result.Error == nil {
 		return errors.New("user already blocked")
 	}
 
 	block := models.UserBlock{
-		BlockerID: blockerID,
-		BlockedID: userID,
+		BlockerId: blockerID,
+		BlockedId: userID,
 	}
 	if err := config.DB.Create(&block).Error; err != nil {
 		return errors.New("failed to block user")
@@ -44,7 +44,7 @@ func (bs *BlockService) UnblockUser(userID, blockerID string) error {
 		return errors.New("userID and blockerID are required")
 	}
 
-	result := config.DB.Where("blocker_id = ? AND blocked_id = ?", blockerID, userID).
+	result := config.DB.Where("blockerId = ? AND blockedId = ?", blockerID, userID).
 		Delete(&models.UserBlock{})
 
 	if result.Error != nil {
@@ -64,7 +64,7 @@ func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) 
 	}
 
 	var blocks []models.UserBlock
-	if err := config.DB.Where("blocker_id = ?", userID).
+	if err := config.DB.Where("blockerId = ?", userID).
 		Find(&blocks).Error; err != nil {
 		return nil, errors.New("failed to fetch block list")
 	}
@@ -114,8 +114,8 @@ func (cs *ContactService) CreateContact(userID, subject, text string) error {
 type BusinessApplicationService struct{}
 
 // CreateBusinessApplication 事業者申請を作成
-func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName string, zipCode int, address string, phone int) error {
-	if businessName == "" || kanaBusinessName == "" || address == "" || zipCode == 0 || phone == 0 {
+func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName string, zipCode int, address string, phone string) error {
+	if businessName == "" || kanaBusinessName == "" || address == "" || zipCode == 0 || phone == "" {
 		return errors.New("all fields are required")
 	}
 

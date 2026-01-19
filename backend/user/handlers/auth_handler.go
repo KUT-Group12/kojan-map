@@ -49,7 +49,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"sessionId": session.ID})
+	c.JSON(http.StatusOK, gin.H{"sessionId": session.SessionID})
 }
 
 // Logout ログアウト

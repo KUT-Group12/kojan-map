@@ -27,7 +27,7 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 	var user models.User
 
 	// ユーザーが既に存在するか確認
-	result := config.DB.Where("google_id = ?", googleID).First(&user)
+	result := config.DB.Where("googleId = ?", googleID).First(&user)
 
 	if result.Error != nil {
 		if result.Error != gorm.ErrRecordNotFound {
@@ -48,7 +48,7 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 
 	// 既存の有効なセッションを確認
 	var existingSession models.Session
-	if err := config.DB.Where("google_id = ? AND expiry > ?", user.GoogleID, time.Now()).First(&existingSession).Error; err == nil {
+	if err := config.DB.Where("googleId = ? AND expiry > ?", user.GoogleID, time.Now()).First(&existingSession).Error; err == nil {
 		// 有効なセッションが存在する場合は延長
 		existingSession.Expiry = time.Now().Add(24 * time.Hour)
 		if err := config.DB.Save(&existingSession).Error; err != nil {
@@ -59,9 +59,9 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 
 	// 新しいセッションIDを生成
 	session := models.Session{
-		ID:       uuid.New().String(),
-		GoogleID: user.GoogleID,
-		Expiry:   time.Now().Add(24 * time.Hour),
+		SessionID: uuid.New().String(),
+		GoogleID:  user.GoogleID,
+		Expiry:    time.Now().Add(24 * time.Hour),
 	}
 
 	if err := config.DB.Create(&session).Error; err != nil {
@@ -78,7 +78,7 @@ func (us *UserService) GetUserInfo(googleID string) (*models.UserInfo, error) {
 	}
 
 	var user models.User
-	if err := config.DB.Where("google_id = ?", googleID).First(&user).Error; err != nil {
+	if err := config.DB.Where("googleId = ?", googleID).First(&user).Error; err != nil {
 		return nil, us.handleDBError(err)
 	}
 
@@ -110,11 +110,11 @@ func (us *UserService) Logout(sessionID string) error {
 		return errors.New("sessionID is required")
 	}
 
-	// [must] セッションを削除するのではなく、RevokedAt を設定して無効化
+	// セッションの有効期限を現在時刻に更新（無効化）。revoked_at は使用しない仕様。
 	now := time.Now()
 	result := config.DB.Model(&models.Session{}).
-		Where("id = ?", sessionID).
-		Update("revoked_at", now)
+		Where("sessionId = ?", sessionID).
+		Update("expiry", now)
 
 	if result.Error != nil {
 		return fmt.Errorf("failed to logout: %w", result.Error)
@@ -142,15 +142,15 @@ func (us *UserService) DeleteUser(googleID string) error {
 	// トランザクション処理
 	return config.DB.Transaction(func(tx *gorm.DB) error {
 		var user models.User
-		if err := tx.Where("google_id = ?", googleID).First(&user).Error; err != nil {
+		if err := tx.Where("googleId = ?", googleID).First(&user).Error; err != nil {
 			return us.handleDBError(err)
 		}
 
-		// 関連するセッションを無効化（削除ではなく RevokedAt を設定）
+		// 関連するセッションを無効化（expiry を現在時刻に更新）
 		now := time.Now()
 		if err := tx.Model(&models.Session{}).
-			Where("google_id = ?", googleID).
-			Update("revoked_at", now).Error; err != nil {
+			Where("googleId = ?", googleID).
+			Update("expiry", now).Error; err != nil {
 			return fmt.Errorf("failed to revoke sessions: %w", err)
 		}
 

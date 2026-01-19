@@ -117,6 +117,10 @@ func createSessionsTable(db *gorm.DB) error {
 		googleId VARCHAR(50) NOT NULL,
 		expiry DATETIME NOT NULL,
 		KEY idx_googleId (googleId)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+	`).Error
+}
+
 // createPostsTable 投稿テーブルを作成
 func createPostsTable(db *gorm.DB) error {
 	return db.Exec(`

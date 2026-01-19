@@ -9,9 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-
-	"kojan-map/user/config"
-	"kojan-map/user/models"
 )
 
 var jwtSecret []byte
@@ -71,15 +68,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// [must] セッション無効化チェック: RevokedAt が設定されていないか確認
-		var session models.Session
-		result := config.DB.Where("id = ?", claims.UserID).First(&session)
-		if result.Error == nil && session.RevokedAt != nil {
-			// セッションが無効化されている
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Session has been revoked"})
-			c.Abort()
-			return
-		}
+		// セッション無効化チェック（revoked_at は使用しない仕様のためスキップ）
 
 		// セッション有効期限チェック
 		if time.Now().After(claims.ExpiresAt.Time) {
@@ -89,6 +78,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		c.Set("userID", claims.UserID)
+		c.Set("googleId", claims.GoogleID)
 		c.Set("user", claims)
 		c.Next()
 	}

@@ -23,10 +23,10 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 	// JOINクエリで関連データを一度に取得（N+1問題を解決）
 	err := config.DB.
 		Table("posts").
-		Select("posts.*, genre.genre_name, place.latitude, place.longitude").
-		Joins("LEFT JOIN genre ON genre.genre_id = posts.genre_id").
-		Joins("LEFT JOIN place ON place.place_id = posts.place_id").
-		Order("posts.post_date DESC").
+		Select("posts.*, genres.genreName as genre_name, places.latitude, places.longitude").
+		Joins("LEFT JOIN genres ON genres.genreId = posts.genreId").
+		Joins("LEFT JOIN places ON places.placeId = posts.placeId").
+		Order("posts.postDate DESC").
 		Find(&posts).Error
 
 	if err != nil {
@@ -58,12 +58,12 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 // GetPostDetail 投稿詳細を取得
 func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error) {
 	post := models.Post{}
-	if err := config.DB.Where("id = ?", postID).First(&post).Error; err != nil {
+	if err := config.DB.Where("postId = ?", postID).First(&post).Error; err != nil {
 		return nil, errors.New("post not found")
 	}
 
 	// 閲覧数をインクリメント
-	config.DB.Model(&post).Update("num_view", post.NumView+1)
+	config.DB.Model(&post).Update("numView", post.NumView+1)
 
 	// ユーザー情報を取得
 	user := models.User{}
@@ -71,11 +71,11 @@ func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error)
 
 	// ジャンルを取得
 	genre := models.Genre{}
-	config.DB.Where("genre_id = ?", post.GenreID).First(&genre)
+	config.DB.Where("genreId = ?", post.GenreID).First(&genre)
 
 	// 場所情報を取得
 	place := models.Place{}
-	config.DB.Where("place_id = ?", post.PlaceID).First(&place)
+	config.DB.Where("placeId = ?", post.PlaceID).First(&place)
 
 	result := map[string]interface{}{
 		"postId":      post.ID,
@@ -107,8 +107,8 @@ func (ps *PostService) CreatePost(post *models.Post) error {
 // GetUserPostHistory ユーザーの投稿履歴を取得
 func (ps *PostService) GetUserPostHistory(userID string) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("user_id = ? AND deleted_at IS NULL", userID).
-		Order("post_date DESC").
+	if err := config.DB.Where("userId = ? AND deletedAt IS NULL", userID).
+		Order("postDate DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (ps *PostService) GetUserPostHistory(userID string) ([]models.Post, error) 
 func (ps *PostService) GetPinSize(postID int) (float64, error) {
 	var count int64
 	if err := config.DB.Model(&models.Post{}).
-		Where("id = ?", postID).
+		Where("postId = ?", postID).
 		Count(&count).Error; err != nil {
 		return 1.0, err
 	}
@@ -138,7 +138,7 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 
 	// 既にリアクション済みか確認
 	var existingReaction models.UserReaction
-	result := config.DB.Where("user_id = ? AND post_id = ?", userID, postID).
+	result := config.DB.Where("userId = ? AND postId = ?", userID, postID).
 		First(&existingReaction)
 
 	if result.Error == nil {
@@ -148,8 +148,8 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 		}
 		// リアクション数をデクリメント
 		return config.DB.Model(&models.Post{}).
-			Where("id = ?", postID).
-			Update("num_reaction", config.DB.Raw("num_reaction - 1")).Error
+			Where("postId = ?", postID).
+			Update("numReaction", config.DB.Raw("numReaction - 1")).Error
 	}
 
 	// リアクションを追加
@@ -163,8 +163,8 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 
 	// リアクション数をインクリメント
 	return config.DB.Model(&models.Post{}).
-		Where("id = ?", postID).
-		Update("num_reaction", config.DB.Raw("num_reaction + 1")).Error
+		Where("postId = ?", postID).
+		Update("numReaction", config.DB.Raw("numReaction + 1")).Error
 }
 
 // SearchPostsByKeyword キーワード検索
@@ -172,7 +172,7 @@ func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, erro
 	var posts []models.Post
 	if err := config.DB.Where("title LIKE ? OR text LIKE ?",
 		"%"+keyword+"%", "%"+keyword+"%").
-		Order("post_date DESC").
+		Order("postDate DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
@@ -182,8 +182,8 @@ func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, erro
 // SearchPostsByGenre ジャンルで検索
 func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("genre_id = ?", genreID).
-		Order("post_date DESC").
+	if err := config.DB.Where("genreId = ?", genreID).
+		Order("postDate DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
@@ -193,9 +193,9 @@ func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
 // SearchPostsByPeriod 期間で検索
 func (ps *PostService) SearchPostsByPeriod(startDate, endDate time.Time) ([]models.Post, error) {
 	var posts []models.Post
-	if err := config.DB.Where("post_date BETWEEN ? AND ?",
+	if err := config.DB.Where("postDate BETWEEN ? AND ?",
 		startDate, endDate).
-		Order("post_date DESC").
+		Order("postDate DESC").
 		Find(&posts).Error; err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func (ps *PostService) DeletePost(postID int, userID string) error {
 	}
 
 	var post models.Post
-	if err := config.DB.Where("id = ?", postID).First(&post).Error; err != nil {
+	if err := config.DB.Where("postId = ?", postID).First(&post).Error; err != nil {
 		return errors.New("post not found")
 	}
 
@@ -230,7 +230,7 @@ func (ps *PostService) DeletePost(postID int, userID string) error {
 func (ps *PostService) IsUserReacted(userID string, postID int) (bool, error) {
 	var count int64
 	if err := config.DB.Model(&models.UserReaction{}).
-		Where("user_id = ? AND post_id = ?", userID, postID).
+		Where("userId = ? AND postId = ?", userID, postID).
 		Count(&count).Error; err != nil {
 		return false, err
 	}

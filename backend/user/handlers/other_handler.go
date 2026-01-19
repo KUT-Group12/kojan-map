@@ -163,7 +163,7 @@ func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context)
 		KanaBusinessName string `json:"kanaBusinessName" binding:"required"`
 		ZipCode          int    `json:"zipCode" binding:"required"`
 		Address          string `json:"address" binding:"required"`
-		Phone            int    `json:"phone" binding:"required"`
+		Phone            string `json:"phone" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {

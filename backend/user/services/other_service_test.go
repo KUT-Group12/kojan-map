@@ -19,10 +19,10 @@ func TestBlockService_BlockUser(t *testing.T) {
 
 	// ブロックが記録されたか確認
 	var block models.UserBlock
-	err = db.Where("blocker_id = ? AND blocked_id = ?", "blocker123", "blocked456").First(&block).Error
+	err = db.Where("blockerId = ? AND blockedId = ?", "blocker123", "blocked456").First(&block).Error
 	assert.NoError(t, err)
-	assert.Equal(t, "blocker123", block.BlockerID)
-	assert.Equal(t, "blocked456", block.BlockedID)
+	assert.Equal(t, "blocker123", block.BlockerId)
+	assert.Equal(t, "blocked456", block.BlockedId)
 }
 
 func TestBlockService_BlockUser_SelfBlock(t *testing.T) {
@@ -41,8 +41,8 @@ func TestBlockService_BlockUser_Duplicate(t *testing.T) {
 
 	// 初回ブロック
 	block := models.UserBlock{
-		BlockedID: "blocked456",
-		BlockerID: "blocker123",
+		BlockedId: "blocked456",
+		BlockerId: "blocker123",
 	}
 	db.Create(&block)
 
@@ -58,8 +58,8 @@ func TestBlockService_UnblockUser(t *testing.T) {
 
 	// ブロックを作成
 	block := models.UserBlock{
-		BlockedID: "blocked456",
-		BlockerID: "blocker123",
+		BlockedId: "blocked456",
+		BlockerId: "blocker123",
 	}
 	db.Create(&block)
 
@@ -69,7 +69,7 @@ func TestBlockService_UnblockUser(t *testing.T) {
 
 	// ブロックが削除されたか確認
 	var deletedBlock models.UserBlock
-	err = db.Where("blocker_id = ? AND blocked_id = ?", "blocker123", "blocked456").First(&deletedBlock).Error
+	err = db.Where("blockerId = ? AND blockedId = ?", "blocker123", "blocked456").First(&deletedBlock).Error
 	assert.Error(t, err)
 }
 
@@ -99,9 +99,9 @@ func TestBlockService_GetBlockList(t *testing.T) {
 
 	// ブロックを作成
 	blocks := []models.UserBlock{
-		{BlockerID: "blocker123", BlockedID: users[0].ID},
-		{BlockerID: "blocker123", BlockedID: users[1].ID},
-		{BlockerID: "other_user", BlockedID: users[2].ID},
+		{BlockerId: "blocker123", BlockedId: users[0].ID},
+		{BlockerId: "blocker123", BlockedId: users[1].ID},
+		{BlockerId: "other_user", BlockedId: users[2].ID},
 	}
 	for _, b := range blocks {
 		db.Create(&b)
@@ -156,7 +156,7 @@ func TestBusinessApplicationService_CreateApplication(t *testing.T) {
 	service := &BusinessApplicationService{}
 
 	// 企業会員申請を作成
-	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "テスト株式会社", 1234567, "東京都渋谷区", 9012345678)
+	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "テスト株式会社", 1234567, "東京都渋谷区", "09012345678")
 	assert.NoError(t, err)
 }
 
@@ -165,7 +165,7 @@ func TestBusinessApplicationService_CreateApplication_ValidationError(t *testing
 	service := &BusinessApplicationService{}
 
 	// BusinessNameが空
-	err := service.CreateBusinessApplication("applicant123", "", "", 1234567, "東京都渋谷区", 9012345678)
+	err := service.CreateBusinessApplication("applicant123", "", "", 1234567, "東京都渋谷区", "09012345678")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "all fields are required")
 }

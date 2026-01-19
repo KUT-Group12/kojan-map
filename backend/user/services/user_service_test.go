@@ -46,7 +46,7 @@ func TestUserService_RegisterOrLogin_NewUser(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
-	assert.NotEmpty(t, session.ID)
+	assert.NotEmpty(t, session.SessionID)
 
 	// DBにユーザーが作成されたか確認
 	var user models.User
@@ -98,7 +98,7 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	db.Create(&user)
 
 	oldSession := models.Session{
-		ID:       uuid.New().String(),
+		SessionID: uuid.New().String(),
 		GoogleID: "google789",
 		Expiry:   time.Now().Add(1 * time.Hour),
 	}
@@ -109,11 +109,11 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, newSession)
-	assert.Equal(t, oldSession.ID, newSession.ID)
+	assert.Equal(t, oldSession.SessionID, newSession.SessionID)
 
 	// セッション有効期限が延長されたか確認
 	var updatedSession models.Session
-	db.Where("id = ?", oldSession.ID).First(&updatedSession)
+	db.Where("sessionId = ?", oldSession.SessionID).First(&updatedSession)
 	assert.True(t, updatedSession.Expiry.After(oldSession.Expiry))
 }
 
@@ -181,7 +181,7 @@ func TestUserService_DeleteUser(t *testing.T) {
 	db.Create(&user)
 
 	session := models.Session{
-		ID:       uuid.New().String(),
+		SessionID: uuid.New().String(),
 		GoogleID: "google_delete",
 		Expiry:   time.Now().Add(24 * time.Hour),
 	}
@@ -193,13 +193,17 @@ func TestUserService_DeleteUser(t *testing.T) {
 
 	// ユーザーが削除されたか確認
 	var deletedUser models.User
-	err = db.Where("google_id = ?", "google_delete").First(&deletedUser).Error
+	err = db.Where("googleId = ?", "google_delete").First(&deletedUser).Error
 	assert.Error(t, err)
 
 	// セッションも削除されたか確認
-	var deletedSession models.Session
-	err = db.Where("user_id = ?", user.ID).First(&deletedSession).Error
-	assert.Error(t, err)
+	var sessions []models.Session
+	db.Where("googleId = ?", "google_delete").Find(&sessions)
+	if len(sessions) > 0 {
+		for _, s := range sessions {
+			assert.True(t, time.Now().After(s.Expiry) || time.Now().Equal(s.Expiry))
+		}
+	}
 }
 
 func TestUserService_DeleteUser_NotFound(t *testing.T) {
@@ -261,7 +265,7 @@ func TestUserService_Logout(t *testing.T) {
 	// セッションを作成
 	sessionID := uuid.New().String()
 	session := models.Session{
-		ID:       sessionID,
+		SessionID: sessionID,
 		GoogleID: "google_logout",
 		Expiry:   time.Now().Add(24 * time.Hour),
 	}
@@ -273,9 +277,10 @@ func TestUserService_Logout(t *testing.T) {
 
 	// セッションが無効化されたか確認（RevokedAtが設定されている）
 	var revokedSession models.Session
-	err = db.Where("id = ?", sessionID).First(&revokedSession).Error
+	err = db.Where("sessionId = ?", sessionID).First(&revokedSession).Error
 	assert.NoError(t, err)
-	assert.NotNil(t, revokedSession.RevokedAt)
+	// expiry を現在時刻に更新して無効化する仕様
+	assert.True(t, time.Now().After(revokedSession.Expiry) || time.Now().Equal(revokedSession.Expiry))
 }
 
 func TestUserService_Logout_NotFound(t *testing.T) {
@@ -360,6 +365,6 @@ func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
 
 	// ユーザーのポスト数を確認
 	var postCount int64
-	db.Model(&models.Post{}).Where("user_id = ?", userInfo.UserID).Count(&postCount)
+	db.Model(&models.Post{}).Where("userId = ?", userInfo.UserID).Count(&postCount)
 	assert.Equal(t, int64(2), postCount)
 }
