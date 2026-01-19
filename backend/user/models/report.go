@@ -8,14 +8,14 @@ import (
 
 // Report 通報情報モデル
 type Report struct {
-	ID         int            `gorm:"primaryKey" json:"reportId"`
-	UserID     string         `json:"userId"`
-	PostID     int            `json:"postId"`
-	Reason     string         `gorm:"type:text" json:"reason"`
-	Date       time.Time      `json:"date"`
-	ReportFlag bool           `gorm:"default:false" json:"reportFlag"`
-	RemoveFlag bool           `gorm:"default:false" json:"removeFlag"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	ID         int            `gorm:"column:reportId;primaryKey" json:"reportId"`
+	UserID     string         `gorm:"column:userId;index" json:"userId"`
+	PostID     int            `gorm:"column:postId;index" json:"postId"`
+	Reason     string         `gorm:"column:reason;type:text" json:"reason"`
+	Date       time.Time      `gorm:"column:date" json:"date"`
+	ReportFlag bool           `gorm:"column:reportFlag;default:false" json:"reportFlag"`
+	RemoveFlag bool           `gorm:"column:removeFlag;default:false" json:"removeFlag"`
+	DeletedAt  gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
 }
 
 // TableName テーブル名を指定
