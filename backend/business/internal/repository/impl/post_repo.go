@@ -20,7 +20,7 @@ func NewPostRepoImpl(db *gorm.DB) *PostRepoImpl {
 }
 
 // ListByBusiness は事業者のすべての投稿を取得します（M1-6-1）。
-func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
+func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID string) (interface{}, error) {
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
 		Where("author_id = ? AND is_active = ?", businessID, true).
@@ -32,7 +32,7 @@ func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (in
 }
 
 // GetByID は ID を使用して投稿を取得します（M1-7-2）。
-func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, error) {
+func (r *PostRepoImpl) GetByID(ctx context.Context, postID string) (interface{}, error) {
 	var post domain.Post
 	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -67,14 +67,16 @@ func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int
 	req := payload.(*domain.CreatePostRequest)
 
 	post := &domain.Post{
-		// 注意: ID の生成は DB によって処理される必要があります（自動インクリメントまたは UUID）
+		AuthorID:      fmt.Sprintf("%d", businessID), // or use string businessID
 		Title:         req.Title,
 		Description:   req.Description,
 		LocationID:    req.LocationID,
 		ViewCount:     0,
 		ReactionCount: 0,
 		IsActive:      true,
-		// PostedAt はサービス層または DB のデフォルト値で設定される必要があります
+		PostedAt:      time.Now(),
+		UpdatedAt:     time.Now(),
+
 	}
 
 	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
@@ -83,38 +85,37 @@ func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int
 
 	// ジャンルを設定します（多対多）
 	if len(genreIDs) > 0 {
-		// SetGenres のために post.ID（文字列）を int64 に変換します
-		// 注意: 作成後、post.ID は数値文字列であると仮定しています
 		if err := r.SetGenres(ctx, post.ID, genreIDs); err != nil {
 			return 0, err
 		}
 	}
 
-	// TODO: 戻り値のために post.ID（文字列）を int64 に変換します
-	// 現時点では、プレースホルダーとして 0 を返します
-	return 0, nil
+	// Post.ID の型を int64 に統一した場合
+	return post.ID, nil
 }
 
 // SetGenres は投稿に対してジャンルを設定します（多対多）（M1-8-4）。
-func (r *PostRepoImpl) SetGenres(ctx context.Context, postID interface{}, genreIDs []int64) error {
-	// 既存のジャンル関連付けを削除します
-	if err := r.db.WithContext(ctx).Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
-		return fmt.Errorf("failed to delete existing genres: %w", err)
-	}
-
-	// 新しいジャンル関連付けを挿入します
-	for _, genreID := range genreIDs {
-		postGenre := &domain.PostGenre{
-			PostID:  fmt.Sprintf("%v", postID),
-			GenreID: genreID,
+func (r *PostRepoImpl) SetGenres(ctx context.Context, postID string, genreIDs []int64) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Delete existing genre associations
+		if err := tx.Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
+			return fmt.Errorf("failed to delete existing genres: %w", err)
 		}
-		if err := r.db.WithContext(ctx).Create(postGenre).Error; err != nil {
-			return fmt.Errorf("failed to create post_genre association: %w", err)
-		}
-	}
 
-	return nil
+		// Insert new genre associations
+		for _, genreID := range genreIDs {
+			postGenre := &domain.PostGenre{
+				PostID:  postID,
+				GenreID: genreID,
+			}
+			if err := tx.Create(postGenre).Error; err != nil {
+				return fmt.Errorf("failed to create post_genre association: %w", err)
+			}
+		}
+		return nil
+	})
 }
+
 
 // Anonymize は投稿を匿名化します（M1-13-2）。
 // 投稿内容は復元不能な値に置き換える、主キーおよび外部キーは変更しない

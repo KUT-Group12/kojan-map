@@ -4,21 +4,26 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
 	"kojan-map/business/pkg/errors"
 	"kojan-map/business/pkg/jwt"
 	"kojan-map/business/pkg/mfa"
+	"kojan-map/business/pkg/notification"
 	"kojan-map/business/pkg/oauth"
+	"kojan-map/business/pkg/session"
 )
 
 // AuthServiceImpl はAuthServiceインターフェースを実装します。
 type AuthServiceImpl struct {
-	authRepo      repository.AuthRepo
-	tokenVerifier oauth.TokenVerifier
-	tokenManager  *jwt.TokenManager
-	mfaValidator  *mfa.MFAValidator
+	authRepo             repository.AuthRepo
+	tokenVerifier        oauth.TokenVerifier
+	tokenManager         *jwt.TokenManager
+	mfaValidator         *mfa.MFAValidator
+	notificationService  notification.NotificationService
+	sessionStore         *session.SessionStore
 }
 
 // NewAuthServiceImpl は新しい認証サービスを作成します。
@@ -33,10 +38,12 @@ func NewAuthServiceImpl(authRepo repository.AuthRepo, tokenManager *jwt.TokenMan
 	}
 
 	return &AuthServiceImpl{
-		authRepo:      authRepo,
-		tokenVerifier: oauth.NewGoogleTokenVerifier(googleClientID),
-		tokenManager:  tokenManager,
-		mfaValidator:  mfa.NewMFAValidator(),
+		authRepo:             authRepo,
+		tokenVerifier:        oauth.NewGoogleTokenVerifier(googleClientID),
+		tokenManager:         tokenManager,
+		mfaValidator:         mfa.NewMFAValidator(),
+		notificationService:  notification.NewEmailNotificationService(),
+		sessionStore:         session.NewSessionStore(),
 	}
 }
 
@@ -76,18 +83,37 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate MFA code: %v", err))
 	}
 
-	// TODO: 本番環境ではSMS/メールでMFAコードを送信
-	// 開発環境では、コードをレスポンスで返却
-
 	// ユーザーを取得または作成
 	user, err := s.authRepo.GetOrCreateUser(ctx, req.GoogleID, req.Gmail, "business")
 	if err != nil {
 		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to get or create user: %v", err))
 	}
 
+	// 本番環境と開発環境で動作を分岐
+	isProduction := os.Getenv("GO_ENV") == "production"
+	var sessionID string
+
+	if isProduction {
+		// 本番環境: セッションIDを生成し、MFAコードは帯域外で送信
+		sessionID = fmt.Sprintf("session_%s_%d", req.GoogleID, time.Now().Unix())
+		
+		// セッション情報を保存（5分間有効）
+		s.sessionStore.CreateSession(sessionID, req.Gmail, mfaCode, req.GoogleID, 5*time.Minute)
+		
+		// MFAコードをメールで送信
+		if err := s.notificationService.SendMFACode(req.Gmail, mfaCode); err != nil {
+			return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to send MFA code: %v", err))
+		}
+		
+		// セキュリティ: MFAコードはレスポンスに含めない
+	} else {
+		// 開発環境: MFAコードをセッションIDとして返却（テスト用）
+		sessionID = mfaCode
+	}
+
 	// MFAチャレンジを返却 - ユーザーは次のステップでコードを検証する必要がある
 	return &domain.GoogleAuthResponse{
-		SessionID: mfaCode, // Temporarily store MFA code as session (DEV ONLY)
+		SessionID: sessionID,
 		UserID:    user.(*domain.User).ID,
 		Role:      user.(*domain.User).Role,
 	}, nil
@@ -122,10 +148,18 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode stri
 		return nil, errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to generate JWT token: %v", err))
 	}
 
+	// ビジネスメンバーテーブルから実際の事業者IDを取得
+	businessMember, err := s.authRepo.GetBusinessMemberByUserID(ctx, userData.ID)
+	if err != nil {
+		return nil, errors.NewAPIError(errors.ErrNotFound, fmt.Sprintf("business member not found for user: %v", err))
+	}
+
+	member := businessMember.(*domain.BusinessMember)
+
 	response := &domain.BusinessLoginResponse{
 		Token: token,
 	}
-	response.Business.ID = 0 // TODO: 事業者メンバーテーブルから実際の事業者IDを取得
+	response.Business.ID = member.ID
 	response.Business.Role = userData.Role
 
 	return response, nil

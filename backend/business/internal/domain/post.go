@@ -18,9 +18,9 @@ import "time"
 // Images: 投稿画像リスト（外部キー: PostID）
 // Genres: ジャンルリスト（多対多リレーション、中間テーブル: post_genre）
 type Post struct {
-	ID             string `gorm:"primaryKey"`
+	ID             int64 `gorm:"primaryKey;autoIncrement"`
 	AuthorID       string
-	BusinessMember BusinessMember
+	BusinessMember BusinessMember `gorm:"foreignKey:AuthorID;references:UserID"`
 	LocationID     string
 	Title          string
 	Description    string
@@ -108,7 +108,7 @@ type CreatePostRequest struct {
 type PostResponse struct {
 	PostID        string   `json:"postId"`
 	LocationID    string   `json:"locationId"`
-	GenreID       string   `json:"genreId"`
+	GenreIDs      []int64  `json:"genreIds"`
 	Title         string   `json:"title"`
 	ViewCount     int64    `json:"viewCount"`
 	ReactionCount int64    `json:"reactionCount"`
