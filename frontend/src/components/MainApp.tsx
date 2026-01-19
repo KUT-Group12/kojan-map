@@ -288,11 +288,11 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       pinsArray.map((p) =>
         p.userId === updatedUser.id
           ? {
-              ...p,
-              businessIcon: updatedUser.businessIcon,
-              businessName: updatedUser.businessName,
-              userName: updatedUser.name,
-            }
+            ...p,
+            businessIcon: updatedUser.businessIcon,
+            businessName: updatedUser.businessName,
+            userName: updatedUser.name,
+          }
           : p
       );
 
@@ -370,10 +370,14 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           ) : (
             <UserDisplayMyPage
               user={user}
-              pins={pins.filter((p) => p.userId === user.id)}
-              reactedPins={Array.from(reactedPins)
+              posts={pins.filter((p) => p.userId === user.id)}
+              reactedPosts={Array.from(reactedPins)
                 .map((id) => pins.find((p) => p.id === id)!)
                 .filter(Boolean)}
+              userNameMap={pins.reduce((acc, pin) => {
+                acc[pin.userId] = pin.userName;
+                return acc;
+              }, {} as Record<string, string>)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}

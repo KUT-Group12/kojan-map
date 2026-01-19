@@ -15,6 +15,7 @@ interface UserDisplayMyPageProps {
   user: User;
   posts: Post[];
   reactedPosts: Post[];
+  userNameMap: Record<string, string>;
   onPostClick: (post: Post) => void;
   onDeletePost: (postId: number) => void;
   onUpdateUser: (user: User) => void;
@@ -25,6 +26,7 @@ export function UserDisplayMyPage({
   user,
   posts,
   reactedPosts,
+  userNameMap,
   onPostClick,
   onDeletePost,
   onUpdateUser,
@@ -104,7 +106,7 @@ export function UserDisplayMyPage({
 
           {/* リアクション履歴 */}
           <TabsContent value="reactions" className="space-y-4">
-            <UserReactionViewScreen reactedPosts={reactedPosts} onPostClick={onPostClick} userNameMap={userNameMap} genre={currentGenre} />
+            <UserReactionViewScreen reactedPosts={reactedPosts} onPostClick={onPostClick} userNameMap={userNameMap} />
           </TabsContent>
 
           {/* 設定 */}

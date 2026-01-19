@@ -4,17 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Checkbox } from './ui/checkbox';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { User } from '../types';
+import { User, Business } from '../types';
 import { AlertTriangle, ArrowLeft, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DeleteAccountScreenProps {
+  business: Business;
   user: User;
   onBack: () => void;
   onDeleteAccount: () => void;
 }
 
-export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAccountScreenProps) {
+export function DeleteAccountScreen({ business, user, onBack, onDeleteAccount }: DeleteAccountScreenProps) {
   const [confirmChecks, setConfirmChecks] = useState({
     dataLoss: false,
     noCancellation: false,
@@ -65,16 +66,16 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
             <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm text-gray-600">ユーザー名</p>
-                <p>{user.role === 'business' ? user.name : '匿名'}</p>
+                <p>{user.role === 'business' ? business.businessName : '匿名'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
-              {user.role === 'business' && user.businessName && (
+              {user.role === 'business' && business.businessName && (
                 <div>
                   <p className="text-sm text-gray-600">事業者名</p>
-                  <p>{user.businessName}</p>
+                  <p>{business.businessName}</p>
                 </div>
               )}
             </div>
