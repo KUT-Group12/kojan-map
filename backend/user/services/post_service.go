@@ -65,19 +65,28 @@ func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error)
 	}
 
 	// 閲覧数をインクリメント（アトミックに実行）
-	config.DB.Model(&post).UpdateColumn("numView", gorm.Expr("numView + ?", 1))
+	if err := config.DB.Model(&post).UpdateColumn("numView", gorm.Expr("numView + ?", 1)).Error; err != nil {
+		return nil, err
+	}
+	post.NumView++
 
 	// ユーザー情報を取得
 	user := models.User{}
-	config.DB.Where("id = ?", post.UserID).First(&user)
+	if err := config.DB.Where("id = ?", post.UserID).First(&user).Error; err != nil {
+		return nil, err
+	}
 
 	// ジャンルを取得
 	genre := models.Genre{}
-	config.DB.Where("genreId = ?", post.GenreID).First(&genre)
+	if err := config.DB.Where("genreId = ?", post.GenreID).First(&genre).Error; err != nil {
+		return nil, err
+	}
 
 	// 場所情報を取得
 	place := models.Place{}
-	config.DB.Where("placeId = ?", post.PlaceID).First(&place)
+	if err := config.DB.Where("placeId = ?", post.PlaceID).First(&place).Error; err != nil {
+		return nil, err
+	}
 
 	result := map[string]interface{}{
 		"postId":      post.ID,
@@ -117,11 +126,11 @@ func (ps *PostService) GetUserPostHistory(userID string) ([]models.Post, error) 
 	return posts, nil
 }
 
-// GetPinSize ピンサイズを判定（投稿数が50以上で1.3倍）
-func (ps *PostService) GetPinSize(postID int) (float64, error) {
+// GetPinSize ピンサイズを判定（場所の投稿数が50以上で1.3倍）
+func (ps *PostService) GetPinSize(placeID int) (float64, error) {
 	var count int64
 	if err := config.DB.Model(&models.Post{}).
-		Where("postId = ?", postID).
+		Where("placeId = ?", placeID).
 		Count(&count).Error; err != nil {
 		return 1.0, err
 	}

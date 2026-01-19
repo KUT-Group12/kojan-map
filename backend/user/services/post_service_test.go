@@ -309,6 +309,15 @@ func setupTestPostData(db *gorm.DB) {
 		db.Create(&genre)
 	}
 
+	// ユーザー作成（関連データ参照用）
+	users := []models.User{
+		{ID: "user123", GoogleID: "google123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "user456", GoogleID: "google456", Gmail: "user456@example.com", Role: "user", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+	for _, user := range users {
+		db.Create(&user)
+	}
+
 	// 場所作成
 	places := []models.Place{
 		{Latitude: 35.6762, Longitude: 139.6503, NumPost: 0},
@@ -359,14 +368,28 @@ func TestPostService_GetPostTimestamp(t *testing.T) {
 
 	postService := &PostService{}
 
+	// 関連データ作成
+	user := models.User{ID: "user123", GoogleID: "google123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	if err := db.Create(&user).Error; err != nil {
+		t.Fatalf("Failed to create test user: %v", err)
+	}
+	place := models.Place{Latitude: 35.0, Longitude: 135.0, NumPost: 0}
+	if err := db.Create(&place).Error; err != nil {
+		t.Fatalf("Failed to create test place: %v", err)
+	}
+	genre := models.Genre{GenreName: "テストジャンル"}
+	if err := db.Create(&genre).Error; err != nil {
+		t.Fatalf("Failed to create test genre: %v", err)
+	}
+
 	// テスト投稿を作成
 	testTime := time.Now().Add(-24 * time.Hour)
 	testPost := models.Post{
 		UserID:   "user123",
 		Title:    "Test Post",
 		Text:     "Test Content",
-		PlaceID:  1,
-		GenreID:  1,
+		PlaceID:  place.ID,
+		GenreID:  genre.GenreID,
 		PostDate: testTime,
 	}
 	if err := db.Create(&testPost).Error; err != nil {

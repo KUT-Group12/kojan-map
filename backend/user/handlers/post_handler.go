@@ -166,14 +166,14 @@ func (ph *PostHandler) GetPostHistory(c *gin.Context) {
 // GetPinSize ピンサイズを判定
 // GET /api/posts/pin/scale
 func (ph *PostHandler) GetPinSize(c *gin.Context) {
-	postIDStr := c.Query("postId")
-	postID, err := strconv.Atoi(postIDStr)
+	placeIDStr := c.Query("placeId")
+	placeID, err := strconv.Atoi(placeIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid postId"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid placeId"})
 		return
 	}
 
-	pinSize, err := ph.postService.GetPinSize(postID)
+	pinSize, err := ph.postService.GetPinSize(placeID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
