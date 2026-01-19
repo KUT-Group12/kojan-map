@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
-	"kojan-map/user/models"
 	"kojan-map/user/services"
 
 	"github.com/gin-gonic/gin"

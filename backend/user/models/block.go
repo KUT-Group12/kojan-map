@@ -7,8 +7,8 @@ import (
 // UserBlock ユーザーブロック情報
 type UserBlock struct {
 	ID        int            `gorm:"column:blockId;primaryKey" json:"blockId"`
-	BlockerID string         `gorm:"column:blockerId;index" json:"blockerId"`
-	BlockedID string         `gorm:"column:blockedId;index" json:"blockedId"`
+	BlockerID string         `gorm:"column:blocker_id;index" json:"blockerId"`
+	BlockedID string         `gorm:"column:blocked_id;index" json:"blockedId"`
 	DeletedAt gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
 }
 
