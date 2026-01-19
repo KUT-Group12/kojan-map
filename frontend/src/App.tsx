@@ -1,8 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { LoginScreen } from './components/LoginScreen';
-const MainApp = lazy(() =>
-  import('./components/MainApp').then((m) => ({ default: m.MainApp }))
-);
+const MainApp = lazy(() => import('./components/MainApp').then((m) => ({ default: m.MainApp })));
 const AdminDashboard = lazy(() =>
   import('./components/AdminDashboard').then((m) => ({ default: m.AdminDashboard }))
 );
