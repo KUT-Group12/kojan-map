@@ -1,7 +1,7 @@
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Heart } from 'lucide-react';
-import { Post , Genre} from '../types';
+import { Post, Genre, User } from '../types';
 import { genreColors, genreLabels } from '../lib/mockData';
 
 interface UserReactionViewScreenProps {
@@ -12,6 +12,7 @@ interface UserReactionViewScreenProps {
 }
 
 export function UserReactionViewScreen({ reactedPosts, userNameMap, genre, onPostClick }: UserReactionViewScreenProps) {
+
   const getAuthorName = (userId: string) => {
     return userNameMap[userId] || '匿名';
   };
