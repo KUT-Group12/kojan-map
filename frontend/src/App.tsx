@@ -32,6 +32,8 @@ export default function App() {
         email: storedUser.email,
         name: storedUser.email ? storedUser.email.split('@')[0] : 'ユーザー',
         role: storedUser.role as UserRole,
+        businessName: storedUser.businessName,
+        businessIcon: storedUser.businessIcon,
         createdAt: new Date(storedUser.createdAt),
       };
       setUser(appUser);
@@ -49,6 +51,8 @@ export default function App() {
         email: storedUserData.email,
         name: storedUserData.email ? storedUserData.email.split('@')[0] : 'ユーザー',
         role: storedUserData.role as UserRole,
+        businessName: storedUserData.businessName,
+        businessIcon: storedUserData.businessIcon,
         createdAt: new Date(storedUserData.createdAt),
       };
       setUser(appUser);

@@ -37,7 +37,7 @@ export function MyPage({
   const [businessAddress, setBusinessAddress] = useState('');
 
   const handleBusinessRegistration = () => {
-    if (!businessName || !businessPhone || !businessAddress) {
+    if (!businessName.trim() || !businessPhone.trim() || !businessAddress.trim()) {
       toast.error('店舗名・電話番号・住所をすべて入力してください');
       return;
     }
@@ -128,7 +128,11 @@ export function MyPage({
                         <Button
                           size="sm"
                           onClick={() => {
-                            const updatedUser = { ...user, name: editingNameValue };
+                            if (!editingNameValue.trim()) {
+                              toast.error('ユーザー名を入力してください');
+                              return;
+                            }
+                            const updatedUser = { ...user, name: editingNameValue.trim() };
                             onUpdateUser(updatedUser);
                             setIsEditingName(false);
                           }}

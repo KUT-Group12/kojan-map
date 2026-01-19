@@ -13,6 +13,9 @@ import { LogoutScreen } from './LogoutScreen';
 import { Pin, User } from '../types';
 //import type { Pin, User, PinGenre } from '../types';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface MainAppProps {
   user: User;
   onLogout: () => void;
@@ -45,7 +48,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   useEffect(() => {
     const fetchPins = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8080/api/posts');
+        const response = await fetch(`${API_BASE_URL}/api/posts`);
         if (!response.ok) throw new Error('ピンの取得に失敗しました');
         const data: Pin[] = await response.json();
 
@@ -200,9 +203,10 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   };*/
 
   const handlePinClick = async (pin: Pin) => {
+    setSelectedPin(pin);
     setDetailData(null);
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/detail?id=${pin.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/posts/detail?id=${pin.id}`);
       if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
       const data = await response.json();
@@ -223,6 +227,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       // 詳細パネルはselectedPinの有無で制御するため、フラグは不要
     } catch (error) {
       console.error('Fetch error:', error);
+      setSelectedPin(null);
+      setDetailData(null);
     }
   };
 
@@ -295,7 +301,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   }) => {
     try {
       // 1. GoバックエンドへPOSTリクエスト
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -352,7 +358,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     images: string[];
   }) => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPinData),

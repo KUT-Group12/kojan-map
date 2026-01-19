@@ -22,6 +22,8 @@ export type StoredUser = {
   googleId?: string;
   email: string;
   role: UserRole;
+  businessName?: string;
+  businessIcon?: string;
   createdAt: string;
 };
 
@@ -39,6 +41,8 @@ const toStoredUser = (user: BackendUser): StoredUser => {
     googleId: user.googleId,
     email,
     role: (user.role as UserRole) || 'general',
+    businessName: (user as any).businessName,
+    businessIcon: (user as any).businessIcon,
     createdAt,
   };
 };
