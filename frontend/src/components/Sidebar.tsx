@@ -78,12 +78,12 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
   }, [searchKeyword, selectedGenre, sortBy, dateFilter, posts, onFilterChange, user.role]);
 
   const genreIdToKey: Record<number, PinGenre> = {
-    0: 'food',       // ジャンルID 0 -> 'food'
-    1: 'event',      // ジャンルID 1 -> 'event'
-    2: 'scene',      // ジャンルID 2 -> 'scene'
-    3: 'store',      // ジャンルID 3 -> 'store'
-    4: 'emergency',  // ジャンルID 4 -> 'emergency'
-    5: 'other',      // ジャンルID 5 -> 'other'
+    0: 'food', // ジャンルID 0 -> 'food'
+    1: 'event', // ジャンルID 1 -> 'event'
+    2: 'scene', // ジャンルID 2 -> 'scene'
+    3: 'store', // ジャンルID 3 -> 'store'
+    4: 'emergency', // ジャンルID 4 -> 'emergency'
+    5: 'other', // ジャンルID 5 -> 'other'
   };
 
   const formatDate = (date: Date | string) => {

@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Post, Place, User, Business } from '../types';
-import { genreColors, genreLabels } from '../lib/mockData';
+// import { genreColors, genreLabels } from '../lib/mockData';
+import { genreColors, genreLabels, GENRE_MAP } from '../lib/mockData';
 import { MapPin as MapPinIcon, Building2 } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 import { GetLocation } from './GetLocation';
@@ -50,8 +51,12 @@ export function MapViewScreen({
   const createCustomIcon = (groupPosts: Post[], isHovered: boolean) => {
     const post = groupPosts[0];
     const count = groupPosts.length;
-    const genreKeys = Object.keys(genreLabels);
-    const genreKey = genreKeys[post.genreId] || 'other';
+    // const genreKeys = Object.keys(genreLabels);
+    // const genreKey = genreKeys[post.genreId] || 'other';
+    const genreKey =
+      (Object.entries(GENRE_MAP).find(([, id]) => id === post.genreId)?.[0] as
+        | keyof typeof genreLabels
+        | undefined) ?? 'other';
     const color = genreColors[genreKey] || '#94a3b8';
     const sizeClass = getPinSizeClass(count);
 
