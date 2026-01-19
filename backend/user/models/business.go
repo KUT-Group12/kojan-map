@@ -13,7 +13,7 @@ type BusinessApplication struct {
 	KanaBusinessName string         `gorm:"column:kanaBusinessName;type:varchar(50)" json:"kanaBusinessName"`
 	ZipCode          int            `gorm:"column:zipCode" json:"zipCode"`
 	Address          string         `gorm:"column:address;type:varchar(100)" json:"address"`
-	Phone            int            `gorm:"column:phone" json:"phone"`
+	Phone            string         `gorm:"column:phone;type:varchar(20)" json:"phone"`
 	RegistDate       time.Time      `gorm:"column:registDate" json:"registDate"`
 	ProfileImage     []byte         `gorm:"column:profileImage;type:blob" json:"profileImage"`
 	UserID           string         `gorm:"column:userId;index" json:"userId"`

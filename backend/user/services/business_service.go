@@ -120,7 +120,7 @@ func (bs *BusinessService) GetBusinessProfile(userID string) (*BusinessProfileRe
 		KanaBusinessName: app.KanaBusinessName,
 		ZipCode:          app.ZipCode,
 		Address:          app.Address,
-		Phone:            "", // Phone はstring型で保存される想定
+		Phone:            app.Phone,
 		UserID:           app.UserID,
 		PlaceID:          app.PlaceID,
 		RegistDate:       app.RegistDate.Format("2006-01-02T15:04:05Z07:00"),
@@ -152,6 +152,9 @@ func (bs *BusinessService) UpdateBusinessProfile(
 	if address != "" {
 		app.Address = address
 	}
+	if phone != "" {
+		app.Phone = phone
+	}
 
 	if err := config.DB.Save(&app).Error; err != nil {
 		return nil, errors.New("failed to update business profile")
@@ -163,7 +166,7 @@ func (bs *BusinessService) UpdateBusinessProfile(
 		KanaBusinessName: app.KanaBusinessName,
 		ZipCode:          app.ZipCode,
 		Address:          app.Address,
-		Phone:            phone,
+		Phone:            app.Phone,
 		UserID:           app.UserID,
 		PlaceID:          app.PlaceID,
 		RegistDate:       app.RegistDate.Format("2006-01-02T15:04:05Z07:00"),
