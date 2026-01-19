@@ -32,10 +32,22 @@ export function MyPage({
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingNameValue, setEditingNameValue] = useState(user.name || '');
+  const [businessName, setBusinessName] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
 
   const handleBusinessRegistration = () => {
+    if (!businessName || !businessPhone || !businessAddress) {
+      toast.error('店舗名・電話番号・住所をすべて入力してください');
+      return;
+    }
+
+    // TODO: 送信API実装時にフォーム値をpayloadとして使用
     toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
     setShowBusinessRegistration(false);
+    setBusinessName('');
+    setBusinessPhone('');
+    setBusinessAddress('');
   };
 
   const formatDate = (date: Date) => {
@@ -181,16 +193,22 @@ export function MyPage({
                     type="text"
                     placeholder="店舗名"
                     className="w-full px-3 py-2 border rounded-lg"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
                   />
                   <input
                     type="tel"
                     placeholder="電話番号"
                     className="w-full px-3 py-2 border rounded-lg"
+                    value={businessPhone}
+                    onChange={(e) => setBusinessPhone(e.target.value)}
                   />
                   <input
                     type="text"
                     placeholder="住所"
                     className="w-full px-3 py-2 border rounded-lg"
+                    value={businessAddress}
+                    onChange={(e) => setBusinessAddress(e.target.value)}
                   />
                 </div>
                 <div className="flex space-x-2">
