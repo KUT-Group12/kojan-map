@@ -71,7 +71,7 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
     }*/
 
     onFilterChange(filtered);
-  }, [searchKeyword, selectedGenre, sortBy, dateFilter, pins, onFilterChange]);
+  }, [searchKeyword, selectedGenre, sortBy, dateFilter, pins, user, onFilterChange]);
 
   const formatDate = (date: Date) => {
     const d = new Date(date);
