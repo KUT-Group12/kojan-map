@@ -10,18 +10,35 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AdminPostHandler handles admin post management HTTP requests
+// AdminPostHandler handles admin post management HTTP requests.
 type AdminPostHandler struct {
 	postService *service.AdminPostService
 }
 
-// NewAdminPostHandler creates a new AdminPostHandler
+// NewAdminPostHandler creates a new AdminPostHandler.
+//
+// Parameters:
+//   - postService: 投稿管理サービスのインスタンス
+//
+// Returns:
+//   - *AdminPostHandler: 新しいハンドラーインスタンス
 func NewAdminPostHandler(postService *service.AdminPostService) *AdminPostHandler {
 	return &AdminPostHandler{postService: postService}
 }
 
-// GetPostByID retrieves a post by ID
-// GET /api/admin/posts/:postId
+// GetPostByID godoc
+// @Summary 投稿詳細を取得
+// @Description 指定したIDの投稿詳細情報を取得します
+// @Tags Admin Posts
+// @Accept json
+// @Produce json
+// @Param postId path int true "投稿ID"
+// @Success 200 {object} service.PostDetailResponse "投稿詳細"
+// @Failure 400 {object} map[string]string "不正なリクエスト"
+// @Failure 404 {object} map[string]string "投稿が見つからない"
+// @Failure 500 {object} map[string]string "サーバーエラー"
+// @Router /api/admin/posts/{postId} [get]
+// @Security BearerAuth
 func (h *AdminPostHandler) GetPostByID(c *gin.Context) {
 	postIDStr := c.Param("postId")
 	postID, err := strconv.Atoi(postIDStr)
@@ -45,8 +62,19 @@ func (h *AdminPostHandler) GetPostByID(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-// DeletePost deletes a post by ID
-// DELETE /api/admin/posts/:postId
+// DeletePost godoc
+// @Summary 投稿を削除
+// @Description 指定したIDの投稿を削除します。関連する通報も同時に削除されます。
+// @Tags Admin Posts
+// @Accept json
+// @Produce json
+// @Param postId path int true "投稿ID"
+// @Success 200 {object} map[string]string "削除成功メッセージ"
+// @Failure 400 {object} map[string]string "不正なリクエスト"
+// @Failure 404 {object} map[string]string "投稿が見つからない"
+// @Failure 500 {object} map[string]string "サーバーエラー"
+// @Router /api/admin/posts/{postId} [delete]
+// @Security BearerAuth
 func (h *AdminPostHandler) DeletePost(c *gin.Context) {
 	postIDStr := c.Param("postId")
 	postID, err := strconv.Atoi(postIDStr)

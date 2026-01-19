@@ -9,26 +9,32 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AdminBusinessHandlerは，事業者に関してのリクエストを処理するハンドラです．
-// 依存するサービス層のインスタンスを保持します．
+// AdminBusinessHandler は事業者申請に関するリクエストを処理するハンドラです.
 type AdminBusinessHandler struct {
 	service *service.AdminBusinessService
 }
 
-// AdminBusinessHandlerを新しく作成するためのコンストラクタ関数です．
-// 引数 : s ビジネスロジックを担当するAdminBusinessHandlerへのポインタです．
+// NewAdminBusinessHandler creates a new AdminBusinessHandler.
+//
+// Parameters:
+//   - s: 事業者申請管理サービスのインスタンス
+//
+// Returns:
+//   - *AdminBusinessHandler: 新しいハンドラーインスタンス
 func NewAdminBusinessHandler(s *service.AdminBusinessService) *AdminBusinessHandler {
 	return &AdminBusinessHandler{service: s}
 }
 
-// GetApplicationsは未処理の事業者申請一覧を取得する機能です
-// @Summary 申請一覧の取得
+// GetApplications godoc
+// @Summary 事業者申請一覧を取得
 // @Description 未処理の事業者申請一覧を取得します
 // @Tags Admin Business
+// @Accept json
 // @Produce json
-// @Success 200 {object} SuccessResponse "取得成功"
-// @Failure 500 {object} ErrorResponse "サーバーエラー"
-// @Router /api/admin/request [get]
+// @Success 200 {object} map[string]interface{} "申請一覧"
+// @Failure 500 {object} map[string]string "サーバーエラー"
+// @Router /api/admin/applications [get]
+// @Security BearerAuth
 func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 	applications, err := h.service.GetApplications()
 	if err != nil {
@@ -39,15 +45,17 @@ func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"applications": applications})
 }
 
-// ApproveApplicationは指定されたIDを持つ申請を承認します．
-// @Summary 申請承認
-// @Description 指定された申請IDの申請を承認します
+// ApproveApplication godoc
+// @Summary 事業者申請を承認
+// @Description 指定したIDの事業者申請を承認し、事業者会員を作成します
 // @Tags Admin Business
+// @Accept json
 // @Produce json
 // @Param id path int true "申請ID"
-// @Success 200 {object} SuccessResponse "承認成功"
-// @Failure 400 {object} ErrorResponse "不正リクエスト"
-// @Router /api/applications/{id}/approve [put]
+// @Success 200 {object} map[string]bool "承認成功"
+// @Failure 400 {object} map[string]string "不正なリクエスト"
+// @Router /api/admin/applications/{id}/approve [put]
+// @Security BearerAuth
 func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -64,14 +72,17 @@ func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-// RejextApplicationは指定されたIDを持つ申請を却下します．
-// @Summary 申請却下
-// @Description 指定されたIDを持つ申請を却下します
+// RejectApplication godoc
+// @Summary 事業者申請を却下
+// @Description 指定したIDの事業者申請を却下します
+// @Tags Admin Business
+// @Accept json
 // @Produce json
 // @Param id path int true "申請ID"
-// @Success 200 {object} SuccessResponse "承認却下成功"
-// @Failure 400 {object} ErrorResponse "不正リクエスト"
-// @Router /api/applications/{id}/reject [put]
+// @Success 200 {object} map[string]bool "却下成功"
+// @Failure 400 {object} map[string]string "不正なリクエスト"
+// @Router /api/admin/applications/{id}/reject [put]
+// @Security BearerAuth
 func (h *AdminBusinessHandler) RejectApplication(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

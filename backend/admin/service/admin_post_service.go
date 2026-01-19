@@ -11,10 +11,11 @@ import (
 
 // カスタムエラー定義
 var (
+	// ErrPostNotFound は投稿が見つからない場合に返されるエラー
 	ErrPostNotFound = errors.New("post not found")
 )
 
-// PostDetailResponse represents detailed post information for admin
+// PostDetailResponse represents detailed post information for admin.
 type PostDetailResponse struct {
 	PostID      int    `json:"postId"`
 	PlaceID     int    `json:"placeId"`
@@ -27,17 +28,30 @@ type PostDetailResponse struct {
 	GenreID     int    `json:"genreId"`
 }
 
-// AdminPostService handles admin post management business logic
+// AdminPostService handles admin post management business logic.
 type AdminPostService struct {
 	db *gorm.DB
 }
 
-// NewAdminPostService creates a new AdminPostService
+// NewAdminPostService creates a new AdminPostService.
+//
+// Parameters:
+//   - db: データベース接続インスタンス
+//
+// Returns:
+//   - *AdminPostService: 新しいサービスインスタンス
 func NewAdminPostService(db *gorm.DB) *AdminPostService {
 	return &AdminPostService{db: db}
 }
 
-// GetPostByID retrieves a post by ID
+// GetPostByID retrieves a post by ID.
+//
+// Parameters:
+//   - postID: 取得する投稿のID
+//
+// Returns:
+//   - *PostDetailResponse: 投稿詳細情報
+//   - error: ErrPostNotFound（投稿が存在しない場合）またはDBエラー
 func (s *AdminPostService) GetPostByID(postID int) (*PostDetailResponse, error) {
 	var post models.Post
 	result := s.db.Where("postId = ?", postID).First(&post)
@@ -63,7 +77,14 @@ func (s *AdminPostService) GetPostByID(postID int) (*PostDetailResponse, error) 
 	}, nil
 }
 
-// DeletePost deletes a post by ID (hard delete) with transaction
+// DeletePost deletes a post by ID (hard delete) with transaction.
+// 関連する通報も同時に削除されます。
+//
+// Parameters:
+//   - postID: 削除する投稿のID
+//
+// Returns:
+//   - error: ErrPostNotFound（投稿が存在しない場合）またはDBエラー
 func (s *AdminPostService) DeletePost(postID int) error {
 	// トランザクションを使用して原子性を保証
 	return s.db.Transaction(func(tx *gorm.DB) error {

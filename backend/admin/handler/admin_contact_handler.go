@@ -9,21 +9,32 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AdminContactHandlerはお問い合わせに関しての機能を処理するためのハンドラです．
+// AdminContactHandler はお問い合わせに関する機能を処理するハンドラです.
 type AdminContactHandler struct {
 	service *service.AdminContactService
 }
 
-// NewAdminContactHandlerは新しくAdminContactHandlerを作成するためのコンストラクタ関数です．
+// NewAdminContactHandler creates a new AdminContactHandler.
+//
+// Parameters:
+//   - s: 問い合わせ管理サービスのインスタンス
+//
+// Returns:
+//   - *AdminContactHandler: 新しいハンドラーインスタンス
 func NewAdminContactHandler(s *service.AdminContactService) *AdminContactHandler {
 	return &AdminContactHandler{service: s}
 }
 
-// GetInquiriesはお問い合わせ情報を取得します．
-// Method = GET,  Path = /internal/asks
-// Response =
-// 200 OK: {"asks": []Inquiry}
-// 500 Internal Server Error: {"error": string}
+// GetInquiries godoc
+// @Summary 問い合わせ一覧を取得
+// @Description 全ての問い合わせ情報を取得します
+// @Tags Admin Inquiries
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "問い合わせ一覧"
+// @Failure 500 {object} map[string]string "サーバーエラー"
+// @Router /api/admin/inquiries [get]
+// @Security BearerAuth
 func (h *AdminContactHandler) GetInquiries(c *gin.Context) {
 	asks, err := h.service.GetInquiries()
 	if err != nil {
@@ -34,14 +45,19 @@ func (h *AdminContactHandler) GetInquiries(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"asks": asks})
 }
 
-// ApproveInquiryはお問い合わせを承認する機能です．
-// Method = POST, Path = /internal/requests/:requestId/approve
-// requestId(path) = お問い合わせID(整数)
-// Response =
-// 200 OK: {"success": true}
-// 400 Bad Request
+// ApproveInquiry godoc
+// @Summary 問い合わせを処理済みにする
+// @Description 指定したIDの問い合わせを処理済み状態に更新します
+// @Tags Admin Inquiries
+// @Accept json
+// @Produce json
+// @Param id path int true "問い合わせID"
+// @Success 200 {object} map[string]bool "処理成功"
+// @Failure 400 {object} map[string]string "不正なリクエスト"
+// @Router /api/admin/inquiries/{id}/approve [put]
+// @Security BearerAuth
 func (h *AdminContactHandler) ApproveInquiry(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("requestId"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request ID"})
 		return
@@ -56,13 +72,19 @@ func (h *AdminContactHandler) ApproveInquiry(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-// RejectInquiryはお問い合わせを却下する機能です．
-// Method = POST, path = /internal/requests/:requestId/reject
-// Response =
-// 200 OK: {"success": true}
-// 400 Bad Request
+// RejectInquiry godoc
+// @Summary 問い合わせを却下する
+// @Description 指定したIDの問い合わせを却下状態に更新します
+// @Tags Admin Inquiries
+// @Accept json
+// @Produce json
+// @Param id path int true "問い合わせID"
+// @Success 200 {object} map[string]bool "却下成功"
+// @Failure 400 {object} map[string]string "不正なリクエスト"
+// @Router /api/admin/inquiries/{id}/reject [put]
+// @Security BearerAuth
 func (h *AdminContactHandler) RejectInquiry(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("requestId"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request ID"})
 		return
