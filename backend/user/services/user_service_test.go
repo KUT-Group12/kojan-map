@@ -294,8 +294,8 @@ func TestUserService_Logout_NotFound(t *testing.T) {
 	assert.Contains(t, err.Error(), "session not found")
 }
 
-// TestUserService_GetMyPageDetails - マイページ詳細情報を取得
-func TestUserService_GetMyPageDetails(t *testing.T) {
+// TestUserService_RegisterOrLogin_GetUserInfo - ユーザー登録と情報取得
+func TestUserService_RegisterOrLogin_GetUserInfo(t *testing.T) {
 	db := setupTestDB(t)
 	defer func() {
 		if err := db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{}); err != nil {

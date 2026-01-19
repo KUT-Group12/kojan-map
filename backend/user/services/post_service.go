@@ -151,7 +151,7 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 		// リアクション数をデクリメント
 		return config.DB.Model(&models.Post{}).
 			Where("postId = ?", postID).
-			Update("numReaction", config.DB.Raw("numReaction - 1")).Error
+			Update("numReaction", gorm.Expr("numReaction - 1")).Error
 	}
 
 	// リアクションを追加
@@ -166,7 +166,7 @@ func (ps *PostService) AddReaction(userID string, postID int) error {
 	// リアクション数をインクリメント
 	return config.DB.Model(&models.Post{}).
 		Where("postId = ?", postID).
-		Update("numReaction", config.DB.Raw("numReaction + 1")).Error
+		Update("numReaction", gorm.Expr("numReaction + 1")).Error
 }
 
 // SearchPostsByKeyword キーワード検索
