@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Search, Plus, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Pin, PinGenre, User } from '../types';
 import { genreLabels, genreColors } from '../lib/mockData';
 
@@ -15,10 +14,10 @@ interface SidebarProps {
   onPinClick: (pin: Pin) => void;
 }
 
-export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }: SidebarProps) {
+export function Sidebar({ user, pins, onFilterChange, onCreatePin: _onCreatePin, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'reactions' | 'distance'>('date');
+  const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   useEffect(() => {

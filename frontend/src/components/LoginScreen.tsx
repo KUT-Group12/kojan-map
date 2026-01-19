@@ -1,7 +1,7 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { exchangeGoogleTokenForJWT, storeJWT, storeUser } from '../lib/auth';
 
@@ -45,7 +45,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [showTerms, setShowTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
-  const [googleId, setGoogleId] = useState<string | null>(null);
+  // GoogleIDはフロントでは使用しないためstate管理を削除
   const [error, setError] = useState<string | null>(null);
   const googleButtonRef = useRef<HTMLDivElement | null>(null);
   const googleInitializedRef = useRef(false);
@@ -92,9 +92,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
 
     googleInitializedRef.current = true;
-  }, [agreedToTerms, googleReady]);
+  }, [agreedToTerms, googleReady, handleGoogleSignInCallback]);
 
-  const handleGoogleSignInCallback = async (response: GoogleSignInResponse) => {
+  const handleGoogleSignInCallback = useCallback(async (response: GoogleSignInResponse) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -106,7 +106,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         const base64url = token.split('.')[1];
         const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
         const payload = JSON.parse(atob(base64));
-        setGoogleId(payload.sub);
 
         // すべての新規会員は一般会員として登録する
         const result = await exchangeGoogleTokenForJWT(token, 'general');
@@ -125,7 +124,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onLogin]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">

@@ -1,7 +1,6 @@
 import { Card, CardContent } from './ui/card';
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Heart, Trash2 } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Pin } from '../types';
 import { genreColors, genreLabels } from '../lib/mockData';
 import { ReactNode } from 'react';

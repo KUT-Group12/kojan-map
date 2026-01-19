@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { LoadingScreen } from './components/LoadingScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';

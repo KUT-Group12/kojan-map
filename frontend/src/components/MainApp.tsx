@@ -10,7 +10,7 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Pin, User, PinGenre } from '../types';
+import { Pin, User } from '../types';
 //import type { Pin, User, PinGenre } from '../types';
 
 interface MainAppProps {
@@ -41,7 +41,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const [reactedPins, setReactedPins] = useState<Set<string>>(new Set());
   // APIからのデータを保持する
   const [detailData, setDetailData] = useState<PinDetailExtra | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   useEffect(() => {
     const fetchPins = async () => {
@@ -209,7 +208,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
 
       // 3. 取得したデータをステートに入れて、パネルを開く
       setSelectedPin(data.pin); // data.pin は Go側の PinDetailResponse 構造体の中身
-      setIsDetailOpen(true);
+      // 詳細パネルはselectedPinの有無で制御するため、フラグは不要
     } catch (error) {
       console.error('Fetch error:', error);
     }

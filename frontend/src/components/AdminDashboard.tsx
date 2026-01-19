@@ -136,25 +136,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     toast.success('事業者申請を却下しました');
   };
 
-  const handleResolveReport = (reportId: string) => {
+  const handleResolveReport = (_reportId: string) => {
     toast.success('通報を処理しました');
   };
 
-  const handleDeletePost = (pinId: string) => {
+  const handleDeletePost = (_pinId: string) => {
     if (confirm('この投稿を削除しますか？')) {
       toast.success('投稿を削除しました');
     }
   };
 
-  const handleDeleteAccount = (userId: string) => {
+  const handleDeleteAccount = (_userId: string) => {
     if (confirm('このアカウントを削除しますか？関連する全ての投稿も削除されます。')) {
       toast.success('アカウントを削除しました');
     }
-  };
-
-  const handleRespondInquiry = (id: string) => {
-    setInquiries((prev) => prev.map((q) => (q.id === id ? { ...q, status: 'responded' } : q)));
-    toast.success('問い合わせを返信済みにしました');
   };
 
   const handleDeleteInquiry = (id: string) => {

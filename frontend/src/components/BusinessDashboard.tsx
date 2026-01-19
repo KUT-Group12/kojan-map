@@ -9,7 +9,6 @@ import {
   Calendar,
   CreditCard,
   BarChart3,
-  MapPin,
   Building2,
   Clock,
 } from 'lucide-react';
