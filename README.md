@@ -67,6 +67,16 @@ docker build -t kojan-map-frontend .
 docker run -p 5173:5173 kojan-map-frontend
 ```
 
+#### データベース
+
+```powershell
+cd kojan-map
+docker compose up -d db
+docker compose exec db bash
+
+mysql -u ユーザ名 -p
+use データベース名;
+```
 ### コンテナの停止
 
 ```powershell
