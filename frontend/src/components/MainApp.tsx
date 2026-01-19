@@ -54,11 +54,12 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         const postsRes = await fetch('http://localhost:8080/api/posts');
         const postsData = await postsRes.json();
 
-        if (!postsData.posts) return;
+        const posts = postsData.posts ?? [];
+        if (posts.length === 0) return;
 
         // 各ピンに対して投稿数50以上かをチェック
         const postsWithStatus = await Promise.all(
-          postsData.map(async (post: Post) => {
+          posts.map(async (post: Post) => {
             try {
               // 仕様書のパスとパラメータ名に合わせる
               // placeIdでは?
@@ -80,10 +81,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           })
         );
 
-        if (postsData.posts) {
-          setPosts(postsWithStatus);
-          setFilteredPosts(postsData.posts);
-        }
+        setPosts(postsWithStatus);
+        setFilteredPosts(postsWithStatus);
       } catch (error) {
         console.error('データ取得失敗:', error);
       }
