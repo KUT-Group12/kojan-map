@@ -11,6 +11,7 @@ import (
 
 	"kojan-map/router"
 	"kojan-map/shared/config"
+	userconfig "kojan-map/user/config"
 	"kojan-map/user/handlers"
 	"kojan-map/user/middleware"
 	"kojan-map/user/migrations"
@@ -33,11 +34,16 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
+	// Initialize JWT secret for middleware
+	middleware.SetJWTSecret(cfg.JWTSecretKey)
+
 	// Connect to database
 	db := config.ConnectDB(cfg)
+	// Share DB instance with user package services relying on user/config.DB
+	userconfig.DB = db
 
 	// マイグレーションを実行
-	if err := migrations.RunMigrations(); err != nil {
+	if err := migrations.RunMigrations(db); err != nil {
 		log.Fatal("Migration failed:", err)
 	}
 
@@ -59,7 +65,7 @@ func main() {
 	router.SetupAdminRoutes(r, db)
 
 	// Setup user routes (一般会員用)
-	setupUserRoutes(r, db, middleware.AuthMiddleware(), cfg.GoogleClientID)
+	setupUserRoutes(r, db, middleware.AuthMiddleware(), cfg.GoogleClientID, cfg)
 
 	// Start server
 	port := cfg.ServerPort
@@ -83,10 +89,11 @@ func setupUserRoutes(
 	db *gorm.DB,
 	authMiddleware gin.HandlerFunc,
 	googleClientID string,
+	cfg *config.Config,
 ) {
 	// サービスとハンドラーを初期化
 	userService := &services.UserService{}
-	authService := services.NewAuthService(db, googleClientID)
+	authService := services.NewAuthService(db, googleClientID, cfg.JWTSecretKey)
 	authHandler := handlers.NewAuthHandler(userService, authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postService := &services.PostService{}
@@ -101,6 +108,8 @@ func setupUserRoutes(
 	contactHandler := handlers.NewContactHandler(contactService)
 	businessApplicationService := &services.BusinessApplicationService{}
 	businessApplicationHandler := handlers.NewBusinessApplicationHandler(businessApplicationService)
+	businessService := &services.BusinessService{}
+	businessHandler := handlers.NewBusinessHandler(businessService, postService)
 
 	// 認証関連ルート
 	router.POST("/api/users/register", authHandler.Register)
@@ -145,6 +154,17 @@ func setupUserRoutes(
 
 	// 事業者申請関連ルート
 	router.POST("/api/business/application", businessApplicationHandler.CreateBusinessApplication)
+
+	// 事業者ユーザー関連ルート（認証必須）
+	router.GET("/api/business/stats", authMiddleware, businessHandler.GetBusinessStats)
+	router.GET("/api/business/profile", authMiddleware, businessHandler.GetBusinessProfile)
+	router.PUT("/api/business/profile", authMiddleware, businessHandler.UpdateBusinessProfile)
+	router.POST("/api/business/icon", authMiddleware, businessHandler.UploadBusinessIcon)
+	router.GET("/api/business/posts/count", authMiddleware, businessHandler.GetBusinessPostCount)
+	router.GET("/api/business/revenue", authMiddleware, businessHandler.GetBusinessRevenue)
+	router.PUT("/api/business/name", authMiddleware, businessHandler.UpdateBusinessName)
+	router.PUT("/api/business/address", authMiddleware, businessHandler.UpdateBusinessAddress)
+	router.PUT("/api/business/phone", authMiddleware, businessHandler.UpdateBusinessPhone)
 }
 
 // corsMiddleware CORS設定
