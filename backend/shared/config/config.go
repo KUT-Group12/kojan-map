@@ -12,6 +12,7 @@ type Config struct {
 	DBPassword     string
 	DBName         string
 	ServerPort     string
+	JWTSecretKey   string
 	GoogleClientID string
 }
 
@@ -24,6 +25,7 @@ func Load() *Config {
 		DBPassword:     getEnv("DB_PASSWORD", ""),
 		DBName:         getEnv("DB_NAME", "kojan_map"),
 		ServerPort:     getEnv("SERVER_PORT", "8080"),
+		JWTSecretKey:   getEnv("JWT_SECRET_KEY", ""),
 		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
 	}
 }
