@@ -8,16 +8,16 @@ import (
 
 // Contact 問い合わせモデル
 type Contact struct {
-	ID        int            `gorm:"primaryKey" json:"askId"`
-	Date      time.Time      `json:"date"`
-	Subject   string         `gorm:"type:varchar(100)" json:"subject"`
-	Text      string         `gorm:"type:text" json:"text"`
-	AskUserID string         `gorm:"index" json:"askUserId"`
-	AskFlag   bool           `gorm:"default:false" json:"askFlag"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ID        int            `gorm:"column:askId;primaryKey" json:"askId"`
+	Date      time.Time      `gorm:"column:date" json:"date"`
+	Subject   string         `gorm:"column:subject;type:varchar(100)" json:"subject"`
+	Text      string         `gorm:"column:text;type:text" json:"text"`
+	AskUserID string         `gorm:"column:userId;index" json:"userId"`
+	AskFlag   bool           `gorm:"column:askFlag;default:false" json:"askFlag"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
 }
 
 // TableName テーブル名を指定
 func (Contact) TableName() string {
-	return "contacts"
+	return "asks"
 }
