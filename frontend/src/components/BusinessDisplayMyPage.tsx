@@ -18,8 +18,13 @@ interface BusinessDisplayMyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function BusinessDisplayMyPage({ 
-  user, pins, onPinClick, onDeletePin, onUpdateUser, onNavigateToDeleteAccount 
+export function BusinessDisplayMyPage({
+  user,
+  pins,
+  onPinClick,
+  onDeletePin,
+  onUpdateUser,
+  onNavigateToDeleteAccount,
 }: BusinessDisplayMyPageProps) {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
@@ -69,13 +74,27 @@ export function BusinessDisplayMyPage({
                 <div className="flex items-center space-x-2">
                   {isEditingName ? (
                     <>
-                      <input className="px-2 py-1 border rounded" value={editingNameValue} onChange={(e) => setEditingNameValue(e.target.value)} />
-                      <Button size="sm" onClick={() => { onUpdateUser({...user, name: editingNameValue}); setIsEditingName(false); }}>保存</Button>
+                      <input
+                        className="px-2 py-1 border rounded"
+                        value={editingNameValue}
+                        onChange={(e) => setEditingNameValue(e.target.value)}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          onUpdateUser({ ...user, name: editingNameValue });
+                          setIsEditingName(false);
+                        }}
+                      >
+                        保存
+                      </Button>
                     </>
                   ) : (
                     <>
                       <p>{user.name}</p>
-                      <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>編集</Button>
+                      <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>
+                        編集
+                      </Button>
                     </>
                   )}
                 </div>
@@ -106,7 +125,11 @@ export function BusinessDisplayMyPage({
             <div className="flex items-start space-x-6">
               <div className="w-32 h-32 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center">
                 {selectedIcon || user.businessIcon ? (
-                  <img src={selectedIcon || user.businessIcon} alt="Icon" className="w-full h-full object-cover" />
+                  <img
+                    src={selectedIcon || user.businessIcon}
+                    alt="Icon"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <ImageIcon className="text-gray-400" />
                 )}
@@ -116,7 +139,13 @@ export function BusinessDisplayMyPage({
                   <label htmlFor="icon-upload" className="cursor-pointer">
                     <Upload className="mx-auto mb-2 text-gray-400" />
                     <p className="text-sm">画像を選択 (最大5MB)</p>
-                    <input id="icon-upload" type="file" accept="image/*" className="hidden" onChange={handleIconUpload} />
+                    <input
+                      id="icon-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleIconUpload}
+                    />
                   </label>
                 </div>
                 {selectedIcon && (
@@ -124,7 +153,9 @@ export function BusinessDisplayMyPage({
                     <Button onClick={handleSaveIcon} disabled={isUploadingIcon} className="flex-1">
                       {isUploadingIcon ? '保存中...' : 'アイコンを保存'}
                     </Button>
-                    <Button onClick={() => setSelectedIcon(null)} variant="outline">キャンセル</Button>
+                    <Button onClick={() => setSelectedIcon(null)} variant="outline">
+                      キャンセル
+                    </Button>
                   </div>
                 )}
               </div>
@@ -139,18 +170,14 @@ export function BusinessDisplayMyPage({
           </TabsList>
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-            <SelectPostHistory 
-                pins={pins} 
-                onPinClick={onPinClick} 
-                onDeletePin={onDeletePin} 
-            />
+            <SelectPostHistory pins={pins} onPinClick={onPinClick} onDeletePin={onDeletePin} />
           </TabsContent>
           {/* 設定 */}
           <TabsContent value="settings" className="space-y-4">
-            <SelectUserSetting 
-                user={user}
-                onUpdateUser={onUpdateUser}
-                onNavigateToDeleteAccount={onNavigateToDeleteAccount}
+            <SelectUserSetting
+              user={user}
+              onUpdateUser={onUpdateUser}
+              onNavigateToDeleteAccount={onNavigateToDeleteAccount}
             />
           </TabsContent>
         </Tabs>
