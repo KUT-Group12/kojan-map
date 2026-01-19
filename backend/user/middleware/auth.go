@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -14,6 +13,16 @@ import (
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
+
+var jwtSecret []byte
+
+// SetJWTSecret sets the JWT secret for middleware to use
+func SetJWTSecret(secret string) {
+	if secret == "" {
+		log.Fatal("JWT_SECRET_KEY cannot be empty")
+	}
+	jwtSecret = []byte(secret)
+}
 
 // AuthMiddleware JWT認証ミドルウェア
 func AuthMiddleware() gin.HandlerFunc {
@@ -33,9 +42,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
-		secret := os.Getenv("JWT_SECRET_KEY")
-		if secret == "" {
-			log.Println("JWT_SECRET_KEY is not set")
+		if jwtSecret == nil {
+			log.Println("JWT secret is not initialized")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			c.Abort()
 			return
@@ -46,7 +54,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return []byte(secret), nil
+			return jwtSecret, nil
 		})
 
 		if err != nil {
