@@ -75,7 +75,8 @@ docker compose up -d db
 docker compose exec db bash
 
 mysql -u ユーザ名 -p
-use データベース名;
+
+docker exec -i kojan-map-db-1 mysqldump -u root -p kojanmap > kojanmap_dump.sql % ダンプファイルの作成
 ```
 ### コンテナの停止
 
