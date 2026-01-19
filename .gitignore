@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Go
 *.exe
 *.exe~
@@ -44,48 +43,3 @@ Thumbs.db
 # Build outputs
 build/
 tmp/
-=======
-# Go
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-go.work
-
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-.pnpm-store/
-dist/
-dist-ssr/
-*.local
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-*.log
-
-# Build outputs
-build/
-tmp/
->>>>>>> origin/main
