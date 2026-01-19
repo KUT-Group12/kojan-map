@@ -234,7 +234,7 @@ export function NewPostScreen({
                 step="0.0001"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
-                placeholder="35.6762"
+                placeholder="33.6071"
                 required
               />
             </div>
@@ -246,7 +246,7 @@ export function NewPostScreen({
                 step="0.0001"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
-                placeholder="139.6503"
+                placeholder="133.6822"
                 required
               />
             </div>
@@ -298,7 +298,8 @@ export function NewPostScreen({
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
-                事業者名「{businessData?.businessName || user?.fromName}」として投稿されます
+                事業者名「{businessData?.businessName || user?.fromName || '（未設定）'}
+                」として投稿されます
               </p>
             </div>
           ) : (
