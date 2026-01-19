@@ -27,8 +27,8 @@ func NewAuthHandler(userService *services.UserService, authService *services.Aut
 // POST /api/users/register
 func (ah *AuthHandler) Register(c *gin.Context) {
 	var req struct {
-		GoogleID string `json:"googleId" binding:"required"`
-		Email    string `json:"gmail" binding:"required"`
+		GoogleToken string `json:"googleId" binding:"required"`
+		Email       string `json:"gmail" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -36,7 +36,14 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	session, err := ah.userService.RegisterOrLogin(req.GoogleID, req.Email)
+	// Google トークンを検証
+	googleResp, err := ah.authService.VerifyGoogleToken(req.GoogleToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	session, err := ah.userService.RegisterOrLogin(googleResp.Sub, googleResp.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
