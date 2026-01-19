@@ -77,6 +77,15 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
     onFilterChange(filtered);
   }, [searchKeyword, selectedGenre, sortBy, dateFilter, posts, onFilterChange, user.role]);
 
+  const genreIdToKey: Record<number, PinGenre> = {
+    0: 'food',       // ジャンルID 0 -> 'food'
+    1: 'event',      // ジャンルID 1 -> 'event'
+    2: 'scene',      // ジャンルID 2 -> 'scene'
+    3: 'store',      // ジャンルID 3 -> 'store'
+    4: 'emergency',  // ジャンルID 4 -> 'emergency'
+    5: 'other',      // ジャンルID 5 -> 'other'
+  };
+
   const formatDate = (date: Date) => {
     const d = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
@@ -180,12 +189,11 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
                   <h3 className="flex-1 text-gray-900">{post.title}</h3>
                   <Badge
                     style={{
-                      backgroundColor:
-                        genreColors[Object.keys(genreLabels)[post.genreId] || 'other'],
+                      backgroundColor: genreColors[genreIdToKey[post.genreId] ?? 'other'],
                     }}
                     className="ml-2"
                   >
-                    {genreLabels[Object.keys(genreLabels)[post.genreId] || 'other']}
+                    {genreLabels[genreIdToKey[post.genreId] ?? 'other']}
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</p>

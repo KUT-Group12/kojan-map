@@ -1,15 +1,5 @@
 import { PinGenre } from '../types';
 
-// バックエンドの genreId とフロントの PinGenre の紐付け
-export const API_GENRE_MAP: Record<number, PinGenre> = {
-  1: 'food',
-  2: 'event',
-  3: 'scene',
-  4: 'store',
-  5: 'emergency',
-  // それ以外は 'other' として扱う
-};
-
 export const GENRE_MAP: Record<PinGenre, number> = {
   food: 1,
   event: 2,
