@@ -23,11 +23,18 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 
 // getUserInfoHandler googleID から共通ロジック
 func (uh *UserHandler) getUserInfoHandler(c *gin.Context) (*models.UserInfo, error) {
-	googleID := c.Query("googleId")
-	if googleID == "" {
-		return nil, errors.New("googleId required")
+	// JWT から googleId を取得
+	googleID, exists := c.Get("googleId")
+	if !exists {
+		return nil, errors.New("unauthorized: googleId not found in JWT")
 	}
-	return uh.userService.GetUserInfo(googleID)
+	
+	googleIDStr, ok := googleID.(string)
+	if !ok {
+		return nil, errors.New("invalid googleId format")
+	}
+	
+	return uh.userService.GetUserInfo(googleIDStr)
 }
 
 // GetMemberInfo 会員情報を取得
