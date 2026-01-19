@@ -13,7 +13,7 @@ export interface User {
   businessId?: number;
   businessName?: string;
   kanaBusinessName?: string;
-  zipCode?: number;
+  zipCode?: string;
   address?: string;
   phone?: string;
   businessIcon?: string;

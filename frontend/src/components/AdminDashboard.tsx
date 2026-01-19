@@ -859,7 +859,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       // モック: メール送信として扱い、問い合わせを対応済みにする
                       setInquiries((prev) =>
                         prev.map((q) =>
-                          q.id === replyingInquiry.id ? { ...q, status: 'responded' } : q
+                          q.id === replyingInquiry.id
+                            ? { ...q, status: 'responded', draft: undefined }
+                            : q
                         )
                       );
                       toast.success(
