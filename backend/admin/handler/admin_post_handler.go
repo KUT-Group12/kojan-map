@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -31,7 +32,13 @@ func (h *AdminPostHandler) GetPostByID(c *gin.Context) {
 
 	post, err := h.postService.GetPostByID(postID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		// エラー種別を判別してステータスコードを変更
+		if errors.Is(err, service.ErrPostNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+			return
+		}
+		// DB接続エラー等の内部エラー
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 
@@ -50,7 +57,13 @@ func (h *AdminPostHandler) DeletePost(c *gin.Context) {
 
 	err = h.postService.DeletePost(postID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		// エラー種別を判別してステータスコードを変更
+		if errors.Is(err, service.ErrPostNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+			return
+		}
+		// DB接続エラー等の内部エラー
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 

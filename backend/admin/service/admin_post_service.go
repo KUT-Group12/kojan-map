@@ -2,10 +2,16 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"kojan-map/shared/models"
 
 	"gorm.io/gorm"
+)
+
+// カスタムエラー定義
+var (
+	ErrPostNotFound = errors.New("post not found")
 )
 
 // PostDetailResponse represents detailed post information for admin
@@ -36,7 +42,12 @@ func (s *AdminPostService) GetPostByID(postID int) (*PostDetailResponse, error) 
 	var post models.Post
 	result := s.db.Where("postId = ?", postID).First(&post)
 	if result.Error != nil {
-		return nil, errors.New("post not found")
+		// レコードが見つからない場合と他のエラーを区別
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, ErrPostNotFound
+		}
+		// DB接続エラー等はそのまま返す
+		return nil, fmt.Errorf("failed to get post: %w", result.Error)
 	}
 
 	return &PostDetailResponse{
@@ -52,20 +63,30 @@ func (s *AdminPostService) GetPostByID(postID int) (*PostDetailResponse, error) 
 	}, nil
 }
 
-// DeletePost deletes a post by ID (hard delete)
+// DeletePost deletes a post by ID (hard delete) with transaction
 func (s *AdminPostService) DeletePost(postID int) error {
-	// Check if post exists
-	var post models.Post
-	result := s.db.Where("postId = ?", postID).First(&post)
-	if result.Error != nil {
-		return errors.New("post not found")
-	}
+	// トランザクションを使用して原子性を保証
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		// Check if post exists
+		var post models.Post
+		result := tx.Where("postId = ?", postID).First(&post)
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				return ErrPostNotFound
+			}
+			return fmt.Errorf("failed to find post: %w", result.Error)
+		}
 
-	// Delete associated reports first
-	if err := s.db.Where("postId = ?", postID).Delete(&models.Report{}).Error; err != nil {
-		return err
-	}
+		// Delete associated reports first
+		if err := tx.Where("postId = ?", postID).Delete(&models.Report{}).Error; err != nil {
+			return fmt.Errorf("failed to delete reports: %w", err)
+		}
 
-	// Delete the post
-	return s.db.Where("postId = ?", postID).Delete(&models.Post{}).Error
+		// Delete the post
+		if err := tx.Where("postId = ?", postID).Delete(&models.Post{}).Error; err != nil {
+			return fmt.Errorf("failed to delete post: %w", err)
+		}
+
+		return nil
+	})
 }

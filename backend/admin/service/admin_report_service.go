@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 
 	adminrepo "kojan-map/admin/repository"
 	"kojan-map/shared/models"
@@ -102,6 +103,9 @@ func (s *AdminReportService) GetReportDetail(reportID int) (*ReportDetailRespons
 			UserID:   post.UserID,
 			PostDate: post.PostDate.Format("2006-01-02T15:04:05Z07:00"),
 		}
+	} else {
+		// 投稿が見つからない場合はログ出力（削除済みの可能性あり）
+		log.Printf("Warning: Post not found for report %d (postId: %d): %v", reportID, report.PostID, err)
 	}
 
 	return response, nil
