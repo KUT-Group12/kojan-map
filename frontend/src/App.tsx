@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { LoginScreen } from './components/LoginScreen';
-import { MainApp } from './components/MainApp';
-import { AdminDashboard } from './components/AdminDashboard';
+const MainApp = lazy(() => import('./components/MainApp'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 import { Toaster } from './components/ui/sonner';
 import { getStoredJWT, getStoredUser, logout as authLogout } from './lib/auth';
 
@@ -72,17 +72,17 @@ export default function App() {
 
   if (user.role === 'admin') {
     return (
-      <>
+      <Suspense fallback={<div className="p-4">読み込み中...</div>}>
         <AdminDashboard user={user} onLogout={handleLogout} />
         <Toaster />
-      </>
+      </Suspense>
     );
   }
 
   return (
-    <>
+    <Suspense fallback={<div className="p-4">読み込み中...</div>}>
       <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
       <Toaster />
-    </>
+    </Suspense>
   );
 }
