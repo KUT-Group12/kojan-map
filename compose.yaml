@@ -6,14 +6,14 @@ services:
       - "8080:8080"
     depends_on:
       - db
+    env_file:
+      - .env.backend
     environment:
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: kojanmap
-      JWT_SECRET_KEY: e10b3b775c82d26e964ff21feb40ae845f30cf87dcb185cc546a237b5c3a77d8
-      GOOGLE_CLIENT_ID: 717808448232-jh376rsq8bn9c1b9mt1fombkdp2kq72f.apps.googleusercontent.com
       ALLOWED_ORIGINS: http://localhost:5173
 
   # フロントエンド (React)
@@ -23,9 +23,10 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+    env_file:
+      - .env.frontend
     environment:
       VITE_API_BASE_URL: http://localhost:8080
-      VITE_GOOGLE_CLIENT_ID: 717808448232-jh376rsq8bn9c1b9mt1fombkdp2kq72f.apps.googleusercontent.com
 
   # データベース (MySQL)
   db:

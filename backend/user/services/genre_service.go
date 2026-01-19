@@ -34,7 +34,7 @@ func (s *GenreService) GetGenreByName(genreName string) (int, error) {
 	}
 
 	var genre models.Genre
-	if err := s.DB.Where("genre_name = ?", japaneseName).First(&genre).Error; err != nil {
+	if err := s.DB.Where("genreId = ?", japaneseName).First(&genre).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, errors.New("ジャンルが見つかりませんでした")
 		}
@@ -47,7 +47,7 @@ func (s *GenreService) GetGenreByName(genreName string) (int, error) {
 // GetGenreByID は、ジャンルIDからジャンル情報を取得します
 func (s *GenreService) GetGenreByID(genreID int) (*models.Genre, error) {
 	var genre models.Genre
-	if err := s.DB.Where("genre_id = ?", genreID).First(&genre).Error; err != nil {
+	if err := s.DB.Where("genreId = ?", genreID).First(&genre).Error; err != nil {
 		return nil, err
 	}
 	return &genre, nil

@@ -50,7 +50,7 @@ func TestUserService_RegisterOrLogin_NewUser(t *testing.T) {
 
 	// DBにユーザーが作成されたか確認
 	var user models.User
-	err = db.Where("google_id = ?", session.GoogleID).First(&user).Error
+	err = db.Where("googleId = ?", session.GoogleID).First(&user).Error
 	assert.NoError(t, err)
 	assert.Equal(t, "test@example.com", user.Gmail)
 	assert.Equal(t, "user", user.Role)
