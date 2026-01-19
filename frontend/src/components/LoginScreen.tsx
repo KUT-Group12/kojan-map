@@ -102,7 +102,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         const token = response.credential;
 
         // トークンをデコード（署名検証はバックエンドで行う）
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        // base64url形式をbase64に正規化してからデコード
+        const base64url = token.split('.')[1];
+        const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        const payload = JSON.parse(atob(base64));
         setGoogleId(payload.sub);
 
         // すべての新規会員は一般会員として登録する

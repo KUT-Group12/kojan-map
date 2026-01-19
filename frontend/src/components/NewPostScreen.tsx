@@ -49,18 +49,13 @@ export function NewPostScreen({
     if (!files) return;
 
     const newImages: string[] = [];
-    const previewUrls: string[] = [];
 
     for (const file of Array.from(files)) {
-      // プレビュー用
-      previewUrls.push(URL.createObjectURL(file));
-
-      // バックエンド送信用のBase64変換 (方法Aの場合)
+      // バックエンド送信用のBase64変換
       const base64 = await fileToBase64(file);
       newImages.push(base64);
     }
 
-    // プレビューとデータ保持を分けるか、両方管理する必要があります
     setImages((prev) => [...prev, ...newImages]);
     e.target.value = '';
   };

@@ -10,7 +10,6 @@ interface User {
 interface LogoutScreenProps {
   user: User;
   onLogout: () => void;
-  onBack: () => void;
 }
 
 export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
