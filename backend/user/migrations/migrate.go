@@ -62,13 +62,13 @@ func createGenresTable(db *gorm.DB) error {
 	db.Raw("SELECT COUNT(*) FROM genres").Scan(&count)
 	if count == 0 {
 		if err := db.Exec(`
-		INSERT INTO genres (genreName) VALUES
-		('food'),
-		('event'),
-		('scene'),
-		('store'),
-		('emergency'),
-		('other');
+		INSERT INTO genres (genreName, color) VALUES
+		('food', 'EF4444'),
+		('event', 'F59E0B'),
+		('scene', '10B981'),
+		('store', '3B82F6'),
+		('emergency', '8B5CF6'),
+		('other', '6B7280');
 		`).Error; err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func createUsersTable(db *gorm.DB) error {
 		id VARCHAR(36) PRIMARY KEY,
 		googleId VARCHAR(50) NOT NULL UNIQUE,
 		gmail VARCHAR(100) NOT NULL UNIQUE,
-		role VARCHAR(50) NOT NULL DEFAULT 'user',
+		role ENUM('user', 'business', 'admin') NOT NULL DEFAULT 'user',
 		registrationDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -128,14 +128,14 @@ func createPostsTable(db *gorm.DB) error {
 	CREATE TABLE IF NOT EXISTS posts (
 		postId INT AUTO_INCREMENT PRIMARY KEY,
 		placeId INT NOT NULL,
-		genreId INT NOT NULL,
 		userId VARCHAR(36) NOT NULL,
-		title VARCHAR(255) NOT NULL,
-		text LONGTEXT,
-		postImage LONGBLOB,
-		numView INT DEFAULT 0,
-		numReaction INT DEFAULT 0,
 		postDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		title VARCHAR(50) NOT NULL,
+		text TEXT,
+		postImage BLOB,
+		numReaction INT NOT NULL DEFAULT 0,
+		numView INT NOT NULL DEFAULT 0,
+		genreId INT NOT NULL,
 		deletedAt DATETIME NULL,
 		KEY idx_userId (userId),
 		KEY idx_genreId (genreId),
@@ -231,11 +231,11 @@ func createBusinessApplicationsTable(db *gorm.DB) error {
 		kanaBusinessName VARCHAR(50) NOT NULL,
 		zipCode INT NOT NULL,
 		address VARCHAR(100) NOT NULL,
-		phone VARCHAR(20) NOT NULL,
-		profileImage LONGBLOB,
-		userId VARCHAR(36) NOT NULL,
-		placeId INT NOT NULL,
+		phone INT NOT NULL,
 		registDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		profileImage BLOB,
+		userId VARCHAR(50) NOT NULL,
+		placeId INT NOT NULL,
 		deletedAt DATETIME NULL,
 		KEY idx_userId (userId),
 		KEY idx_placeId (placeId),
