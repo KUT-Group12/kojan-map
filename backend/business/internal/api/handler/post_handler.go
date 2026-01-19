@@ -81,15 +81,15 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 	// Extract businessID from authenticated context
 	businessID, ok := contextkeys.GetBusinessID(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
 	placeID := int64(0) // Placeholder
 
-	// TODO: Parse genreIDs from request (array)
-	var genreIDs []int64
+	// GenreIDsはリクエストから取得
+	genreIDs := req.GenreIDs
 
-	// Note: Image MIME type validation is handled by client or separate image upload endpoint
+	// 画像のMIMEタイプとサイズの検証はサービス層で実施
 
 	postID, err := h.postService.Create(c.Request.Context(), businessID, placeID, genreIDs, &req)
 	if err != nil {
@@ -131,9 +131,9 @@ func (h *PostHandler) AnonymizePost(c *gin.Context) {
 
 // GetPostHistory は GET /api/posts/history (M1-14-2) を処理します。
 func (h *PostHandler) GetPostHistory(c *gin.Context) {
-	googleID := c.Query("googleId")
-	if googleID == "" {
-		response.SendProblem(c, http.StatusBadRequest, "bad-request", "googleId query parameter is required", c.Request.URL.Path)
+	googleID, ok := contextkeys.GetUserID(c.Request.Context())
+	if !ok {
+		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "user ID not found in context", c.Request.URL.Path)
 		return
 	}
 

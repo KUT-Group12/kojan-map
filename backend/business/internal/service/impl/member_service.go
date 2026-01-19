@@ -2,11 +2,14 @@ package impl
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"net/http"
 	"time"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/errors"
 )
 
@@ -42,15 +45,33 @@ func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID str
 		return nil, errors.NewAPIError(errors.ErrNotFound, "user not found")
 	}
 
-	memberData := member.(*domain.BusinessMember)
-	userData := user.(*domain.User)
+	memberData, ok := member.(*domain.BusinessMember)
+	if !ok || memberData == nil {
+		return nil, errors.NewAPIError(errors.ErrOperationFailed, "invalid business member type")
+	}
+	userData, ok := user.(*domain.User)
+	if !ok || userData == nil {
+		return nil, errors.NewAPIError(errors.ErrOperationFailed, "invalid user type")
+	}
+
+
+	// アイコン画像URLの生成（BLOBデータをbase64エンコードしてdata URIとして返す）
+	var iconImageURL string
+	if len(memberData.ProfileImage) > 0 {
+		// 画像のMIMEタイプを検出
+		contentType := http.DetectContentType(memberData.ProfileImage)
+		if contentType == "image/png" || contentType == "image/jpeg" {
+			imageBase64 := base64.StdEncoding.EncodeToString(memberData.ProfileImage)
+			iconImageURL = fmt.Sprintf("data:%s;base64,%s", contentType, imageBase64)
+		}
+	}
 
 	return &domain.BusinessMemberResponse{
 		ID:           memberData.ID,
 		BusinessName: memberData.BusinessName,
 		Gmail:        userData.Gmail,
 		RegistDate:   memberData.RegistDate.Format(time.RFC3339),
-		IconImageURL: "", // TODO: 必要に応じてBLOBから署名付きURLまたはbase64を生成
+		IconImageURL: iconImageURL,
 	}, nil
 }
 
@@ -61,7 +82,15 @@ func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID i
 		return errors.NewAPIError(errors.ErrValidationFailed, "business name must be between 1 and 50 characters")
 	}
 
-	// TODO: ユーザーが認証済みで、この事業者を所有しているか確認
+	// 事業者の所有権チェック
+	ctxBusinessID, ok := contextkeys.GetBusinessID(ctx)
+	if !ok {
+		return errors.NewAPIError(errors.ErrUnauthorized, "business ID not found in context")
+	}
+
+	if ctxBusinessID != businessID {
+		return errors.NewAPIError(errors.ErrForbidden, "you are not authorized to update this business")
+	}
 
 	err := s.memberRepo.UpdateName(ctx, businessID, name)
 	if err != nil {
@@ -82,7 +111,10 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 		return errors.NewAPIError(errors.ErrImageTooLarge, "image size must not exceed 5MB")
 	}
 
-	// TODO: MIMEタイプを検証（PNGまたはJPEGのみ）
+	contentType := http.DetectContentType(icon)
+		if contentType != "image/png" && contentType != "image/jpeg" {
+			return errors.NewAPIError(errors.ErrInvalidInput, "icon must be PNG or JPEG")
+		}
 
 	err := s.memberRepo.UpdateIcon(ctx, businessID, icon)
 	if err != nil {
@@ -95,7 +127,17 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 // AnonymizeMember はメンバー情報を匿名化します（M3-3）。
 // 識別可能な個人情報は復元不能な値に置き換える
 func (s *MemberServiceImpl) AnonymizeMember(ctx context.Context, businessID int64) error {
-	// TODO: ユーザーが認証済みで、管理者または本人のアカウントであるか確認
+	// 権限チェック: 管理者または本人のみ匿名化可能
+	ctxBusinessID, ok := contextkeys.GetBusinessID(ctx)
+	if !ok {
+		return errors.NewAPIError(errors.ErrUnauthorized, "business ID not found in context")
+	}
+
+	role, _ := contextkeys.GetRole(ctx)
+	// 本人または管理者権限を持つ場合のみ許可
+	if ctxBusinessID != businessID && role != "admin" {
+		return errors.NewAPIError(errors.ErrForbidden, "you are not authorized to anonymize this member")
+	}
 
 	err := s.memberRepo.Anonymize(ctx, businessID)
 	if err != nil {

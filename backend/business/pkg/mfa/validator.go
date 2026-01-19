@@ -2,8 +2,9 @@ package mfa
 
 import (
 	"fmt"
-	"math/rand"
+	"math/big"
 	"time"
+	"crypto/rand"
 )
 
 // MFAValidator はMFAコード検証を処理します
@@ -34,8 +35,12 @@ func (m *MFAValidator) GenerateCode(email string) (string, error) {
 		return "", fmt.Errorf("email is required")
 	}
 
-	// Generate random 6-digit code
-	code := fmt.Sprintf("%06d", rand.Intn(1000000))
+	// ６桁のランダムコードを生成
+	n, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	if err != nil {
+		return "", fmt.Errorf("failed to generate MFA code: %w", err)
+	}
+	code := fmt.Sprintf("%06d", n.Int64())
 
 	// Store code with 10-minute expiration
 	m.codes[email] = &MFACode{

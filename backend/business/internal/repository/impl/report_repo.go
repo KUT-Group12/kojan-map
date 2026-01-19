@@ -22,7 +22,10 @@ func NewReportRepoImpl(db *gorm.DB) *ReportRepoImpl {
 // Create は新しい通報レコードを作成します（M1-12-2）。
 // 通報者 ID と通報対象 ID・投稿 ID の組み合わせは一意
 func (r *ReportRepoImpl) Create(ctx context.Context, reporterID string, payload interface{}) error {
-	req := payload.(*domain.CreateReportRequest)
+	req, ok := payload.(*domain.CreateReportRequest)
+	if !ok {
+		return fmt.Errorf("invalid payload type: expected *domain.CreateReportRequest")
+	}
 
 	if reporterID == "" || req.ReportedGoogleID == "" {
 		return fmt.Errorf("reporterID and reportedGoogleID are required")

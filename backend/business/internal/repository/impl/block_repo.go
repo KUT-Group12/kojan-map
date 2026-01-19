@@ -27,10 +27,14 @@ func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string)
 
 	// 既にブロックされているかを確認します
 	var existingBlock domain.Block
-	if err := r.db.WithContext(ctx).
+	err := r.db.WithContext(ctx).
 		Where("blocking_user_id = ? AND blocked_google_id = ?", blockerID, blockedID).
-		First(&existingBlock).Error; err == nil {
+		First(&existingBlock).Error
++	if err == nil {
 		return fmt.Errorf("user already blocked")
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("failed to check existing block: %w", err)
 	}
 
 	block := &domain.Block{

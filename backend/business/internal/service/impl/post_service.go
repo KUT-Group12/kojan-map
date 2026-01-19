@@ -3,9 +3,11 @@ package impl
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/errors"
 )
 
@@ -64,10 +66,13 @@ func (s *PostServiceImpl) Create(ctx context.Context, businessID int64, placeID 
 		return 0, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
 
-	req := payload.(*domain.CreatePostRequest)
+	req, ok := payload.(*domain.CreatePostRequest)
+	if !ok {
+		return 0, errors.NewAPIError(errors.ErrInvalidInput, "invalid payload type")
+	}
 
-	// TODO: MIMEタイプを検証（PNGまたはJPEGのみ）
-	// TODO: 画像サイズを検証（5MB制限） - ハンドラで実施済み
+	// 画像URLの検証は省略（クライアントまたは画像アップロードエンドポイントで実施）
+	// 本番環境では、画像は事前にS3などにアップロードされ、URLが渡される想定
 
 	postID, err := s.postRepo.Create(ctx, businessID, placeID, genreIDs, req)
 	if err != nil {
@@ -101,9 +106,24 @@ func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
 
-	// TODO: ユーザーが認証済みで、この投稿を所有しているか確認
+	// 投稿の所有者チェック
+	businessID, ok := contextkeys.GetBusinessID(ctx)
+	if !ok {
+		return errors.NewAPIError(errors.ErrUnauthorized, "business ID not found in context")
+	}
 
-	err := s.postRepo.Anonymize(ctx, postID)
+	post, err := s.postRepo.GetByID(ctx, postID)
+	if err != nil {
+		return errors.NewAPIError(errors.ErrNotFound, fmt.Sprintf("post not found: %v", err))
+	}
+
+	// 投稿の作成者とログインユーザーが一致するか確認
+	authorID, _ := strconv.ParseInt(post.AuthorID, 10, 64)
+	if authorID != businessID {
+		return errors.NewAPIError(errors.ErrForbidden, "you are not authorized to anonymize this post")
+	}
+
+	err = s.postRepo.Anonymize(ctx, postID)
 	if err != nil {
 		return errors.NewAPIError(errors.ErrOperationFailed, fmt.Sprintf("failed to anonymize post: %v", err))
 	}

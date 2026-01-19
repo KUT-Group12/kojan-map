@@ -21,9 +21,9 @@ type BusinessMember struct {
 	ID               int64     `gorm:"primaryKey;autoIncrement;column:id"`
 	BusinessName     string    `gorm:"column:businessName;type:varchar(50);not null"`
 	KanaBusinessName string    `gorm:"column:kanaBusinessName;type:varchar(50);not null"`
-	ZipCode          int       `gorm:"column:zipCode;not null"`
+	ZipCode          string    `gorm:"column:zipCode;type:varchar(10);not null"`
 	Address          string    `gorm:"column:address;type:varchar(100);not null"`
-	Phone            int       `gorm:"column:phone;not null"`
+	Phone            string    `gorm:"column:phone;type:varchar(20);not null"`
 	RegistDate       time.Time `gorm:"column:registDate;not null"`
 	ProfileImage     []byte    `gorm:"column:profileImage;type:blob"`
 	UserID           string    `gorm:"column:userId;type:varchar(50);index;not null"`
@@ -50,9 +50,9 @@ func (BusinessMember) TableName() string {
 type CreateBusinessMemberRequest struct {
 	BusinessName     string `json:"businessName" binding:"required,max=50"`
 	KanaBusinessName string `json:"kanaBusinessName" binding:"required,max=50"`
-	ZipCode          int    `json:"zipCode" binding:"required"`
+	ZipCode          string `json:"zipCode" binding:"required"`
 	Address          string `json:"address" binding:"required,max=100"`
-	Phone            int    `json:"phone" binding:"required"`
+	Phone            string    `json:"phone" binding:"required"`
 	UserID           string `json:"userId" binding:"required"`
 	PlaceID          int64  `json:"placeId" binding:"required"`
 }

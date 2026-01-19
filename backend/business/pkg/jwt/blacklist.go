@@ -8,9 +8,10 @@ import (
 // TokenBlacklist は失効したJWTトークンを管理します
 type TokenBlacklist struct {
 	mu       sync.RWMutex
-	tokens   map[string]time.Time // token -> revocation time
+	tokens   map[string]time.Time // token -> 有効期限
 	ticker   *time.Ticker
 	stopChan chan struct{}
+	stopOnce sync.Once
 }
 
 // NewTokenBlacklist はトークンブラックリストマネージャーを生成します
@@ -73,5 +74,7 @@ func (tb *TokenBlacklist) cleanupExpiredTokens() {
 
 // Stop stops the cleanup goroutine
 func (tb *TokenBlacklist) Stop() {
-	close(tb.stopChan)
+	tb.stopOnce.Do(func() {
+		close(tb.stopChan)
+	})
 }

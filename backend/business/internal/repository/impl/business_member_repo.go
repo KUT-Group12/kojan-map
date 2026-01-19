@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"unicode/utf8"
 	"gorm.io/gorm"
 	"kojan-map/business/internal/domain"
 )
@@ -34,7 +35,7 @@ func (r *BusinessMemberRepoImpl) GetByGoogleID(ctx context.Context, googleID str
 // UpdateName は事業者メンバーの事業者名を更新します（M3-4-2）。
 // 事業者名は1文字以上50文字以下、不正な形式はエラー、ログイン済みかつ本人のみ更新可能
 func (r *BusinessMemberRepoImpl) UpdateName(ctx context.Context, businessID int64, name string) error {
-	if name == "" || len(name) > 50 {
+	if name == "" || utf8.RuneCountInString(name) > 50 {
 		return fmt.Errorf("business name must be between 1 and 50 characters")
 	}
 
