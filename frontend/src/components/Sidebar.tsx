@@ -155,11 +155,11 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
                   <h3 className="flex-1 text-gray-900">{post.title}</h3>
                   <Badge
                     style={{
-                      backgroundColor: genreColors[genreIdToKey[post.genreId] ?? 'other'],
+                      backgroundColor: genreColors[genreIdToKey(post.genreId) ?? 'other'],
                     }}
                     className="ml-2"
                   >
-                    {genreLabels[genreIdToKey[post.genreId] ?? 'other']}
+                    {genreLabels[genreIdToKey(post.genreId) ?? 'other']}
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</p>
