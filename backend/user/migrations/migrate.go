@@ -100,7 +100,7 @@ func createUsersTable(db *gorm.DB) error {
 		id VARCHAR(36) PRIMARY KEY,
 		googleId VARCHAR(50) NOT NULL UNIQUE,
 		gmail VARCHAR(100) NOT NULL UNIQUE,
-		role ENUM('user', 'business', 'admin') NOT NULL DEFAULT 'user',
+		role ENUM('general', 'business', 'admin') NOT NULL DEFAULT 'general',
 		registrationDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

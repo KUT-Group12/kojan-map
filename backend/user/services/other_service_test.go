@@ -2,10 +2,12 @@ package services
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
+	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
 
@@ -141,6 +143,9 @@ func TestReportService_CreateReport(t *testing.T) {
 	setupTestDB(t)
 	service := &ReportService{}
 
+	// FK 満たすためのユーザー作成
+	config.DB.Create(&models.User{ID: "reporter123", GoogleID: "google_reporter", Gmail: "reporter@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
+
 	// 通報を作成
 	err := service.CreateReport("reporter123", 100, "不適切な内容")
 	assert.NoError(t, err)
@@ -149,6 +154,9 @@ func TestReportService_CreateReport(t *testing.T) {
 func TestReportService_CreateReport_ValidationError(t *testing.T) {
 	setupTestDB(t)
 	service := &ReportService{}
+
+	// FK 満たすためのユーザー作成
+	config.DB.Create(&models.User{ID: "reporter123", GoogleID: "google_reporter", Gmail: "reporter@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
 
 	// Reasonが空
 	err := service.CreateReport("", 0, "")
@@ -159,6 +167,7 @@ func TestReportService_CreateReport_ValidationError(t *testing.T) {
 func TestContactService_CreateContact(t *testing.T) {
 	setupTestDB(t)
 	service := &ContactService{}
+	config.DB.Create(&models.User{ID: "sender123", GoogleID: "google_sender", Gmail: "sender@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
 
 	// お問い合わせを作成
 	err := service.CreateContact("sender123", "質問", "これは質問です")
@@ -168,6 +177,7 @@ func TestContactService_CreateContact(t *testing.T) {
 func TestContactService_CreateContact_ValidationError(t *testing.T) {
 	setupTestDB(t)
 	service := &ContactService{}
+	config.DB.Create(&models.User{ID: "sender123", GoogleID: "google_sender", Gmail: "sender@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
 
 	// Subjectが空
 	err := service.CreateContact("", "", "メッセージ")
@@ -178,6 +188,7 @@ func TestContactService_CreateContact_ValidationError(t *testing.T) {
 func TestBusinessApplicationService_CreateApplication(t *testing.T) {
 	setupTestDB(t)
 	service := &BusinessApplicationService{}
+	config.DB.Create(&models.User{ID: "applicant123", GoogleID: "google_applicant", Gmail: "applicant@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
 
 	// 企業会員申請を作成
 	err := service.CreateBusinessApplication("applicant123", "テスト株式会社", "テスト株式会社", "1234567", "東京都渋谷区", "09012345678")
@@ -187,6 +198,7 @@ func TestBusinessApplicationService_CreateApplication(t *testing.T) {
 func TestBusinessApplicationService_CreateApplication_ValidationError(t *testing.T) {
 	setupTestDB(t)
 	service := &BusinessApplicationService{}
+	config.DB.Create(&models.User{ID: "applicant123", GoogleID: "google_applicant", Gmail: "applicant@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
 
 	// BusinessNameが空
 	err := service.CreateBusinessApplication("applicant123", "", "", "1234567", "東京都渋谷区", "09012345678")

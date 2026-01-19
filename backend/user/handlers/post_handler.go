@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 
@@ -79,11 +80,11 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	// タイトルと説明文の長さを検証
-	if len(req.Title) > 50 {
+	if utf8.RuneCountInString(req.Title) > 50 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title too long (max 50 characters)"})
 		return
 	}
-	if len(req.Description) > 2000 {
+	if utf8.RuneCountInString(req.Description) > 2000 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "description too long (max 2000 characters)"})
 		return
 	}
@@ -100,16 +101,10 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	var postImage []byte
 	_ = req.Images // 将来使用予定
 
-	// 認証ミドルウェアで設定されたユーザーIDをコンテキストから取得
-	userIDValue, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized: userID not found in context"})
-		return
-	}
-
-	userID, ok := userIDValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid userID type in context"})
+	// 認証ミドルウェアで設定されたユーザーIDをコンテキストから取得（googleId を統一利用）
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
