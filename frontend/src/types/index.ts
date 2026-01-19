@@ -24,7 +24,7 @@ export interface Business {
   businessId: number; // 事業者ID
   businessName: string; // 事業者名
   kanaBusinessName: string; // 事業者名カナ
-  zipCode: number; // 郵便番号
+  zipCode: string; // 郵便番号
   address: string; // 住所
   phone: number; // 電話番号
   registDate: string; // 登録日
