@@ -42,8 +42,7 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
         post.text?.toLowerCase().includes(searchKeyword.toLowerCase());
 
       // 2. ジャンルフィルター
-      const matchesGenre =
-        selectedGenre === 'all' || genreLabels[post.genreId] === genreLabels[selectedGenre];
+      const matchesGenre = selectedGenre === 'all' || genreIdToKey(post.genreId) === selectedGenre;
 
       // 3. 日付フィルター
       const postDate = new Date(post.postDate);
