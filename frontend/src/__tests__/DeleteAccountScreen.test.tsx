@@ -3,10 +3,7 @@ import { DeleteAccountScreen } from '../components/DeleteAccountScreen';
 import { toast } from 'sonner';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // toastのモック
 jest.mock('sonner', () => ({
@@ -24,6 +21,7 @@ describe('DeleteAccountScreen コンポーネント', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     fetchMock.mockReset();
+    window.fetch = fetchMock;
     // window.confirm をモック化して true を返すように設定
     window.confirm = jest.fn(() => true);
   });

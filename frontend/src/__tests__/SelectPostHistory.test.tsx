@@ -2,10 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { SelectPostHistory } from '../components/SelectPostHistory';
 
 // fetchのモック設定
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 describe('SelectPostHistory コンポーネント', () => {
   const mockUser = { googleId: 'test-user-123', role: 'general' };
@@ -34,6 +31,7 @@ describe('SelectPostHistory コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 

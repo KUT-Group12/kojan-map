@@ -2,10 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DisplayPostList } from '../components/DisplayPostList';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 describe('DisplayPostList コンポーネント', () => {
   const mockPost = {
@@ -28,6 +25,7 @@ describe('DisplayPostList コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 

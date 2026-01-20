@@ -3,10 +3,7 @@ import { UserInputBusinessApplication } from '../components/UserInputBusinessApp
 import { toast } from 'sonner';
 
 // fetchのモック設定
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 jest.mock('sonner', () => ({
   toast: {
@@ -22,6 +19,7 @@ describe('UserInputBusinessApplication コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset(); // fetchの履歴をリセット
   });
 

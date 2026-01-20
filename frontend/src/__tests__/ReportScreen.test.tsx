@@ -3,10 +3,17 @@ import { ReportScreen } from '../components/ReportScreen';
 import { toast } from 'sonner';
 
 // fetchのモック設定
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
+
+beforeAll(() => {
+  globalThis.fetch = fetchMock;
+});
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  window.fetch = fetchMock; // ← この行を追加
+  fetchMock.mockReset();
+});
 
 jest.mock('sonner', () => ({
   toast: {

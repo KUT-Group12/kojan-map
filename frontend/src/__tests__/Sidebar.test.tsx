@@ -2,10 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { Sidebar } from '../components/Sidebar';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 describe('Sidebar コンポーネント', () => {
   const mockUser = { googleId: 'user-1', role: 'general' };
@@ -24,6 +21,7 @@ describe('Sidebar コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
     jest.useFakeTimers(); // デバウンス(setTimeout)制御用
   });

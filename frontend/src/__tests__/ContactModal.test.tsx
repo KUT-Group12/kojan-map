@@ -3,10 +3,7 @@ import { ContactModal } from '../components/ContactModal';
 import { toast } from 'sonner';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // toastのモック
 jest.mock('sonner', () => ({
@@ -25,6 +22,7 @@ describe('ContactModal コンポーネント', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     fetchMock.mockReset();
+    window.fetch = fetchMock;
     // 各テストごとに console.error をモック化
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -87,8 +85,10 @@ describe('ContactModal コンポーネント', () => {
     });
 
     // 成功時の処理を検証
-    expect(toast.success).toHaveBeenCalledWith('送信完了');
-    expect(mockOnClose).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('送信完了');
+      expect(mockOnClose).toHaveBeenCalled();
+    });
   });
 
   test('APIエラー時にトーストが表示され、入力が維持されること', async () => {
@@ -106,6 +106,8 @@ describe('ContactModal コンポーネント', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('エラーが発生しました'));
     });
+    expect(screen.getByLabelText(/件名/)).toHaveValue('質問');
+    expect(screen.getByLabelText(/メッセージ/)).toHaveValue('テスト');
 
     // ここで console.error が呼ばれますが、beforeEach でモック化しているため
     // テスト結果のログには表示されず、検証だけが可能です。

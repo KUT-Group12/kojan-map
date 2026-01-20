@@ -3,10 +3,7 @@ import { SelectBlock } from '../components/SelectBlock';
 import { toast } from 'sonner';
 
 // fetchのモック設定
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // toastのモック
 jest.mock('sonner', () => ({
@@ -24,6 +21,7 @@ describe('SelectBlock コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
     // デフォルトで confirm は true (OK) を返すように設定
     jest.spyOn(window, 'confirm').mockImplementation(() => true);

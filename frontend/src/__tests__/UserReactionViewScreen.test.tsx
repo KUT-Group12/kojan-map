@@ -2,10 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { UserReactionViewScreen } from '../components/UserReactionViewScreen';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 describe('UserReactionViewScreen コンポーネント', () => {
   const mockUser = { googleId: 'my-id', role: 'general' };
@@ -24,6 +21,7 @@ describe('UserReactionViewScreen コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 

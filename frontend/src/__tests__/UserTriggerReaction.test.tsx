@@ -3,7 +3,7 @@ import { UserTriggerReaction } from '../components/UserTriggerReaction';
 import { toast } from 'sonner';
 
 // fetch と toast のモック
-(window.fetch as jest.Mock) = jest.fn();
+const fetchMock = jest.fn() as jest.Mock;
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -23,6 +23,8 @@ describe('UserTriggerReaction コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
+    fetchMock.mockReset();
   });
 
   test('初期表示が正しいこと（リアクション前）', () => {

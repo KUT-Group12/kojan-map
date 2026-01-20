@@ -3,10 +3,7 @@ import { LogoutScreen } from '../components/LogoutScreen';
 import { toast } from 'sonner';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // toastのモック
 jest.mock('sonner', () => ({
@@ -28,6 +25,7 @@ describe('LogoutScreen コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 

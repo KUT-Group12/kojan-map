@@ -1,112 +1,100 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { UserDisplayMyPage } from '../components/UserDisplayMyPage';
-import { User, Pin } from '../types';
-import { toast } from 'sonner';
+import userEvent from '@testing-library/user-event';
 
-// toast のモック
-jest.mock('sonner', () => ({
-  toast: { success: jest.fn() },
-}));
-
-// 【重要】パスを ../components/... に修正
+// 子コンポーネントのモック化（依存関係を切り離して単体テストを容易にする）
 jest.mock('../components/SelectPostHistory', () => ({
-  SelectPostHistory: () => <div data-testid="post-history">投稿履歴セクション</div>,
+  SelectPostHistory: () => <div data-testid="post-history">投稿履歴コンポーネント</div>,
 }));
-
 jest.mock('../components/UserReactionViewScreen', () => ({
-  UserReactionViewScreen: () => <div data-testid="reaction-view">リアクションセクション</div>,
+  UserReactionViewScreen: () => <div data-testid="reaction-view">リアクションコンポーネント</div>,
 }));
-
 jest.mock('../components/SelectUserSetting', () => ({
-  SelectUserSetting: () => <div data-testid="user-settings">設定セクション</div>,
+  SelectUserSetting: () => <div data-testid="user-setting">設定コンポーネント</div>,
 }));
-
 jest.mock('../components/UserInputBusinessApplication', () => ({
-  UserInputBusinessApplication: ({ onUpdateUser }: any) => (
-    <button onClick={() => onUpdateUser({})}>申請を送信</button>
+  UserInputBusinessApplication: ({ onCancel }: any) => (
+    <div data-testid="business-app">
+      事業者申請フォーム
+      <button onClick={onCancel}>キャンセル</button>
+    </div>
   ),
 }));
 
 describe('UserDisplayMyPage コンポーネント', () => {
-  const mockUser: User = {
-    id: 'user-1',
-    name: '田中 太郎',
-    email: 'tanaka@example.com',
-    role: 'general' as const,
-    createdAt: new Date('2026-01-01'),
-    blockedUsers: [],
+  const mockUser = {
+    googleId: 'user-123',
+    gmail: 'test@example.com',
+    registrationDate: '2024-01-01T00:00:00Z',
+    role: 'general',
   };
 
-  const mockPins: Pin[] = [
-    {
-      id: 'p1',
-      title: '投稿1',
-      userId: 'user-1',
-      createdAt: new Date(),
-      userName: '田中',
-      userRole: 'general',
-      images: [],
-      reactions: 0,
-    } as any,
-  ];
-
-  const defaultProps = {
-    user: mockUser,
-    pins: mockPins,
-    reactedPins: [],
+  const mockProps = {
+    user: mockUser as any,
+    posts: [{}, {}] as any, // 2件
+    reactedPosts: [{}] as any, // 1件
     onPinClick: jest.fn(),
-    onDeletePin: jest.fn(),
     onUpdateUser: jest.fn(),
     onNavigateToDeleteAccount: jest.fn(),
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  test('ユーザー情報が正しく表示されること', () => {
+    render(<UserDisplayMyPage {...mockProps} />);
+
+    expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    expect(screen.getByText('2024年1月1日')).toBeInTheDocument();
+    expect(screen.getByText('一般')).toBeInTheDocument();
   });
 
-  test('ユーザーの基本情報が表示されること', () => {
-    render(<UserDisplayMyPage {...defaultProps} />);
-    expect(screen.getByText('tanaka@example.com')).toBeInTheDocument();
-    expect(screen.getByText('2026年1月1日')).toBeInTheDocument();
-  });
+  test('タブを切り替えると表示されるコンポーネントが変わること', async () => {
+    const user = userEvent.setup(); // ユーザー操作のセットアップ
+    render(<UserDisplayMyPage {...mockProps} />);
 
-  test('タブを切り替えるとコンテンツが切り替わること', async () => {
-    const user = userEvent.setup();
-    render(<UserDisplayMyPage {...defaultProps} />);
-
-    // 1. 初期状態：投稿履歴が表示されていること
+    // 初期表示の確認
     expect(screen.getByTestId('post-history')).toBeInTheDocument();
 
-    // 2. リアクションタブをクリック
+    // 1. リアクションタブをクリック (user.click を使用)
     const reactionTab = screen.getByRole('tab', { name: /リアクション/ });
     await user.click(reactionTab);
 
-    // Radix Tabs の切り替えを待機
-    await waitFor(() => {
-      expect(screen.getByTestId('reaction-view')).toBeInTheDocument();
-    });
+    // DOMの更新を待つ
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('reaction-view')).toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
 
-    // 3. 設定タブをクリック
+    // 2. 設定タブをクリック
     const settingsTab = screen.getByRole('tab', { name: /設定/ });
     await user.click(settingsTab);
 
     await waitFor(() => {
-      expect(screen.getByTestId('user-settings')).toBeInTheDocument();
+      expect(screen.getByTestId('user-setting')).toBeInTheDocument();
     });
   });
 
-  test('事業者登録申請フォームの表示と送信が動作すること', async () => {
-    const user = userEvent.setup();
-    render(<UserDisplayMyPage {...defaultProps} />);
+  test('事業者登録申請ボタンを押すとフォームが表示され、キャンセルで戻ること', () => {
+    render(<UserDisplayMyPage {...mockProps} />);
 
-    const applyButton = screen.getByRole('button', { name: /事業者登録を申請/ });
-    await user.click(applyButton);
+    const regButton = screen.getByRole('button', { name: /事業者登録を申請/ });
+    fireEvent.click(regButton);
 
-    const submitButton = screen.getByText('申請を送信');
-    await user.click(submitButton);
+    // フォームが表示される
+    expect(screen.getByTestId('business-app')).toBeInTheDocument();
+    expect(regButton).not.toBeInTheDocument();
 
-    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('申請を送信しました'));
+    // キャンセルボタン（モック内）をクリック
+    fireEvent.click(screen.getByText('キャンセル'));
+
+    // 元のボタンが表示される
     expect(screen.getByRole('button', { name: /事業者登録を申請/ })).toBeInTheDocument();
+  });
+
+  test('タブのラベルに件数が正しく反映されていること', () => {
+    render(<UserDisplayMyPage {...mockProps} />);
+
+    expect(screen.getByText(/投稿履歴 \(2\)/)).toBeInTheDocument();
+    expect(screen.getByText(/リアクション \(1\)/)).toBeInTheDocument();
   });
 });

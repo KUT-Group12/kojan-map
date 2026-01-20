@@ -3,10 +3,7 @@ import { SelectUnlock } from '../components/SelectUnlock';
 import { toast } from 'sonner';
 
 // fetchのモック設定
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // toast のモック化
 jest.mock('sonner', () => ({
@@ -27,6 +24,7 @@ describe('SelectUnlock コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 

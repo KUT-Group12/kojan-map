@@ -2,10 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { UserBlockViewScreen } from '../components/UserBlockViewScreen';
 
 // fetchのモック設定
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // 子コンポーネント (SelectUnlock) のモック化
 // 複雑なロジックを持つ子コンポーネントをモックすることで、このコンポーネント自体のテストをシンプルにします
@@ -23,6 +20,7 @@ describe('UserBlockViewScreen コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 
