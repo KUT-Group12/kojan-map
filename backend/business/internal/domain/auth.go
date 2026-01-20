@@ -39,11 +39,13 @@ type GoogleAuthResponse struct {
 }
 
 // BusinessLoginRequest は事業者ログインのリクエスト
+// sessionId: 必須。GoogleAuthで取得したセッションID
 // gmail: 必須。メールアドレス形式で検証される
 // mfaCode: 必須。多要素認証コード
 type BusinessLoginRequest struct {
-	Gmail   string `json:"gmail" binding:"required,email"`
-	MFACode string `json:"mfaCode" binding:"required"`
+	SessionID string `json:"sessionId" binding:"required"`
+	Gmail     string `json:"gmail" binding:"required,email"`
+	MFACode   string `json:"mfaCode" binding:"required"`
 }
 
 // BusinessLoginResponse は事業者ログインのレスポンス

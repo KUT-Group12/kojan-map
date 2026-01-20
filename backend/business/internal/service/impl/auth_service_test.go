@@ -97,8 +97,9 @@ func TestAuthServiceImpl_GoogleAuth(t *testing.T) {
 // Test cases cover successful login with valid MFA code and error conditions.
 func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 	type args struct {
-		gmail   string
-		mfaCode string
+		sessionID string
+		gmail     string
+		mfaCode   string
 	}
 
 	tests := []struct {
@@ -111,8 +112,9 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 		{
 			name: "valid_credentials_with_mfa",
 			args: args{
-				gmail:   "business@example.com",
-				mfaCode: "",
+				sessionID: "dummy-session-id",
+				gmail:     "business@example.com",
+				mfaCode:   "",
 			},
 			setupMFA: func(validator *mfa.MFAValidator, email string) string {
 				// Generate and return valid MFA code
@@ -130,8 +132,9 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 		{
 			name: "invalid_mfa_code",
 			args: args{
-				gmail:   "business@example.com",
-				mfaCode: "000000", // Intentionally wrong code
+				sessionID: "dummy-session-id",
+				gmail:     "business@example.com",
+				mfaCode:   "000000", // Intentionally wrong code
 			},
 			setupMFA: func(validator *mfa.MFAValidator, email string) string {
 				// Generate code but return wrong one
@@ -173,7 +176,7 @@ func TestAuthServiceImpl_BusinessLogin(t *testing.T) {
 			}
 
 			// Execute and verify
-			result, err := svc.BusinessLogin(context.Background(), tt.args.gmail, mfaCode)
+			result, err := svc.BusinessLogin(context.Background(), tt.args.sessionID, tt.args.gmail, mfaCode)
 
 			if tt.wantErr {
 				assert.Error(t, err, "BusinessLogin should return error for invalid input")

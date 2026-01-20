@@ -22,7 +22,7 @@ func TestBlockHandler_CreateBlock(t *testing.T) {
 
 	// Create request
 	req := domain.CreateBlockRequest{
-		BlockedGoogleID: "blocked-user-id",
+		BlockedUserID: "blocked-user-id",
 	}
 
 	reqBody, _ := json.Marshal(req)
@@ -55,7 +55,7 @@ func TestBlockHandler_CreateBlock_MissingAuth(t *testing.T) {
 	blockHandler := NewBlockHandler(fixtures.BlockService)
 
 	req := domain.CreateBlockRequest{
-		BlockedGoogleID: "blocked-user-id",
+		BlockedUserID: "blocked-user-id",
 	}
 
 	reqBody, _ := json.Marshal(req)
@@ -104,7 +104,7 @@ func TestBlockHandler_DeleteBlock(t *testing.T) {
 
 	// Create request
 	req := domain.DeleteBlockRequest{
-		BlockedGoogleID: "blocked-user-id",
+		BlockedUserID: "blocked-user-id",
 	}
 
 	reqBody, _ := json.Marshal(req)
@@ -133,7 +133,7 @@ func TestBlockHandler_DeleteBlock_MissingAuth(t *testing.T) {
 	blockHandler := NewBlockHandler(fixtures.BlockService)
 
 	req := domain.DeleteBlockRequest{
-		BlockedGoogleID: "blocked-user-id",
+		BlockedUserID: "blocked-user-id",
 	}
 
 	reqBody, _ := json.Marshal(req)

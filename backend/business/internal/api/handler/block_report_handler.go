@@ -3,11 +3,12 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
 	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 // BlockHandler はブロック関連のエンドポイントを処理するハンドラーです。
@@ -37,7 +38,7 @@ func (h *BlockHandler) CreateBlock(c *gin.Context) {
 		return
 	}
 
-	err := h.blockService.Block(c.Request.Context(), blockerID, req.BlockedGoogleID)
+	err := h.blockService.Block(c.Request.Context(), blockerID, req.BlockedUserID)
 	if err != nil {
 		c.Error(err)
 		return
@@ -63,7 +64,7 @@ func (h *BlockHandler) DeleteBlock(c *gin.Context) {
 		return
 	}
 
-	err := h.blockService.Unblock(c.Request.Context(), blockerID, req.BlockedGoogleID)
+	err := h.blockService.Unblock(c.Request.Context(), blockerID, req.BlockedUserID)
 	if err != nil {
 		c.Error(err)
 		return

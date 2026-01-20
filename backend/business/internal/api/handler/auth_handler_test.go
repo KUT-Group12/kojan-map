@@ -7,10 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"kojan-map/business/internal/domain"
 	svcimpl "kojan-map/business/internal/service/impl"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestAuthHandler_GoogleAuth tests the GoogleAuth endpoint (M3-1).
@@ -80,8 +81,9 @@ func TestAuthHandler_BusinessLogin(t *testing.T) {
 
 	// Create request
 	req := domain.BusinessLoginRequest{
-		Gmail:   "test@example.com",
-		MFACode: "123456",
+		SessionID: "dummy-session-id",
+		Gmail:     "test@example.com",
+		MFACode:   "123456",
 	}
 
 	reqBody, _ := json.Marshal(req)
@@ -110,7 +112,8 @@ func TestAuthHandler_BusinessLogin_InvalidRequest(t *testing.T) {
 
 	// Missing MFA code
 	req := domain.BusinessLoginRequest{
-		Gmail: "test@example.com",
+		SessionID: "dummy-session-id",
+		Gmail:     "test@example.com",
 	}
 
 	reqBody, _ := json.Marshal(req)

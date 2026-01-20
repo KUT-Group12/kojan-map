@@ -134,15 +134,35 @@ func (s *AuthServiceImpl) GoogleAuth(ctx context.Context, payload interface{}) (
 }
 
 // BusinessLogin は事業者メンバーのログインを処理します（M1-1）。
-func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, gmail, mfaCode string) (interface{}, error) {
-	if gmail == "" || mfaCode == "" {
-		return nil, errors.NewAPIError(errors.ErrInvalidInput, "gmail and mfaCode are required")
+func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, sessionID, gmail, mfaCode string) (interface{}, error) {
+	if sessionID == "" || gmail == "" || mfaCode == "" {
+		return nil, errors.NewAPIError(errors.ErrInvalidInput, "sessionId, gmail and mfaCode are required")
 	}
 
-	// MFAコードを検証
-	valid, err := s.mfaValidator.VerifyCode(gmail, mfaCode)
-	if err != nil || !valid {
-		return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
+	// 本番環境: sessionStoreで検証
+	// 開発環境: mfaValidatorで検証（後方互換性）
+	isProduction := os.Getenv("GO_ENV") == "production"
+
+	if isProduction {
+		// sessionStoreを使用してMFAコードを検証
+		session, err := s.sessionStore.ValidateMFACode(sessionID, mfaCode)
+		if err != nil {
+			return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
+		}
+
+		// セッションのgmailと一致するか確認
+		if session.Gmail != gmail {
+			return nil, errors.NewAPIError(errors.ErrUnauthorized, "gmail mismatch")
+		}
+
+		// 検証成功後、セッションを削除
+		s.sessionStore.DeleteSession(sessionID)
+	} else {
+		// 開発環境: 従来のmfaValidatorを使用
+		valid, err := s.mfaValidator.VerifyCode(gmail, mfaCode)
+		if err != nil || !valid {
+			return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
+		}
 	}
 
 	// gmailでユーザーを取得し、ロールが'business'であることを確認

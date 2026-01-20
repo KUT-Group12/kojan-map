@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/service"
 	"kojan-map/business/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 // AuthHandler は認証関連のエンドポイントを処理します
@@ -48,7 +49,7 @@ func (h *AuthHandler) BusinessLogin(c *gin.Context) {
 		return
 	}
 
-	result, err := h.authService.BusinessLogin(c.Request.Context(), req.Gmail, req.MFACode)
+	result, err := h.authService.BusinessLogin(c.Request.Context(), req.SessionID, req.Gmail, req.MFACode)
 	if err != nil {
 		c.Error(err)
 		return

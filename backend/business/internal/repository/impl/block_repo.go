@@ -28,8 +28,8 @@ func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string)
 	}
 
 	block := &domain.Block{
-		BlockingUserID:  blockerID,
-		BlockedGoogleID: blockedID,
+		BlockingUserID: blockerID,
+		BlockedUserID:  blockedID,
 	}
 
 	if err := r.db.WithContext(ctx).Create(block).Error; err != nil {

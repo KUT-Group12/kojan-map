@@ -313,7 +313,7 @@ func TestPostServiceImpl_Anonymize(t *testing.T) {
 			},
 			setupContext: func() context.Context {
 				ctx := context.Background()
-				return contextkeys.WithBusinessID(ctx, 1)
+				return contextkeys.WithUserID(ctx, "1")
 			},
 		},
 		{
@@ -324,7 +324,7 @@ func TestPostServiceImpl_Anonymize(t *testing.T) {
 			wantErr: true,
 			setupContext: func() context.Context {
 				ctx := context.Background()
-				return contextkeys.WithBusinessID(ctx, 1)
+				return contextkeys.WithUserID(ctx, "1")
 			},
 		},
 	}
