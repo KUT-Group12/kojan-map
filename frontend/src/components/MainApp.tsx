@@ -378,6 +378,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         {currentView === 'dashboard' && user.role === 'business' && (
           <div className="flex-1 h-full">
             <BusinessDashboard
+              key={business.userId}
               user={user}
               business={business}
               posts={posts.filter((p) => p.userId === user.googleId)}

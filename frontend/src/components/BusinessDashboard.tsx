@@ -38,17 +38,6 @@ interface BusinessDashboardProps {
 export function BusinessDashboard({ user, business, posts, onPinClick }: BusinessDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  // モック統計データ
-  /*
-  const weeklyData = [
-    { date: '10/28', reactions: 12, views: 45 },
-    { date: '10/29', reactions: 18, views: 67 },
-    { date: '10/30', reactions: 15, views: 52 },
-    { date: '10/31', reactions: 24, views: 89 },
-    { date: '11/01', reactions: 31, views: 112 },
-    { date: '11/02', reactions: 28, views: 98 },
-    { date: '11/03', reactions: 35, views: 134 },
-  ];*/
   const weeklyData = [];
 
   const genreStats = posts.reduce(
@@ -344,7 +333,8 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
                     </div>
                     <div>
                       <p className="text-sm text-slate-600">次回請求日</p>
-                      <p>2025年12月1日</p>
+                      {/* バックエンドから取得した次回請求日を表示 */}
+                      <p> - </p>
                     </div>
                   </div>
 
