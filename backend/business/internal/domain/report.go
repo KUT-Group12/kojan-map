@@ -1,6 +1,11 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 // Report は通報を表すドメインモデル
 // ID: 主キー
@@ -25,6 +30,14 @@ type Report struct {
 // TableName は対応するテーブル名を指定
 func (Report) TableName() string {
 	return "reports"
+}
+
+// BeforeCreate はレコード作成前にIDを生成します
+func (r *Report) BeforeCreate(tx *gorm.DB) error {
+	if r.ID == "" {
+		r.ID = uuid.New().String()
+	}
+	return nil
 }
 
 // CreateReportRequest は通報登録のリクエスト

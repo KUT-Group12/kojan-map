@@ -1,6 +1,11 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 // Contact は問い合わせを表すドメインモデル
 // ID: 主キー
@@ -21,6 +26,14 @@ type Contact struct {
 // TableName は対応するテーブル名を指定
 func (Contact) TableName() string {
 	return "contacts"
+}
+
+// BeforeCreate はレコード作成前にIDを生成します
+func (c *Contact) BeforeCreate(tx *gorm.DB) error {
+	if c.ID == "" {
+		c.ID = uuid.New().String()
+	}
+	return nil
 }
 
 // CreateContactRequest は問い合わせ送信のリクエスト

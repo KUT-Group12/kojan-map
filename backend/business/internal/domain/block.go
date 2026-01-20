@@ -1,6 +1,11 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 // Block はブロック情報を表すドメインモデル
 // ID: 主キー
@@ -17,6 +22,14 @@ type Block struct {
 // TableName は対応するテーブル名を指定
 func (Block) TableName() string {
 	return "blocks"
+}
+
+// BeforeCreate はレコード作成前にIDを生成します
+func (b *Block) BeforeCreate(tx *gorm.DB) error {
+	if b.ID == "" {
+		b.ID = uuid.New().String()
+	}
+	return nil
 }
 
 // CreateBlockRequest はブロック登録のリクエスト

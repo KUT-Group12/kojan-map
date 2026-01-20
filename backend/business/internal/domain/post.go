@@ -1,6 +1,11 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 // Post は投稿を表すドメインモデル
 // ID: 主キー
@@ -52,6 +57,14 @@ type PostImage struct {
 // TableName は対応するテーブル名を指定
 func (PostImage) TableName() string {
 	return "post_images"
+}
+
+// BeforeCreate はレコード作成前にIDを生成します
+func (p *PostImage) BeforeCreate(tx *gorm.DB) error {
+	if p.ID == "" {
+		p.ID = uuid.New().String()
+	}
+	return nil
 }
 
 // PostGenre は投稿とジャンルの多対多の中間テーブル
