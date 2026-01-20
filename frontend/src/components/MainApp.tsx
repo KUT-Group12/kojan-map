@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from './Header';
 import { MapViewScreen } from './MapViewScreen';
 import { Sidebar } from './Sidebar';
@@ -65,6 +64,28 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [userReactedPosts, setUserReactedPosts] = useState<Post[]>([]);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
 
+  // ★追加: ユーザー専用データの取得関数
+  const fetchUserData = useCallback(async () => {
+    setIsLoadingUserData(true);
+    try {
+      const apiBaseUrl = 'http://localhost:8080';
+
+      const postsRes = await fetch(`${apiBaseUrl}/api/posts/history?googleId=${user.googleId}`);
+      const postsData = await postsRes.json();
+      setUserPosts(postsData.posts || []);
+
+      const reactionsRes = await fetch(
+        `${apiBaseUrl}/api/reactions/list?googleId=${user.googleId}`
+      );
+      const reactionsData = await reactionsRes.json();
+      setUserReactedPosts(reactionsData.posts || []);
+    } catch (error) {
+      console.error('ユーザーデータ取得エラー:', error);
+    } finally {
+      setIsLoadingUserData(false);
+    }
+  }, [user.googleId]); // user.googleId が変わったときだけ再生成
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -90,14 +111,23 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         setPosts(displayPosts);
         setFilteredPosts(displayPosts);
 
-        const derivedPlaces: Place[] = displayPosts.map((dp) => ({
-          placeId: dp.placeId,
-          latitude: dp.latitude,
-          longitude: dp.longitude,
-          numPost: 1,
-        }));
-
-        setPlaces(derivedPlaces);
+        const placeMap = new Map<number, Place>();
+        for (const dp of displayPosts) {
+          const existing = placeMap.get(dp.placeId);
+          if (existing) {
+            // 既存のPlaceがあればnumPostをインクリメント
+            placeMap.set(dp.placeId, { ...existing, numPost: existing.numPost + 1 });
+          } else {
+            // 新規Placeを作成
+            placeMap.set(dp.placeId, {
+              placeId: dp.placeId,
+              latitude: dp.latitude,
+              longitude: dp.longitude,
+              numPost: 1,
+            });
+          }
+        }
+        setPlaces(Array.from(placeMap.values()));
       } catch (error) {
         console.error('データ取得失敗:', error);
       }
@@ -111,31 +141,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     if (currentView === 'mypage' && user) {
       fetchUserData();
     }
-  }, [currentView, user.googleId]);
-
-  // ★追加: ユーザー専用データの取得関数
-  const fetchUserData = async () => {
-    setIsLoadingUserData(true);
-    try {
-      const apiBaseUrl = 'http://localhost:8080';
-
-      // 投稿履歴を取得
-      const postsRes = await fetch(`${apiBaseUrl}/api/posts/history?googleId=${user.googleId}`);
-      const postsData = await postsRes.json();
-      setUserPosts(postsData.posts || []);
-
-      // リアクション履歴を取得
-      const reactionsRes = await fetch(
-        `${apiBaseUrl}/api/reactions/list?googleId=${user.googleId}`
-      );
-      const reactionsData = await reactionsRes.json();
-      setUserReactedPosts(reactionsData.posts || []);
-    } catch (error) {
-      console.error('ユーザーデータ取得エラー:', error);
-    } finally {
-      setIsLoadingUserData(false);
-    }
-  };
+  }, [currentView, user, fetchUserData]);
 
   const handleMapDoubleClick = (lat: number, lng: number) => {
     console.log(`緯度: ${lat}, 経度: ${lng}`);
@@ -157,8 +163,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     }
 
     try {
-      const apiBaseUrl = 'http://localhost:8080';
-      const response = await fetch(`${apiBaseUrl}/api/posts/detail?postId=${post.postId}`);
+      // const apiBaseUrl = 'http://localhost:8080';
+      const response = await fetch(`/api/posts/detail?postId=${post.postId}`);
 
       if (!response.ok) {
         throw new Error('サーバーからデータを取得できませんでした');
