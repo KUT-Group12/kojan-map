@@ -10,6 +10,7 @@ export interface User {
   registrationDate: string; // 登録日
   // postCount?: number; // 投稿数
   fromName?: string; // 表示名
+  blocks?: Block[];
 }
 
 // セッション情報インターフェース (セッション管理用)
