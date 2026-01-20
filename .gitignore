@@ -7,6 +7,9 @@
 *.test
 *.out
 go.work
+main
+*_output.txt
+*.bak
 
 # Node.js
 node_modules/
@@ -23,6 +26,8 @@ dist-ssr/
 .env
 .env.local
 .env.*.local
+.env.backend
+.env.frontend
 
 # IDE
 .vscode/
