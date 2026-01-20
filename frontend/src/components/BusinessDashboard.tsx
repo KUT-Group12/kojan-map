@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { User, Pin } from '../types';
-import {
-  TrendingUp,
-  Eye,
-  Heart,
-  CreditCard,
-  BarChart3,
-  Building2,
-  Clock,
-} from 'lucide-react';
+import { TrendingUp, Eye, Heart, CreditCard, BarChart3, Building2, Clock } from 'lucide-react';
 
 interface BusinessDashboardProps {
   user: User;
@@ -46,20 +38,22 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'overview'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('billing')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'billing'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'billing'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <CreditCard className="w-5 h-5" />
             <span>支払い情報</span>
@@ -246,9 +240,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
 
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
-                    <p className="text-slate-500 text-center py-8">
-                      まだ支払い履歴がありません
-                    </p>
+                    <p className="text-slate-500 text-center py-8">まだ支払い履歴がありません</p>
                   </div>
 
                   {/* 解約ボタンは廃止：事業者プランの解約操作は管理画面でのみ行えるため UI から削除しました */}
