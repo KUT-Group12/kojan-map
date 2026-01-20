@@ -140,7 +140,7 @@ export function NewPostScreen({
           genreId: GENRE_MAP[genre], // 文字列を数値IDに変換
           userId: user.googleId,
           title: title,
-          text: description,
+          text: text,
           postImage: images.length > 0 ? images[0] : '', // 仕様書の string 型に対応
         }),
       });
@@ -155,7 +155,7 @@ export function NewPostScreen({
         latitude: lat,
         longitude: lng,
         title,
-        description,
+        text,
         genre,
         images,
       });
@@ -196,9 +196,9 @@ export function NewPostScreen({
 
           {/* 説明入力 */}
           <div>
-            <Label htmlFor="description">説明 *</Label>
+            <Label htmlFor="text">説明 *</Label>
             <Textarea
-              id="description"
+              id="text"
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="詳しい説明を入力してください"

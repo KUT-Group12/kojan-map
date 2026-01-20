@@ -185,7 +185,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     latitude: number;
     longitude: number;
     title: string;
-    description: string;
+    text: string;
     genre: PinGenre;
     images: string[];
   }) => {
@@ -198,7 +198,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       userId: user.googleId,
       postDate: new Date().toISOString(),
       title: newPost.title,
-      text: newPost.description,
+      text: newPost.text,
       postImage: newPost.images,
       numReaction: 0,
       numView: 0,

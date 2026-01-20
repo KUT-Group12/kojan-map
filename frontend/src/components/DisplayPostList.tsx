@@ -42,27 +42,35 @@ export function DisplayPostList({
 }: PinDetailModalProps) {
   const [isReporting, setIsReporting] = useState(false);
 
+  const [postDetail, setPostDetail] = useState<Post | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
+  // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
   const API_BASE_URL = 'http://localhost:8080';
 
   useEffect(() => {
     if (!post?.postId) return;
     const fetchPostDetail = async () => {
+      setIsDetailLoading(true);
       try {
         // バックエンドとの接続
         const response = await fetch(
           //`http://localhost:8080/api/posts/detail?postId=${post.postId}`
-          `${API_BASE_URL}/api/posts/detail`
+          `${API_BASE_URL}/api/posts/detail?postId=${post.postId}`
         );
         if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
         const data = await response.json(); // Post オブジェクトが返る
 
+        setPostDetail(data.post);
         console.log('data: ', data);
       } catch (error) {
         console.error('詳細取得エラー:', error);
+      } finally {
+        setIsDetailLoading(false);
       }
     };
 
@@ -88,13 +96,26 @@ export function DisplayPostList({
 
   const isOwnPost = post.userId === currentUser.googleId;
 
+  console.log(post.text);
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* 1. ローディング中のオーバーレイ表示 */}
+        {isDetailLoading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
+            <div className="flex flex-col items-center">
+              <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+              <p className="mt-2 text-sm text-gray-500 font-medium">詳細を読み込み中...</p>
+            </div>
+          </div>
+        )}
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <DialogTitle>{post.title}</DialogTitle>
+              <DialogTitle className="whitespace-pre-wrap break-words overflow-wrap-anywhere">
+                {post.title}
+              </DialogTitle>
               <DialogDescription className="sr-only">投稿の詳細情報を表示します</DialogDescription>
               <div className="flex items-center space-x-2 mt-2">
                 <Badge style={{ backgroundColor: genreColors[GENRE_MAP[post.genreId] || 'other'] }}>
@@ -124,23 +145,24 @@ export function DisplayPostList({
           </div>
 
           {/* 説明文 */}
-          <div>
-            <p className="text-gray-700 whitespace-pre-wrap">{post.text}</p>
+          <div className="min-h-[1.5rem]">
+            <p className="text-gray-700 whitespace-pre-wrap">{postDetail?.text || post.text}</p>
           </div>
 
           {/* 画像表示エリア */}
-          {post?.postImage && (
+          {(postDetail?.postImage || post?.postImage) && (
             <div className="grid grid-cols-2 gap-2">
-              {(Array.isArray(post.postImage) ? post.postImage : [post.postImage]).map(
-                (image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`投稿画像 ${index + 1}`}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                )
-              )}
+              {(Array.isArray(postDetail?.postImage || post.postImage)
+                ? postDetail?.postImage || post.postImage
+                : [postDetail?.postImage || post.postImage]
+              ).map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`投稿画像 ${index + 1}`}
+                  className="w-full h-48 object-cover rounded-lg shadow-sm"
+                />
+              ))}
             </div>
           )}
 
