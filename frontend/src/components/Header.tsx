@@ -61,7 +61,7 @@ export function Header({ user, business, onNavigate, currentView, onContact }: H
 
           <div className="border-l pl-2 ml-2">
             {/* 一般会員はユーザー名を表示しない */}
-            {user.role !== 'general' && (
+            {user.role !== 'general' && business?.businessName && (
               <span className="text-sm text-gray-700 mr-3">{business.businessName}</span>
             )}
             <Button variant="outline" onClick={() => onNavigate('logout')}>
