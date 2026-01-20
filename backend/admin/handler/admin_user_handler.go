@@ -53,7 +53,7 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 // @Param userId path string true "ユーザーID"
 // @Success 200 {object} map[string]bool "削除成功"
 // @Failure 400 {object} map[string]string "不正なリクエスト"
-// @Router /internal/users/{userId} [post]
+// @Router /api/admin/users/{userId} [delete]
 // @Security BearerAuth
 func (h *AdminUserHandler) DeleteUser(c *gin.Context) {
 	userID := c.Param("userId")

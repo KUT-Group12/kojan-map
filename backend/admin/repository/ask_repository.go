@@ -26,6 +26,26 @@ func (r *AskRepository) FindAll() ([]models.Ask, error) {
 	return asks, nil
 }
 
+// FindAllPaginatedはページネーション付きでお問い合わせを取得する機能です．
+func (r *AskRepository) FindAllPaginated(page, pageSize int) ([]models.Ask, int64, error) {
+	var asks []models.Ask
+	var total int64
+
+	// 総数を取得
+	if err := r.db.Model(&models.Ask{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// ページネーション付きで取得
+	offset := (page - 1) * pageSize
+	result := r.db.Order("date DESC").Offset(offset).Limit(pageSize).Find(&asks)
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	return asks, total, nil
+}
+
 // FindByIdは特定のIDのお問い合わせを取得する機能です．
 func (r *AskRepository) FindByID(id int) (*models.Ask, error) {
 	var ask models.Ask
@@ -37,28 +57,21 @@ func (r *AskRepository) FindByID(id int) (*models.Ask, error) {
 }
 
 // MarkAsHandledは特定のお問い合わせを処理済みとする機能です．
-//
-// Parameters:
-//   - id: お問合せID
-//
-// Returns :
-//   - error:お問合せIDが見つからない場合，または処理済みの場合
 func (r *AskRepository) MarkAsHandled(id int) error {
 	return r.db.Model(&models.Ask{}).
 		Where("askId = ?", id).
-		Update("askFlag", true).Error
+		Updates(map[string]interface{}{
+			"askFlag": true,
+			"status":  models.AskStatusHandled,
+		}).Error
 }
 
-// MarkAsRejectedは特定のお問い合わせを未処理状態にする機能です．
-// Parameters:
-//   - id: お問い合わせID
-//
-// Returns:
-//   - error: 更新に失敗した場合，または該当するお問い合わせが見つからない場合
+// MarkAsRejectedは特定のお問い合わせを却下状態にする機能です．
 func (r *AskRepository) MarkAsRejected(id int) error {
-	// For now, we just mark it as not handled
-	// In a real scenario, you might want a separate status field
 	return r.db.Model(&models.Ask{}).
 		Where("askId = ?", id).
-		Update("askFlag", false).Error
+		Updates(map[string]interface{}{
+			"askFlag": false,
+			"status":  models.AskStatusRejected,
+		}).Error
 }
