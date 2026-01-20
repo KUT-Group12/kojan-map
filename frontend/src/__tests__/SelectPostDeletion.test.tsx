@@ -101,7 +101,9 @@ describe('SelectPostDeletion コンポーネント', () => {
     });
 
     // ローディングが終了していることを確認
-    expect(screen.queryByText('削除中...')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /削除/i })).not.toBeDisabled();
+    await waitFor(() => {
+      expect(screen.queryByText('削除中...')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /削除/i })).not.toBeDisabled();
+    });
   });
 });
