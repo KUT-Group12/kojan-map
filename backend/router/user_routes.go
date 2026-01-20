@@ -2,8 +2,8 @@ package router
 
 import (
 	"kojan-map/user/handlers"
-	"kojan-map/user/services"
 	"kojan-map/user/middleware"
+	"kojan-map/user/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -38,7 +38,7 @@ func SetupUserRoutes(r *gin.Engine, _ *gorm.DB) {
 		// Auth
 		api.POST("/users/register", authHandler.Register)
 		api.POST("/auth/exchange-token", authHandler.ExchangeToken)
-		
+
 		// Posts (Read)
 		api.GET("/posts", postHandler.GetPosts)
 		api.GET("/posts/detail", postHandler.GetPostDetail)

@@ -3,8 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"kojan-map/user/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 // BusinessOnlyMiddleware checks if the authenticated user has business role
