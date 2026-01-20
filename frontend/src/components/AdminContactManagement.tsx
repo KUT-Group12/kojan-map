@@ -17,12 +17,14 @@ export interface AdminContactManagementProps {
   inquiries: Inquiry[];
   setInquiries: React.Dispatch<React.SetStateAction<Inquiry[]>>;
   onDeleteInquiry: (askId: number) => void;
+  onApproveInquiry: (askId: number) => void;
 }
 
 export default function AdminContactManagement({
   inquiries,
   setInquiries,
   onDeleteInquiry,
+  onApproveInquiry,
 }: AdminContactManagementProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showOnlyOpen, setShowOnlyOpen] = useState(false);
@@ -52,6 +54,10 @@ export default function AdminContactManagement({
 
   const handleSendEmail = () => {
     if (!replyingInquiry) return;
+
+    //API呼んでいる？
+    onApproveInquiry(replyingInquiry.askId);
+
     setInquiries((prev) =>
       prev.map((q) =>
         q.askId === replyingInquiry.askId ? { ...q, askFlag: true, draft: undefined } : q
