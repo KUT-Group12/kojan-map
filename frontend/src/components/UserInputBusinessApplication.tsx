@@ -12,7 +12,9 @@ interface UserInputBusinessApplicationProps {
 }
 
 // データ型の定義
-type BusinessApplicationData = Pick<Business, 'businessName' | 'phone' | 'address'>;
+type BusinessApplicationData = Pick<Business, 'businessName' | 'address'> & {
+  phone: string;
+};
 
 export function UserInputBusinessApplication({
   user,
@@ -30,7 +32,13 @@ export function UserInputBusinessApplication({
   // 送信ハンドラ
   const handleSubmit = async () => {
     // バリデーション（任意）
-    if (!formData.businessName || !formData.phone || !formData.address) {
+    const phoneNumber = Number(formData.phone);
+    if (
+      !formData.businessName ||
+      !formData.phone ||
+      !formData.address ||
+      Number.isNaN(phoneNumber)
+    ) {
       toast.error('すべての項目を正しく入力してください');
       return;
     }
@@ -45,6 +53,7 @@ export function UserInputBusinessApplication({
         },
         body: JSON.stringify({
           ...formData,
+          phone: phoneNumber,
           userId: user.googleId, // 申請者のGoogle ID
         }),
       });
