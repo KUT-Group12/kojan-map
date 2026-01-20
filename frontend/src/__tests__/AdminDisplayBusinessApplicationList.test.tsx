@@ -1,6 +1,6 @@
 // src/__tests__/BusinessApplicationList.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminDisplayBusinessRequest, BusinessApplicationList } from '../components/AdminDisplayBusinessApplicationList';
+import { AdminDisplayBusinessApplicationList, AdminDisplayBusinessRequest, BusinessApplicationList } from '../components/AdminDisplayBusinessApplicationList';
 
 describe('BusinessApplicationList', () => {
     const mockApplications: AdminDisplayBusinessRequest[] = [
