@@ -22,8 +22,8 @@ interface UserDisplayMyPageProps {
 
 export function UserDisplayMyPage({
   user,
-  posts,
-  reactedPosts,
+  posts = [],
+  reactedPosts = [],
   onPinClick,
   onUpdateUser,
   onNavigateToDeleteAccount,

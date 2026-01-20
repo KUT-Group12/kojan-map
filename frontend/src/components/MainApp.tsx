@@ -51,7 +51,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     const fetchInitialData = async () => {
       try {
         // 投稿一覧を取得
-        const postsRes = await fetch('http://localhost:8080/api/posts');
+        //const postsRes = await fetch('http://localhost:8080/api/posts');
+        const apiBaseUrl = 'http://localhost:8080';
+        const postsRes = await fetch(`${apiBaseUrl}/api/posts`);
         const postsData = await postsRes.json();
 
         const posts = postsData.posts ?? [];
@@ -63,9 +65,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
             try {
               // 仕様書のパスとパラメータ名に合わせる
               // placeIdでは?
-              const res = await fetch(
-                `http://127.0.0.1:8080/api/posts/pin/scale?postId=${post.postId}`
-              );
+              const res = await fetch(`${apiBaseUrl}/api/posts/pin/scale?postId=${post.postId}`);
               if (!res.ok) return post;
 
               const scaleData = await res.json();
