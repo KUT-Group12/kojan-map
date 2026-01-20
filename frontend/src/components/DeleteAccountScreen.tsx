@@ -4,33 +4,81 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Checkbox } from './ui/checkbox';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
-import { User } from '../types';
-import { AlertTriangle, ArrowLeft, Trash2 } from 'lucide-react';
+import { User, Business } from '../types';
+import { AlertTriangle, ArrowLeft, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DeleteAccountScreenProps {
   user: User;
+  business?: Business;
   onBack: () => void;
   onDeleteAccount: () => void;
 }
 
-export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAccountScreenProps) {
+export function DeleteAccountScreen({
+  user,
+  business,
+  onBack,
+  onDeleteAccount,
+}: DeleteAccountScreenProps) {
   const [confirmChecks, setConfirmChecks] = useState({
     dataLoss: false,
     noCancellation: false,
     postsDeleted: false,
   });
   const [deleteReason, setDeleteReason] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false); // 通信状態管理
 
+  //const canDelete = confirmChecks.dataLoss && confirmChecks.noCancellation && confirmChecks.postsDeleted;
   const canDelete =
-    confirmChecks.dataLoss && confirmChecks.noCancellation && confirmChecks.postsDeleted;
+    confirmChecks.dataLoss &&
+    confirmChecks.noCancellation &&
+    confirmChecks.postsDeleted &&
+    !isDeleting;
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!canDelete) return;
 
+    /*
     if (confirm('本当にアカウントを削除してもよろしいですか？この操作は取り消せません。')) {
       toast.success('アカウントを削除しました');
       onDeleteAccount();
+    }*/
+    if (!window.confirm('本当にアカウントを削除してもよろしいですか？この操作は取り消せません。')) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      // API仕様: PUT /api/auth/withdrawal
+      const response = await fetch('/api/auth/withdrawal', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          googleId: user.googleId, // 仕様書のリクエストパラメータ
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('退会処理に失敗しました');
+      }
+
+      const data = await response.json();
+      toast.success(data.message);
+      // レスポンス: { "message": "user deleted" }
+
+      toast.success('アカウントを削除しました。ご利用ありがとうございました。');
+
+      // 親コンポーネントで定義された退会後の処理（セッション破棄、トップへ遷移など）を実行
+      onDeleteAccount();
+    } catch (error) {
+      console.error('Withdrawal error:', error);
+      toast.error('エラーが発生しました。時間を置いて再度お試しください。');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -38,7 +86,7 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
     <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* 戻るボタン */}
-        <Button variant="ghost" onClick={onBack}>
+        <Button variant="ghost" onClick={onBack} disabled={isDeleting}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           マイページに戻る
         </Button>
@@ -65,16 +113,16 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
             <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
               <div>
                 <p className="text-sm text-gray-600">ユーザー名</p>
-                <p>{user.role === 'business' ? user.name : '匿名'}</p>
+                <p>{user.role === 'business' ? business?.businessName || '事業者' : '匿名'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
-              {user.role === 'business' && user.businessName && (
+              {user.role === 'business' && business.businessName && (
                 <div>
                   <p className="text-sm text-gray-600">事業者名</p>
-                  <p>{user.businessName}</p>
+                  <p>{business.businessName}</p>
                 </div>
               )}
             </div>
@@ -191,8 +239,20 @@ export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAcc
             disabled={!canDelete}
             className="flex-1"
           >
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                削除処理中...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                アカウントを削除する
+              </>
+            )}
+            {/*
             <Trash2 className="w-4 h-4 mr-2" />
-            アカウントを削除する
+            アカウントを削除する*/}
           </Button>
           <Button variant="outline" onClick={onBack} className="flex-1">
             キャンセル
