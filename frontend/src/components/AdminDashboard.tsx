@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User, Report } from '../types';
+import { User, Report, Post } from '../types';
 // import { mockPins } from '../lib/mockData';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
 import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
@@ -76,127 +76,31 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   ]);
 
   //データベースから持ってくるようにしなければならない？
-  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>([
-    {
-      requestId: 1, // applicationId -> requestId
-      userId: 'google-u101', // googleId -> userId
-      name: '田中商店', // businessName -> name
-      phone: 9012345678, // ハイフンなしの数値(INT)
-      address: '高知県香美市土佐山田町1-2-3', // businessAddress -> address
+  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>(
+    []
+  );
 
-      // AdminDisplayBusinessRequest で拡張した項目
-      gmail: 'tanaka@example.com',
-      applicationDate: '2025-11-03 10:00',
-      // もし型定義に fromName を残している場合は以下を追加
-      fromName: '田中太郎',
-    },
-    {
-      requestId: 2,
-      userId: 'google-u102',
-      name: '鈴木食堂',
-      phone: 9087654321,
-      address: '高知県香美市土佐山田町4-5-6',
+  const [userList, setUsers] = useState<AdminUser[]>([]);
 
-      // AdminDisplayBusinessRequest で拡張した項目
-      gmail: 'suzuki@example.com',
-      applicationDate: '2025-11-02 15:30',
-      fromName: '鈴木一郎',
-    },
-  ]);
+  const Inquiries: Inquiry[] = [];
 
-  const [userList, setUsers] = useState<AdminUser[]>([
-    {
-      googleId: 'google-u1', // 設計書準拠: googleId
-      fromName: '山田太郎', // 設計書準拠: fromName (User型を継承)
-      gmail: 'yamada@example.com', // 設計書準拠: gmail
-      role: 'general', // 修正: 型定義 UserRole 'general' | 'business' | 'admin' に合わせる
-      registrationDate: '2025-11-01',
-      postCount: 5, // AdminUser で拡張した項目
-    },
-    {
-      googleId: 'google-u2',
-      fromName: '山田商店',
-      gmail: 'yamadashouten@example.com',
-      role: 'business', // 事業者
-      registrationDate: '2025-10-25',
-      postCount: 12,
-    },
-    {
-      googleId: 'google-u3',
-      fromName: '佐藤花子',
-      gmail: 'sato@example.com',
-      role: 'general', // 一般ユーザー
-      registrationDate: '2025-11-10',
-      postCount: 3,
-    },
-  ]);
-
-  const mockInquiries: Inquiry[] = [
-    {
-      askId: 1, // id: 'q1' -> askId: 1
-      fromName: '佐藤花子',
-      email: 'sato@example.com',
-      role: 'general',
-      userId: 'google-user-001', // 追加: 問い合わせ元のGoogle ID
-      subject: 'アプリの使い方について', // 追加: 件名
-      text: 'アプリの使い方について教えてください。', // message -> text
-      date: '2025-11-12 14:30', // DATETIME形式を意識
-      askFlag: false, // status: 'open' -> false (未対応)
-    },
-    {
-      askId: 2,
-      fromName: '山田商店',
-      email: 'yamadashouten@example.com',
-      role: 'business',
-      userId: 'google-biz-002',
-      subject: '事業者登録の審査期間',
-      text: '事業者登録について質問があります。申請してから何日ほどかかりますか？',
-      date: '2025-11-10 09:15',
-      askFlag: false,
-    },
-    {
-      askId: 3,
-      fromName: '田中太郎',
-      email: 'tanaka@example.com',
-      role: 'general',
-      userId: 'google-user-003',
-      subject: '投稿の反映不具合',
-      text: '投稿が反映されません。再起動しても直りません。',
-      date: '2025-11-08 18:00',
-      askFlag: true, // status: 'responded' -> true (対応済み)
-    },
-  ];
-
-  const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
+  const [inquiries, setInquiries] = useState<Inquiry[]>(Inquiries);
+  const Posts: Post[] = [];
 
   const systemStats = {
     totalUsers: 1234,
     activeUsers: 856,
     // pinId から postId への変更に伴い、参照先も修正が必要な場合があります
-    totalPosts: mockPins.length,
-    totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
+    totalPosts: Posts.length,
+    totalReactions: Posts.reduce((sum, pin) => sum + pin.numReaction, 0),
     businessUsers: 45,
     // status === 'pending' を reportFlag === false に修正
     pendingReports: reports.filter((r) => r.reportFlag === false).length,
   };
 
-  const weeklyActivityData = [
-    { date: '10/28', users: 720, posts: 45, reactions: 156 },
-    { date: '10/29', users: 780, posts: 52, reactions: 189 },
-    { date: '10/30', users: 810, posts: 48, reactions: 201 },
-    { date: '10/31', users: 845, posts: 67, reactions: 234 },
-    { date: '11/01', users: 890, posts: 71, reactions: 267 },
-    { date: '11/02', users: 920, posts: 63, reactions: 298 },
-    { date: '11/03', users: 856, posts: 58, reactions: 315 },
-  ];
+  const weeklyActivityData = [];
 
-  const genreDistribution = [
-    { name: 'グルメ', value: 2, color: '#EF4444' },
-    { name: 'イベント', value: 1, color: '#F59E0B' },
-    { name: '景色', value: 1, color: '#10B981' },
-    { name: 'お店', value: 1, color: '#3B82F6' },
-    { name: '緊急情報', value: 1, color: '#8B5CF6' },
-  ];
+  const genreDistribution = [];
 
   // 事業者申請承認時の処理 (M4-5-2 ProcessApplication)
   // 引数を id: string から applicationId: number に変更
