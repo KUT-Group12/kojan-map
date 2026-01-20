@@ -21,7 +21,7 @@ interface MainAppProps {
   onUpdateUser: (user: User | Business) => void;
 }
 
-export interface DisplayPost extends Post {
+interface DisplayPost extends Post {
   userName?: string;
   businessName?: string;
   businessIcon?: string;
@@ -31,6 +31,12 @@ interface PinDetailExtra {
   isReacted: boolean;
   postsAtLocation: Post[];
 }
+
+export type PostDetail = Post & {
+  latitude: number;
+  longitude: number;
+  pinScale?: number;
+};
 
 export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps) {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -51,50 +57,44 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [reactedPosts, setReactedPosts] = useState<Set<number>>(new Set());
   // APIからのデータを保持する
   const [detailData, setDetailData] = useState<PinDetailExtra | null>(null);
-  // const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // 投稿一覧を取得
-        //const postsRes = await fetch('http://localhost:8080/api/posts');
-        // const apiBaseUrl = 'http://localhost:8080';
         const postsRes = await fetch(`/api/posts`);
         const postsData = await postsRes.json();
 
-        const posts = postsData.posts ?? [];
-        if (posts.length === 0) return;
+        // ここで一旦、座標も含んでいる可能性がある型として受け取る
+        const rawPosts = (postsData.posts ?? []) as (Post & {
+          latitude: number;
+          longitude: number;
+        })[];
 
-        // 各ピンに対して投稿数50以上かをチェック
-        const postsWithStatus = await Promise.all(
-          posts.map(async (post: Post) => {
-            try {
-              // 仕様書のパスとパラメータ名に合わせる
-              // placeIdでは?
-              const res = await fetch(`/api/posts/pin/scale?postId=${post.postId}`);
-              if (!res.ok) return post;
+        if (rawPosts.length === 0) return;
 
-              const scaleData = await res.json();
-              // scaleData.pinSize が 1.3 なら大きいピン、1.0 なら通常
-              return {
-                ...post,
-                pinScale: scaleData.pinSize,
-              };
-            } catch (e) {
-              console.log(e);
-              return post;
-            }
-          })
-        );
+        // 1. スケール情報を取得（一括取得の想定）
+        const postIds = rawPosts.map((p) => p.postId).join(',');
+        const scaleRes = await fetch(`/api/posts/pin/scales?postIds=${postIds}`);
+        const scaleMap: Record<number, number> = scaleRes.ok ? await scaleRes.json() : {};
 
-        setPosts(postsWithStatus);
-        setFilteredPosts(postsWithStatus);
-        const derivedPlaces: Place[] = postsWithStatus.map((post: Place) => ({
-          placeId: post.placeId,
-          latitude: post.latitude ?? 0,
-          longitude: post.longitude ?? 0,
+        // 2. DisplayPost[] を作成（ここで型が確定する）
+        const displayPosts: PostDetail[] = rawPosts.map((p) => ({
+          ...p,
+          pinScale: scaleMap[p.postId] ?? 1.0,
+        }));
+
+        setPosts(displayPosts);
+        setFilteredPosts(displayPosts);
+
+        // 3. Place[] を作成（dp は DisplayPost型なので latitude に直接アクセス可能）
+        const derivedPlaces: Place[] = displayPosts.map((dp) => ({
+          placeId: dp.placeId,
+          latitude: dp.latitude, // any なしでアクセス可能！
+          longitude: dp.longitude, // any なしでアクセス可能！
           numPost: 1,
         }));
+
         setPlaces(derivedPlaces);
       } catch (error) {
         console.error('データ取得失敗:', error);
@@ -111,7 +111,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   };
 
   const handlePinClick = async (post: Post) => {
-    setSelectedPost(post);
+    setSelectedPost(post as DisplayPost);
+    setIsDetailOpen(true);
+    setDetailData(null);
     const relatedPlace = places.find((p) => p.placeId === post.placeId);
 
     if (relatedPlace) {
@@ -120,7 +122,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       // もし見つからない場合のフォールバック（デバッグ用）
       console.warn('対応する場所情報が見つかりませんでした。placeId:', post.placeId);
       setSelectedPlace(null);
-    } /*
+    }
     try {
       // 1. まずバックエンドに詳細データを問い合わせる
       // const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
@@ -147,7 +149,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       console.error('詳細取得エラー:', error);
       // 失敗した時はトースト通知などを出し、setSelectedPost(null) のままにする（＝開かない）
       alert('エラー：サーバーに接続できません。投稿を表示できませんでした。');
-    }*/
+    }
   };
 
   const handleOpenCreateAtLocation = (lat: number, lng: number) => {
@@ -203,8 +205,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     genre: PinGenre;
     images: string[];
   }) => {
-    // 1. 共通のIDを一度だけ生成して変数に置く
-    const sharedId = Date.now();
+    // 1. 共通のIDを一度だけ生成して変数に置く (乱数生成)
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    const sharedId = timestamp * 10000 + random;
 
     const post: Post = {
       postId: sharedId,
@@ -226,10 +230,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       numPost: 1,
     };
 
-    // ステート更新（すべて一度に行う）
-    // setPosts([post, ...posts]);
-    // setPlaces([place, ...places]);
-    // setFilteredPosts([post, ...filteredPosts]);
     setPosts((prev) => [post, ...prev]);
     setPlaces((prev) => [place, ...prev]);
     setFilteredPosts((prev) => [post, ...prev]);
@@ -248,9 +248,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const handleUpdateUser = (updatedUser: User | Business) => {
     onUpdateUser(updatedUser);
 
-    // Post[] ではなく DisplayPost[] として扱う
+    // 事業者会員のみ
     if ('businessName' in updatedUser) {
-      // Business型であることをTypeScriptに確信させる（型絞り込み）
       const bizUser = updatedUser;
 
       const updatePins = (pinsArray: DisplayPost[]) =>
@@ -375,7 +374,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
             />
           ))}
 
-        {currentView === 'dashboard' && user.role === 'business' && (
+        {currentView === 'dashboard' && user.role === 'business' && business && (
           <div className="flex-1 h-full">
             <BusinessDashboard
               key={business.userId}
@@ -414,29 +413,27 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         />
       )}*/}
 
-      {selectedPost && (
+      {isDetailOpen && selectedPost && (
         <DisplayPostList
           post={selectedPost}
           place={selectedPlace || { placeId: 0, latitude: 0, longitude: 0, numPost: 0 }}
           currentUser={user}
-          // APIからのデータを優先し、なければフロントの状態を使う
-          isReacted={detailData ? detailData.isReacted : reactedPosts.has(selectedPost.postId)}
+          // detailData に値があればそれを優先し、なければ reactedPosts を参照する
+          isReacted={
+            detailData !== null ? detailData.isReacted : reactedPosts.has(selectedPost.postId)
+          }
           onClose={() => {
+            setIsDetailOpen(false);
             setSelectedPost(null);
-            setSelectedPlace(null);
             setDetailData(null);
           }}
           onReaction={handleReaction}
           onDelete={handleDeletePin}
           onBlockUser={handleBlockUser}
-          // APIから取得した周辺情報を渡す
+          // detailData から周辺の投稿を渡す
           postsAtLocation={detailData?.postsAtLocation || []}
-          onOpenCreateAtLocation={(lat, lng) => {
-            setCreateInitialLatitude(lat);
-            setCreateInitialLongitude(lng);
-            setIsCreateModalOpen(true);
-          }}
-          onSelectPin={handlePinClick}
+          onOpenCreateAtLocation={handleOpenCreateAtLocation}
+          onSelectPin={(p) => handlePinClick(p)}
         />
       )}
 
