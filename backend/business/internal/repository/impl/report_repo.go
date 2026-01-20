@@ -47,7 +47,7 @@ func (r *ReportRepoImpl) Create(ctx context.Context, reporterID string, payload 
 	if err == nil {
 		return fmt.Errorf("duplicate report already exists")
 	}
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to check existing report: %w", err)
 	}
 

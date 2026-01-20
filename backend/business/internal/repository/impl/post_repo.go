@@ -43,7 +43,7 @@ func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, 
 	var post domain.Post
 	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("post not found for id %s", postID)
+			return nil, fmt.Errorf("post not found for id %d", postID)
 		}
 		return nil, err
 	}
