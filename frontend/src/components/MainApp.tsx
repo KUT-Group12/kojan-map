@@ -354,7 +354,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           (user.role === 'business' ? (
             <BusinessDisplayMyPage
               user={user}
-              pins={posts.filter((p) => p.userId === user.googleId)}
+              business={business}
+              posts={posts.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
