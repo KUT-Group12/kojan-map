@@ -341,11 +341,7 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
                     <div className="space-y-2">
-                      {[
-                        { date: '2025年11月1日', amount: '¥2,000', status: '完了' },
-                        { date: '2025年10月1日', amount: '¥2,000', status: '完了' },
-                        { date: '2025年9月1日', amount: '¥2,000', status: '完了' },
-                      ].map((payment, index) => (
+                      {[].map((payment, index) => (
                         <div
                           key={index}
                           className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
