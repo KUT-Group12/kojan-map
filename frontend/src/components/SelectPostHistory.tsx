@@ -77,7 +77,6 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
           key={post.postId}
           post={post}
           onPinClick={onPinClick}
-          // onDeletePin={handleRemoveFromList}
           formatDate={formatDate}
           /* 投稿削除 */
           deleteButton={
