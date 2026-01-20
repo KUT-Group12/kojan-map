@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { User } from '../types';
-import { Mail } from 'lucide-react';
+import { Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ContactModalProps {
@@ -16,8 +16,9 @@ interface ContactModalProps {
 export function ContactModal({ user, onClose }: ContactModalProps) {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // 送信中状態を追加
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!subject.trim() || !message.trim()) {
@@ -25,7 +26,37 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
       return;
     }
 
-    // 実際のアプリでは、ここでメール送信APIを呼び出す
+    setIsSubmitting(true);
+
+    try {
+      // バックエンドAPI仕様に基づいたリクエスト
+      const response = await fetch('/api/contact/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subject: subject,
+          text: message, // 仕様書のリクエストパラメータ名は "text"
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('送信に失敗しました');
+      }
+
+      const data = await response.json();
+      toast.success(data.message);
+
+      // レスポンス: { "message": "contact created" }
+      toast.success('お問い合わせを送信しました。運営からの返信をお待ちください。');
+      onClose();
+    } catch (error) {
+      console.error('Contact submit error:', error);
+      toast.error('エラーが発生しました。時間をおいて再度お試しください。');
+    } finally {
+      setIsSubmitting(false);
+    }
     toast.success('お問い合わせを送信しました。運営から返信をお待ちください。');
     onClose();
   };
@@ -44,7 +75,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
-              ご質問や要望は、登録されているメールアドレス（{user.email}）に返信されます。
+              ご質問や要望は、登録されているメールアドレス（{user.gmail}）に返信されます。
             </p>
           </div>
 
@@ -56,6 +87,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
               onChange={(e) => setSubject(e.target.value)}
               placeholder="お問い合わせの件名"
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -68,12 +100,24 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
               placeholder="お問い合わせ内容を詳しくご記入ください"
               rows={6}
               required
+              disabled={isSubmitting}
             />
           </div>
 
           <div className="flex space-x-2 pt-4">
+            {/*
             <Button type="submit" className="flex-1">
               送信する
+            </Button>*/}
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  送信中...
+                </>
+              ) : (
+                '送信する'
+              )}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
               キャンセル
