@@ -56,16 +56,16 @@ export function MyPage({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: user.id,
           businessName: businessName.trim(),
           kanaBusinessName: businessName.trim(), // Placeholder or add field
-          zipCode: "000-0000", // Placeholder or add field
+          zipCode: '000-0000', // Placeholder or add field
           address: businessAddress.trim(),
-          phone: businessPhone.trim()
-        })
+          phone: businessPhone.trim(),
+        }),
       });
 
       if (!response.ok) throw new Error('申請に失敗しました');

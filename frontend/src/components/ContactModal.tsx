@@ -41,13 +41,13 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: user.id,
           subject: subject.trim(),
-          text: message.trim()
-        })
+          text: message.trim(),
+        }),
       });
 
       if (!response.ok) throw new Error('送信に失敗しました');
