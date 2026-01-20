@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { User } from '../types';
-import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
+import { mockPins, Inquiry } from '../lib/mockData';
 import { BusinessApplicationList, UserInputBusiness } from './AdminDisplayBusinessApplicationList';
 import {
   Users,
@@ -137,6 +137,24 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           );
           setGenreDistribution(formattedGenre);
         }
+
+        // Inquiries fetch
+        const inquiryResp = await fetch(`${API_BASE_URL}/api/admin/inquiries`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (inquiryResp.ok) {
+          const inquiryData = await inquiryResp.json();
+          setInquiries(inquiryData);
+        }
+
+        // Users fetch
+        const usersResp = await fetch(`${API_BASE_URL}/api/admin/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (usersResp.ok) {
+          const usersData = await usersResp.json();
+          setUsers(usersData);
+        }
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
       }
@@ -145,7 +163,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     fetchData();
   }, [API_BASE_URL]);
 
-  const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [users, setUsers] = useState<
+    Array<{ id: string; name: string; email: string; role: string; posts: number }>
+  >([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showOnlyOpen, setShowOnlyOpen] = useState(false);
   const [replyModalOpen, setReplyModalOpen] = useState(false);
@@ -172,6 +193,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (response.status === 401 || response.status === 403) {
+        toast.error('認証が無効です。再ログインしてください');
+        onLogout();
+        return;
+      }
       if (!response.ok) throw new Error('承認に失敗しました');
 
       toast.success('事業者アカウントを承認しました');
@@ -193,6 +219,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (response.status === 401 || response.status === 403) {
+        toast.error('認証が無効です。再ログインしてください');
+        onLogout();
+        return;
+      }
       if (!response.ok) throw new Error('却下に失敗しました');
 
       toast.success('事業者申請を却下しました');
@@ -670,29 +701,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {[
-                      {
-                        id: 'u1',
-                        name: '山田太郎',
-                        email: 'yamada@example.com',
-                        role: 'general',
-                        posts: 5,
-                      },
-                      {
-                        id: 'u2',
-                        name: '山田商店',
-                        email: 'yamadashouten@example.com',
-                        role: 'business',
-                        posts: 12,
-                      },
-                      {
-                        id: 'u3',
-                        name: '佐藤花子',
-                        email: 'sato@example.com',
-                        role: 'general',
-                        posts: 3,
-                      },
-                    ].map((userItem) => (
+                    {users.map((userItem) => (
                       <div
                         key={userItem.id}
                         className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
