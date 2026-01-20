@@ -117,6 +117,13 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 			},
 			// businessIDの所有権チェックが実装済み、contextに認証情報が必要
 			wantErr: true,
+			setupFixture: func(f *TestFixtures) {
+				f.SetupBusinessMember(1, "user-123", "Old Business Name", nil)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
+			},
 		},
 		{
 			name: "empty_name",
@@ -205,6 +212,13 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 			},
 			// businessIDの所有権チェックが実装済み、contextに認証情報が必要
 			wantErr: true,
+			setupFixture: func(f *TestFixtures) {
+				f.SetupBusinessMember(1, "user-123", "Test Business", nil)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
+			},
 		},
 		{
 			name: "empty_icon",
@@ -290,6 +304,13 @@ func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 			},
 			// businessIDの権限チェックが実装済み、contextに認証情報が必要
 			wantErr: true,
+			setupFixture: func(f *TestFixtures) {
+				f.SetupBusinessMember(1, "user-123", "Test Business", nil)
+			},
+			setupContext: func() context.Context {
+				ctx := context.Background()
+				return contextkeys.WithBusinessID(ctx, 1)
+			},
 		},
 	}
 
