@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
 import { User, PinGenre, Business } from '../types';
-import { genreLabels } from '../lib/mockData';
+import { genreLabels, GENRE_MAP } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -82,6 +82,7 @@ export function NewPostScreen({
     setImages(images.filter((_, i) => i !== index));
   };
 
+  /* バックエンドあり */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -108,26 +109,6 @@ export function NewPostScreen({
       toast.error('有効な位置情報を入力してください');
       return;
     }
-
-    /* バックエンドなしでも動く */
-    try {
-      await onCreate({
-        latitude: lat,
-        longitude: lng,
-        title,
-        text,
-        genre,
-        images,
-      });
-      toast.success('投稿しました！');
-      onClose();
-    } catch (error) {
-      console.error(error);
-      toast.error('投稿に失敗しました');
-    }
-  };
-
-  /* バックエンドあり 
     try {
       // 1. バックエンドと繋げる
       const response = await fetch('http://localhost:8080/api/posts', {
@@ -166,7 +147,7 @@ export function NewPostScreen({
       console.error('投稿エラー:', error);
       toast.error('投稿に失敗しました。サーバーが起動しているか確認してください。');
     }
-  };*/
+  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
