@@ -102,7 +102,7 @@ export function UserDisplayMyPage({
 
           {/* リアクション履歴 */}
           <TabsContent value="reactions" className="space-y-4">
-            <UserReactionViewScreen reactedPins={reactedPosts} onPinClick={onPinClick} />
+            <UserReactionViewScreen user={user} onPinClick={onPinClick} />
           </TabsContent>
 
           {/* 設定 */}
