@@ -147,7 +147,8 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, sessionID, gmail, m
 		// sessionStoreを使用してMFAコードを検証
 		session, err := s.sessionStore.ValidateMFACode(sessionID, mfaCode)
 		if err != nil {
-			return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
+			// 詳細なエラー内容はログに出力し、APIレスポンスには汎用メッセージを返す
+			return nil, errors.NewAPIError(errors.ErrMissingMFA, "MFA verification failed")
 		}
 
 		// セッションのgmailと一致するか確認
@@ -161,7 +162,8 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, sessionID, gmail, m
 		// 開発環境: 従来のmfaValidatorを使用
 		valid, err := s.mfaValidator.VerifyCode(gmail, mfaCode)
 		if err != nil || !valid {
-			return nil, errors.NewAPIError(errors.ErrMissingMFA, fmt.Sprintf("MFA verification failed: %v", err))
+			// 詳細なエラー内容はログに出力し、APIレスポンスには汎用メッセージを返す
+			return nil, errors.NewAPIError(errors.ErrMissingMFA, "MFA verification failed")
 		}
 	}
 
