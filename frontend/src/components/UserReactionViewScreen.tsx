@@ -15,6 +15,8 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
     const fetchReactedPosts = async () => {
       if (!user?.googleId) {
         setReactedPosts([]);
@@ -26,20 +28,27 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       try {
         // API仕様: GET /api/reactions/list?googleId=...
         const response = await fetch(
-          `/api/reactions/list?googleId=${encodeURIComponent(user.googleId)}`
+          `/api/reactions/list?googleId=${encodeURIComponent(user.googleId)}`,
+          { signal: controller.signal }
         );
         if (!response.ok) throw new Error('リアクション履歴の取得に失敗しました');
 
         const data = await response.json();
         // data.posts は Post[] 型の配列であることを想定
-        setReactedPosts(data.posts || []);
+        if (active) setReactedPosts(data.posts || []);
       } catch (error) {
-        console.error('Fetch error:', error);
+        if ((error as DOMException).name !== 'AbortError') {
+          console.error('Fetch error:', error);
+        }
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     };
     fetchReactedPosts();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [user?.googleId]);
 
   const genreIdToKey = (genreId: number): PinGenre => {

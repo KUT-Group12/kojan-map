@@ -119,11 +119,12 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     } else {
       // もし見つからない場合のフォールバック（デバッグ用）
       console.warn('対応する場所情報が見つかりませんでした。placeId:', post.placeId);
+      setSelectedPlace(null);
     } /*
     try {
       // 1. まずバックエンドに詳細データを問い合わせる
       // const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      const apiBaseUrl = 'http://localhost:8080';
       const response = await fetch(`${apiBaseUrl}/api/posts/detail?postId=${post.postId}`);
 
       if (!response.ok) {

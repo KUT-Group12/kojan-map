@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
-import { User, Pin } from '../types';
+import { User, Post, Business } from '../types';
 import { Upload, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { SelectPostHistory } from './SelectPostHistory';
@@ -11,25 +11,26 @@ import { SelectUserSetting } from './SelectUserSetting';
 
 interface BusinessDisplayMyPageProps {
   user: User;
-  pins: Pin[];
-  onPinClick: (pin: Pin) => void;
-  onDeletePin: (pinId: number) => void;
-  onUpdateUser: (user: User) => void;
+  business: Business;
+  posts: Post[];
+  onPinClick: (post: Post) => void;
+  onDeletePin: (postId: number) => void;
+  onUpdateUser: (updatedUser: User | Business) => void;
   onNavigateToDeleteAccount: () => void;
 }
 
 export function BusinessDisplayMyPage({
   user,
-  pins,
+  business,
+  posts,
   onPinClick,
-  onDeletePin,
   onUpdateUser,
   onNavigateToDeleteAccount,
 }: BusinessDisplayMyPageProps) {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editingNameValue, setEditingNameValue] = useState(user.name || '');
+  const [editingNameValue, setEditingNameValue] = useState(business.businessName || '');
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -54,7 +55,7 @@ export function BusinessDisplayMyPage({
   const handleSaveIcon = () => {
     if (!selectedIcon) return;
     setIsUploadingIcon(true);
-    onUpdateUser({ ...user, businessIcon: selectedIcon });
+    onUpdateUser({ ...business, profileImage: selectedIcon });
     toast.success('アイコンを更新しました');
     setIsUploadingIcon(false);
     setSelectedIcon(null);
@@ -82,7 +83,7 @@ export function BusinessDisplayMyPage({
                       <Button
                         size="sm"
                         onClick={() => {
-                          onUpdateUser({ ...user, name: editingNameValue });
+                          onUpdateUser({ ...business, businessName: editingNameValue });
                           setIsEditingName(false);
                         }}
                       >
@@ -91,7 +92,7 @@ export function BusinessDisplayMyPage({
                     </>
                   ) : (
                     <>
-                      <p>{user.name}</p>
+                      <p>{business.businessName}</p>
                       <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>
                         編集
                       </Button>
@@ -105,11 +106,11 @@ export function BusinessDisplayMyPage({
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">登録日</p>
-                <p>{formatDate(user.createdAt)}</p>
+                <p>{formatDate(new Date(user.registrationDate))}</p>
               </div>
             </div>
           </CardContent>
@@ -124,9 +125,9 @@ export function BusinessDisplayMyPage({
           <CardContent className="space-y-4">
             <div className="flex items-start space-x-6">
               <div className="w-32 h-32 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center">
-                {selectedIcon || user.businessIcon ? (
+                {selectedIcon || business.profileImage ? (
                   <img
-                    src={selectedIcon || user.businessIcon}
+                    src={selectedIcon || business.profileImage}
                     alt="Icon"
                     className="w-full h-full object-cover"
                   />
@@ -165,12 +166,12 @@ export function BusinessDisplayMyPage({
 
         <Tabs defaultValue="posts">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="posts">投稿履歴 ({pins.length})</TabsTrigger>
+            <TabsTrigger value="posts">投稿履歴 ({posts.length})</TabsTrigger>
             <TabsTrigger value="settings">設定</TabsTrigger>
           </TabsList>
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-            <SelectPostHistory pins={pins} onPinClick={onPinClick} onDeletePin={onDeletePin} />
+            <SelectPostHistory user={user} onPinClick={onPinClick} />
           </TabsContent>
           {/* 設定 */}
           <TabsContent value="settings" className="space-y-4">

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { User, Business, Post } from '../types';
+import { User, Business, Post, PinGenre } from '../types';
+import { GENRE_MAP } from '../lib/mockData';
+
 import {
   TrendingUp,
   Eye,
@@ -68,6 +70,11 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
   const avgReactions = posts.length > 0 ? Math.round(totalReactions / posts.length) : 0;
 
   const topPosts = [...posts].sort((a, b) => b.numReaction - a.numReaction).slice(0, 5);
+
+  const genreIdToKey = (genreId: number): PinGenre => {
+    const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
+    return (entry?.[0] as PinGenre) ?? 'other';
+  };
 
   return (
     <div className="flex w-full h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -281,8 +288,14 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
                                   <h4>{post.title}</h4>
-                                  <Badge style={{ backgroundColor: genreColors[post.genreId] }}>
-                                    {genreLabels[post.genreId]}
+                                  <Badge
+                                    style={{
+                                      backgroundColor:
+                                        genreColors[genreIdToKey(post.genreId) ?? 'other'],
+                                    }}
+                                    className="ml-2"
+                                  >
+                                    {genreLabels[genreIdToKey(post.genreId) ?? 'other']}
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-slate-600 line-clamp-1">{post.text}</p>
