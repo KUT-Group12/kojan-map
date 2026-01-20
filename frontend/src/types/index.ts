@@ -26,7 +26,7 @@ export interface Business {
   kanaBusinessName: string; // 事業者名カナ
   zipCode: string; // 郵便番号
   address: string; // 住所
-  phone: number; // 電話番号
+  phone: string; // 電話番号
   registDate: string; // 登録日
   profileImage?: string; // プロフィール画像
   userId: string; // Google ID
@@ -95,7 +95,7 @@ export interface BusinessRequest {
   requestId: number; // 申請ID
   name: string; // 氏名
   address: string; // 住所
-  phone: number; // 電話番号
+  phone: string; // 電話番号
   userId: string; // ユーザーID
 }
 
