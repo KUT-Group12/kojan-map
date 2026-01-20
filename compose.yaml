@@ -4,6 +4,8 @@ services:
     build: ./backend
     ports:
       - "8080:8080"
+    environment:
+      DATABASE_URL: "root:root@tcp(db:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
     depends_on:
       - db
 
