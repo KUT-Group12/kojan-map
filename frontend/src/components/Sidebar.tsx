@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
@@ -14,7 +14,7 @@ interface SidebarProps {
   onPinClick: (post: Post) => void;
 }
 
-export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProps) {
+export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
   // const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
@@ -25,48 +25,66 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
   type DateFilterType = 'all' | 'today' | 'week' | 'month';
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
 
+  // APIから取得した結果を管理するステート
+  const [apiPosts, setApiPosts] = useState<Post[]>(initialPosts);
+  const [isLoading, setIsLoading] = useState(false);
+
   const genreIdToKey = (genreId: number): PinGenre => {
     const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
     return (entry?.[0] as PinGenre) ?? 'other';
   };
 
-  // 1. レンダリングの中で直接計算する (useMemoを使用)
-  const filteredPosts = useMemo(() => {
-    if (user.role === 'business') return [...posts];
-
-    return posts.filter((post) => {
-      // 1. キーワード検索 (安全に文字列を扱う)
-      const matchesKeyword =
-        !searchKeyword ||
-        post.title?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        post.text?.toLowerCase().includes(searchKeyword.toLowerCase());
-
-      // 2. ジャンルフィルター
-      const matchesGenre = selectedGenre === 'all' || genreIdToKey(post.genreId) === selectedGenre;
-
-      // 3. 日付フィルター
-      const postDate = new Date(post.postDate);
-      const now = new Date();
-      let matchesDate = true;
-
-      if (dateFilter === 'today') {
-        matchesDate = postDate.toDateString() === now.toDateString();
-      } else if (dateFilter === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        matchesDate = postDate >= weekAgo;
-      } else if (dateFilter === 'month') {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        matchesDate = postDate >= monthAgo;
+  useEffect(() => {
+    const fetchFilteredPosts = async () => {
+      // ユーザーが事業者の場合は全件表示のままにする（仕様に基づく）
+      if (user.role === 'business') {
+        setApiPosts(initialPosts);
+        return;
       }
 
-      return matchesKeyword && matchesGenre && matchesDate;
-    });
-  }, [searchKeyword, selectedGenre, dateFilter, posts, user.role]);
+      setIsLoading(true);
+      try {
+        let url = '/api/posts'; // デフォルトは全件
 
-  // 2. 親コンポーネント（onFilterChange）への通知だけを useEffect で行う
+        // 仕様書のエンドポイントを条件に合わせて使い分け
+        if (searchKeyword) {
+          url = `/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
+        } else if (selectedGenre !== 'all') {
+          const genreId = GENRE_MAP[selectedGenre];
+          url = `/api/posts/search/genre?genreId=${genreId}`;
+        } else if (dateFilter !== 'all') {
+          // 期間検索のパラメータ生成 (YYYY-MM-DD)
+          const endDate = new Date().toISOString().split('T')[0];
+
+          const start = new Date();
+          if (dateFilter === 'today') start.setDate(start.getDate());
+          if (dateFilter === 'week') start.setDate(start.getDate() - 7);
+          if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
+          const startDate = start.toISOString().split('T')[0];
+
+          url = `/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('検索に失敗しました');
+        const data = await response.json();
+        setApiPosts(data.posts || []);
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // デバウンス（入力のたびに叩きすぎないよう、少し待ってから実行）
+    const timer = setTimeout(fetchFilteredPosts, 500);
+    return () => clearTimeout(timer);
+  }, [searchKeyword, selectedGenre, dateFilter, initialPosts, user.role]);
+
+  // 結果を送信
   useEffect(() => {
-    onFilterChange(filteredPosts);
-  }, [filteredPosts, onFilterChange]);
+    onFilterChange(apiPosts);
+  }, [apiPosts, onFilterChange]);
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
@@ -138,13 +156,15 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
 
       {/* ピンリスト */}
       <div className="flex-1 overflow-y-auto">
-        {filteredPosts.length === 0 ? (
+        {isLoading ? (
+          <div className="p-8 text-center text-gray-500">検索中...</div>
+        ) : apiPosts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p>該当する投稿が見つかりませんでした</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {filteredPosts.map((post) => (
+            {apiPosts.map((post) => (
               <button
                 key={post.postId}
                 onClick={() => onPinClick(post)}
