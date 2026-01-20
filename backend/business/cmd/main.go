@@ -78,8 +78,13 @@ func InitDB() (*gorm.DB, error) {
 	// MySQLの接続文字列を環境変数から取得
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		// デフォルト値（開発用）
-		dsn = "root:root@tcp(localhost:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
+		// 開発環境のみデフォルト値を使用
+		if os.Getenv("APP_ENV") == "development" {
+			dsn = "root:root@tcp(localhost:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
+		} else {
+			// 本番環境ではDATABASE_URLが必須
+			return nil, fmt.Errorf("DATABASE_URL environment variable is required in production")
+		}
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -154,6 +159,12 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Error("Server forced to shutdown: %v", err)
 		os.Exit(1)
+	}
+
+	if sqlDB, err := db.DB(); err != nil {
+		log.Error("Failed to get underlying DB: %v", err)
+	} else if err := sqlDB.Close(); err != nil {
+		log.Error("Failed to close DB: %v", err)
 	}
 
 	log.Info("Server exited gracefully")
