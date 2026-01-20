@@ -207,8 +207,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   }) => {
     // 1. 共通のIDを一度だけ生成して変数に置く (乱数生成)
     const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 10000);
-    const sharedId = timestamp * 10000 + random;
+    const random = Math.floor(Math.random() * 1000);
+    const sharedId = timestamp * 1000 + random;
 
     const post: Post = {
       postId: sharedId,
