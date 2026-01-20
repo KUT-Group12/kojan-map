@@ -38,22 +38,20 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('billing')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'billing'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'billing'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <CreditCard className="w-5 h-5" />
             <span>支払い情報</span>
@@ -157,7 +155,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
               </div>
 
               {/* グラフ */}
-              <div className="grid grid-cols-1 gap-6"></div>
+
 
               {/* 人気投稿 */}
               <Card className="shadow-xl border-slate-200">
