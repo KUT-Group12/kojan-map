@@ -35,11 +35,11 @@ func (b *Block) BeforeCreate(tx *gorm.DB) error {
 // CreateBlockRequest はブロック登録のリクエスト
 // BlockedUserID: 必須。ブロック対象のGoogleID
 type CreateBlockRequest struct {
-	BlockedUserID string `json:"BlockedUserID" binding:"required"`
+	BlockedUserID string `json:"blockedUserID" binding:"required"`
 }
 
 // DeleteBlockRequest はブロック解除のリクエスト
 // BlockedUserID: 必須。ブロック解除対象のGoogleID
 type DeleteBlockRequest struct {
-	BlockedUserID string `json:"BlockedUserID" binding:"required"`
+	BlockedUserID string `json:"blockedUserID" binding:"required"`
 }
