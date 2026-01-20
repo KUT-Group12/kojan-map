@@ -93,7 +93,14 @@ export function BusinessDisplayMyPage({
                   ) : (
                     <>
                       <p>{business.businessName}</p>
-                      <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingNameValue(business.businessName || '');
+                          setIsEditingName(true);
+                        }}
+                      >
                         編集
                       </Button>
                     </>
