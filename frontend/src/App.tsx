@@ -41,6 +41,8 @@ export default function App() {
         placeId: 101,
       };
       setBusiness(mockBusiness);
+    } else {
+      setBusiness(null);
     }
 
     // userDataをセットすることで、!user の条件が外れ、画面が切り替わります
@@ -49,6 +51,7 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
+    setBusiness(null);
   };
 
   const handleUpdateUser = (updatedUser: User) => {
