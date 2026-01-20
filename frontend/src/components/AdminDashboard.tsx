@@ -4,7 +4,6 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { User, Report } from '../types';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
-import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 import AdminReport, { AdminReportProps } from './AdminReport';
 import AdminUserManagement, { AdminUser } from './AdminUserManagement';
 import AdminContactManagement, { Inquiry } from './AdminContactManagement';
@@ -108,7 +107,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     }
   }, []);
 
-
   const fetchUsers = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/users`);
@@ -187,10 +185,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         prev.map((report) =>
           report.postId === postId
             ? {
-              ...report,
-              reportFlag: true,
-              removeFlag: true,
-            }
+                ...report,
+                reportFlag: true,
+                removeFlag: true,
+              }
             : report
         )
       );
@@ -234,9 +232,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       const res = await fetch(`/internal/requests/${askId}/approve`, { method: 'POST' });
       if (!res.ok) throw new Error('Failed to approve');
 
-      setInquiries((prev) =>
-        prev.map((q) => (q.askId === askId ? { ...q, askFlag: true } : q))
-      );
+      setInquiries((prev) => prev.map((q) => (q.askId === askId ? { ...q, askFlag: true } : q)));
       toast.success('問い合わせを対応済みにしました');
     } catch (error) {
       console.error(error);
@@ -268,20 +264,22 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'overview'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'reports'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'reports'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <AlertTriangle className="w-5 h-5" />
             <span className="flex-1 text-left">通報管理</span>
@@ -291,10 +289,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('business')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'business'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'business'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
@@ -304,20 +303,22 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'users'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'users'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <Users className="w-5 h-5" />
             <span>ユーザー管理</span>
           </button>
           <button
             onClick={() => setActiveTab('inquiries')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'inquiries'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-              : 'hover:bg-slate-700'
-              }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'inquiries'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+                : 'hover:bg-slate-700'
+            }`}
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
@@ -533,9 +534,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
           {activeTab === 'reports' && <AdminReport {...reportProps} />}
 
-          {activeTab === 'business' && (
-            <ProcessBusinessRequestScreen />
-          )}
+          {activeTab === 'business' && <ProcessBusinessRequestScreen />}
 
           {activeTab === 'users' && (
             <AdminUserManagement users={userList} onDeleteAccount={handleDeleteAccount} />

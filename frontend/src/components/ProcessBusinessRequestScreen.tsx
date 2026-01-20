@@ -4,7 +4,7 @@ import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
 import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 
 // Props definition removed as it now manages its own data
-// interface Props {}  
+// interface Props {}
 
 export default function ProcessBusinessRequestScreen() {
   const [applications, setApplications] = useState<AdminDisplayBusinessRequest[]>([]);
