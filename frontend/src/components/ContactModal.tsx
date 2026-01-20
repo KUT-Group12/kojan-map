@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -18,7 +19,8 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); // 送信中状態を追加
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!subject.trim() || !message.trim()) {
@@ -46,10 +48,9 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
       }
 
       const data = await response.json();
-      toast.success(data.message);
-
-      // レスポンス: { "message": "contact created" }
-      toast.success('お問い合わせを送信しました。運営からの返信をお待ちください。');
+      const successMessage =
+        data?.message ?? 'お問い合わせを送信しました。運営からの返信をお待ちください。';
+      toast.success(successMessage);
       onClose();
     } catch (error) {
       console.error('Contact submit error:', error);
@@ -57,8 +58,6 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
     } finally {
       setIsSubmitting(false);
     }
-    toast.success('お問い合わせを送信しました。運営から返信をお待ちください。');
-    onClose();
   };
 
   return (
