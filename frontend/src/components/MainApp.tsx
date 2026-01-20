@@ -332,12 +332,11 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           ) : (
             <UserDisplayMyPage
               user={user}
-              pins={posts.filter((p) => p.userId === user.googleId)}
-              reactedPins={Array.from(reactedPosts)
+              posts={posts.filter((p) => p.userId === user.googleId)}
+              reactedPosts={Array.from(reactedPosts)
                 .map((id) => posts.find((p) => p.postId === id)!)
                 .filter(Boolean)}
               onPinClick={handlePinClick}
-              onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
