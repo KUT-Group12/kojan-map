@@ -18,6 +18,10 @@ interface MyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+// 環境変数の読み込み
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 export function MyPage({
   user,
   pins,
@@ -44,11 +48,15 @@ export function MyPage({
 
     try {
       const token = localStorage.getItem('kojanmap_jwt');
-      const response = await fetch('http://localhost:8080/api/business/application', {
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
+      const response = await fetch(`${API_BASE_URL}/api/business/application`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           userId: user.id,
