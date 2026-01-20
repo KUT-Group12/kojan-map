@@ -66,8 +66,8 @@ export function DeleteAccountScreen({
         throw new Error('退会処理に失敗しました');
       }
 
-      const data = await response.json();
-      toast.success(data.message);
+      await response.json();
+      // toast.success(data.message);
       // レスポンス: { "message": "user deleted" }
 
       toast.success('アカウントを削除しました。ご利用ありがとうございました。');
@@ -119,7 +119,7 @@ export function DeleteAccountScreen({
                 <p className="text-sm text-gray-600">メールアドレス</p>
                 <p>{user.gmail}</p>
               </div>
-              {user.role === 'business' && business.businessName && (
+              {user.role === 'business' && business?.businessName && (
                 <div>
                   <p className="text-sm text-gray-600">事業者名</p>
                   <p>{business.businessName}</p>
@@ -254,7 +254,7 @@ export function DeleteAccountScreen({
             <Trash2 className="w-4 h-4 mr-2" />
             アカウントを削除する*/}
           </Button>
-          <Button variant="outline" onClick={onBack} className="flex-1">
+          <Button variant="outline" onClick={onBack} disabled={isDeleting} className="flex-1">
             キャンセル
           </Button>
         </div>
