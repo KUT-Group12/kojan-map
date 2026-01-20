@@ -97,6 +97,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('kojanmap_jwt');
+        if (!token) {
+          console.warn('No auth token found');
+          return;
+        }
         // Summary fetch
         const summaryResp = await fetch(`${API_BASE_URL}/api/admin/summary`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -171,9 +175,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const handleApproveBusinessAccount = async (appId: string) => {
     try {
       const token = localStorage.getItem('kojanmap_jwt');
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
       const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/approve`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('承認に失敗しました');
 
@@ -181,16 +189,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       setBusinessApplications(prev => prev.filter(app => String(app.id) !== appId));
     } catch (error) {
       console.error('Approval error:', error);
-      toast.error('エラーが発生しました');
+      toast.error('承認処理中にエラーが発生しました');
     }
   };
 
   const handleRejectBusinessAccount = async (appId: string) => {
     try {
       const token = localStorage.getItem('kojanmap_jwt');
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
       const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/reject`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('却下に失敗しました');
 
@@ -198,7 +210,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       setBusinessApplications(prev => prev.filter(app => String(app.id) !== appId));
     } catch (error) {
       console.error('Rejection error:', error);
-      toast.error('エラーが発生しました');
+      toast.error('却下処理中にエラーが発生しました');
     }
   };
 
