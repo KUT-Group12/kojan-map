@@ -197,6 +197,8 @@ export function DisplayPostList({
           <div className="flex items-center space-x-2 pt-4 border-t">
             {isReporting ? (
               <ReportScreen
+                postId={post.postId}
+                userId={currentUser.googleId}
                 isReporting={isReporting}
                 setIsReporting={setIsReporting}
                 onReportComplete={onClose}
@@ -205,7 +207,8 @@ export function DisplayPostList({
               <>
                 {/* 1. リアクションボタン */}
                 <UserTriggerReaction
-                  pinId={post.postId}
+                  postId={post.postId}
+                  userId={currentUser.googleId}
                   isReacted={isReacted}
                   userRole={currentUser.role}
                   isDisabled={false}
@@ -214,18 +217,21 @@ export function DisplayPostList({
 
                 {isOwnPost ? (
                   /* 2. 削除ボタン */
-                  <SelectPostDeletion pinId={post.postId} onDelete={onDelete} onClose={onClose} />
+                  <SelectPostDeletion postId={post.postId} onDelete={onDelete} onClose={onClose} />
                 ) : (
                   /* 3. 通報 & ブロック */
                   <>
                     <ReportScreen
+                      postId={post.postId}
+                      userId={currentUser.googleId}
                       isReporting={isReporting}
                       setIsReporting={setIsReporting}
                       onReportComplete={onClose}
                     />
                     {typeof onBlockUser === 'function' && (
                       <SelectBlock
-                        userId={post.userId} // Prop名を userId に合わせる
+                        userId={post.userId}
+                        blockerId={currentUser.googleId}
                         onBlockUser={onBlockUser} // Prop名を onBlockUser に合わせる
                         onClose={onClose}
                       />
