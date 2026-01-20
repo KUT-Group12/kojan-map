@@ -59,6 +59,7 @@ export function DeleteAccountScreen({
         },
         body: JSON.stringify({
           googleId: user.googleId, // 仕様書のリクエストパラメータ
+          reason: deleteReason,
         }),
       });
 
