@@ -11,14 +11,20 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Post, Place, User, PinGenre, Business } from '../types';
+import { Post, Place, User, PinGenre, Business, Block } from '../types';
 import { genreLabels } from '../lib/mockData';
 
 interface MainAppProps {
   user: User;
   business?: Business;
   onLogout: () => void;
-  onUpdateUser: (user: User) => void;
+  onUpdateUser: (user: User | Business) => void;
+}
+
+export interface DisplayPost extends Post {
+  userName?: string;
+  businessName?: string;
+  businessIcon?: string;
 }
 
 interface PinDetailExtra {
@@ -30,7 +36,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [posts, setPosts] = useState<Post[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState<DisplayPost | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createInitialLatitude, setCreateInitialLatitude] = useState<number | undefined>(undefined);
@@ -52,8 +58,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       try {
         // 投稿一覧を取得
         //const postsRes = await fetch('http://localhost:8080/api/posts');
-        const apiBaseUrl = 'http://localhost:8080';
-        const postsRes = await fetch(`${apiBaseUrl}/api/posts`);
+        // const apiBaseUrl = 'http://localhost:8080';
+        const postsRes = await fetch(`/api/posts`);
         const postsData = await postsRes.json();
 
         const posts = postsData.posts ?? [];
@@ -65,7 +71,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
             try {
               // 仕様書のパスとパラメータ名に合わせる
               // placeIdでは?
-              const res = await fetch(`${apiBaseUrl}/api/posts/pin/scale?postId=${post.postId}`);
+              const res = await fetch(`/api/posts/pin/scale?postId=${post.postId}`);
               if (!res.ok) return post;
 
               const scaleData = await res.json();
@@ -238,40 +244,65 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     setSelectedPost(null);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-    // Appレベルのユーザー情報を更新
+  const handleUpdateUser = (updatedUser: User | Business) => {
     onUpdateUser(updatedUser);
 
-    // 既存のピンも更新（名前／事業者名／アイコン）
-    const updatePins = (pinsArray: Post[]) =>
-      pinsArray.map((p) =>
-        p.userId === updatedUser.googleId
-          ? {
-              ...p,
-              businessIcon: updatedUser.businessIcon,
-              businessName: updatedUser.businessName,
-              userName: updatedUser.name,
-            }
-          : p
-      );
+    // Post[] ではなく DisplayPost[] として扱う
+    if ('businessName' in updatedUser) {
+      // Business型であることをTypeScriptに確信させる（型絞り込み）
+      const bizUser = updatedUser;
 
-    setPosts(updatePins(posts));
-    setFilteredPosts(updatePins(filteredPosts));
+      const updatePins = (pinsArray: DisplayPost[]) =>
+        pinsArray.map((p) =>
+          p.userId === bizUser.userId
+            ? {
+                ...p,
+                businessIcon: bizUser.profileImage,
+                businessName: bizUser.businessName,
+                // 事業者の場合は userName ではなく businessName を優先
+              }
+            : p
+        );
 
-    if (selectedPost && selectedPost.userId === updatedUser.googleId) {
-      setSelectedPost({
-        ...selectedPost,
-        businessIcon: updatedUser.businessIcon,
-        businessName: updatedUser.businessName,
-        userName: updatedUser.name,
-      });
+      setPosts(updatePins(posts as DisplayPost[]));
+      setFilteredPosts(updatePins(filteredPosts as DisplayPost[]));
+
+      // 選択中のピンが更新対象の事業者のものなら、その詳細表示も更新
+      if (selectedPost && selectedPost.userId === bizUser.userId) {
+        setSelectedPost({
+          ...(selectedPost as DisplayPost),
+          businessIcon: bizUser.profileImage,
+          businessName: bizUser.businessName,
+        });
+      }
     }
   };
 
   const handleBlockUser = (blockUserId: string) => {
-    const nextBlocked = Array.from(new Set([...(user.blockedUsers || []), blockUserId]));
-    const updatedUser: User = { ...user, blockedUsers: nextBlocked };
-    onUpdateUser(updatedUser);
+    // 1. 新しい Block オブジェクトを作成
+    const userWithBlocks = user as User & { blocks?: Block[] };
+
+    // 2. もし user オブジェクト内に blocks という名前で持たせている場合
+    const currentBlocks = userWithBlocks.blocks || [];
+
+    // 重複チェックをしてから追加
+    const isAlreadyBlocked = currentBlocks.some((b: Block) => b.blockedId === blockUserId);
+
+    if (!isAlreadyBlocked) {
+      const newBlock: Block = {
+        blockId: Date.now(),
+        blockerId: user.googleId,
+        blockedId: blockUserId,
+      };
+
+      const updatedUser = {
+        ...user,
+        blocks: [...currentBlocks, newBlock],
+      };
+
+      // 親の onUpdateUser に渡す
+      onUpdateUser(updatedUser as User);
+    }
   };
 
   const handleNavigate = (view: 'map' | 'mypage' | 'dashboard' | 'logout') => {
@@ -346,7 +377,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           <div className="flex-1 h-full">
             <BusinessDashboard
               user={user}
-              pins={posts.filter((p) => p.userId === user.googleId)}
+              business={business}
+              posts={posts.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
             />
           </div>
