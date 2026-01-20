@@ -188,18 +188,21 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   )}
                 </Button>
 
-                <Button
-                  variant="outline"
-                  className="h-28 w-1/2 justify-self-center col-span-2 flex flex-col items-center justify-center space-y-2 border-2 hover:border-amber-500"
-                  onClick={() => handleRoleSelect('admin')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <span className="font-bold">管理者</span>
-                  )}
-                </Button>
+                {/* 管理者ロールは原則としてDB/バックエンド側で付与するため、フロントエンドでの選択は開発時のみに制限 */}
+                {import.meta.env.DEV && (
+                  <Button
+                    variant="outline"
+                    className="h-28 w-1/2 justify-self-center col-span-2 flex flex-col items-center justify-center space-y-2 border-2 hover:border-amber-500"
+                    onClick={() => handleRoleSelect('admin')}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <span className="font-bold">管理者 (Dev Only)</span>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           )}
