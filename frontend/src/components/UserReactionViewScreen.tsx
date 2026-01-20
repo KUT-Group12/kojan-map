@@ -16,9 +16,16 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
 
   useEffect(() => {
     const fetchReactedPosts = async () => {
+      if (!user?.googleId) {
+        setReactedPosts([]);
+        setIsLoading(false);
+        return;
+      }
       try {
         // API仕様: GET /api/reactions/list?googleId=...
-        const response = await fetch(`/api/reactions/list?googleId=${user.googleId}`);
+        const response = await fetch(
+          `/api/reactions/list?googleId=${encodeURIComponent(user.googleId)}`
+        );
         if (!response.ok) throw new Error('リアクション履歴の取得に失敗しました');
 
         const data = await response.json();
