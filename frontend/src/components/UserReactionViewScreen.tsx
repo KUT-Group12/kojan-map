@@ -38,7 +38,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       }
     };
     fetchReactedPosts();
-  }, [user.googleId]);
+  }, [user?.googleId]);
 
   const genreIdToKey = (genreId: number): PinGenre => {
     const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
