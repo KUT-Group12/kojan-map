@@ -1,83 +1,104 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { UserReactionViewScreen } from '../components/UserReactionViewScreen';
-import { Pin } from '../types';
+
+// fetchのモック
+if (typeof window.fetch === 'undefined') {
+  window.fetch = jest.fn();
+}
+const fetchMock = window.fetch as jest.Mock;
 
 describe('UserReactionViewScreen コンポーネント', () => {
+  const mockUser = { googleId: 'my-id', role: 'general' };
   const mockOnPinClick = jest.fn();
 
-  const mockReactedPins: Pin[] = [
+  const mockPosts = [
     {
-      id: 'pin-1',
-      title: '美味しいカフェ',
-      description: 'ここのコーヒーは最高です。',
-      genre: 'food',
-      userId: 'user-1',
-      userName: '一般ユーザーA',
-      userRole: 'general',
-      reactions: 10,
-      createdAt: new Date(),
-      latitude: 0,
-      longitude: 0,
-      images: [],
-    },
-    {
-      id: 'pin-2',
-      title: '絶景スポット',
-      description: '夕日が綺麗に見えます。',
-      genre: 'scenery',
-      userId: 'user-2',
-      userName: '事業者スタッフ',
-      businessName: '土佐観光観光協会', // 事業者の場合
-      userRole: 'business',
-      reactions: 25,
-      createdAt: new Date(),
-      latitude: 0,
-      longitude: 0,
-      images: [],
+      postId: 101,
+      userId: 'user-other',
+      title: 'リアクションした投稿1',
+      text: '本文1',
+      genreId: 0,
+      numReaction: 15,
     },
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
+    fetchMock.mockReset();
   });
 
-  test('リアクションがない場合に「まだリアクションがありません」と表示されること', () => {
-    render(<UserReactionViewScreen reactedPins={[]} onPinClick={mockOnPinClick} />);
-    expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
+  test('ロード中にローディングスピナーが表示されること', () => {
+    fetchMock.mockReturnValue(new Promise(() => {})); // 完了しないPromise
+
+    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
+
+    // animate-spin クラスを持つ Loader2 を探す
+    const loader = document.querySelector('.animate-spin');
+    expect(loader).toBeInTheDocument();
   });
 
-  test('リアクションした投稿リストが正しく表示されること', () => {
-    render(<UserReactionViewScreen reactedPins={mockReactedPins} onPinClick={mockOnPinClick} />);
+  test('APIから取得したデータが正しく表示されること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: mockPosts }),
+    } as Response);
 
-    // タイトルの確認
-    expect(screen.getByText('美味しいカフェ')).toBeInTheDocument();
-    expect(screen.getByText('絶景スポット')).toBeInTheDocument();
+    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
 
-    // ジャンルラベルの確認（mockDataの定義に従う）
-    expect(screen.getByText('グルメ')).toBeInTheDocument(); // food
-    expect(screen.getByText('景色')).toBeInTheDocument(); // scenery
+    // fetchのURLとエンコードを確認
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/reactions/list?googleId=my-id'),
+      expect.any(Object)
+    );
 
-    // リアクション数の確認
-    expect(screen.getByText('10')).toBeInTheDocument();
-    expect(screen.getByText('25')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('リアクションした投稿1')).toBeInTheDocument();
+      expect(screen.getByText('投稿者ID: user-other')).toBeInTheDocument();
+      expect(screen.getByText('15')).toBeInTheDocument();
+    });
   });
 
-  test('投稿者の名前がロール（一般/事業者）に応じて正しく表示されること', () => {
-    render(<UserReactionViewScreen reactedPins={mockReactedPins} onPinClick={mockOnPinClick} />);
+  test('投稿が0件の場合、「まだリアクションがありません」と表示されること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: [] }),
+    } as Response);
 
-    // 一般ユーザーは userName が表示される
-    expect(screen.getByText(/投稿者: 一般ユーザーA/)).toBeInTheDocument();
+    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
 
-    // 事業者ユーザーは businessName が表示される
-    expect(screen.getByText(/投稿者: 土佐観光観光協会/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
+    });
   });
 
-  test('カードをクリックすると onPinClick が呼ばれること', () => {
-    render(<UserReactionViewScreen reactedPins={mockReactedPins} onPinClick={mockOnPinClick} />);
+  test('カードをクリックすると onPinClick が呼ばれること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: mockPosts }),
+    } as Response);
 
-    const card = screen.getByText('美味しいカフェ').closest('.cursor-pointer');
-    if (card) fireEvent.click(card);
+    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
 
-    expect(mockOnPinClick).toHaveBeenCalledWith(mockReactedPins[0]);
+    await waitFor(() => {
+      const card = screen.getByText('リアクションした投稿1').closest('.cursor-pointer');
+      if (card) fireEvent.click(card);
+    });
+
+    expect(mockOnPinClick).toHaveBeenCalledWith(mockPosts[0]);
+  });
+
+  test('APIエラー時にエラーログが出力され、ローディングが終了すること', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    fetchMock.mockRejectedValueOnce(new Error('API Error'));
+
+    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument(); // ローダー消去
+      expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
+    });
+
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });

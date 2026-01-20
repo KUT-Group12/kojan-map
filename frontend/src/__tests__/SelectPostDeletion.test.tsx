@@ -1,8 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SelectPostDeletion } from '../components/SelectPostDeletion';
 import { toast } from 'sonner';
 
-// sonnerのtoastをモック化
+// fetchのモック設定
+if (typeof window.fetch === 'undefined') {
+  window.fetch = jest.fn();
+}
+const fetchMock = window.fetch as jest.Mock;
+
+// toastのモック
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -11,58 +17,90 @@ jest.mock('sonner', () => ({
 }));
 
 describe('SelectPostDeletion コンポーネント', () => {
+  const mockPostId = 123;
   const mockOnDelete = jest.fn();
   const mockOnClose = jest.fn();
-  const pinId = 'pin-123';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // window.confirm をモック化（デフォルトは true = OK を返す）
+    fetchMock.mockReset();
+    // デフォルトで confirm は true を返すように設定
     jest.spyOn(window, 'confirm').mockImplementation(() => true);
   });
 
   afterEach(() => {
-    // スパイを解除
     jest.restoreAllMocks();
   });
 
-  test('削除ボタンが正しく表示されていること', () => {
-    render(<SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />);
-
-    const deleteButton = screen.getByRole('button', { name: /削除/i });
-    expect(deleteButton).toBeInTheDocument();
-    expect(deleteButton.querySelector('svg')).toBeInTheDocument(); // Trash2アイコンの確認
+  test('初期状態で削除ボタンが表示されること', () => {
+    render(
+      <SelectPostDeletion postId={mockPostId} onDelete={mockOnDelete} onClose={mockOnClose} />
+    );
+    expect(screen.getByRole('button', { name: /削除/i })).toBeInTheDocument();
   });
 
-  test('確認ダイアログで「OK」を押すと削除処理が実行されること', () => {
-    render(<SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />);
+  test('確認ダイアログで「キャンセル」を押した場合、削除処理が実行されないこと', () => {
+    (window.confirm as jest.Mock).mockReturnValue(false);
 
-    const deleteButton = screen.getByRole('button', { name: /削除/i });
-    fireEvent.click(deleteButton);
+    render(
+      <SelectPostDeletion postId={mockPostId} onDelete={mockOnDelete} onClose={mockOnClose} />
+    );
 
-    // confirmが呼ばれたか
-    expect(window.confirm).toHaveBeenCalledWith('この投稿を削除してもよろしいですか？');
-    // onDeleteが正しいIDで呼ばれたか
-    expect(mockOnDelete).toHaveBeenCalledWith(pinId);
-    // 成功トーストが表示されたか
+    fireEvent.click(screen.getByRole('button', { name: /削除/i }));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mockOnDelete).not.toHaveBeenCalled();
+  });
+
+  test('正常に削除（PUTリクエスト）が成功した場合、コールバックが呼ばれること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ message: 'post anonymized' }),
+    } as Response);
+
+    render(
+      <SelectPostDeletion postId={mockPostId} onDelete={mockOnDelete} onClose={mockOnClose} />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /削除/i }));
+
+    // ローディング表示の確認
+    expect(screen.getByText('削除中...')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeDisabled();
+
+    // APIリクエストの検証
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/posts/anonymize',
+        expect.objectContaining({
+          method: 'PUT',
+          body: JSON.stringify({ postId: mockPostId }),
+        })
+      );
+    });
+
+    // 成功後の処理検証
     expect(toast.success).toHaveBeenCalledWith('投稿を削除しました');
-    // 画面を閉じる処理が呼ばれたか
+    expect(mockOnDelete).toHaveBeenCalledWith(mockPostId);
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  test('確認ダイアログで「キャンセル」を押すと削除処理が中断されること', () => {
-    // confirm が false を返すように設定
-    (window.confirm as jest.Mock).mockReturnValue(false);
+  test('APIエラー時にエラーメッセージが表示され、ボタンが再活性化すること', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false } as Response);
 
-    render(<SelectPostDeletion pinId={pinId} onDelete={mockOnDelete} onClose={mockOnClose} />);
+    render(
+      <SelectPostDeletion postId={mockPostId} onDelete={mockOnDelete} onClose={mockOnClose} />
+    );
 
-    const deleteButton = screen.getByRole('button', { name: /削除/i });
-    fireEvent.click(deleteButton);
+    fireEvent.click(screen.getByRole('button', { name: /削除/i }));
 
-    // confirmは呼ばれるが、削除処理は実行されない
-    expect(window.confirm).toHaveBeenCalled();
-    expect(mockOnDelete).not.toHaveBeenCalled();
-    expect(toast.success).not.toHaveBeenCalled();
-    expect(mockOnClose).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('削除中にエラーが発生しました');
+    });
+
+    // ローディングが終了していることを確認
+    expect(screen.queryByText('削除中...')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /削除/i })).not.toBeDisabled();
   });
 });

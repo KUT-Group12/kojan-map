@@ -1,8 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SelectBlock } from '../components/SelectBlock';
 import { toast } from 'sonner';
 
-// sonnerのtoastをモック化
+// fetchのモック設定
+if (typeof window.fetch === 'undefined') {
+  window.fetch = jest.fn();
+}
+const fetchMock = window.fetch as jest.Mock;
+
+// toastのモック
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -11,73 +17,114 @@ jest.mock('sonner', () => ({
 }));
 
 describe('SelectBlock コンポーネント', () => {
+  const mockUserId = 'target-user-456';
+  const mockBlockerId = 'my-user-123';
   const mockOnBlockUser = jest.fn();
   const mockOnClose = jest.fn();
-  const userId = 'user-123';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // window.confirm をモック化（デフォルトは true を返すように設定）
+    fetchMock.mockReset();
+    // デフォルトで confirm は true (OK) を返すように設定
     jest.spyOn(window, 'confirm').mockImplementation(() => true);
   });
 
   afterEach(() => {
-    // スパイを解除して元の状態に戻す
     jest.restoreAllMocks();
   });
 
-  test('ブロックボタンが表示されていること', () => {
-    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
-
-    expect(screen.getByRole('button', { name: /ブロック/i })).toBeInTheDocument();
+  test('初期状態でブロックボタンが表示されていること', () => {
+    render(
+      <SelectBlock
+        userId={mockUserId}
+        blockerId={mockBlockerId}
+        onBlockUser={mockOnBlockUser}
+        onClose={mockOnClose}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'ブロック' })).toBeInTheDocument();
   });
 
-  test('確認ダイアログで「OK」を押すとブロック処理が実行されること', () => {
-    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
+  test('確認ダイアログで「キャンセル」を押した場合、APIが呼ばれないこと', () => {
+    (window.confirm as jest.Mock).mockReturnValue(false);
 
-    const button = screen.getByRole('button', { name: /ブロック/i });
-    fireEvent.click(button);
+    render(
+      <SelectBlock
+        userId={mockUserId}
+        blockerId={mockBlockerId}
+        onBlockUser={mockOnBlockUser}
+        onClose={mockOnClose}
+      />
+    );
 
-    // confirmが呼ばれたか
-    expect(window.confirm).toHaveBeenCalledWith('このユーザーをブロックしますか？');
-    // 親の関数が呼ばれたか
-    expect(mockOnBlockUser).toHaveBeenCalledWith(userId);
-    // 成功トーストが表示されたか
+    fireEvent.click(screen.getByRole('button', { name: 'ブロック' }));
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mockOnBlockUser).not.toHaveBeenCalled();
+  });
+
+  test('正常にブロック（POSTリクエスト）が成功した場合、コールバックが呼ばれること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+    } as Response);
+
+    render(
+      <SelectBlock
+        userId={mockUserId}
+        blockerId={mockBlockerId}
+        onBlockUser={mockOnBlockUser}
+        onClose={mockOnClose}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'ブロック' }));
+
+    // ローディング表示（処理中）の確認
+    expect(screen.getByText('処理中')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeDisabled();
+
+    // APIリクエストの検証
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/users/block',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: mockUserId,
+            blockerId: mockBlockerId,
+          }),
+        })
+      );
+    });
+
+    // 成功後のトーストとコールバックの検証
     expect(toast.success).toHaveBeenCalledWith('ユーザーをブロックしました');
-    // 閉じる処理が呼ばれたか
+    expect(mockOnBlockUser).toHaveBeenCalledWith(mockUserId);
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  test('確認ダイアログで「キャンセル」を押すと処理が中断されること', () => {
-    // このテストケースだけ confirm が false を返すように設定
-    (window.confirm as jest.Mock).mockReturnValue(false);
+  test('APIエラー時にエラー通知が表示され、ボタンが再度活性化すること', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false } as Response);
 
-    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
+    render(
+      <SelectBlock
+        userId={mockUserId}
+        blockerId={mockBlockerId}
+        onBlockUser={mockOnBlockUser}
+        onClose={mockOnClose}
+      />
+    );
 
-    const button = screen.getByRole('button', { name: /ブロック/i });
-    fireEvent.click(button);
+    fireEvent.click(screen.getByRole('button', { name: 'ブロック' }));
 
-    // confirmは呼ばれるが、その先の処理は実行されない
-    expect(window.confirm).toHaveBeenCalled();
-    expect(mockOnBlockUser).not.toHaveBeenCalled();
-    expect(toast.success).not.toHaveBeenCalled();
-    expect(mockOnClose).not.toHaveBeenCalled();
-  });
-
-  test('ブロック処理中にエラーが発生した場合、エラートーストが表示されること', () => {
-    // onBlockUser がエラーを投げるように設定
-    mockOnBlockUser.mockImplementation(() => {
-      throw new Error('API Error');
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('エラーが発生しました。再度お試しください。');
     });
 
-    // console.error を一時的に消す（ログを汚さないため）
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-
-    render(<SelectBlock userId={userId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />);
-
-    const button = screen.getByRole('button', { name: /ブロック/i });
-    fireEvent.click(button);
-
-    expect(toast.error).toHaveBeenCalledWith('ブロック処理に失敗しました');
+    // ローディングが終了し、ボタンが復帰していること
+    expect(screen.queryByText('処理中')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ブロック' })).not.toBeDisabled();
   });
 });

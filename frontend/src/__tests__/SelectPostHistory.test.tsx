@@ -1,105 +1,96 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { SelectPostHistory } from '../components/SelectPostHistory';
-import { Pin } from '../types';
 
-// 子コンポーネントをモック化
-jest.mock('../components/DisplayPostHistory', () => ({
-  DisplayPostHistory: ({ pin, onPinClick, deleteButton }: any) => (
-    <div data-testid="post-history-item">
-      <span onClick={() => onPinClick(pin)}>{pin.title}</span>
-      {deleteButton}
-    </div>
-  ),
-}));
-
-jest.mock('../components/SelectPostDeletion', () => ({
-  SelectPostDeletion: ({ pinId, onDelete }: any) => (
-    <button onClick={() => onDelete(pinId)}>削除ボタンモック</button>
-  ),
-}));
+// fetchのモック設定
+if (typeof window.fetch === 'undefined') {
+  window.fetch = jest.fn();
+}
+const fetchMock = window.fetch as jest.Mock;
 
 describe('SelectPostHistory コンポーネント', () => {
-  const mockPins: Pin[] = [
-    {
-      id: 'pin-1',
-      title: '桂浜の夕日',
-      description: 'とても綺麗でした',
-      latitude: 33.4971,
-      longitude: 133.5711,
-      genre: 'scenery',
-      userId: 'user-1',
-      userName: '田中 太郎',
-      userRole: 'general' as const,
-      images: [],
-      reactions: 0,
-      createdAt: new Date('2026-01-01'),
-    },
-    {
-      id: 'pin-2',
-      title: '美味しいカツオ',
-      description: 'ひろめ市場で食べました',
-      latitude: 33.5611,
-      longitude: 133.5353,
-      genre: 'food',
-      userId: 'user-1',
-      userName: '田中 太郎',
-      userRole: 'general' as const,
-      images: [],
-      reactions: 0,
-      createdAt: new Date('2026-01-02'),
-    },
-  ];
-
+  const mockUser = { googleId: 'test-user-123', role: 'general' };
   const mockOnPinClick = jest.fn();
-  const mockOnDeletePin = jest.fn();
+
+  const mockPostsResponse = {
+    posts: [
+      {
+        postId: 1,
+        title: '投稿1',
+        text: '本文1',
+        genreId: 0,
+        numReaction: 5,
+        postDate: '2024-01-20T10:00:00Z',
+      },
+      {
+        postId: 2,
+        title: '投稿2',
+        text: '本文2',
+        genreId: 1,
+        numReaction: 2,
+        postDate: '2024-01-21T10:00:00Z',
+      },
+    ],
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    fetchMock.mockReset();
   });
 
-  // ここに最低1つの test ブロックが必要です
-  test('投稿がない場合に「まだ投稿がありません」と表示されること', () => {
-    render(
-      <SelectPostHistory pins={[]} onPinClick={mockOnPinClick} onDeletePin={mockOnDeletePin} />
-    );
-    expect(screen.getByText('まだ投稿がありません')).toBeInTheDocument();
+  test('初期ロード中にローディングアイコンが表示されること', () => {
+    // 解決しないプロミスを返してロード状態を維持
+    fetchMock.mockReturnValue(new Promise(() => {}));
+
+    render(<SelectPostHistory user={mockUser as any} onPinClick={mockOnPinClick} />);
+
+    // LucideのLoader2（animate-spin）を探す
+    const loader = document.querySelector('.animate-spin');
+    expect(loader).toBeInTheDocument();
   });
 
-  test('投稿リストが正しくレンダリングされること', () => {
-    render(
-      <SelectPostHistory
-        pins={mockPins}
-        onPinClick={mockOnPinClick}
-        onDeletePin={mockOnDeletePin}
-      />
-    );
-    const items = screen.getAllByTestId('post-history-item');
-    expect(items).toHaveLength(2);
-    expect(screen.getByText('桂浜の夕日')).toBeInTheDocument();
+  test('APIからデータを取得し、投稿リストが表示されること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockPostsResponse,
+    } as Response);
+
+    render(<SelectPostHistory user={mockUser as any} onPinClick={mockOnPinClick} />);
+
+    // 正しいURLでfetchが呼ばれたか確認
+    expect(fetchMock).toHaveBeenCalledWith(`/api/posts/history?googleId=${mockUser.googleId}`);
+
+    // データが表示されるのを待機
+    await waitFor(() => {
+      expect(screen.getByText('投稿1')).toBeInTheDocument();
+      expect(screen.getByText('投稿2')).toBeInTheDocument();
+    });
   });
 
-  test('投稿をクリックすると onPinClick が呼ばれること', () => {
-    render(
-      <SelectPostHistory
-        pins={mockPins}
-        onPinClick={mockOnPinClick}
-        onDeletePin={mockOnDeletePin}
-      />
-    );
-    fireEvent.click(screen.getByText('桂浜の夕日'));
-    expect(mockOnPinClick).toHaveBeenCalledWith(mockPins[0]);
+  test('投稿が0件の場合、「まだ投稿がありません」と表示されること', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: [] }),
+    } as Response);
+
+    render(<SelectPostHistory user={mockUser as any} onPinClick={mockOnPinClick} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('まだ投稿がありません')).toBeInTheDocument();
+    });
   });
 
-  test('削除を実行すると onDeletePin が呼ばれること', () => {
-    render(
-      <SelectPostHistory
-        pins={mockPins}
-        onPinClick={mockOnPinClick}
-        onDeletePin={mockOnDeletePin}
-      />
-    );
-    const deleteButtons = screen.getAllByText('削除ボタンモック');
-    fireEvent.click(deleteButtons[1]);
-    expect(mockOnDeletePin).toHaveBeenCalledWith('pin-2');
+  test('APIエラー時にローディングが終了し、空の状態（またはエラー表示）になること', async () => {
+    // console.error を一時的に抑制
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    fetchMock.mockRejectedValueOnce(new Error('Fetch failed'));
+
+    render(<SelectPostHistory user={mockUser as any} onPinClick={mockOnPinClick} />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('status')).not.toBeInTheDocument(); // ローダーが消える
+      expect(screen.getByText('まだ投稿がありません')).toBeInTheDocument();
+    });
+
+    consoleSpy.mockRestore();
   });
 });

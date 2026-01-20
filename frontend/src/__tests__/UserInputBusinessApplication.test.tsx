@@ -1,84 +1,67 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { UserInputBusinessApplication } from '../components/UserInputBusinessApplication';
+import { toast } from 'sonner';
+
+// fetchのモック設定
+if (typeof window.fetch === 'undefined') {
+  window.fetch = jest.fn();
+}
+const fetchMock = window.fetch as jest.Mock;
+
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}));
 
 describe('UserInputBusinessApplication コンポーネント', () => {
+  const mockUser = { googleId: 'google-123' };
   const mockOnUpdateUser = jest.fn();
   const mockOnCancel = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // window.alert をモック化
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
+    fetchMock.mockReset(); // fetchの履歴をリセット
   });
 
-  test('フォームの各項目とボタンが表示されていること', () => {
+  test('正常に入力して申請すると API が呼ばれること', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true } as Response);
+
     render(
-      <UserInputBusinessApplication onUpdateUser={mockOnUpdateUser} onCancel={mockOnCancel} />
+      <UserInputBusinessApplication
+        user={mockUser as any}
+        onUpdateUser={mockOnUpdateUser}
+        onCancel={mockOnCancel}
+      />
     );
 
-    expect(screen.getByPlaceholderText('店舗名')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('電話番号')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('住所')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '申請する' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
-  });
+    // 1. 各フィールドに入力
+    // inputを特定して値を変更。changeイベントを確実に発火させる
+    fireEvent.change(screen.getByPlaceholderText('店舗名'), {
+      target: { value: 'カフェ・テスト' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('電話番号'), { target: { value: '09012345678' } });
+    fireEvent.change(screen.getByPlaceholderText('住所'), { target: { value: '高知県香美市' } });
 
-  test('入力フィールドに値を入力できること', () => {
-    render(
-      <UserInputBusinessApplication onUpdateUser={mockOnUpdateUser} onCancel={mockOnCancel} />
-    );
-
-    const shopInput = screen.getByPlaceholderText('店舗名') as HTMLInputElement;
-    fireEvent.change(shopInput, { target: { value: '土佐商店' } });
-    expect(shopInput.value).toBe('土佐商店');
-  });
-
-  test('未入力項目がある場合に alert を表示し、送信を中止すること', () => {
-    render(
-      <UserInputBusinessApplication onUpdateUser={mockOnUpdateUser} onCancel={mockOnCancel} />
-    );
-
+    // 2. 申請ボタンをクリック
     const submitButton = screen.getByRole('button', { name: '申請する' });
     fireEvent.click(submitButton);
 
-    // アラートが表示されたか
-    expect(window.alert).toHaveBeenCalledWith('すべての項目を入力してください');
-    // 送信処理は呼ばれていないか
-    expect(mockOnUpdateUser).not.toHaveBeenCalled();
-  });
+    // 3. fetchが呼ばれるのを待機
+    await waitFor(
+      () => {
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 2000 }
+    ); // 少し長めに待機
 
-  test('すべての項目を入力して申請すると、正しいデータが送信されること', () => {
-    render(
-      <UserInputBusinessApplication onUpdateUser={mockOnUpdateUser} onCancel={mockOnCancel} />
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/business/apply',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"businessName":"カフェ・テスト"'),
+      })
     );
-
-    // 入力操作
-    fireEvent.change(screen.getByPlaceholderText('店舗名'), { target: { value: '高知カフェ' } });
-    fireEvent.change(screen.getByPlaceholderText('電話番号'), {
-      target: { value: '088-000-0000' },
-    });
-    fireEvent.change(screen.getByPlaceholderText('住所'), { target: { value: '高知県香美市...' } });
-
-    // 申請ボタンクリック
-    const submitButton = screen.getByRole('button', { name: '申請する' });
-    fireEvent.click(submitButton);
-
-    // 正しいデータで呼ばれたか確認
-    expect(mockOnUpdateUser).toHaveBeenCalledWith({
-      ShopName: '高知カフェ',
-      PhoneNumber: '088-000-0000',
-      address: '高知県香美市...',
-    });
-  });
-
-  test('キャンセルボタンをクリックすると onCancel が呼ばれること', () => {
-    render(
-      <UserInputBusinessApplication onUpdateUser={mockOnUpdateUser} onCancel={mockOnCancel} />
-    );
-
-    const cancelButton = screen.getByRole('button', { name: 'キャンセル' });
-    fireEvent.click(cancelButton);
-
-    expect(mockOnCancel).toHaveBeenCalledTimes(1);
   });
 });

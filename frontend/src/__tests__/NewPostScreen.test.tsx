@@ -1,9 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { NewPostScreen } from '../components/NewPostScreen';
-import { User } from '../types';
 import { toast } from 'sonner';
 
-// sonnerのtoastをモック化
+// toast のモック
 jest.mock('sonner', () => ({
   toast: {
     success: jest.fn(),
@@ -12,12 +11,7 @@ jest.mock('sonner', () => ({
 }));
 
 describe('NewPostScreen コンポーネント', () => {
-  const mockUser: User = {
-    id: 'u1',
-    role: 'general',
-    name: 'テストユーザー',
-  } as any;
-
+  const mockUser = { googleId: 'user-1', role: 'general' };
   const mockOnClose = jest.fn();
   const mockOnCreate = jest.fn();
 
@@ -25,71 +19,86 @@ describe('NewPostScreen コンポーネント', () => {
     jest.clearAllMocks();
   });
 
-  test('初期状態でフォーム要素が正しく表示されていること', () => {
-    render(
-      <NewPostScreen
-        user={mockUser}
-        onClose={mockOnClose}
-        onCreate={mockOnCreate}
-        initialLatitude={33.6}
-        initialLongitude={133.7}
-      />
-    );
+  test('初期表示が正しいこと', () => {
+    render(<NewPostScreen user={mockUser as any} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
-    expect(screen.getByLabelText(/タイトル/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/説明/i)).toBeInTheDocument();
-    expect(screen.getByDisplayValue('33.6')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('133.7')).toBeInTheDocument();
+    expect(screen.getByText('新規投稿')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('投稿のタイトルを入力')).toBeInTheDocument();
   });
 
-  test('未入力で送信しようとするとエラーが発生すること', () => {
-    render(<NewPostScreen user={mockUser} onClose={mockOnClose} onCreate={mockOnCreate} />);
+  test('タイトルのバリデーション（空文字）でエラーが表示されること', async () => {
+    render(<NewPostScreen user={mockUser as any} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
-    // role="form" ではなく、data-testid で確実に取得
-    const form = screen.getByTestId('new-post-form');
-    fireEvent.submit(form);
+    // タイトルを空にして送信
+    fireEvent.change(screen.getByPlaceholderText('投稿のタイトルを入力'), {
+      target: { value: '' },
+    });
+    fireEvent.submit(screen.getByTestId('new-post-form'));
 
     expect(toast.error).toHaveBeenCalledWith('タイトルを入力してください');
     expect(mockOnCreate).not.toHaveBeenCalled();
   });
 
-  test('画像アップロードが機能すること', async () => {
-    render(<NewPostScreen user={mockUser} onClose={mockOnClose} onCreate={mockOnCreate} />);
+  test('タイトルのバリデーション（50文字超）でエラーが表示されること', async () => {
+    render(<NewPostScreen user={mockUser as any} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
-    const file = new File(['hello'], 'test-image.png', { type: 'image/png' });
+    const longTitle = 'a'.repeat(51);
+    fireEvent.change(screen.getByPlaceholderText('投稿のタイトルを入力'), {
+      target: { value: longTitle },
+    });
+    fireEvent.submit(screen.getByTestId('new-post-form'));
 
-    // hidden: true を指定して、非表示のinputを取得
-    const input = screen.getByTestId('file-input');
-
-    fireEvent.change(input, { target: { files: [file] } });
-
-    // 画像プレビューが表示されるのを待つ
-    const previewImage = await screen.findByAltText(/投稿画像 1/i);
-    expect(previewImage).toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalledWith('タイトルは50文字以内で入力してください');
   });
 
-  test('フォームをすべて入力して送信すると、onCreate が呼ばれること', async () => {
-    // 1. 不足していた引数（user, onClose）を正しく渡す
-    render(<NewPostScreen user={mockUser} onClose={mockOnClose} onCreate={mockOnCreate} />);
+  test('画像をアップロードした際に、Base64としてプレビューが表示されること', async () => {
+    render(<NewPostScreen user={mockUser as any} onClose={mockOnClose} onCreate={mockOnCreate} />);
 
-    // 2. 必須項目を入力する
-    fireEvent.change(screen.getByLabelText(/タイトル/i), {
+    // 擬似的な画像ファイルを作成
+    const file = new File(['hello'], 'test.png', { type: 'image/png' });
+    const input = screen.getByTestId('file-input');
+
+    // ファイル選択イベントを発火
+    fireEvent.change(input, { target: { files: [file] } });
+
+    // 画像が読み込まれ、削除ボタン（×）が表示されるのを待機
+    await waitFor(() => {
+      expect(screen.getByLabelText('画像 1 を削除')).toBeInTheDocument();
+    });
+  });
+
+  test('正常に情報を入力して「投稿する」と、onCreateが呼ばれダイアログが閉じること', async () => {
+    render(
+      <NewPostScreen
+        user={mockUser as any}
+        onClose={mockOnClose}
+        onCreate={mockOnCreate}
+        initialLatitude={35.0}
+        initialLongitude={135.0}
+      />
+    );
+
+    // 各項目を入力
+    fireEvent.change(screen.getByPlaceholderText('投稿のタイトルを入力'), {
       target: { value: 'テストタイトル' },
     });
-    fireEvent.change(screen.getByLabelText(/説明/i), {
+    fireEvent.change(screen.getByPlaceholderText('詳しい説明を入力してください'), {
       target: { value: 'テストの説明文です' },
     });
 
-    // 3. 送信ボタンをクリック
-    const submitButton = screen.getByRole('button', { name: /投稿する/i });
-    fireEvent.click(submitButton);
+    // 緯度経度はPropsから初期値が入っているか確認
+    expect(screen.getByLabelText('緯度 *')).toHaveValue(35.0);
 
-    // 4. 非同期処理（onCreate や toast）を待機して検証
+    // 送信
+    fireEvent.submit(screen.getByTestId('new-post-form'));
+
     await waitFor(() => {
       expect(mockOnCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'テストタイトル',
-          description: 'テストの説明文です',
+          text: 'テストの説明文です',
+          latitude: 35.0,
+          longitude: 135.0,
         })
       );
     });
@@ -98,10 +107,19 @@ describe('NewPostScreen コンポーネント', () => {
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  test('事業者ユーザーの場合、事業者向けのメッセージが表示されること', () => {
-    const businessUser = { ...mockUser, role: 'business', businessName: 'やまっぷ商店' } as User;
-    render(<NewPostScreen user={businessUser} onClose={mockOnClose} onCreate={mockOnCreate} />);
+  test('事業者の場合、事業者名が表示されること', () => {
+    const businessUser = { googleId: 'biz-1', role: 'business' };
+    const businessData = { businessName: 'テストカフェ' };
 
-    expect(screen.getByText(/事業者名「やまっぷ商店」として投稿されます/i)).toBeInTheDocument();
+    render(
+      <NewPostScreen
+        user={businessUser as any}
+        businessData={businessData as any}
+        onClose={mockOnClose}
+        onCreate={mockOnCreate}
+      />
+    );
+
+    expect(screen.getByText(/事業者名「テストカフェ」として投稿されます/)).toBeInTheDocument();
   });
 });

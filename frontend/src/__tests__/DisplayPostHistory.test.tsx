@@ -1,67 +1,85 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DisplayPostHistory } from '../components/DisplayPostHistory';
-import { Pin } from '../types';
-import '@testing-library/jest-dom';
 
-// テスト用のモックデータ
-const mockPin: Pin = {
-  id: 'p1',
-  title: 'テストの投稿',
-  description: 'これはテスト用の説明文です。',
-  genre: 'food', // エラーに出ていた "food" を使用
-  reactions: 10,
-  createdAt: new Date('2025-01-01'),
-  latitude: 33.5,
-  longitude: 133.5,
-  userId: 'u1',
-  // --- 足りなかったプロパティを追加 ---
-  userName: 'テストユーザー',
-  userRole: 'business', // または 'business'
-  images: [], // 画像がない場合は空の配列を指定
-};
-
-describe('DisplayPostHistory', () => {
-  const mockOnPinClick = jest.fn();
-  const mockOnDeletePin = jest.fn();
-  const mockFormatDate = jest.fn((date) => '2025年1月1日');
-
-  const defaultProps = {
-    pin: mockPin,
-    onPinClick: mockOnPinClick,
-    onDeletePin: mockOnDeletePin,
-    formatDate: mockFormatDate,
-    // テスト用にシンプルな削除ボタンを渡す
-    deleteButton: <button onClick={() => mockOnDeletePin(mockPin.id)}>削除</button>,
+describe('DisplayPostHistory コンポーネント', () => {
+  const mockPost = {
+    postId: 1,
+    title: 'テストの投稿タイトル',
+    text: 'これはテストの投稿本文です。',
+    // 修正：GENRE_MAP の定義に合わせる
+    // もし 0 がグルメ、1 がイベントなら、期待する値と合わせる必要があります
+    genreId: 0,
+    numReaction: 10,
+    postDate: '2024-01-20T12:00:00Z',
   };
 
-  it('投稿のタイトルと説明が表示されていること', () => {
-    render(<DisplayPostHistory {...defaultProps} />);
-    expect(screen.getByText('テストの投稿')).toBeInTheDocument();
-    expect(screen.getByText('これはテスト用の説明文です。')).toBeInTheDocument();
+  const mockOnPinClick = jest.fn();
+  const mockFormatDate = jest.fn((date: Date) => '2024/01/20');
+  const MockDeleteButton = <button data-testid="delete-btn">削除</button>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('いいね数とフォーマットされた日付が表示されていること', () => {
-    render(<DisplayPostHistory {...defaultProps} />);
-    expect(screen.getByText('10')).toBeInTheDocument();
-    expect(screen.getByText('2025年1月1日')).toBeInTheDocument();
+  test('投稿の情報が正しく表示されていること', () => {
+    render(
+      <DisplayPostHistory
+        post={mockPost as any}
+        onPinClick={mockOnPinClick}
+        formatDate={mockFormatDate}
+        deleteButton={MockDeleteButton}
+      />
+    );
+
+    expect(screen.getByText('テストの投稿タイトル')).toBeInTheDocument();
+
+    // GENRE_MAP[genreId] に対応するラベルを正しく指定する
+    // genreId: 0 なら 'グルメ'、genreId: 1 なら 'イベント'
+    expect(screen.getByText('グルメ')).toBeInTheDocument();
   });
 
-  it('クリックしたときに onPinClick が呼ばれること', () => {
-    render(<DisplayPostHistory {...defaultProps} />);
-    const clickableArea = screen.getByText('テストの投稿').parentElement?.parentElement;
-    if (clickableArea) {
-      fireEvent.click(clickableArea);
-    }
-    expect(mockOnPinClick).toHaveBeenCalledWith(mockPin);
+  test('カードのメインエリアをクリックすると onPinClick が呼ばれること', () => {
+    render(
+      <DisplayPostHistory
+        post={mockPost as any}
+        onPinClick={mockOnPinClick}
+        formatDate={mockFormatDate}
+        deleteButton={MockDeleteButton}
+      />
+    );
+
+    // タイトル部分をクリック（cursor-pointerが付いているエリア）
+    fireEvent.click(screen.getByText('テストの投稿タイトル'));
+
+    expect(mockOnPinClick).toHaveBeenCalledWith(mockPost);
   });
 
-  it('外部から渡された削除ボタンが表示され、機能すること', () => {
-    render(<DisplayPostHistory {...defaultProps} />);
-    const deleteBtn = screen.getByText('削除');
-    expect(deleteBtn).toBeInTheDocument();
+  test('Propsとして渡した削除ボタンがレンダリングされていること', () => {
+    render(
+      <DisplayPostHistory
+        post={mockPost as any}
+        onPinClick={mockOnPinClick}
+        formatDate={mockFormatDate}
+        deleteButton={MockDeleteButton}
+      />
+    );
 
-    fireEvent.click(deleteBtn);
-    expect(mockOnDeletePin).toHaveBeenCalledWith('p1');
+    expect(screen.getByTestId('delete-btn')).toBeInTheDocument();
+  });
+
+  test("ジャンルIDが未知の場合でも default ('other') が適用されること", () => {
+    const unknownPost = { ...mockPost, genreId: 999 };
+
+    render(
+      <DisplayPostHistory
+        post={unknownPost as any}
+        onPinClick={mockOnPinClick}
+        formatDate={mockFormatDate}
+        deleteButton={MockDeleteButton}
+      />
+    );
+
+    // mockDataの定義に基づき、otherラベル（その他）が表示されることを確認
+    expect(screen.getByText('その他')).toBeInTheDocument();
   });
 });
