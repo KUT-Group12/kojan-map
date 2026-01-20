@@ -18,35 +18,35 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // LoginScreenから渡される引数に合わせて修正
+  // 引数として受け取ったデータをそのままステートにセットする
   const handleLogin = (role: UserRole, googleId: string) => {
-    // バックエンドと繋がるまでは、モックデータが必要
+    // 1. Userオブジェクトを組み立てる
     const userData: User = {
-      googleId: googleId, // Googleから取得したIDを使用
-      gmail: `${googleId}@example.com`,
+      googleId: googleId,
+      gmail: `${googleId}@example.com`, // 便宜上のメールアドレス
       role: role,
       registrationDate: new Date().toLocaleDateString(),
     };
 
+    // 2. ステートを更新する
+    setUser(userData);
+
+    // ビジネスロールの場合は初期状態をセット（必要に応じて）
     if (role === 'business') {
-      const mockBusiness: Business = {
-        businessId: 1,
-        businessName: '山田商店',
-        kanaBusinessName: 'ヤマダショウテン',
-        zipCode: '123-4567',
-        address: '東京都渋谷区...',
-        phone: 9012345678,
+      setBusiness({
+        businessId: 0, // 仮のID
+        businessName: '',
+        kanaBusinessName: '',
+        zipCode: '',
+        address: '',
+        phone: '',
         registDate: new Date().toLocaleDateString(),
         userId: googleId,
-        placeId: 101,
-      };
-      setBusiness(mockBusiness);
+        placeId: 0,
+      });
     } else {
       setBusiness(null);
     }
-
-    // userDataをセットすることで、!user の条件が外れ、画面が切り替わります
-    setUser(userData);
   };
 
   const handleLogout = () => {
@@ -54,20 +54,25 @@ export default function App() {
     setBusiness(null);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-    setUser(updatedUser);
+  const handleUpdateUser = (updatedData: User | Business) => {
+    if ('businessId' in updatedData) {
+      setBusiness(updatedData as Business);
+    } else {
+      setUser(updatedData as User);
+    }
   };
 
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // 1. まだログイン（userDataの生成）ができていない場合
+  // 1. 未ログイン時
   if (!user) {
+    // LoginScreen側で「ログイン成功時にUserオブジェクトを作って渡す」ようにします
     return <LoginScreen onLogin={handleLogin} />;
   }
 
-  // 2. ログイン完了後：管理者の場合
+  // 2. 管理者画面
   if (user.role === 'admin') {
     return (
       <>
@@ -77,14 +82,14 @@ export default function App() {
     );
   }
 
-  // 3. ログイン完了後：一般・ビジネス会員の場合
+  // 3. メインアプリ（一般/事業者）
   return (
     <>
       <MainApp
         user={user}
+        business={business}
         onLogout={handleLogout}
         onUpdateUser={handleUpdateUser}
-        business={business!}
       />
       <Toaster />
     </>
