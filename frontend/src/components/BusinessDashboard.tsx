@@ -13,8 +13,6 @@ import {
   Clock,
 } from 'lucide-react';
 
-import { genreColors, genreLabels } from '../lib/mockData';
-
 interface BusinessDashboardProps {
   user: User;
   pins: Pin[];
@@ -195,9 +193,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
                                   <h4>{pin.title}</h4>
-                                  <Badge style={{ backgroundColor: genreColors[pin.genre] }}>
-                                    {genreLabels[pin.genre]}
-                                  </Badge>
+                                  <Badge variant="secondary">{pin.genre}</Badge>
                                 </div>
                                 <p className="text-sm text-slate-600 line-clamp-1">
                                   {pin.description}
