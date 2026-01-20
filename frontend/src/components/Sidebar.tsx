@@ -163,10 +163,14 @@ export function Sidebar({ user, posts, onFilterChange, onPinClick }: SidebarProp
                 </div>
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</p>
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{user.role === 'business' ? user.fromName : '匿名'}</span>
+                  <span>
+                    {user.role === 'business'
+                      ? user.fromName || '名称未設定の事業者' // フォールバックを追加
+                      : '匿名'}
+                  </span>
                   <div className="flex items-center space-x-3">
                     <span>❤️ {post.numReaction}</span>
-                    <span>{formatDate(new Date(post.postDate))}</span>
+                    <span>{formatDate(post.postDate)}</span>
                   </div>
                 </div>
               </button>
