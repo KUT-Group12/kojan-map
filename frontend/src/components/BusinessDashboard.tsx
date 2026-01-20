@@ -341,21 +341,24 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
                     <div className="space-y-2">
-                      {[].map((payment, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Calendar className="w-4 h-4 text-slate-500" />
-                            <span className="text-sm">{payment.date}</span>
+                      {/* TODO: バックエンドから支払い履歴を取得 */}
+                      {([] as { date: string; amount: string; status: string }[]).map(
+                        (payment, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <Calendar className="w-4 h-4 text-slate-500" />
+                              <span className="text-sm">{payment.date}</span>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <span>{payment.amount}</span>
+                              <Badge variant="outline">{payment.status}</Badge>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-4">
-                            <span>{payment.amount}</span>
-                            <Badge variant="outline">{payment.status}</Badge>
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
 
