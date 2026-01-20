@@ -170,10 +170,58 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             </div>
 
             {showTerms && (
-              <div className="border rounded-lg p-4 bg-gray-50 max-h-40 overflow-y-auto text-xs text-gray-600 animate-in fade-in">
-                <p className="font-bold">【利用規約】</p>
-                <p>本サービスはGoogle IDを利用した認証を行います。</p>
-                <p>あなたの基本的なプロフィール情報（メールアドレス等）が使用されます。</p>
+              <div className="border rounded-lg p-4 bg-gray-50 max-h-60 overflow-y-auto text-xs text-gray-700 animate-in fade-in space-y-3">
+                <p className="font-bold text-sm text-gray-900">こじゃんとやまっぷ 利用規約</p>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">第1条（適用）</p>
+                  <p>
+                    本規約は、本サービスの利用に関する条件を定めるものです。ユーザーは、本規約に同意した上で本サービスを利用するものとします。
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">第2条（利用登録）</p>
+                  <p>
+                    本サービスは、Google
+                    IDを利用した認証を行います。登録希望者が本規約に同意の上、Google認証を完了することで、利用登録が完了します。
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">第3条（個人情報の取扱い）</p>
+                  <p>
+                    本サービスは、ユーザーの基本的なプロフィール情報（氏名、メールアドレス等）を取得します。取得した個人情報は、サービス提供の目的にのみ使用し、適切に管理します。
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">第4条（禁止事項）</p>
+                  <p>ユーザーは、以下の行為を行ってはなりません：</p>
+                  <ul className="list-disc list-inside pl-2 space-y-1">
+                    <li>法令または公序良俗に違反する行為</li>
+                    <li>犯罪行為に関連する行為</li>
+                    <li>他のユーザーまたは第三者の権利を侵害する行為</li>
+                    <li>虚偽の情報を登録する行為</li>
+                    <li>本サービスの運営を妨害する行為</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">第5条（免責事項）</p>
+                  <p>
+                    本サービスは現状有姿で提供されます。運営者は、本サービスの内容、品質、正確性について一切保証しません。本サービスの利用により生じた損害について、運営者は責任を負いません。
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="font-semibold">第6条（規約の変更）</p>
+                  <p>
+                    運営者は、必要に応じて本規約を変更することができます。変更後の規約は、本サービス上に掲載した時点で効力を生じるものとします。
+                  </p>
+                </div>
+
+                <p className="text-right text-gray-500 mt-4">制定日：2026年1月21日</p>
               </div>
             )}
 
