@@ -15,6 +15,8 @@ type BusinessApplicationResponse struct {
 	ApplicantName  string `json:"applicantName"`
 	ApplicantEmail string `json:"applicantEmail"`
 	Status         string `json:"status"`
+	Address        string `json:"address"`
+	Phone          string `json:"phone"`
 	CreatedAt      string `json:"createdAt"`
 }
 
@@ -62,6 +64,8 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 			ApplicantName:  applicantName,
 			ApplicantEmail: applicantEmail,
 			Status:         req.Status,
+			Address:        req.Address,
+			Phone:          req.Phone,
 			CreatedAt:      req.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		})
 	}

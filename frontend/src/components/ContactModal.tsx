@@ -17,7 +17,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!subject.trim() || !message.trim()) {
@@ -25,9 +25,29 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
       return;
     }
 
-    // 実際のアプリでは、ここでメール送信APIを呼び出す
-    toast.success('お問い合わせを送信しました。運営から返信をお待ちください。');
-    onClose();
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      const response = await fetch('http://localhost:8080/api/contact/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          subject: subject.trim(),
+          text: message.trim()
+        })
+      });
+
+      if (!response.ok) throw new Error('送信に失敗しました');
+
+      toast.success('お問い合わせを送信しました。運営から返信をお待ちください。');
+      onClose();
+    } catch (error) {
+      console.error('Contact error:', error);
+      toast.error('エラーが発生しました。時間をおいて再度お試しください。');
+    }
   };
 
   return (

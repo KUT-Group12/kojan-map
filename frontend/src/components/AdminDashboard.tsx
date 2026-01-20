@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { User } from '../types';
 import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
-import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
+import { BusinessApplicationList, UserInputBusiness } from './AdminDisplayBusinessApplicationList';
 import {
   Users,
   AlertTriangle,
@@ -41,8 +41,28 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
+interface BusinessAppAPIResponse {
+  requestId: number;
+  businessName: string;
+  applicantName: string;
+  applicantEmail: string;
+  status: string;
+  phone: string;
+  address: string;
+  createdAt: string;
+}
+
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
+  const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
   const [activeTab, setActiveTab] = useState('overview');
+  const [summary, setSummary] = useState({
+    totalUserCount: 0,
+    activeUserCount: 0,
+    totalPostCount: 0,
+    totalReactionCount: 0,
+    businessAccountCount: 0,
+    unprocessedReportCount: 0,
+  });
   const [reports] = useState([
     {
       id: 'r1',
@@ -71,26 +91,48 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   ]);
 
   //データベースから持ってくるようにしなければならない？
-  const [businessApplications] = useState([
-    {
-      id: 'ba1',
-      userName: '田中商店',
-      email: 'tanaka@example.com',
-      ShopName: '田中商店',
-      PhoneNumber: '090-1234-5678',
-      address: '山田市1-2-3',
-      date: '2025-11-03',
-    },
-    {
-      id: 'ba2',
-      userName: '鈴木食堂',
-      email: 'suzuki@example.com',
-      ShopName: '鈴木食堂',
-      PhoneNumber: '090-8765-4321',
-      address: '山田市4-5-6',
-      date: '2025-11-02',
-    },
-  ]);
+  const [businessApplications, setBusinessApplications] = useState<UserInputBusiness[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('kojanmap_jwt');
+        // Summary fetch
+        const summaryResp = await fetch(`${API_BASE_URL}/api/admin/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (summaryResp.ok) {
+          const summaryData = await summaryResp.json();
+          setSummary(summaryData);
+        }
+
+        // Applications fetch
+        const appResp = await fetch(`${API_BASE_URL}/api/admin/request`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (appResp.ok) {
+          const appData = await appResp.json();
+          // Normalize to UserInputBusiness
+          const normalized: UserInputBusiness[] = (appData.applications || []).map(
+            (app: BusinessAppAPIResponse) => ({
+              id: String(app.requestId),
+              userName: app.applicantName,
+              email: app.applicantEmail,
+              ShopName: app.businessName,
+              PhoneNumber: app.phone,
+              address: app.address,
+              date: app.createdAt.split('T')[0],
+            })
+          );
+          setBusinessApplications(normalized);
+        }
+      } catch (error) {
+        console.error('Failed to fetch admin data:', error);
+      }
+    };
+
+    fetchData();
+  }, [API_BASE_URL]);
 
   const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
   const [searchQuery, setSearchQuery] = useState('');
@@ -100,12 +142,12 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [replyText, setReplyText] = useState('');
 
   const systemStats = {
-    totalUsers: 1234,
-    activeUsers: 856,
-    totalPosts: mockPins.length,
-    totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
-    businessUsers: 45,
-    pendingReports: reports.filter((r) => r.status === 'pending').length,
+    totalUsers: summary.totalUserCount,
+    activeUsers: summary.activeUserCount,
+    totalPosts: summary.totalPostCount,
+    totalReactions: summary.totalReactionCount,
+    businessUsers: summary.businessAccountCount,
+    pendingReports: summary.unprocessedReportCount,
   };
 
   const weeklyActivityData = [
@@ -126,14 +168,38 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     { name: '緊急情報', value: 1, color: '#8B5CF6' },
   ];
 
-  const handleApproveBusinessAccount = (_appId: string) => {
-    // TODO: API を呼び出して承認状態を更新
-    toast.success('事業者アカウントを承認しました');
+  const handleApproveBusinessAccount = async (appId: string) => {
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/approve`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('承認に失敗しました');
+
+      toast.success('事業者アカウントを承認しました');
+      setBusinessApplications(prev => prev.filter(app => String(app.id) !== appId));
+    } catch (error) {
+      console.error('Approval error:', error);
+      toast.error('エラーが発生しました');
+    }
   };
 
-  const handleRejectBusinessAccount = (_appId: string) => {
-    // TODO: API を呼び出して却下状態を更新
-    toast.success('事業者申請を却下しました');
+  const handleRejectBusinessAccount = async (appId: string) => {
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/reject`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('却下に失敗しました');
+
+      toast.success('事業者申請を却下しました');
+      setBusinessApplications(prev => prev.filter(app => String(app.id) !== appId));
+    } catch (error) {
+      console.error('Rejection error:', error);
+      toast.error('エラーが発生しました');
+    }
   };
 
   const handleResolveReport = (_reportId: string) => {
@@ -178,22 +244,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'reports'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'reports'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <AlertTriangle className="w-5 h-5" />
             <span className="flex-1 text-left">通報管理</span>
@@ -203,11 +267,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('business')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'business'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'business'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
@@ -217,33 +280,30 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'posts'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'posts'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <MapPin className="w-5 h-5" />
             <span>投稿管理</span>
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'users'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'users'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <Users className="w-5 h-5" />
             <span>ユーザー管理</span>
           </button>
           <button
             onClick={() => setActiveTab('inquiries')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'inquiries'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'inquiries'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>

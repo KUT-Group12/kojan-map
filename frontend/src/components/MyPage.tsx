@@ -36,18 +36,41 @@ export function MyPage({
   const [businessPhone, setBusinessPhone] = useState('');
   const [businessAddress, setBusinessAddress] = useState('');
 
-  const handleBusinessRegistration = () => {
+  const handleBusinessRegistration = async () => {
     if (!businessName.trim() || !businessPhone.trim() || !businessAddress.trim()) {
       toast.error('店舗名・電話番号・住所をすべて入力してください');
       return;
     }
 
-    // TODO: 送信API実装時にフォーム値をpayloadとして使用
-    toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
-    setShowBusinessRegistration(false);
-    setBusinessName('');
-    setBusinessPhone('');
-    setBusinessAddress('');
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      const response = await fetch('http://localhost:8080/api/business/application', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          businessName: businessName.trim(),
+          kanaBusinessName: businessName.trim(), // Placeholder or add field
+          zipCode: "000-0000", // Placeholder or add field
+          address: businessAddress.trim(),
+          phone: businessPhone.trim()
+        })
+      });
+
+      if (!response.ok) throw new Error('申請に失敗しました');
+
+      toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
+      setShowBusinessRegistration(false);
+      setBusinessName('');
+      setBusinessPhone('');
+      setBusinessAddress('');
+    } catch (error) {
+      console.error('Business registration error:', error);
+      toast.error('エラーが発生しました。時間をおいて再度お試しください。');
+    }
   };
 
   const formatDate = (date: Date) => {

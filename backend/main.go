@@ -6,6 +6,8 @@ import (
 
 	"kojan-map/router"
 	"kojan-map/shared/config"
+	userconfig "kojan-map/user/config"
+	usermiddleware "kojan-map/user/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +24,13 @@ func main() {
 	// Connect to database
 	db := config.ConnectDB(cfg)
 
+	// Initialize user-side database context (shared with admin)
+	userconfig.DB = db
+
+	// Initialize user-side middleware
+	jwtSecret := cfg.GetJWTSecret()
+	usermiddleware.SetJWTSecret(jwtSecret)
+
 	// Create Gin router
 	r := gin.Default()
 
@@ -33,8 +42,9 @@ func main() {
 		})
 	})
 
-	// Setup admin routes
+	// Setup routes
 	router.SetupAdminRoutes(r, db)
+	router.SetupUserRoutes(r, db)
 
 	// Start server
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)
