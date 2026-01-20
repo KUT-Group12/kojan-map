@@ -1,0 +1,631 @@
+openapi: 3.1.0
+info:
+  title: Kojan Map Business API
+  version: 0.1.0
+  description: 事業者会員向けWeb API定義。フロント統合用の主要エンドポイントを記載。
+servers:
+  - url: http://localhost:8080
+    description: 開発環境
+  - url: https://api.example.com
+    description: 本番環境（仮）
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Problem:
+      type: object
+      description: RFC 7807準拠のエラーレスポンス
+      properties:
+        type:
+          type: string
+          example: "https://api.example.com/errors/validation-error"
+        title:
+          type: string
+          example: "Validation Error"
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: "businessId query parameter is required"
+        instance:
+          type: string
+          example: "/api/business/posts"
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        gmail:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, business, admin]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, gmail, role]
+    BusinessMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        businessName:
+          type: string
+        gmail:
+          type: string
+          format: email
+        registeredAt:
+          type: string
+          format: date-time
+        iconImageUrl:
+          type: string
+      required: [id, businessName, gmail]
+    Post:
+      type: object
+      properties:
+        postId:
+          type: string
+        locationId:
+          type: string
+        genreId:
+          type: string
+        title:
+          type: string
+        viewCount:
+          type: integer
+        reactionCount:
+          type: integer
+        authorId:
+          type: string
+        postedAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+      required: [postId, genreId, title]
+    PostHistory:
+      type: object
+      properties:
+        postId:
+          type: string
+        genreId:
+          type: string
+        title:
+          type: string
+        reactionCount:
+          type: integer
+        postedAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+    CreatePostRequest:
+      type: object
+      properties:
+        locationId:
+          type: string
+        genreId:
+          type: string
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        images:
+          type: array
+          items:
+            type: string
+            description: Base64エンコード画像またはURL
+      required: [locationId, genreId, title, description]
+    UpdateBusinessNameRequest:
+      type: object
+      properties:
+        newBusinessName:
+          type: string
+          minLength: 1
+          maxLength: 50
+      required: [newBusinessName]
+    AnonymizePostRequest:
+      type: object
+      properties:
+        postId:
+          type: string
+      required: [postId]
+    GoogleAuthRequest:
+      type: object
+      properties:
+        googleId:
+          type: string
+        gmail:
+          type: string
+          format: email
+        idToken:
+          type: string
+        role:
+          type: string
+          enum: [user, business, admin]
+      required: [googleId, gmail, idToken, role]
+    GoogleAuthResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        userId:
+          type: string
+        role:
+          type: string
+          enum: [user, business, admin]
+    BusinessLoginRequest:
+      type: object
+      properties:
+        gmail:
+          type: string
+          format: email
+        mfaCode:
+          type: string
+      required: [gmail, mfaCode]
+    BusinessLoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        business:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            role:
+              type: string
+              enum: [business]
+paths:
+  /api/auth/google:
+    post:
+      tags: [auth]
+      summary: Google認証
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleAuthRequest'
+      responses:
+        '200':
+          description: 認証成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleAuthResponse'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/auth/business/login:
+    post:
+      tags: [auth]
+      summary: 事業者ログイン
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessLoginRequest'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessLoginResponse'
+        '401':
+          description: 認証失敗
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: ログアウト
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "logged out successfully"
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/business/mypage/details:
+    get:
+      tags: [member]
+      summary: 事業者マイページ詳細
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: googleId
+          schema:
+            type: string
+          required: true
+          description: GoogleユーザーID
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessMember'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/business/member/name:
+    put:
+      tags: [member]
+      summary: 事業者名更新
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBusinessNameRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "business name updated successfully"
+                  businessName:
+                    type: string
+                    example: "新しい事業者名"
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/business/member/icon:
+    put:
+      tags: [member]
+      summary: 事業者アイコン更新（multipart）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                icon:
+                  type: string
+                  format: binary
+                  description: PNG/JPEG画像（最大5MB）
+              required: [icon]
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "business icon updated successfully"
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/business/member/anonymize:
+    put:
+      tags: [member]
+      summary: 事業者アカウント削除（匿名化）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                googleId:
+                  type: string
+              required: [googleId]
+      responses:
+        '200':
+          description: 匿名化成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "member anonymized successfully"
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/business/member:
+    get:
+      tags: [member]
+      summary: 会員情報取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: googleId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gmail:
+                    type: string
+                    format: email
+                  role:
+                    type: string
+                    enum: [user, business, admin]
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/business/posts:
+    get:
+      tags: [posts]
+      summary: 事業者の投稿一覧取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: businessId
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 事業者ID
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: ページ番号
+        - in: query
+          name: perPage
+          schema:
+            type: integer
+            default: 20
+          description: 1ページあたりの件数
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      perPage:
+                        type: integer
+                      total:
+                        type: integer
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    post:
+      tags: [posts]
+      summary: 投稿作成
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postId:
+                    type: string
+                  message:
+                    type: string
+                    example: "post created successfully"
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/posts/{postId}:
+    get:
+      tags: [posts]
+      summary: 投稿詳細取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: postId
+          schema:
+            type: string
+          required: true
+          description: 投稿ID
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: 投稿が見つからない
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/posts/anonymize:
+    put:
+      tags: [posts]
+      summary: 投稿匿名化
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnonymizePostRequest'
+      responses:
+        '200':
+          description: 匿名化成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "post anonymized successfully"
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /api/posts/history:
+    get:
+      tags: [posts]
+      summary: 投稿履歴取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: googleId
+          schema:
+            type: string
+          required: true
+          description: GoogleユーザーID
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostHistory'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
