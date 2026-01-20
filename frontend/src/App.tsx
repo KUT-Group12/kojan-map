@@ -4,23 +4,12 @@ import { LoginScreen } from './components/LoginScreen';
 import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
-import { UserRole, User } from './types';
-/*
-type UserRole = 'general' | 'business' | 'admin';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  businessName?: string;
-  businessIcon?: string;
-  createdAt: Date;
-}*/
+import { UserRole, User, Business } from './types';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -34,16 +23,25 @@ export default function App() {
     // バックエンドと繋がるまでは、モックデータが必要
     const userData: User = {
       googleId: googleId, // Googleから取得したIDを使用
-      gmail: `${googleId}@example.com`, // 本来はGoogleから取得するが、今は仮のメール
-      // name: role === 'business' ? '山田商店' : role === 'admin' ? '管理者' : '一般ユーザー',
+      gmail: `${googleId}@example.com`,
       role: role,
-      // businessName: role === 'business' ? '山田商店' : undefined,
-      // businessIcon:
-      // role === 'business'
-      // ? 'https://images.unsplash.com/photo-1679050367261-d7a4a7747ef4?w=100'
-      // : undefined,
       registrationDate: new Date().toLocaleDateString(),
     };
+
+    if (role === 'business') {
+      const mockBusiness: Business = {
+        businessId: 1,
+        businessName: '山田商店',
+        kanaBusinessName: 'ヤマダショウテン',
+        zipCode: '123-4567',
+        address: '東京都渋谷区...',
+        phone: 9012345678,
+        registDate: new Date().toLocaleDateString(),
+        userId: googleId,
+        placeId: 101,
+      };
+      setBusiness(mockBusiness);
+    }
 
     // userDataをセットすることで、!user の条件が外れ、画面が切り替わります
     setUser(userData);
@@ -79,7 +77,12 @@ export default function App() {
   // 3. ログイン完了後：一般・ビジネス会員の場合
   return (
     <>
-      <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
+      <MainApp
+        user={user}
+        onLogout={handleLogout}
+        onUpdateUser={handleUpdateUser}
+        business={business!}
+      />
       <Toaster />
     </>
   );
