@@ -13,6 +13,7 @@ import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
 import { Post, Place, User, PinGenre, Business, Block } from '../types';
 import { genreLabels } from '../lib/mockData';
+import { Loader2 } from 'lucide-react';
 
 interface MainAppProps {
   user: User;
@@ -59,13 +60,17 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [detailData, setDetailData] = useState<PinDetailExtra | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
+  // MainApp.tsx内で、既存のposts/placesステート付近に追加
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [userReactedPosts, setUserReactedPosts] = useState<Post[]>([]);
+  const [isLoadingUserData, setIsLoadingUserData] = useState(false);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const postsRes = await fetch(`/api/posts`);
         const postsData = await postsRes.json();
 
-        // ここで一旦、座標も含んでいる可能性がある型として受け取る
         const rawPosts = (postsData.posts ?? []) as (Post & {
           latitude: number;
           longitude: number;
@@ -73,12 +78,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
         if (rawPosts.length === 0) return;
 
-        // 1. スケール情報を取得（一括取得の想定）
         const postIds = rawPosts.map((p) => p.postId).join(',');
         const scaleRes = await fetch(`/api/posts/pin/scales?postIds=${postIds}`);
         const scaleMap: Record<number, number> = scaleRes.ok ? await scaleRes.json() : {};
 
-        // 2. DisplayPost[] を作成（ここで型が確定する）
         const displayPosts: PostDetail[] = rawPosts.map((p) => ({
           ...p,
           pinScale: scaleMap[p.postId] ?? 1.0,
@@ -87,11 +90,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         setPosts(displayPosts);
         setFilteredPosts(displayPosts);
 
-        // 3. Place[] を作成（dp は DisplayPost型なので latitude に直接アクセス可能）
         const derivedPlaces: Place[] = displayPosts.map((dp) => ({
           placeId: dp.placeId,
-          latitude: dp.latitude, // any なしでアクセス可能！
-          longitude: dp.longitude, // any なしでアクセス可能！
+          latitude: dp.latitude,
+          longitude: dp.longitude,
           numPost: 1,
         }));
 
@@ -104,6 +106,37 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     fetchInitialData();
   }, []);
 
+  // ★追加: マイページを開いたときにユーザーデータを取得
+  useEffect(() => {
+    if (currentView === 'mypage' && user) {
+      fetchUserData();
+    }
+  }, [currentView, user.googleId]);
+
+  // ★追加: ユーザー専用データの取得関数
+  const fetchUserData = async () => {
+    setIsLoadingUserData(true);
+    try {
+      const apiBaseUrl = 'http://localhost:8080';
+
+      // 投稿履歴を取得
+      const postsRes = await fetch(`${apiBaseUrl}/api/posts/history?googleId=${user.googleId}`);
+      const postsData = await postsRes.json();
+      setUserPosts(postsData.posts || []);
+
+      // リアクション履歴を取得
+      const reactionsRes = await fetch(
+        `${apiBaseUrl}/api/reactions/list?googleId=${user.googleId}`
+      );
+      const reactionsData = await reactionsRes.json();
+      setUserReactedPosts(reactionsData.posts || []);
+    } catch (error) {
+      console.error('ユーザーデータ取得エラー:', error);
+    } finally {
+      setIsLoadingUserData(false);
+    }
+  };
+
   const handleMapDoubleClick = (lat: number, lng: number) => {
     console.log(`緯度: ${lat}, 経度: ${lng}`);
     // 既存の関数を呼び出してモーダルを開く
@@ -113,19 +146,17 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const handlePinClick = async (post: Post) => {
     setSelectedPost(post as DisplayPost);
     setIsDetailOpen(true);
-    setDetailData(null);
-    const relatedPlace = places.find((p) => p.placeId === post.placeId);
+    setDetailData(null); // ローディング状態
 
+    const relatedPlace = places.find((p) => p.placeId === post.placeId);
     if (relatedPlace) {
       setSelectedPlace(relatedPlace);
     } else {
-      // もし見つからない場合のフォールバック（デバッグ用）
       console.warn('対応する場所情報が見つかりませんでした。placeId:', post.placeId);
       setSelectedPlace(null);
     }
+
     try {
-      // 1. まずバックエンドに詳細データを問い合わせる
-      // const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
       const apiBaseUrl = 'http://localhost:8080';
       const response = await fetch(`${apiBaseUrl}/api/posts/detail?postId=${post.postId}`);
 
@@ -133,22 +164,27 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         throw new Error('サーバーからデータを取得できませんでした');
       }
 
-      const latestPostData = await response.json();
+      const data = await response.json();
 
-      // 2. 通信が成功した時だけ、Stateを更新して画面を開く
-      setSelectedPost(latestPostData); // サーバーからの最新データをセット
+      // バックエンドからの最新データをセット
+      setSelectedPost(data.post || data); // レスポンス構造に応じて調整
 
-      const relatedPlace = places.find((p) => p.placeId === post.placeId);
-      if (relatedPlace) {
-        setSelectedPlace(relatedPlace);
-      }
-
-      // APIから取得した詳細データ（閲覧数やリアクション状態など）をセット
-      setDetailData(latestPostData.extra); // 必要に応じて
+      // 詳細データ（リアクション状態と周辺投稿）を設定
+      setDetailData({
+        isReacted: data.isReacted || false,
+        postsAtLocation: data.postsAtLocation || [],
+      });
     } catch (error) {
       console.error('詳細取得エラー:', error);
-      // 失敗した時はトースト通知などを出し、setSelectedPost(null) のままにする（＝開かない）
       alert('エラー：サーバーに接続できません。投稿を表示できませんでした。');
+
+      // エラー時のフォールバック
+      setDetailData({
+        isReacted: reactedPosts.has(post.postId),
+        postsAtLocation: posts.filter(
+          (p) => p.placeId === post.placeId && p.postId !== post.postId
+        ),
+      });
     }
   };
 
@@ -361,13 +397,16 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
+          ) : // ★変更: ローディング状態を追加し、取得したデータを渡す
+          isLoadingUserData ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
           ) : (
             <UserDisplayMyPage
               user={user}
-              posts={posts.filter((p) => p.userId === user.googleId)}
-              reactedPosts={Array.from(reactedPosts)
-                .map((id) => posts.find((p) => p.postId === id)!)
-                .filter(Boolean)}
+              posts={userPosts} // ★変更: MainAppで取得したデータ
+              reactedPosts={userReactedPosts} // ★変更: MainAppで取得したデータ
               onPinClick={handlePinClick}
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
