@@ -26,6 +26,10 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
   };
 
   useEffect(() => {
+    if (!user?.googleId) {
+      setIsLoading(false);
+      return;
+    }
     const fetchHistory = async () => {
       try {
         // API仕様: GET /api/posts/history?googleId=...
@@ -43,7 +47,7 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
     };
 
     fetchHistory();
-  }, [user.googleId]);
+  }, [user?.googleId]);
 
   // 削除成功時にフロントエンドのリストから消去する
   const handleRemoveFromList = (deletedId: number) => {
@@ -73,7 +77,7 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
           key={post.postId}
           post={post}
           onPinClick={onPinClick}
-          onDeletePin={handleRemoveFromList}
+          // onDeletePin={handleRemoveFromList}
           formatDate={formatDate}
           /* 投稿削除 */
           deleteButton={

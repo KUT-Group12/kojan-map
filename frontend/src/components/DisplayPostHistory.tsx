@@ -8,7 +8,7 @@ import { ReactNode } from 'react';
 interface DisplayPostHistoryProps {
   post: Post;
   onPinClick: (post: Post) => void;
-  onDeletePin: (postId: number) => void;
+  // onDeletePin: (postId: number) => void;
   formatDate: (date: Date) => string;
   deleteButton: ReactNode;
 }
