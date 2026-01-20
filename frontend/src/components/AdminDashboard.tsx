@@ -67,9 +67,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
   const [reports, setReports] = useState<Report[]>([]);
-  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>(
-    []
-  );
+  // const [businessApplications, setBusinessApplications]... removed
   const [userList, setUsers] = useState<AdminUser[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
@@ -110,16 +108,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     }
   }, []);
 
-  const fetchBusinessApplications = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/request`);
-      if (!res.ok) throw new Error('Failed to fetch business requests');
-      const data = await res.json();
-      setBusinessApplications(data.requests || data);
-    } catch (error) {
-      console.error('Error fetching business applications:', error);
-    }
-  }, []);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -151,9 +139,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       case 'reports':
         fetchReports();
         break;
-      case 'business':
-        fetchBusinessApplications();
-        break;
       case 'users':
         fetchUsers();
         break;
@@ -165,38 +150,13 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     activeTab,
     fetchOverviewData,
     fetchReports,
-    fetchBusinessApplications,
+    // fetchBusinessApplications,
     fetchUsers,
     fetchInquiries,
   ]);
 
-  const handleApprove = async (requestId: number) => {
-    if (!confirm('この事業者を承認しますか？')) return;
-    try {
-      const res = await fetch(`/api/applications/${requestId}/approve`, { method: 'PUT' });
-      if (!res.ok) throw new Error('Approval failed');
-
-      setBusinessApplications((prev) => prev.filter((app) => app.requestId !== requestId));
-      toast.success('事業者アカウントを承認しました');
-    } catch (error) {
-      console.error(error);
-      toast.error('承認に失敗しました');
-    }
-  };
-
-  const handleReject = async (requestId: number) => {
-    if (!confirm('この申請を却下しますか？')) return;
-    try {
-      const res = await fetch(`/api/applications/${requestId}/reject`, { method: 'PUT' });
-      if (!res.ok) throw new Error('Rejection failed');
-
-      setBusinessApplications((prev) => prev.filter((app) => app.requestId !== requestId));
-      toast.error('申請を却下しました');
-    } catch (error) {
-      console.error(error);
-      toast.error('却下に失敗しました');
-    }
-  };
+  // const handleReject... removed
+  // const handleApprove... removed
 
   const handleResolveReport = async (reportId: number) => {
     try {
@@ -338,9 +298,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
-            {businessApplications.length > 0 && (
+            {/* {businessApplications.length > 0 && (
               <Badge className="bg-orange-500">{businessApplications.length}</Badge>
-            )}
+            )} */}
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -574,11 +534,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           {activeTab === 'reports' && <AdminReport {...reportProps} />}
 
           {activeTab === 'business' && (
-            <ProcessBusinessRequestScreen
-              applications={businessApplications}
-              onApprove={handleApprove}
-              onReject={handleReject}
-            />
+            <ProcessBusinessRequestScreen />
           )}
 
           {activeTab === 'users' && (
