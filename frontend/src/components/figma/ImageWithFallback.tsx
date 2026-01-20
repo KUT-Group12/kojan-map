@@ -10,6 +10,20 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
   className?: string;
 }
 
+/**
+ * Renders an image and displays a built-in placeholder if the source fails to load.
+ *
+ * If the provided `src` fails to load, a light-gray placeholder containing an embedded SVG is rendered
+ * instead; the placeholder image receives the original `src` in a `data-original-url` attribute and uses
+ * the provided `alt` text. If `src` changes, the component clears the error state and attempts to render
+ * the new image. All other standard <img> attributes passed via `...rest` are forwarded to the rendered image element.
+ *
+ * @param src - The image URL to display
+ * @param alt - Alternate text for the image and placeholder
+ * @param style - Inline styles applied to the outer element or image
+ * @param className - CSS class applied to the outer element or image
+ * @returns The rendered image element (either the original image or the fallback placeholder)
+ */
 export function ImageWithFallback({ src, alt, style, className, ...rest }: ImageWithFallbackProps) {
   const [didError, setDidError] = useState(false);
 

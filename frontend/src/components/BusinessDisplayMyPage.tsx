@@ -18,6 +18,17 @@ interface BusinessDisplayMyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+/**
+ * Render the business owner's My Page interface including profile details, icon upload/preview with validation, and tabs for post history and settings.
+ *
+ * @param user - The current user object shown and edited on the page
+ * @param pins - List of pins (posts) shown in the post history tab
+ * @param onPinClick - Callback invoked when a pin is selected
+ * @param onDeletePin - Callback invoked to delete a pin by id
+ * @param onUpdateUser - Callback invoked with an updated user object when the name or business icon is saved
+ * @param onNavigateToDeleteAccount - Callback invoked to navigate to the account deletion flow
+ * @returns The rendered JSX element for the business my page layout
+ */
 export function BusinessDisplayMyPage({
   user,
   pins,

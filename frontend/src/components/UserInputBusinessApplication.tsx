@@ -15,6 +15,15 @@ interface BusinessData {
   address: string;
 }
 
+/**
+ * Render a business registration form that collects shop name, phone number, and address and invokes callbacks when the user submits or cancels.
+ *
+ * The form performs a simple presence validation and shows an alert if any field is empty before calling `onUpdateUser`.
+ *
+ * @param onUpdateUser - Called with the filled BusinessData when the user successfully submits the form
+ * @param onCancel - Called when the user cancels the registration flow
+ * @returns The JSX element for the business registration form
+ */
 export function UserInputBusinessApplication({
   onUpdateUser,
   onCancel,

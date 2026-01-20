@@ -12,6 +12,15 @@ interface LogoutScreenProps {
   onLogout: () => void;
 }
 
+/**
+ * Render a logout confirmation screen that displays the current account details, data retained after logout, and a logout action.
+ *
+ * Shows the user's membership type and email, includes a list of data preserved after logout (adds a business-specific item when `user.role` is `"business"`), and renders a button that triggers `onLogout`.
+ *
+ * @param user - The current user object containing `email` and `role` (`"business" | "general" | "admin"`).
+ * @param onLogout - Callback invoked when the user confirms logout (e.g., by clicking the logout button).
+ * @returns The JSX element for the logout confirmation UI.
+ */
 export function LogoutScreen({ user, onLogout }: LogoutScreenProps) {
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-gray-50 p-4">

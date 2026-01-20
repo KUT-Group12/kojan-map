@@ -14,6 +14,16 @@ interface DeleteAccountScreenProps {
   onDeleteAccount: () => void;
 }
 
+/**
+ * Displays a confirmation UI for deleting the current user's account and triggers deletion when confirmed.
+ *
+ * Renders account details, a list of what will be deleted, an optional reason textarea, three required confirmation checkboxes, and action buttons to cancel or proceed. When all confirmations are checked and the user accepts the final prompt, the component shows a success toast and invokes `onDeleteAccount`.
+ *
+ * @param user - The current user's data used to populate account details shown on the screen
+ * @param onBack - Callback invoked when the user cancels or navigates back
+ * @param onDeleteAccount - Callback invoked after the user confirms account deletion
+ * @returns A React element rendering the delete-account screen UI
+ */
 export function DeleteAccountScreen({ user, onBack, onDeleteAccount }: DeleteAccountScreenProps) {
   const [confirmChecks, setConfirmChecks] = useState({
     dataLoss: false,

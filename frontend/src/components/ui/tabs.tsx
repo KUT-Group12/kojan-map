@@ -5,6 +5,13 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 import { cn } from './utils';
 
+/**
+ * Renders a Tabs root element with preset layout and gap styling.
+ *
+ * @param className - Additional CSS class names to merge with the component's default classes.
+ * @param props - Props forwarded to the underlying `TabsPrimitive.Root`.
+ * @returns The Tabs root element with merged `className` and forwarded props.
+ */
 function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {
   return (
     <TabsPrimitive.Root
@@ -15,6 +22,12 @@ function Tabs({ className, ...props }: React.ComponentProps<typeof TabsPrimitive
   );
 }
 
+/**
+ * Renders a TabsPrimitive.List wrapper with a preset `data-slot` attribute and default styling.
+ *
+ * @param className - Additional CSS classes to merge with the component's default classes.
+ * @returns The configured `TabsPrimitive.List` element with merged `className` and any forwarded props.
+ */
 function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
@@ -28,6 +41,12 @@ function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimi
   );
 }
 
+/**
+ * Renders a styled tabs trigger element with preset classes and a `data-slot="tabs-trigger"` attribute.
+ *
+ * @param className - Additional CSS class names to merge with the component's default styling.
+ * @returns The configured Radix `Tabs.Trigger` element with merged `className` and forwarded props.
+ */
 function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
   return (
     <TabsPrimitive.Trigger
@@ -41,6 +60,12 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
   );
 }
 
+/**
+ * Renders a Tabs content panel with a preset `data-slot` and base styling.
+ *
+ * @param className - Additional class names merged with the component's base classes.
+ * @returns The rendered Tabs content element with merged class names and forwarded props.
+ */
 function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.Content>) {
   return (
     <TabsPrimitive.Content

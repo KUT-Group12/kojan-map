@@ -14,6 +14,20 @@ interface SidebarProps {
   onPinClick: (pin: Pin) => void;
 }
 
+/**
+ * Render a sidebar with search, genre and date filters and a scrollable list of pins.
+ *
+ * The component updates filtering state internally and calls `onFilterChange` whenever
+ * the visible set of pins should change. Business users bypass filtering and receive
+ * the full pins list.
+ *
+ * @param user - Current user; determines whether filtering is applied (business users see all pins)
+ * @param pins - Array of pins to display and filter
+ * @param onFilterChange - Invoked with the filtered array of pins whenever filters or source pins change
+ * @param onCreatePin - Callback to create a new pin (provided but not used in the visible UI)
+ * @param onPinClick - Invoked with a pin when a list item is clicked
+ * @returns A React element containing the sidebar UI
+ */
 export function Sidebar({
   user,
   pins,

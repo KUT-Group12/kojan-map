@@ -18,6 +18,18 @@ interface MyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+/**
+ * Render the MyPage user profile page with account information, business registration and icon management, post and reaction histories, and account settings.
+ *
+ * @param user - Current user data (including role, name, email, createdAt, businessIcon, blockedUsers, etc.)
+ * @param pins - Pins posted by the user shown in 投稿履歴
+ * @param reactedPins - Pins the user has reacted to shown in リアクション履歴
+ * @param onPinClick - Callback invoked with a pin when a pin card is clicked
+ * @param onDeletePin - Callback invoked with a pin ID to delete a pin (called after user confirmation)
+ * @param onUpdateUser - Callback invoked with an updated User object when user data (name, businessIcon, blockedUsers, etc.) changes
+ * @param onNavigateToDeleteAccount - Callback to navigate to the account deletion flow
+ * @returns The rendered MyPage React element
+ */
 export function MyPage({
   user,
   pins,

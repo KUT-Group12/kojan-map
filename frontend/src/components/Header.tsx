@@ -9,6 +9,15 @@ interface HeaderProps {
   onContact: () => void;
 }
 
+/**
+ * Render the application header with navigation buttons, account label, and contact/logout controls.
+ *
+ * @param user - The current user; determines account label, whether the dashboard button is shown (when `user.role === 'business'`), and whether the username is displayed (hidden for `user.role === 'general'`).
+ * @param onNavigate - Callback invoked to change views; called with `'map' | 'mypage' | 'dashboard' | 'logout'`.
+ * @param currentView - The active view used to style the corresponding navigation button.
+ * @param onContact - Callback invoked when the contact button is clicked.
+ * @returns The header element containing the logo, title, account type, navigation buttons, contact button, and logout control.
+ */
 export function Header({ user, onNavigate, currentView, onContact }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">

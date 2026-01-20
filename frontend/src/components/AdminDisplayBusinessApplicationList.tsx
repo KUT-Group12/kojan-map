@@ -20,6 +20,16 @@ interface Props {
   onReject: (id: string) => void; //キャンセルボタン
 }
 
+/**
+ * Render a list of business application cards with approve and reject actions.
+ *
+ * Renders a centered empty-state message when `applications` is empty; otherwise renders a card for each application showing its details and action buttons that invoke the provided callbacks with the application's `id`.
+ *
+ * @param applications - Array of business application records to display
+ * @param onApprove - Callback invoked with an application's `id` when the Approve button is clicked
+ * @param onReject - Callback invoked with an application's `id` when the Reject button is clicked
+ * @returns The component tree showing either the empty-state message or the list of application cards
+ */
 export function BusinessApplicationList({ applications, onApprove, onReject }: Props) {
   //もし申請がゼロ件の時
   if (applications.length === 0) {

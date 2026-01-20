@@ -5,6 +5,13 @@ import * as SwitchPrimitive from '@radix-ui/react-switch';
 
 import { cn } from './utils';
 
+/**
+ * Render a styled Radix UI switch with a sliding thumb.
+ *
+ * @param className - Additional CSS class names merged into the switch root.
+ * @param props - All other props are forwarded to Radix's SwitchPrimitive.Root (e.g., checked, onCheckedChange, disabled).
+ * @returns The rendered JSX element for the switch component.
+ */
 function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
   return (
     <SwitchPrimitive.Root

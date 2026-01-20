@@ -13,6 +13,15 @@ interface DisplayPostHistoryProps {
   deleteButton: ReactNode;
 }
 
+/**
+ * Render a compact card showing a pin's title, genre badge, description, reactions, creation date, and an action element.
+ *
+ * @param pin - The post/pin data to display.
+ * @param onPinClick - Callback invoked with `pin` when the card body is clicked.
+ * @param formatDate - Function that formats the pin's `createdAt` date for display.
+ * @param deleteButton - Element rendered as the delete/action control on the card.
+ * @returns The card element representing the post for use in lists or history views.
+ */
 export function DisplayPostHistory({
   pin,
   onPinClick,

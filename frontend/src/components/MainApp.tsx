@@ -27,6 +27,16 @@ interface PinDetailExtra {
   pinsAtLocation: Pin[];
 }
 
+/**
+ * Root application component that manages pin data, view navigation, and modal flows for the map-based UI.
+ *
+ * Manages fetching and normalizing pins from the API, selection/detail state for a pin, reactions, creation and deletion of pins, user updates/blocks, and conditional rendering of the map, user pages, dashboard, and account flows. Also coordinates modal visibility for creating posts and contacting support, and supplies detail data to the post display component.
+ *
+ * @param user - The currently authenticated user
+ * @param onLogout - Callback invoked when the user completes logout or account deletion
+ * @param onUpdateUser - Callback invoked with an updated User object to propagate user changes to the app root
+ * @returns The main application UI (JSX element) that renders header, sidebar/map, various user/dashboard views, post detail list, and modals based on internal state
+ */
 export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const [pins, setPins] = useState<Pin[]>([]);
   const [filteredPins, setFilteredPins] = useState<Pin[]>([]);

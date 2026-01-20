@@ -9,6 +9,14 @@ interface SelectPostHistoryProps {
   onDeletePin: (pinId: string) => void;
 }
 
+/**
+ * Render selectable post history entries with per-item deletion controls.
+ *
+ * @param pins - Array of pins to display in the history list.
+ * @param onPinClick - Callback invoked with a `Pin` when a history entry is clicked.
+ * @param onDeletePin - Callback invoked with a pin id when a deletion is confirmed.
+ * @returns A JSX element that displays the list of post history entries or an empty-state message when `pins` is empty.
+ */
 export function SelectPostHistory({ pins, onPinClick, onDeletePin }: SelectPostHistoryProps) {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {

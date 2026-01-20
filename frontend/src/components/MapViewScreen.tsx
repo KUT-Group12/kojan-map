@@ -15,6 +15,17 @@ interface MapViewProps {
   isOverlayOpen?: boolean;
 }
 
+/**
+ * Renders an interactive map with grouped, styled markers and a legend.
+ *
+ * Groups pins that share the same latitude/longitude (rounded to 4 decimal places) into a single marker, scales marker visuals by group size and "hot" status, shows a count badge for groups, highlights a group on hover, and forwards pin selection and map location selection events to caller callbacks.
+ *
+ * @param pins - Array of pin objects to display on the map.
+ * @param onPinClick - Called with the first pin of a marker group when that marker is clicked.
+ * @param onMapDoubleClick - Called with (latitude, longitude) when a location is selected on the map.
+ * @param isOverlayOpen - When true, map interactions for location selection are disabled and the map is visually de-prioritized.
+ * @returns The map view element containing the legend, tile layer, location control, and grouped markers.
+ */
 export function MapViewScreen({ pins, onPinClick, onMapDoubleClick, isOverlayOpen }: MapViewProps) {
   const [hoveredPinId, setHoveredPinId] = useState<string | null>(null);
 

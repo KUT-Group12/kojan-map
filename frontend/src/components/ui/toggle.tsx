@@ -27,6 +27,14 @@ const toggleVariants = cva(
   }
 );
 
+/**
+ * Renders a styled toggle button with configurable visual variant and size.
+ *
+ * @param className - Additional CSS class names to apply
+ * @param variant - Visual style variant (e.g., 'default' or 'outline')
+ * @param size - Size variant (e.g., 'sm', 'default', or 'lg')
+ * @returns The rendered TogglePrimitive.Root element
+ */
 function Toggle({
   className,
   variant,

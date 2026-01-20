@@ -5,14 +5,34 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 
 import { cn } from './utils';
 
+/**
+ * Render a Popover root element with a `data-slot="popover"` attribute and forwarded props.
+ *
+ * @param props - Props to apply to the underlying Popover root element; all received props are forwarded unchanged.
+ * @returns A React element for the Popover root with `data-slot="popover"` and the provided props applied.
+ */
 function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
+/**
+ * Renders a popover trigger element and forwards received props to the underlying trigger component.
+ *
+ * @param props - Props passed through to the trigger element; any valid attributes for the underlying trigger are accepted.
+ * @returns The rendered popover trigger React element.
+ */
 function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
+/**
+ * Renders popover content inside a portal with default alignment, offset, and preset styling.
+ *
+ * @param className - Additional CSS classes to merge with the component's preset styles.
+ * @param align - Horizontal alignment of the content relative to the trigger. Defaults to `'center'`.
+ * @param sideOffset - Distance in pixels between the trigger and the content. Defaults to `4`.
+ * @returns A PopoverPrimitive.Content element wrapped in a PopoverPrimitive.Portal with merged class names and forwarded props.
+ */
 function PopoverContent({
   className,
   align = 'center',
@@ -35,6 +55,12 @@ function PopoverContent({
   );
 }
 
+/**
+ * Renders a Radix Popover Anchor with a `data-slot="popover-anchor"` attribute and forwards all props.
+ *
+ * @param props - Props compatible with `PopoverPrimitive.Anchor`; all props are forwarded to the underlying element.
+ * @returns The rendered `PopoverPrimitive.Anchor` element.
+ */
 function PopoverAnchor({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
 }

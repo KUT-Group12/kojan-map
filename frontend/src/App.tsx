@@ -19,6 +19,13 @@ interface User {
   createdAt: Date;
 }
 
+/**
+ * Root React component that initializes authentication state and renders the appropriate UI for unauthenticated, admin, and non-admin users.
+ *
+ * Restores JWT and user info from storage on mount, exposes handlers to set/clear/update the current user, and uses Suspense to lazy-load role-specific app modules. When unauthenticated it renders the login screen; when authenticated it renders the admin dashboard for `admin` users or the main app for `general`/`business` users, and shows the global Toaster for authenticated views.
+ *
+ * @returns The top-level React element for the application: `LoginScreen` when no user is present; `AdminDashboard` for users with role `"admin"`; otherwise `MainApp`. Suspense fallbacks are used while lazy-loaded modules load.
+ */
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
 

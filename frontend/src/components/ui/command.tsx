@@ -7,6 +7,11 @@ import { SearchIcon } from 'lucide-react';
 import { cn } from './utils';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog';
 
+/**
+ * Renders the application's Command container by wrapping CommandPrimitive with default styling and a `data-slot="command"`.
+ *
+ * @returns The underlying CommandPrimitive element with merged `className`, default layout and appearance classes, `data-slot="command"`, and all forwarded props.
+ */
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
@@ -20,6 +25,18 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
   );
 }
 
+/**
+ * Render a themed command palette inside a Dialog.
+ *
+ * Renders a Dialog with a visually hidden header (title and description) and content that
+ * contains the Command UI. Children are placed inside the Command component.
+ *
+ * @param title - Dialog title shown to screen readers (defaults to "Command Palette")
+ * @param description - Dialog description shown to screen readers (defaults to "Search for a command to run...")
+ * @param children - Elements rendered inside the Command component (command input, list, items, etc.)
+ * @param props - Additional Dialog props are forwarded to the underlying Dialog component
+ * @returns A Dialog element that wraps the Command palette and its contents
+ */
 function CommandDialog({
   title = 'Command Palette',
   description = 'Search for a command to run...',
@@ -44,6 +61,13 @@ function CommandDialog({
   );
 }
 
+/**
+ * Renders the command palette search input with a leading search icon.
+ *
+ * @param className - Additional class names merged into the input element's className
+ * @param props - All other props are forwarded to `CommandPrimitive.Input`
+ * @returns A JSX element containing the styled command input and search icon
+ */
 function CommandInput({
   className,
   ...props
@@ -63,6 +87,11 @@ function CommandInput({
   );
 }
 
+/**
+ * Renders the scrollable list container for command palette items.
+ *
+ * @returns A list element for command items with a maximum height of 300px and vertical scrolling enabled; any additional props are passed through to the underlying list component.
+ */
 function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
@@ -73,6 +102,12 @@ function CommandList({ className, ...props }: React.ComponentProps<typeof Comman
   );
 }
 
+/**
+ * Renders the empty-state container shown when the command list has no items.
+ *
+ * @param props - Props forwarded to the underlying CommandPrimitive.Empty component
+ * @returns The rendered empty-state element
+ */
 function CommandEmpty({ ...props }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
@@ -83,6 +118,16 @@ function CommandEmpty({ ...props }: React.ComponentProps<typeof CommandPrimitive
   );
 }
 
+/**
+ * Renders a labeled group container for command list items.
+ *
+ * Merges any provided `className` with default styling, sets `data-slot="command-group"`,
+ * and forwards remaining props to the underlying `CommandPrimitive.Group`.
+ *
+ * @param className - Additional CSS classes to apply to the group container
+ * @param props - Remaining props forwarded to `CommandPrimitive.Group`
+ * @returns The rendered `CommandPrimitive.Group` element
+ */
 function CommandGroup({
   className,
   ...props
@@ -99,6 +144,11 @@ function CommandGroup({
   );
 }
 
+/**
+ * Renders a themed horizontal separator used between command sections.
+ *
+ * @returns A separator element styled for the command UI.
+ */
 function CommandSeparator({
   className,
   ...props
@@ -112,6 +162,11 @@ function CommandSeparator({
   );
 }
 
+/**
+ * Renders a styled interactive item for the command list.
+ *
+ * @returns The rendered command list item element with merged styling and forwarded props
+ */
 function CommandItem({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Item>) {
   return (
     <CommandPrimitive.Item
@@ -125,6 +180,12 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
   );
 }
 
+/**
+ * Render a shortcut indicator displayed at the end of a command item.
+ *
+ * @param className - Additional class names to apply to the root span
+ * @returns The rendered shortcut `span` element, styled and aligned to the right of its container
+ */
 function CommandShortcut({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span

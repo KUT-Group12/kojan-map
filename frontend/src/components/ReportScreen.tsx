@@ -10,6 +10,19 @@ interface ReportScreenProps {
   onReportComplete: () => void;
 }
 
+/**
+ * Renders a report UI that toggles between a trigger button and an inline reporting form.
+ *
+ * When not reporting, renders a "通報" button that enables the reporting form. When reporting,
+ * renders a textarea for the report reason and "送信"/"キャンセル" actions. Submitting with an
+ * empty or whitespace-only reason shows an error toast; a valid submission shows a success toast,
+ * clears the input, closes the form, and invokes `onReportComplete`.
+ *
+ * @param isReporting - Whether the reporting form is currently shown
+ * @param setIsReporting - Function to open or close the reporting form
+ * @param onReportComplete - Callback invoked after a successful report submission
+ * @returns A JSX element: either the report trigger button or the reporting form
+ */
 export function ReportScreen({ isReporting, setIsReporting, onReportComplete }: ReportScreenProps) {
   const [reportReason, setReportReason] = useState('');
 

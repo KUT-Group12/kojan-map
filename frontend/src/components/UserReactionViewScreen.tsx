@@ -9,6 +9,15 @@ interface UserReactionViewScreenProps {
   onPinClick: (pin: Pin) => void;
 }
 
+/**
+ * Render a selectable grid of pins the user has reacted to, or a centered empty-state message when there are no reactions.
+ *
+ * Each pin card displays the title, genre badge, truncated description, author label (business name when `userRole` is `"business"`, otherwise user name), and the reaction count. Clicking a card invokes the provided callback with that pin.
+ *
+ * @param reactedPins - The list of `Pin` objects to display.
+ * @param onPinClick - Callback invoked with a `Pin` when its card is clicked.
+ * @returns The React element that renders the reactions view (either a grid of pin cards or an empty-state card).
+ */
 export function UserReactionViewScreen({ reactedPins, onPinClick }: UserReactionViewScreenProps) {
   if (reactedPins.length === 0) {
     return (

@@ -6,18 +6,41 @@ import { XIcon } from 'lucide-react';
 
 import { cn } from './utils';
 
+/**
+ * Render the dialog root element and forward all received props onto it.
+ *
+ * @param props - Props to pass through to the underlying DialogPrimitive.Root
+ * @returns The dialog root element with `data-slot="dialog"` and all forwarded props
+ */
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
+/**
+ * Renders the dialog trigger element.
+ *
+ * @returns A trigger element that toggles the dialog when activated.
+ */
 function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
+/**
+ * Render a DialogPrimitive.Portal with a data-slot attribute while forwarding all received props.
+ *
+ * @param props - Props to be passed through to the underlying DialogPrimitive.Portal
+ * @returns The composed portal element with `data-slot="dialog-portal"`
+ */
 function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
+/**
+ * Renders the dialog's close trigger and forwards all props to the underlying Radix Close primitive.
+ *
+ * @param props - Props forwarded to the underlying `DialogPrimitive.Close` component
+ * @returns A React element for the dialog close trigger
+ */
 function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
@@ -40,6 +63,13 @@ const DialogOverlay = React.forwardRef<
 });
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+/**
+ * Render dialog content centered in a portal with an overlay and a built-in close control.
+ *
+ * Renders the dialog content inside a portal, includes the overlay, positions and styles the content, and injects a close button alongside the provided children.
+ *
+ * @returns The composed dialog content element (portal + overlay + content with close button and children).
+ */
 function DialogContent({
   className,
   children,
@@ -66,6 +96,13 @@ function DialogContent({
   );
 }
 
+/**
+ * Renders the dialog header container used to group title and introductory content.
+ *
+ * @param className - Additional CSS classes to apply to the header container
+ * @param props - Other props are forwarded to the underlying `div` element
+ * @returns The dialog header container element
+ */
 function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -76,6 +113,13 @@ function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Renders the dialog's footer container for action controls, responsive to screen size.
+ *
+ * The layout stacks children vertically in reverse order on small screens and arranges them horizontally, right-aligned on larger screens. Adds `data-slot="dialog-footer"` to the root element.
+ *
+ * @returns The footer DOM element containing dialog action controls.
+ */
 function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -86,6 +130,11 @@ function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Renders the dialog's title element with default typography and optional additional classes.
+ *
+ * @returns The composed `DialogPrimitive.Title` element styled for dialog headings.
+ */
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
@@ -96,6 +145,12 @@ function DialogTitle({ className, ...props }: React.ComponentProps<typeof Dialog
   );
 }
 
+/**
+ * Renders a dialog description element with muted foreground coloring and small text sizing.
+ *
+ * @param className - Additional CSS class names to merge with the default `text-muted-foreground text-sm` styles
+ * @returns A `DialogPrimitive.Description` element with the combined classes and forwarded props
+ */
 function DialogDescription({
   className,
   ...props

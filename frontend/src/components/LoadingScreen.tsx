@@ -1,3 +1,8 @@
+/**
+ * Render a full-screen, centered loading screen with a heading and three staggered bouncing dots.
+ *
+ * @returns A JSX element containing a centered text block with a Japanese heading and a row of three circular loading dots with staggered bounce animation.
+ */
 export function LoadingScreen() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">

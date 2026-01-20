@@ -69,6 +69,16 @@ type FormItemContextValue = {
 
 const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
+/**
+ * Provides a form item container and supplies a stable, unique id to descendants via context.
+ *
+ * The component generates a unique id, exposes it through FormItemContext, and renders a
+ * wrapper <div> with data-slot="form-item". The provided `className` is merged with the
+ * default layout classes.
+ *
+ * @param className - Additional CSS class names to apply to the wrapper div
+ * @returns A <div> element wrapped in FormItemContext that supplies the generated id to descendants
+ */
 function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   const id = React.useId();
 
@@ -79,6 +89,12 @@ function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Renders a label associated with the current form field and reflects its validation state.
+ *
+ * @param props - Props forwarded to the underlying Radix Label root; `className` is merged with the component's error styling.
+ * @returns The rendered Label element linked to the current form field with attributes and classes that indicate error state.
+ */
 function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField();
 
@@ -93,6 +109,15 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPri
   );
 }
 
+/**
+ * Renders a form control wrapper using a Radix Slot linked to the current form field.
+ *
+ * Forwards all received props to the underlying Slot and sets `id`, `aria-describedby`,
+ * `aria-invalid`, and `data-slot="form-control"` based on the current field state from context.
+ *
+ * @param props - Props forwarded to the Radix `Slot` component
+ * @returns The rendered `Slot` element serving as the form control wrapper with ARIA attributes and identifiers reflecting the current field state
+ */
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
@@ -107,6 +132,14 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   );
 }
 
+/**
+ * Render a paragraph that provides descriptive text for the current form field.
+ *
+ * The element is assigned the form description id and default styling; additional
+ * props and `className` are forwarded to the underlying `<p>`.
+ *
+ * @returns The description paragraph element associated with the current form field.
+ */
 function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
   const { formDescriptionId } = useFormField();
 
@@ -120,6 +153,13 @@ function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
   );
 }
 
+/**
+ * Renders the form field message paragraph when a validation message or children are present.
+ *
+ * If the field has a validation error, the error's `message` is displayed; otherwise `children` are shown.
+ *
+ * @returns The rendered `<p>` element containing the message, or `null` if there is no message to display.
+ */
 function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   const { error, formMessageId } = useFormField();
   const body = error ? String(error?.message ?? '') : props.children;

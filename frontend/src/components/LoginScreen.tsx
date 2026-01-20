@@ -40,6 +40,16 @@ interface LoginScreenProps {
   onLogin: (role: UserRole, googleId: string) => void;
 }
 
+/**
+ * Render the login screen that prompts for terms acceptance and provides a Google Sign-In button.
+ *
+ * Initializes and renders the Google Identity Services sign-in button after the user agrees to terms,
+ * exchanges the Google credential for a project JWT, stores authentication data, and invokes the
+ * provided callback when login succeeds.
+ *
+ * @param onLogin - Callback invoked after a successful login with the assigned user role and Google user id (`googleId`)
+ * @returns The login screen React element
+ */
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);

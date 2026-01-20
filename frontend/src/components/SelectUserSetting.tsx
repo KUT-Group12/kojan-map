@@ -9,6 +9,17 @@ interface SelectUserSettingProps {
   onNavigateToDeleteAccount: () => void;
 }
 
+/**
+ * Render settings for managing the current user's block list and navigating to account deletion.
+ *
+ * Displays the list of blocked user IDs with controls to remove (unblock) them, and a section that
+ * warns about permanent account deletion and provides a button to navigate to the account deletion flow.
+ *
+ * @param user - The current user object; `user.blockedUsers` is used to populate the block list.
+ * @param onUpdateUser - Called with an updated `User` when the block list changes (e.g., after unblocking).
+ * @param onNavigateToDeleteAccount - Called when the user requests to navigate to the account deletion screen.
+ * @returns A React element containing the block list UI and the account deletion section.
+ */
 export function SelectUserSetting({
   user,
   onUpdateUser,

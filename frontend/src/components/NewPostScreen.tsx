@@ -27,6 +27,18 @@ interface CreatePinModalProps {
   initialLongitude?: number;
 }
 
+/**
+ * Render a modal form for creating a new map pin with title, description, genre, coordinates, and optional images.
+ *
+ * The component manages local form state, validates required fields and numeric coordinates, converts uploaded images to Base64, and invokes `onCreate` with the finalized payload. On successful creation it shows a success toast and closes the modal; on failure it shows an error toast.
+ *
+ * @param user - The current user; used to display posting context (business name or anonymous notice)
+ * @param onClose - Callback invoked when the modal should be closed
+ * @param onCreate - Callback invoked to create the pin. Receives an object with `{ latitude, longitude, title, description, genre, images }` where `images` is an array of Base64-encoded image strings
+ * @param initialLatitude - Optional initial latitude to populate the form (defaults to 35.6762)
+ * @param initialLongitude - Optional initial longitude to populate the form (defaults to 139.6503)
+ * @returns A React element containing the "new post" modal UI
+ */
 export function NewPostScreen({
   user,
   onClose,
