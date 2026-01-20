@@ -23,7 +23,7 @@ func TestPostHandler_CreatePost(t *testing.T) {
 	// Create request
 	req := domain.CreatePostRequest{
 		LocationID:  "loc-123",
-		GenreIDs:    []int{1, 2},
+		GenreIDs:    []int32{1, 2},
 		Title:       "Test Post Title",
 		Description: "Test post description",
 		Images:      []string{"image1.jpg", "image2.jpg"},
@@ -58,7 +58,7 @@ func TestPostHandler_CreatePost_MissingAuth(t *testing.T) {
 
 	req := domain.CreatePostRequest{
 		LocationID:  "loc-123",
-		GenreIDs:    []int{1, 2},
+		GenreIDs:    []int32{1, 2},
 		Title:       "Test Post Title",
 		Description: "Test post description",
 	}

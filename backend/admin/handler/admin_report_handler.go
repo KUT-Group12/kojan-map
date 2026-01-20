@@ -76,7 +76,7 @@ func (h *AdminReportHandler) GetReportDetail(c *gin.Context) {
 		return
 	}
 
-	result, err := h.service.GetReportDetail(id)
+	result, err := h.service.GetReportDetail(int32(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -103,7 +103,7 @@ func (h *AdminReportHandler) HandleReport(c *gin.Context) {
 		return
 	}
 
-	err = h.service.MarkAsHandled(id)
+	err = h.service.MarkAsHandled(int32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

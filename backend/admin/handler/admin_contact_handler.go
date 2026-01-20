@@ -63,7 +63,7 @@ func (h *AdminContactHandler) ApproveInquiry(c *gin.Context) {
 		return
 	}
 
-	err = h.service.ApproveInquiry(id)
+	err = h.service.ApproveInquiry(int32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -90,7 +90,7 @@ func (h *AdminContactHandler) RejectInquiry(c *gin.Context) {
 		return
 	}
 
-	err = h.service.RejectInquiry(id)
+	err = h.service.RejectInquiry(int32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

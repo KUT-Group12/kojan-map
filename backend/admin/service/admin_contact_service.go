@@ -23,7 +23,7 @@ func (s *AdminContactService) GetInquiries() ([]models.Ask, error) {
 }
 
 // ApproveInquiry marks an inquiry as handled
-func (s *AdminContactService) ApproveInquiry(id int) error {
+func (s *AdminContactService) ApproveInquiry(id int32) error {
 	// Verify the inquiry exists
 	ask, err := s.askRepo.FindByID(id)
 	if err != nil {
@@ -38,7 +38,7 @@ func (s *AdminContactService) ApproveInquiry(id int) error {
 }
 
 // RejectInquiry marks an inquiry as rejected
-func (s *AdminContactService) RejectInquiry(id int) error {
+func (s *AdminContactService) RejectInquiry(id int32) error {
 	// Verify the inquiry exists
 	_, err := s.askRepo.FindByID(id)
 	if err != nil {

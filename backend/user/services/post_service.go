@@ -58,7 +58,7 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 }
 
 // GetPostDetail 投稿詳細を取得
-func (ps *PostService) GetPostDetail(postID int) (map[string]interface{}, error) {
+func (ps *PostService) GetPostDetail(postID int32) (map[string]interface{}, error) {
 	post := models.Post{}
 	if err := config.DB.Where("postId = ?", postID).First(&post).Error; err != nil {
 		return nil, errors.New("post not found")
@@ -127,7 +127,7 @@ func (ps *PostService) GetUserPostHistory(userID string) ([]models.Post, error) 
 }
 
 // GetPinSize ピンサイズを判定（場所の投稿数が50以上で1.3倍）
-func (ps *PostService) GetPinSize(placeID int) (float64, error) {
+func (ps *PostService) GetPinSize(placeID int32) (float64, error) {
 	var count int64
 	if err := config.DB.Model(&models.Post{}).
 		Where("placeId = ?", placeID).
@@ -142,7 +142,7 @@ func (ps *PostService) GetPinSize(placeID int) (float64, error) {
 }
 
 // AddReaction リアクションを追加
-func (ps *PostService) AddReaction(userID string, postID int) error {
+func (ps *PostService) AddReaction(userID string, postID int32) error {
 	if userID == "" {
 		return errors.New("userID is required")
 	}
@@ -191,7 +191,7 @@ func (ps *PostService) SearchPostsByKeyword(keyword string) ([]models.Post, erro
 }
 
 // SearchPostsByGenre ジャンルで検索
-func (ps *PostService) SearchPostsByGenre(genreID int) ([]models.Post, error) {
+func (ps *PostService) SearchPostsByGenre(genreID int32) ([]models.Post, error) {
 	var posts []models.Post
 	if err := config.DB.Where("genreId = ?", genreID).
 		Order("postDate DESC").
@@ -214,7 +214,7 @@ func (ps *PostService) SearchPostsByPeriod(startDate, endDate time.Time) ([]mode
 }
 
 // DeletePost 投稿を削除（ソフトデリート）
-func (ps *PostService) DeletePost(postID int, userID string) error {
+func (ps *PostService) DeletePost(postID int32, userID string) error {
 	if userID == "" {
 		return errors.New("userID is required")
 	}
@@ -238,7 +238,7 @@ func (ps *PostService) DeletePost(postID int, userID string) error {
 }
 
 // IsUserReacted ユーザーがリアクション済みかチェック
-func (ps *PostService) IsUserReacted(userID string, postID int) (bool, error) {
+func (ps *PostService) IsUserReacted(userID string, postID int32) (bool, error) {
 	var count int64
 	if err := config.DB.Model(&models.UserReaction{}).
 		Where("userId = ? AND postId = ?", userID, postID).

@@ -38,7 +38,7 @@ func (h *PostHandler) ListPosts(c *gin.Context) {
 		return
 	}
 
-	result, err := h.postService.List(c.Request.Context(), businessID)
+	result, err := h.postService.List(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -61,7 +61,7 @@ func (h *PostHandler) GetPost(c *gin.Context) {
 		return
 	}
 
-	result, err := h.postService.Get(c.Request.Context(), postID)
+	result, err := h.postService.Get(c.Request.Context(), int32(postID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -85,7 +85,7 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
-	placeID := 0 // Placeholder
+	placeID := int32(0) // Placeholder
 
 	// GenreIDsはリクエストから取得
 	genreIDs := req.GenreIDs

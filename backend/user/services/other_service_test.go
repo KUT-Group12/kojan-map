@@ -147,7 +147,7 @@ func TestReportService_CreateReport(t *testing.T) {
 	config.DB.Create(&models.User{ID: "reporter123", GoogleID: "google_reporter", Gmail: "reporter@example.com", Role: "general", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()})
 
 	// 通報を作成
-	err := service.CreateReport("reporter123", 100, "不適切な内容")
+	err := service.CreateReport("reporter123", int32(100), "不適切な内容")
 	assert.NoError(t, err)
 }
 

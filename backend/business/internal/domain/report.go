@@ -14,13 +14,13 @@ import (
 // CreatedAt: 作成日時
 // Status: ステータス（pending: 未処理、reviewed: 確認済み、dismissed: 却下）
 type Report struct {
-	ID         int       `gorm:"primaryKey;autoIncrement;column:reportId"`
+	ID         int32     `gorm:"primaryKey;autoIncrement;column:reportId"`
 	UserID     string    `gorm:"column:userId;type:varchar(50);not null"`
-	PostID     int       `gorm:"column:postId;not null"`
+	PostID     int32     `gorm:"column:postId;not null"`
 	Reason     string    `gorm:"column:reason;type:text;not null"`
 	Date       time.Time `gorm:"column:date;not null"`
-	ReportFlag int       `gorm:"column:reportFlag;not null"`
-	RemoveFlag int       `gorm:"column:removeFlag;not null"`
+	ReportFlag int32     `gorm:"column:reportFlag;not null"`
+	RemoveFlag int32     `gorm:"column:removeFlag;not null"`
 }
 
 // TableName は対応するテーブル名を指定

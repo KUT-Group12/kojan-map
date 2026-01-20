@@ -134,7 +134,7 @@ func TestPostService_SearchPostsByGenre(t *testing.T) {
 
 	// ジャンルが一致することを確認
 	for _, post := range posts {
-		assert.Equal(t, 1, post.GenreID)
+		assert.Equal(t, int32(1), post.GenreID)
 	}
 }
 

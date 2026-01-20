@@ -21,7 +21,7 @@ func NewPlaceService(db *gorm.DB) *PlaceService {
 
 // FindOrCreatePlace 緯度経度から場所を検索または作成
 // 同じ場所（近距離）が存在する場合はそのIDを返し、なければ新規作成
-func (ps *PlaceService) FindOrCreatePlace(latitude, longitude float64) (int, error) {
+func (ps *PlaceService) FindOrCreatePlace(latitude, longitude float64) (int32, error) {
 	const threshold = 0.0001 // 約11m以内を同じ場所と判定
 
 	var place models.Place
@@ -59,7 +59,7 @@ func (ps *PlaceService) FindOrCreatePlace(latitude, longitude float64) (int, err
 }
 
 // GetPlaceByID IDから場所情報を取得
-func (ps *PlaceService) GetPlaceByID(placeID int) (*models.Place, error) {
+func (ps *PlaceService) GetPlaceByID(placeID int32) (*models.Place, error) {
 	var place models.Place
 	err := ps.db.First(&place, placeID).Error
 	if err != nil {

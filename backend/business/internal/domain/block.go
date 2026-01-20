@@ -10,7 +10,7 @@ import (
 // BlockedUserID: ブロック対象のGoogleID
 // CreatedAt: 作成日時
 type Block struct {
-	ID        int64     `gorm:"primaryKey;autoIncrement;column:blockId"`
+	ID        int32     `gorm:"primaryKey;autoIncrement;column:blockId"`
 	BlockerID string    `gorm:"column:blockerId;type:varchar(50);not null"`
 	BlockedID string    `gorm:"column:blockedId;type:varchar(50);not null"`
 	CreatedAt time.Time `gorm:"column:createdAt"` // SQLダンプにないが一旦残す

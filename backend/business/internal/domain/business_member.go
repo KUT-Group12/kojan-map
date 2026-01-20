@@ -18,7 +18,7 @@ import "time"
 // CreatedAt: 作成日時
 // UpdatedAt: 更新日時
 type BusinessMember struct {
-	ID               int       `gorm:"primaryKey;autoIncrement;column:businessId"`
+	ID               int32     `gorm:"primaryKey;autoIncrement;column:businessId"`
 	BusinessName     string    `gorm:"column:businessName;type:varchar(50);not null"`
 	KanaBusinessName string    `gorm:"column:kanaBusinessName;type:varchar(50);not null"`
 	ZipCode          string    `gorm:"column:zipCode;type:varchar(7)"`
@@ -27,7 +27,7 @@ type BusinessMember struct {
 	RegistDate       time.Time `gorm:"column:registDate;not null"`
 	ProfileImage     []byte    `gorm:"column:profileImage;type:blob"`
 	UserID           string    `gorm:"column:userId;type:varchar(50);not null"`
-	PlaceID          int       `gorm:"column:placeId;not null"`
+	PlaceID          int32     `gorm:"column:placeId;not null"`
 }
 
 // TableName は対応するテーブル名を指定
@@ -50,7 +50,7 @@ type CreateBusinessMemberRequest struct {
 	Address          string `json:"address" binding:"required,max=100"`
 	Phone            string `json:"phone" binding:"required"`
 	UserID           string `json:"userId" binding:"required"`
-	PlaceID          int    `json:"placeId" binding:"required"`
+	PlaceID          int32  `json:"placeId" binding:"required"`
 }
 
 // BusinessMemberResponse は事業者会員情報のレスポンス
@@ -60,7 +60,7 @@ type CreateBusinessMemberRequest struct {
 // registeredAt: 登録日時（ISO 8601形式）
 // iconImageUrl: アイコン画像のURL
 type BusinessMemberResponse struct {
-	ID           int    `json:"id"`
+	ID           int32  `json:"id"`
 	BusinessName string `json:"businessName"`
 	Gmail        string `json:"gmail"`
 	RegistDate   string `json:"registeredAt"` // ISO 8601形式

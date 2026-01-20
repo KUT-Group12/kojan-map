@@ -36,7 +36,7 @@ func (h *StatsHandler) GetTotalPosts(c *gin.Context) {
 		return
 	}
 
-	result, err := h.statsService.GetTotalPosts(c.Request.Context(), businessID)
+	result, err := h.statsService.GetTotalPosts(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -59,7 +59,7 @@ func (h *StatsHandler) GetTotalReactions(c *gin.Context) {
 		return
 	}
 
-	result, err := h.statsService.GetTotalReactions(c.Request.Context(), businessID)
+	result, err := h.statsService.GetTotalReactions(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -82,7 +82,7 @@ func (h *StatsHandler) GetTotalViews(c *gin.Context) {
 		return
 	}
 
-	result, err := h.statsService.GetTotalViews(c.Request.Context(), businessID)
+	result, err := h.statsService.GetTotalViews(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -106,7 +106,7 @@ func (h *StatsHandler) GetEngagementRate(c *gin.Context) {
 		return
 	}
 
-	result, err := h.statsService.GetEngagementRate(c.Request.Context(), businessID)
+	result, err := h.statsService.GetEngagementRate(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return

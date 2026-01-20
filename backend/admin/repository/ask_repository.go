@@ -27,7 +27,7 @@ func (r *AskRepository) FindAll() ([]models.Ask, error) {
 }
 
 // FindAllPaginatedはページネーション付きでお問い合わせを取得する機能です．
-func (r *AskRepository) FindAllPaginated(page, pageSize int) ([]models.Ask, int64, error) {
+func (r *AskRepository) FindAllPaginated(page, pageSize int) ([]models.Ask, int, error) {
 	var asks []models.Ask
 	var total int64
 
@@ -43,11 +43,11 @@ func (r *AskRepository) FindAllPaginated(page, pageSize int) ([]models.Ask, int6
 		return nil, 0, result.Error
 	}
 
-	return asks, total, nil
+	return asks, int(total), nil
 }
 
 // FindByIdは特定のIDのお問い合わせを取得する機能です．
-func (r *AskRepository) FindByID(id int) (*models.Ask, error) {
+func (r *AskRepository) FindByID(id int32) (*models.Ask, error) {
 	var ask models.Ask
 	result := r.db.Where("askId = ?", id).First(&ask)
 	if result.Error != nil {
@@ -57,7 +57,7 @@ func (r *AskRepository) FindByID(id int) (*models.Ask, error) {
 }
 
 // MarkAsHandledは特定のお問い合わせを処理済みとする機能です．
-func (r *AskRepository) MarkAsHandled(id int) error {
+func (r *AskRepository) MarkAsHandled(id int32) error {
 	return r.db.Model(&models.Ask{}).
 		Where("askId = ?", id).
 		Updates(map[string]interface{}{
@@ -67,7 +67,7 @@ func (r *AskRepository) MarkAsHandled(id int) error {
 }
 
 // MarkAsRejectedは特定のお問い合わせを却下状態にする機能です．
-func (r *AskRepository) MarkAsRejected(id int) error {
+func (r *AskRepository) MarkAsRejected(id int32) error {
 	return r.db.Model(&models.Ask{}).
 		Where("askId = ?", id).
 		Updates(map[string]interface{}{

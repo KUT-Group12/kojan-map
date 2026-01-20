@@ -53,7 +53,7 @@ func (r *ReportRepoImpl) Create(ctx context.Context, reporterID string, payload 
 
 	report := &domain.Report{
 		UserID:     reporterID,
-		PostID:     req.TargetPostID,
+		PostID:     int32(req.TargetPostID),
 		Reason:     req.ReportReason,
 		Date:       reportedAt,
 		ReportFlag: 0,

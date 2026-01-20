@@ -8,7 +8,7 @@ import (
 
 // Contact 問い合わせモデル
 type Contact struct {
-	ID        int            `gorm:"column:askId;primaryKey" json:"askId"`
+	ID        int32          `gorm:"column:askId;primaryKey" json:"askId"`
 	Date      time.Time      `gorm:"column:date" json:"date"`
 	Subject   string         `gorm:"column:subject;type:varchar(100)" json:"subject"`
 	Text      string         `gorm:"column:text;type:text" json:"text"`

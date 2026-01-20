@@ -115,7 +115,7 @@ func (rh *ReportHandler) CreateReport(c *gin.Context) {
 		return
 	}
 
-	if err := rh.reportService.CreateReport(reporterID, req.PostID, req.Reason); err != nil {
+	if err := rh.reportService.CreateReport(reporterID, int32(req.PostID), req.Reason); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

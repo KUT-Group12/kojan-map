@@ -13,26 +13,26 @@ type AuthService interface {
 // MemberService は事業者メンバーの操作を処理します。
 type MemberService interface {
 	GetBusinessDetails(ctx context.Context, googleID string) (interface{}, error)
-	UpdateBusinessName(ctx context.Context, businessID int, name string) error
-	UpdateBusinessIcon(ctx context.Context, businessID int, icon []byte) error
-	AnonymizeMember(ctx context.Context, businessID int) error
+	UpdateBusinessName(ctx context.Context, businessID int32, name string) error
+	UpdateBusinessIcon(ctx context.Context, businessID int32, icon []byte) error
+	AnonymizeMember(ctx context.Context, businessID int32) error
 }
 
 // StatsService はダッシュボードの統計情報を処理します。
 type StatsService interface {
-	GetTotalPosts(ctx context.Context, businessID int) (interface{}, error)
-	GetTotalReactions(ctx context.Context, businessID int) (interface{}, error)
-	GetTotalViews(ctx context.Context, businessID int) (interface{}, error)
-	GetEngagementRate(ctx context.Context, businessID int) (interface{}, error)
+	GetTotalPosts(ctx context.Context, businessID int32) (interface{}, error)
+	GetTotalReactions(ctx context.Context, businessID int32) (interface{}, error)
+	GetTotalViews(ctx context.Context, businessID int32) (interface{}, error)
+	GetEngagementRate(ctx context.Context, businessID int32) (interface{}, error)
 }
 
 // PostService は投稿を処理します。
 type PostService interface {
-	List(ctx context.Context, businessID int) (interface{}, error)
-	Get(ctx context.Context, postID int) (interface{}, error)
-	Create(ctx context.Context, businessID int, placeID int, genreIDs []int, payload interface{}) (int, error)
-	SetGenres(ctx context.Context, postID int, genreIDs []int) error
-	Anonymize(ctx context.Context, postID int) error
+	List(ctx context.Context, businessID int32) (interface{}, error)
+	Get(ctx context.Context, postID int32) (interface{}, error)
+	Create(ctx context.Context, businessID int32, placeID int32, genreIDs []int32, payload interface{}) (int32, error)
+	SetGenres(ctx context.Context, postID int32, genreIDs []int32) error
+	Anonymize(ctx context.Context, postID int32) error
 	History(ctx context.Context, googleID string) (interface{}, error)
 }
 
@@ -54,5 +54,5 @@ type ContactService interface {
 
 // PaymentService はStripe/決済フローを処理します。
 type PaymentService interface {
-	CreateRedirect(ctx context.Context, businessID int) (string, error)
+	CreateRedirect(ctx context.Context, businessID int32) (string, error)
 }

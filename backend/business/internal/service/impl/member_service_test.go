@@ -82,7 +82,7 @@ func TestMemberServiceImpl_GetBusinessDetails(t *testing.T) {
 // Test cases cover valid updates, invalid business IDs, and empty names.
 func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 	type args struct {
-		businessID int
+		businessID int32
 		name       string
 	}
 
@@ -177,7 +177,7 @@ func TestMemberServiceImpl_UpdateBusinessName(t *testing.T) {
 // Test cases cover valid PNG/JPEG images, invalid business IDs, and empty images.
 func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 	type args struct {
-		businessID int
+		businessID int32
 		icon       []byte
 	}
 
@@ -272,7 +272,7 @@ func TestMemberServiceImpl_UpdateBusinessIcon(t *testing.T) {
 // Test cases cover successful anonymization and invalid business IDs.
 func TestMemberServiceImpl_AnonymizeMember(t *testing.T) {
 	type args struct {
-		businessID int
+		businessID int32
 	}
 
 	tests := []struct {

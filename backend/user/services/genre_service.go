@@ -17,7 +17,7 @@ func NewGenreService(db *gorm.DB) *GenreService {
 }
 
 // GetGenreByName は、ジャンル名からジャンルIDを取得します
-func (s *GenreService) GetGenreByName(genreName string) (int, error) {
+func (s *GenreService) GetGenreByName(genreName string) (int32, error) {
 	// ジャンル名のマッピング
 	genreMapping := map[string]string{
 		"food":      "グルメ",
@@ -45,7 +45,7 @@ func (s *GenreService) GetGenreByName(genreName string) (int, error) {
 }
 
 // GetGenreByID は、ジャンルIDからジャンル情報を取得します
-func (s *GenreService) GetGenreByID(genreID int) (*models.Genre, error) {
+func (s *GenreService) GetGenreByID(genreID int32) (*models.Genre, error) {
 	var genre models.Genre
 	if err := s.DB.Where("genreId = ?", genreID).First(&genre).Error; err != nil {
 		return nil, err

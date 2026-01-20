@@ -35,7 +35,7 @@ func (r *BusinessMemberRepoImpl) GetByGoogleID(ctx context.Context, googleID str
 
 // UpdateName は事業者メンバーの事業者名を更新します（M3-4-2）。
 // 事業者名は1文字以上50文字以下、不正な形式はエラー、ログイン済みかつ本人のみ更新可能
-func (r *BusinessMemberRepoImpl) UpdateName(ctx context.Context, businessID int, name string) error {
+func (r *BusinessMemberRepoImpl) UpdateName(ctx context.Context, businessID int32, name string) error {
 	if name == "" || utf8.RuneCountInString(name) > 50 {
 		return fmt.Errorf("business name must be between 1 and 50 characters")
 	}
@@ -57,7 +57,7 @@ func (r *BusinessMemberRepoImpl) UpdateName(ctx context.Context, businessID int,
 
 // UpdateIcon は事業者メンバーのプロフィール画像を更新します（M3-5-2）。
 // 画像は PNG または JPEG のみ、5MB以下、ログイン済みかつ本人のみ更新可能
-func (r *BusinessMemberRepoImpl) UpdateIcon(ctx context.Context, businessID int, icon []byte) error {
+func (r *BusinessMemberRepoImpl) UpdateIcon(ctx context.Context, businessID int32, icon []byte) error {
 	if len(icon) == 0 {
 		return fmt.Errorf("icon data cannot be empty")
 	}
@@ -79,7 +79,7 @@ func (r *BusinessMemberRepoImpl) UpdateIcon(ctx context.Context, businessID int,
 
 // Anonymize は事業者メンバーを匿名化します（M3-3）。
 // 識別可能な個人情報は復元不能な値に置き換える、主キーおよび外部キーは変更しない、物理削除は行わない
-func (r *BusinessMemberRepoImpl) Anonymize(ctx context.Context, businessID int) error {
+func (r *BusinessMemberRepoImpl) Anonymize(ctx context.Context, businessID int32) error {
 	// 機密フィールドを匿名化します
 	result := r.db.WithContext(ctx).Model(&domain.BusinessMember{}).
 		Where("businessId = ?", businessID).

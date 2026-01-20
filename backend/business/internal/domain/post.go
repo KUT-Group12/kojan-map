@@ -23,16 +23,16 @@ import (
 // Images: 投稿画像リスト（外部キー: PostID）
 // Genres: ジャンルリスト（多対多リレーション、中間テーブル: post_genre）
 type Post struct {
-	ID             int            `gorm:"primaryKey;autoIncrement;column:postId"`
-	PlaceID        int            `gorm:"column:placeId;not null"`
+	ID             int32          `gorm:"primaryKey;autoIncrement;column:postId"`
+	PlaceID        int32          `gorm:"column:placeId;not null"`
 	UserID         string         `gorm:"column:userId;type:varchar(50);not null"`
 	PostDate       time.Time      `gorm:"column:postDate;not null"`
 	Title          string         `gorm:"column:title;type:varchar(50);not null"`
 	Text           string         `gorm:"column:text;type:text;not null"`
 	PostImage      []byte         `gorm:"column:postImage;type:blob"`
-	NumReaction    int            `gorm:"column:numReaction;not null"`
-	NumView        int            `gorm:"column:numView;not null"`
-	GenreID        int            `gorm:"column:genreId;not null"`
+	NumReaction    int32          `gorm:"column:numReaction;not null"`
+	NumView        int32          `gorm:"column:numView;not null"`
+	GenreID        int32          `gorm:"column:genreId;not null"`
 	BusinessMember BusinessMember `gorm:"foreignKey:UserID;references:UserID"`
 }
 
@@ -47,7 +47,7 @@ func (Post) TableName() string {
 // ImageURL: 画像URL
 type PostImage struct {
 	ID       string `gorm:"primaryKey"`
-	PostID   int
+	PostID   int32
 	ImageURL string
 }
 
@@ -68,8 +68,8 @@ func (p *PostImage) BeforeCreate(tx *gorm.DB) error {
 // PostID: 投稿ID（複合主キー）
 // GenreID: ジャンルID（複合主キー）
 type PostGenre struct {
-	PostID  int `gorm:"primaryKey"`
-	GenreID int `json:"genreIds"`
+	PostID  int32 `gorm:"primaryKey"`
+	GenreID int32 `json:"genreIds"`
 }
 
 // TableName は対応するテーブル名を指定
@@ -81,7 +81,7 @@ func (PostGenre) TableName() string {
 // ID: 主キー
 // Name: ジャンル名
 type Genre struct {
-	ID        int    `gorm:"primaryKey;autoIncrement;column:genreId"`
+	ID        int32  `gorm:"primaryKey;autoIncrement;column:genreId"`
 	GenreName string `gorm:"column:genreName;type:enum('food','event','scene','store','emergency','other');not null"`
 	Color     string `gorm:"column:color;type:varchar(6);not null"`
 }
@@ -99,7 +99,7 @@ func (Genre) TableName() string {
 // images: 画像URLのリスト（任意）
 type CreatePostRequest struct {
 	LocationID  string   `json:"locationId" binding:"required"`
-	GenreIDs    []int    `json:"genreIds" binding:"required,min=1"`
+	GenreIDs    []int32  `json:"genreIds" binding:"required,min=1"`
 	Title       string   `json:"title" binding:"required"`
 	Description string   `json:"description" binding:"required"`
 	Images      []string `json:"images"`
@@ -117,12 +117,12 @@ type CreatePostRequest struct {
 // description: 説明
 // images: 画像URLのリスト
 type PostResponse struct {
-	PostID        int      `json:"postId"`
+	PostID        int32    `json:"postId"`
 	LocationID    string   `json:"locationId"`
-	GenreIDs      []int    `json:"genreIds"`
+	GenreIDs      []int32  `json:"genreIds"`
 	Title         string   `json:"title"`
-	ViewCount     int      `json:"viewCount"`
-	ReactionCount int      `json:"reactionCount"`
+	ViewCount     int32    `json:"viewCount"`
+	ReactionCount int32    `json:"reactionCount"`
 	AuthorID      string   `json:"authorId"`
 	PostedAt      string   `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
 	Description   string   `json:"description"`
@@ -137,16 +137,16 @@ type PostResponse struct {
 // postedAt: 投稿日時（ISO 8601形式: YYYY-MM-DDTHH:mm）
 // description: 説明
 type PostHistoryResponse struct {
-	PostID        int    `json:"postId"`
-	GenreIDs      []int  `json:"genreIds"`
-	Title         string `json:"title"`
-	ReactionCount int    `json:"reactionCount"`
-	PostedAt      string `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
-	Description   string `json:"description"`
+	PostID        int32   `json:"postId"`
+	GenreIDs      []int32 `json:"genreIds"`
+	Title         string  `json:"title"`
+	ReactionCount int32   `json:"reactionCount"`
+	PostedAt      string  `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
+	Description   string  `json:"description"`
 }
 
 // AnonymizePostRequest は投稿匿名化のリクエスト
 // postId: 必須。匿名化する投稿のID
 type AnonymizePostRequest struct {
-	PostID int `json:"postId" binding:"required"`
+	PostID int32 `json:"postId" binding:"required"`
 }

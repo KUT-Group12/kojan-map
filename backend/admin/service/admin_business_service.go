@@ -57,7 +57,7 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 		}
 
 		responses = append(responses, BusinessApplicationResponse{
-			RequestID:      req.RequestID,
+			RequestID:      int(req.RequestID),
 			BusinessName:   req.Name,
 			ApplicantName:  applicantName,
 			ApplicantEmail: applicantEmail,
@@ -70,7 +70,7 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 }
 
 // ApproveApplication approves a business application
-func (s *AdminBusinessService) ApproveApplication(id int) error {
+func (s *AdminBusinessService) ApproveApplication(id int32) error {
 	request, err := s.requestRepo.FindByID(id)
 	if err != nil {
 		return errors.New("application not found")
@@ -106,7 +106,7 @@ func (s *AdminBusinessService) ApproveApplication(id int) error {
 }
 
 // RejectApplication rejects a business application
-func (s *AdminBusinessService) RejectApplication(id int) error {
+func (s *AdminBusinessService) RejectApplication(id int32) error {
 	request, err := s.requestRepo.FindByID(id)
 	if err != nil {
 		return errors.New("application not found")

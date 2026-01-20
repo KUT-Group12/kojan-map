@@ -35,7 +35,7 @@ func (h *PaymentHandler) CreateRedirect(c *gin.Context) {
 		return
 	}
 
-	url, err := h.paymentService.CreateRedirect(c.Request.Context(), businessID)
+	url, err := h.paymentService.CreateRedirect(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return

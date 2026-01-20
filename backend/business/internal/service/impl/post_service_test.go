@@ -15,7 +15,7 @@ import (
 // Test cases cover valid business IDs and error conditions like negative or zero IDs.
 func TestPostServiceImpl_List(t *testing.T) {
 	type args struct {
-		businessID int
+		businessID int32
 	}
 
 	tests := []struct {
@@ -80,7 +80,7 @@ func TestPostServiceImpl_List(t *testing.T) {
 // Test cases cover valid post IDs and error conditions.
 func TestPostServiceImpl_Get(t *testing.T) {
 	type args struct {
-		postID int
+		postID int32
 	}
 
 	tests := []struct {
@@ -149,9 +149,9 @@ func TestPostServiceImpl_Get(t *testing.T) {
 // Test cases cover successful creation and error conditions.
 func TestPostServiceImpl_Create(t *testing.T) {
 	type args struct {
-		businessID int
-		placeID    int
-		genreIDs   []int
+		businessID int32
+		placeID    int32
+		genreIDs   []int32
 		payload    interface{}
 	}
 
@@ -165,10 +165,10 @@ func TestPostServiceImpl_Create(t *testing.T) {
 			args: args{
 				businessID: 1,
 				placeID:    10,
-				genreIDs:   []int{1, 2},
+				genreIDs:   []int32{1, 2},
 				payload: &domain.CreatePostRequest{
 					LocationID:  "loc-123",
-					GenreIDs:    []int{1},
+					GenreIDs:    []int32{1},
 					Title:       "Test Post",
 					Description: "Test Description",
 					Images:      []string{"img1.png"},
@@ -181,10 +181,10 @@ func TestPostServiceImpl_Create(t *testing.T) {
 			args: args{
 				businessID: -1,
 				placeID:    10,
-				genreIDs:   []int{1},
+				genreIDs:   []int32{1},
 				payload: &domain.CreatePostRequest{
 					LocationID:  "loc-123",
-					GenreIDs:    []int{1},
+					GenreIDs:    []int32{1},
 					Title:       "Test Post",
 					Description: "Test Description",
 				},
@@ -210,7 +210,7 @@ func TestPostServiceImpl_Create(t *testing.T) {
 				assert.Error(t, err, "Create should return error for invalid input")
 			} else {
 				require.NoError(t, err, "Create should not return error for valid input")
-				assert.Greater(t, postID, 0, "postID should be greater than 0")
+				assert.Greater(t, postID, int32(0), "postID should be greater than 0")
 			}
 		})
 	}
@@ -220,8 +220,8 @@ func TestPostServiceImpl_Create(t *testing.T) {
 // Test cases cover valid genre lists and error conditions.
 func TestPostServiceImpl_SetGenres(t *testing.T) {
 	type args struct {
-		postID   int
-		genreIDs []int
+		postID   int32
+		genreIDs []int32
 	}
 
 	tests := []struct {
@@ -234,7 +234,7 @@ func TestPostServiceImpl_SetGenres(t *testing.T) {
 			name: "valid_genres",
 			args: args{
 				postID:   1,
-				genreIDs: []int{1, 2, 3},
+				genreIDs: []int32{1, 2, 3},
 			},
 			wantErr: false,
 			setupFixture: func(f *TestFixtures) {
@@ -246,7 +246,7 @@ func TestPostServiceImpl_SetGenres(t *testing.T) {
 			name: "invalid_post_id",
 			args: args{
 				postID:   -1,
-				genreIDs: []int{1},
+				genreIDs: []int32{1},
 			},
 			wantErr: true,
 		},
@@ -254,7 +254,7 @@ func TestPostServiceImpl_SetGenres(t *testing.T) {
 			name: "empty_genres",
 			args: args{
 				postID:   1,
-				genreIDs: []int{},
+				genreIDs: []int32{},
 			},
 			wantErr: true,
 		},
@@ -291,7 +291,7 @@ func TestPostServiceImpl_SetGenres(t *testing.T) {
 // Test cases cover successful anonymization and error conditions.
 func TestPostServiceImpl_Anonymize(t *testing.T) {
 	type args struct {
-		postID int
+		postID int32
 	}
 
 	tests := []struct {

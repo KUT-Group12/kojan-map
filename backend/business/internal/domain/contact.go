@@ -12,12 +12,12 @@ import (
 // CreatedAt: 作成日時
 // Status: ステータス（new: 新規、resolved: 解決済み）
 type Contact struct {
-	ID      int       `gorm:"primaryKey;autoIncrement;column:askId"`
+	ID      int32     `gorm:"primaryKey;autoIncrement;column:askId"`
 	UserID  string    `gorm:"column:userId;type:varchar(50);not null"`
 	Subject string    `gorm:"column:subject;type:varchar(100);not null"`
 	Text    string    `gorm:"column:text;type:text;not null"`
 	Date    time.Time `gorm:"column:date;not null"`
-	AskFlag int       `gorm:"column:askFlag;not null"`
+	AskFlag int32     `gorm:"column:askFlag;not null"`
 }
 
 // TableName は対応するテーブル名を指定

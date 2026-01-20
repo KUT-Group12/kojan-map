@@ -6,9 +6,9 @@ package domain
 // totalViewNumber: 合計閲覧数
 // engagementRate: エンゲージメント率
 type PostStatistics struct {
-	TotalPostCount     int     `json:"totalPostNumber"`
-	TotalReactionCount int     `json:"totalReactionNumber"`
-	TotalViewCount     int     `json:"totalViewNumber"`
+	TotalPostCount     int32   `json:"totalPostNumber"`
+	TotalReactionCount int32   `json:"totalReactionNumber"`
+	TotalViewCount     int32   `json:"totalViewNumber"`
 	EngagementRate     float64 `json:"engagementRate"`
 }
 
@@ -18,9 +18,9 @@ type PostStatistics struct {
 // totalViewNumber: 合計閲覧数
 // engagementRate: エンゲージメント率
 type StatisticsResponse struct {
-	TotalPostNumber     int     `json:"totalPostNumber"`
-	TotalReactionNumber int     `json:"totalReactionNumber"`
-	TotalViewNumber     int     `json:"totalViewNumber"`
+	TotalPostNumber     int32   `json:"totalPostNumber"`
+	TotalReactionNumber int32   `json:"totalReactionNumber"`
+	TotalViewNumber     int32   `json:"totalViewNumber"`
 	EngagementRate      float64 `json:"engagementRate"`
 }
 
@@ -29,14 +29,14 @@ type StatisticsResponse struct {
 // reactionNumber: リアクション数
 type TopReactionPost struct {
 	PostID         string `json:"postId"`
-	ReactionNumber int    `json:"reactionNumber"`
+	ReactionNumber int32  `json:"reactionNumber"`
 }
 
 // StatsResponse は単一統計値のレスポンス
 // total: 合計値
 // label: ラベル
 type StatsResponse struct {
-	Total int    `json:"total"`
+	Total int32  `json:"total"`
 	Label string `json:"label"`
 }
 
@@ -46,8 +46,8 @@ type StatsResponse struct {
 // viewCount: 閲覧数
 // engagementRate: エンゲージメント率
 type EngagementResponse struct {
-	PostCount      int     `json:"postCount"`
-	ReactionCount  int     `json:"reactionCount"`
-	ViewCount      int     `json:"viewCount"`
+	PostCount      int32   `json:"postCount"`
+	ReactionCount  int32   `json:"reactionCount"`
+	ViewCount      int32   `json:"viewCount"`
 	EngagementRate float64 `json:"engagementRate"`
 }

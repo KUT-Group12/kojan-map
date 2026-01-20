@@ -23,7 +23,7 @@ func NewPostServiceImpl(postRepo repository.PostRepo) *PostServiceImpl {
 }
 
 // List は事業者の全投稿を取得します（M1-6-1）。
-func (s *PostServiceImpl) List(ctx context.Context, businessID int) (interface{}, error) {
+func (s *PostServiceImpl) List(ctx context.Context, businessID int32) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -37,7 +37,7 @@ func (s *PostServiceImpl) List(ctx context.Context, businessID int) (interface{}
 }
 
 // Get はIDで投稿を取得します（M1-7-2）。
-func (s *PostServiceImpl) Get(ctx context.Context, postID int) (interface{}, error) {
+func (s *PostServiceImpl) Get(ctx context.Context, postID int32) (interface{}, error) {
 	if postID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
@@ -60,7 +60,7 @@ func (s *PostServiceImpl) Get(ctx context.Context, postID int) (interface{}, err
 
 // Create は新しい投稿を作成します（M1-8-4）。
 // 画像は PNG または JPEG のみ、5MB以下
-func (s *PostServiceImpl) Create(ctx context.Context, businessID int, placeID int, genreIDs []int, payload interface{}) (int, error) {
+func (s *PostServiceImpl) Create(ctx context.Context, businessID int32, placeID int32, genreIDs []int32, payload interface{}) (int32, error) {
 	if businessID <= 0 {
 		return 0, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -82,7 +82,7 @@ func (s *PostServiceImpl) Create(ctx context.Context, businessID int, placeID in
 }
 
 // SetGenres は投稿のジャンルを設定します（M1-8-4）。
-func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int, genreIDs []int) error {
+func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int32, genreIDs []int32) error {
 	if postID <= 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
@@ -100,7 +100,7 @@ func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int, genreIDs []
 }
 
 // Anonymize は投稿を匿名化します（M1-13-2）。
-func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int) error {
+func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int32) error {
 	if postID <= 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
