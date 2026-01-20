@@ -201,42 +201,33 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   };
 
   const handleReaction = (postId: number) => {
-    if (reactedPosts.has(postId)) {
-      // リアクション取り消し
-      setPosts(
-        posts.map((p) => (p.postId === postId ? { ...p, numReaction: p.numReaction - 1 } : p))
-      );
-      setFilteredPosts(
-        filteredPosts.map((p) =>
-          p.postId === postId ? { ...p, numReaction: p.numReaction - 1 } : p
-        )
-      );
-      setReactedPosts((prev) => {
-        const next = new Set(prev);
-        next.delete(postId);
-        return next;
-      });
-    } else {
-      // リアクション追加
-      setPosts(
-        posts.map((p) => (p.postId === postId ? { ...p, numReaction: p.numReaction + 1 } : p))
-      );
-      setFilteredPosts(
-        filteredPosts.map((p) =>
-          p.postId === postId ? { ...p, numReaction: p.numReaction + 1 } : p
-        )
-      );
-      setReactedPosts((prev) => new Set(prev).add(postId));
-    }
+    // 1. 現在の状態をチェック
+    const wasReacted = reactedPosts.has(postId);
+    const delta = wasReacted ? -1 : 1;
 
-    if (selectedPost && selectedPost.postId === postId) {
-      setSelectedPost({
-        ...selectedPost,
-        numReaction: reactedPosts.has(postId)
-          ? selectedPost.numReaction - 1
-          : selectedPost.numReaction + 1,
-      });
-    }
+    // 2. 各ステートを関数型更新で独立に更新
+    setPosts((prev) =>
+      prev.map((p) => (p.postId === postId ? { ...p, numReaction: p.numReaction + delta } : p))
+    );
+
+    setFilteredPosts((prev) =>
+      prev.map((p) => (p.postId === postId ? { ...p, numReaction: p.numReaction + delta } : p))
+    );
+
+    setSelectedPost((prev) =>
+      prev && prev.postId === postId ? { ...prev, numReaction: prev.numReaction + delta } : prev
+    );
+
+    // 3. リアクション状態を更新
+    setReactedPosts((prev) => {
+      const next = new Set(prev);
+      if (wasReacted) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
   };
 
   const handleCreatePin = (newPost: {
@@ -365,6 +356,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     <div className="h-screen flex flex-col">
       <Header
         user={user}
+        business={business}
         // onLogout={onLogout}
         onNavigate={handleNavigate}
         currentView={currentView}
