@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { User, Post } from '../types';
 import { Shield } from 'lucide-react';
-import { toast } from 'sonner';
 import { SelectPostHistory } from './SelectPostHistory';
 import { UserReactionViewScreen } from './UserReactionViewScreen';
 import { SelectUserSetting } from './SelectUserSetting';
@@ -29,11 +28,6 @@ export function UserDisplayMyPage({
   onNavigateToDeleteAccount,
 }: UserDisplayMyPageProps) {
   const [showBusinessRegistration, setShowBusinessRegistration] = useState(false);
-
-  const handleBusinessRegistration = () => {
-    toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
-    setShowBusinessRegistration(false);
-  };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -78,10 +72,8 @@ export function UserDisplayMyPage({
               </Button>
             ) : (
               <UserInputBusinessApplication
-                onUpdateUser={(data) => {
-                  console.log('申請データ:', data);
-                  handleBusinessRegistration();
-                }}
+                user={user}
+                onUpdateUser={onUpdateUser}
                 onCancel={() => setShowBusinessRegistration(false)}
               />
             )}
