@@ -16,7 +16,7 @@ import { genreLabels } from '../lib/mockData';
 
 interface MainAppProps {
   user: User;
-  business: Business;
+  business?: Business;
   onLogout: () => void;
   onUpdateUser: (user: User) => void;
 }
