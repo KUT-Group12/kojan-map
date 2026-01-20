@@ -1,6 +1,6 @@
 // src/__tests__/BusinessApplicationList.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AdminDisplayBusinessApplicationList, AdminDisplayBusinessRequest, BusinessApplicationList } from '../components/AdminDisplayBusinessApplicationList';
+import { BusinessApplicationList, AdminDisplayBusinessRequest } from '../components/AdminDisplayBusinessApplicationList';
 
 describe('BusinessApplicationList', () => {
     const mockApplications: AdminDisplayBusinessRequest[] = [
@@ -27,12 +27,12 @@ describe('BusinessApplicationList', () => {
     ];
 
     it('申請がない場合にメッセージを表示する', () => {
-        render(<AdminDisplayBusinessApplicationList applications={[]} onApprove={jest.fn()} onReject={jest.fn()} />);
+        render(<BusinessApplicationList applications={[]} onApprove={jest.fn()} onReject={jest.fn()} />);
         expect(screen.getByText('現在、未処理の申請はありません。')).toBeInTheDocument();
     });
 
     it('申請がある場合にカードを表示する', () => {
-        render(<AdminDisplayBusinessApplicationList applications={mockApplications} onApprove={jest.fn()} onReject={jest.fn()} />);
+        render(<BusinessApplicationList applications={mockApplications} onApprove={jest.fn()} onReject={jest.fn()} />);
 
         // 各申請者の事業者名が表示される
         expect(screen.getByText('テスト株式会社')).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe('BusinessApplicationList', () => {
 
     it('承認ボタンを押すと onApprove が呼ばれる', () => {
         const onApprove = jest.fn();
-        render(<AdminDisplayBusinessApplicationList applications={mockApplications} onApprove={onApprove} onReject={jest.fn()} />);
+        render(<BusinessApplicationList applications={mockApplications} onApprove={onApprove} onReject={jest.fn()} />);
 
         fireEvent.click(screen.getAllByText('承認')[0]);
         expect(onApprove).toHaveBeenCalledWith(1);

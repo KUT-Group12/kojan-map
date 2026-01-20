@@ -12,8 +12,15 @@ describe('AdminSelectLogout', () => {
         ) as jest.Mock;
 
         // location.href をモック
-        delete (window as any).location;
-        (window as any).location = { href: '' };
+        Object.defineProperty(window, 'location', {
+            value: {
+                href: 'http://localhost/',
+                assign: jest.fn(),
+                replace: jest.fn(),
+                reload: jest.fn(),
+            },
+            writable: true,
+        });
     });
 
     afterEach(() => {
