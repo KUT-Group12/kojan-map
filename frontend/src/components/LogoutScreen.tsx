@@ -1,12 +1,9 @@
+import { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { LogOut, Check, ArrowLeft } from 'lucide-react';
-
-interface User {
-  name?: string; // 修正: ユーザー名を追加
-  email: string;
-  role: 'business' | 'general' | 'admin';
-}
+import { LogOut, Check, ArrowLeft, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { User } from '../types';
 
 interface LogoutScreenProps {
   user: User;
@@ -15,19 +12,50 @@ interface LogoutScreenProps {
 }
 
 export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
+  const [isPending, setIsPending] = useState(false);
+  const handleLogout = async () => {
+    setIsPending(true);
+    try {
+      // 1. API仕様: PUT /api/auth/logout
+      // ボディに sessionId (通常は googleId 等) を含めて送信
+      const response = await fetch('/api/auth/logout', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: user.googleId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('サーバー側でのログアウトに失敗しました');
+      }
+
+      toast.success('ログアウトしました');
+
+      // 2. フロントエンド側のクリーンアップ（localStorageの消去など）
+      onLogout();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // 通信失敗しても、ユーザーの利便性のために強制的にフロント側はログアウトさせるのが一般的
+      onLogout();
+    } finally {
+      setIsPending(false);
+    }
+  };
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-gray-50 p-4">
       <div className="max-w-md w-full space-y-6">
         <Card className="border-blue-200 shadow-md">
           <CardHeader className="flex flex-col items-center text-center">
             <div className="mb-2 text-blue-600">
-              <LogOut className="w-10 h-10" />
+              {isPending ? (
+                <Loader2 className="w-10 h-10 animate-spin" />
+              ) : (
+                <LogOut className="w-10 h-10" />
+              )}
             </div>
             <CardTitle className="text-xl">ログアウトの確認</CardTitle>
             <CardDescription>
-              {/* テストが期待する文言に修正 */}
-              {user.name && (
-                <span className="block font-bold text-gray-900 mb-1">{user.name}様</span>
+              {user.fromName && (
+                <span className="block font-bold text-gray-900 mb-1">{user.fromName}様</span>
               )}
               ログアウトしてもよろしいですか？
             </CardDescription>
@@ -48,7 +76,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">メールアドレス</span>
-                <span className="font-medium text-gray-800">{user.email}</span>
+                <span className="font-medium text-gray-800">{user.gmail}</span>
               </div>
             </div>
 
@@ -87,10 +115,11 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
             <div className="flex flex-col gap-3">
               <Button
                 variant="default"
-                onClick={onLogout}
+                onClick={handleLogout}
+                disabled={isPending}
                 className="w-full py-6 text-lg font-bold"
               >
-                ログアウトする
+                {isPending ? 'ログアウト中...' : 'ログアウトする'}
               </Button>
 
               {/* 修正: 戻るボタンを追加（テストの onBack 呼び出しに対応） */}
