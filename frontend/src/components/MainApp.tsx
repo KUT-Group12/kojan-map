@@ -68,15 +68,11 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const fetchUserData = useCallback(async () => {
     setIsLoadingUserData(true);
     try {
-      const apiBaseUrl = 'http://localhost:8080';
-
-      const postsRes = await fetch(`${apiBaseUrl}/api/posts/history?googleId=${user.googleId}`);
+      const postsRes = await fetch(`/api/posts/history?googleId=${user.googleId}`);
       const postsData = await postsRes.json();
       setUserPosts(postsData.posts || []);
 
-      const reactionsRes = await fetch(
-        `${apiBaseUrl}/api/reactions/list?googleId=${user.googleId}`
-      );
+      const reactionsRes = await fetch(`/api/reactions/list?googleId=${user.googleId}`);
       const reactionsData = await reactionsRes.json();
       setUserReactedPosts(reactionsData.posts || []);
     } catch (error) {
