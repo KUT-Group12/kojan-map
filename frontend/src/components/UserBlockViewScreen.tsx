@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { User, Block } from '../types';
 import { UserX, Loader2 } from 'lucide-react';
 import { DisplayUserSetting } from './DisplayUserSetting';
@@ -17,6 +17,11 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
   const [isLoading, setIsLoading] = useState(true);
   const currentUser = user as UserWithBlocked;
   const blockedUsers = currentUser.blockedUsers || [];
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     const fetchBlockedUsers = async () => {
@@ -37,7 +42,7 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
 
         // 3. 親コンポーネントのユーザー情報を更新して、ブロックリストを画面に反映
         onUpdateUser({
-          ...user,
+          ...userRef.current,
           blockedUsers: blockedIds,
         } as User);
       } catch (error) {
@@ -48,7 +53,7 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
     };
 
     fetchBlockedUsers();
-  }, [user.googleId, user, onUpdateUser]); // コンポーネント表示時に実行
+  }, [user.googleId, onUpdateUser]); // googleId 変更時に実行
 
   return (
     <div className="space-y-4">
