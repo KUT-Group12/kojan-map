@@ -21,6 +21,8 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
         setIsLoading(false);
         return;
       }
+      setIsLoading(true);
+      setReactedPosts([]);
       try {
         // API仕様: GET /api/reactions/list?googleId=...
         const response = await fetch(
