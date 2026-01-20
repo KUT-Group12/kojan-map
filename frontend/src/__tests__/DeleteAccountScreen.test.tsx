@@ -104,10 +104,10 @@ describe('DeleteAccountScreen コンポーネント', () => {
           }),
         })
       );
+      // fetch完了後に実行されるアサーションもwaitFor内に含める (CodeRabbitAI指摘対応)
+      expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('アカウントを削除しました'));
+      expect(mockOnDeleteAccount).toHaveBeenCalled();
     });
-
-    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('アカウントを削除しました'));
-    expect(mockOnDeleteAccount).toHaveBeenCalled();
   });
 
   test('window.confirmでキャンセルを選択した場合、APIは呼ばれないこと', () => {

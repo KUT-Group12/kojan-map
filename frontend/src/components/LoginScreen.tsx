@@ -30,13 +30,20 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockGoogleId = 'user_google_123456789';
-      const mockEmail = 'example@gmail.com';
+      if (import.meta.env.DEV) {
+        // 開発環境用のモック処理
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const mockGoogleId = 'user_google_123456789';
+        const mockEmail = 'example@gmail.com';
 
-      setGoogleId(mockGoogleId);
-      setUserEmail(mockEmail);
-      setIsSelectingRole(true); // ID取得成功後に役割選択へ
+        setGoogleId(mockGoogleId);
+        setUserEmail(mockEmail);
+        setIsSelectingRole(true); // ID取得成功後に役割選択へ
+      } else {
+        // TODO: 本番環境用の実認証フロー（Google OAuth 等）をここに実装する
+        console.warn('Production auth not implemented yet');
+        alert('本番環境でのログインは未実装です。');
+      }
     } catch (error) {
       console.error('Auth Error:', error);
       alert('Google認証に失敗しました');
