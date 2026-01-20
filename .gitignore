@@ -24,6 +24,7 @@ dist-ssr/
 .env.local
 .env.*.local
 .env.frontend
+.env.backend
 
 # IDE
 .vscode/
