@@ -83,6 +83,13 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
         setPosts(postsWithStatus);
         setFilteredPosts(postsWithStatus);
+        const derivedPlaces: Place[] = postsWithStatus.map((post: Place) => ({
+          placeId: post.placeId,
+          latitude: post.latitude ?? 0,
+          longitude: post.longitude ?? 0,
+          numPost: 1,
+        }));
+        setPlaces(derivedPlaces);
       } catch (error) {
         console.error('データ取得失敗:', error);
       }
@@ -221,7 +228,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     setFilteredPosts((prev) => [post, ...prev]);
     setIsCreateModalOpen(false);
 
-    setIsCreateModalOpen(false);
     setCreateInitialLatitude(undefined);
     setCreateInitialLongitude(undefined);
   };
