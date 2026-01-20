@@ -24,7 +24,8 @@ export function AdminSelectLogout() {
   );
 }
 
-{/*import { Button } from './ui/button';
+{
+  /*import { Button } from './ui/button';
 
 // 1. プロパティの型を定義
 interface AdminSelectLogoutProps {
@@ -48,4 +49,5 @@ export function AdminSelectLogout({
     </Button>
   );
 }
-  */}
+  */
+}
