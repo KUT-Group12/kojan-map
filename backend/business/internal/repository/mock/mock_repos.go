@@ -86,13 +86,13 @@ func (m *MockAuthRepo) GetBusinessMemberByUserID(ctx context.Context, userID str
 // It uses an in-memory map to store members, indexed by business ID.
 type MockBusinessMemberRepo struct {
 	mu      sync.Mutex
-	Members map[int64]*domain.BusinessMember // Key: businessID, Value: BusinessMember
+	Members map[int]*domain.BusinessMember // Key: businessID, Value: BusinessMember
 }
 
 // NewMockBusinessMemberRepo creates a new MockBusinessMemberRepo with an empty members map.
 func NewMockBusinessMemberRepo() *MockBusinessMemberRepo {
 	return &MockBusinessMemberRepo{
-		Members: make(map[int64]*domain.BusinessMember),
+		Members: make(map[int]*domain.BusinessMember),
 	}
 }
 
@@ -112,7 +112,7 @@ func (m *MockBusinessMemberRepo) GetByGoogleID(ctx context.Context, googleID str
 
 // UpdateName updates the business name of a member.
 // Returns nil if member is not found.
-func (m *MockBusinessMemberRepo) UpdateName(ctx context.Context, businessID int64, name string) error {
+func (m *MockBusinessMemberRepo) UpdateName(ctx context.Context, businessID int, name string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -125,7 +125,7 @@ func (m *MockBusinessMemberRepo) UpdateName(ctx context.Context, businessID int6
 
 // UpdateIcon updates the profile image of a member.
 // Returns nil if member is not found.
-func (m *MockBusinessMemberRepo) UpdateIcon(ctx context.Context, businessID int64, icon []byte) error {
+func (m *MockBusinessMemberRepo) UpdateIcon(ctx context.Context, businessID int, icon []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -138,7 +138,7 @@ func (m *MockBusinessMemberRepo) UpdateIcon(ctx context.Context, businessID int6
 
 // Anonymize anonymizes a business member by setting their name to "[Anonymized]".
 // Returns nil if member is not found.
-func (m *MockBusinessMemberRepo) Anonymize(ctx context.Context, businessID int64) error {
+func (m *MockBusinessMemberRepo) Anonymize(ctx context.Context, businessID int) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -153,14 +153,14 @@ func (m *MockBusinessMemberRepo) Anonymize(ctx context.Context, businessID int64
 // It uses an in-memory map to store posts and maintains an auto-incrementing ID counter.
 type MockPostRepo struct {
 	mu     sync.Mutex
-	Posts  map[int64]*domain.Post // Key: postID, Value: Post
-	NextID int64                  // Auto-increment counter
+	Posts  map[int]*domain.Post // Key: postID, Value: Post
+	NextID int                  // Auto-increment counter
 }
 
 // NewMockPostRepo creates a new MockPostRepo with an empty posts map and NextID initialized to 1.
 func NewMockPostRepo() *MockPostRepo {
 	return &MockPostRepo{
-		Posts:  make(map[int64]*domain.Post),
+		Posts:  make(map[int]*domain.Post),
 		NextID: 1,
 	}
 }
@@ -168,7 +168,7 @@ func NewMockPostRepo() *MockPostRepo {
 // ListByBusiness retrieves all posts from the mock repository.
 // (In a real implementation, this would filter by businessID)
 // Returns an empty slice (not nil) when no posts exist.
-func (m *MockPostRepo) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
+func (m *MockPostRepo) ListByBusiness(ctx context.Context, businessID int) (interface{}, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -181,7 +181,7 @@ func (m *MockPostRepo) ListByBusiness(ctx context.Context, businessID int64) (in
 
 // GetByID retrieves a post by its ID.
 // Returns nil if post is not found.
-func (m *MockPostRepo) GetByID(ctx context.Context, postID int64) (interface{}, error) {
+func (m *MockPostRepo) GetByID(ctx context.Context, postID int) (interface{}, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -193,12 +193,12 @@ func (m *MockPostRepo) GetByID(ctx context.Context, postID int64) (interface{}, 
 
 // IncrementViewCount increments the view count of a post.
 // Returns nil if post is not found.
-func (m *MockPostRepo) IncrementViewCount(ctx context.Context, postID int64) error {
+func (m *MockPostRepo) IncrementViewCount(ctx context.Context, postID int) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if post, exists := m.Posts[postID]; exists {
-		post.ViewCount++
+		post.NumView++
 		return nil
 	}
 	return nil
@@ -206,7 +206,7 @@ func (m *MockPostRepo) IncrementViewCount(ctx context.Context, postID int64) err
 
 // Create creates a new post and returns its auto-incremented ID.
 // Accepts a payload interface (typically *domain.CreatePostRequest).
-func (m *MockPostRepo) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
+func (m *MockPostRepo) Create(ctx context.Context, businessID int, placeID int, genreIDs []int, payload interface{}) (int, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -215,13 +215,12 @@ func (m *MockPostRepo) Create(ctx context.Context, businessID int64, placeID int
 	m.NextID++
 
 	post := &domain.Post{
-		ID:            postID,
-		Title:         req.Title,
-		Description:   req.Description,
-		LocationID:    req.LocationID,
-		ViewCount:     0,
-		ReactionCount: 0,
-		IsActive:      true,
+		ID:          postID,
+		Title:       req.Title,
+		Text:        req.Description,
+		PlaceID:     placeID,
+		NumView:     0,
+		NumReaction: 0,
 	}
 	m.Posts[postID] = post
 	return postID, nil
@@ -229,19 +228,19 @@ func (m *MockPostRepo) Create(ctx context.Context, businessID int64, placeID int
 
 // SetGenres associates genres with a post.
 // This is a stub implementation for the mock.
-func (m *MockPostRepo) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
+func (m *MockPostRepo) SetGenres(ctx context.Context, postID int, genreIDs []int) error {
 	return nil
 }
 
 // Anonymize anonymizes a post by setting its title and description to "[Anonymized]".
 // Returns nil if post is not found.
-func (m *MockPostRepo) Anonymize(ctx context.Context, postID int64) error {
+func (m *MockPostRepo) Anonymize(ctx context.Context, postID int) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if post, exists := m.Posts[postID]; exists {
 		post.Title = "[Anonymized]"
-		post.Description = "[Anonymized]"
+		post.Text = "[Anonymized]"
 		return nil
 	}
 	return nil
@@ -256,9 +255,9 @@ func (m *MockPostRepo) History(ctx context.Context, googleID string) (interface{
 // MockStatsRepo mocks StatsRepo interface for testing statistics aggregation operations.
 // It uses simple fields to store configurable return values for testing various scenarios.
 type MockStatsRepo struct {
-	TotalPostsVal     int64 // Configurable return value for TotalPosts
-	TotalReactionsVal int64 // Configurable return value for TotalReactions
-	TotalViewsVal     int64 // Configurable return value for TotalViews
+	TotalPostsVal     int // Configurable return value for TotalPosts
+	TotalReactionsVal int // Configurable return value for TotalReactions
+	TotalViewsVal     int // Configurable return value for TotalViews
 }
 
 // NewMockStatsRepo creates a new MockStatsRepo with zero-initialized values.
@@ -267,22 +266,22 @@ func NewMockStatsRepo() *MockStatsRepo {
 }
 
 // TotalPosts returns the configured total posts value.
-func (m *MockStatsRepo) TotalPosts(ctx context.Context, businessID int64) (int64, error) {
+func (m *MockStatsRepo) TotalPosts(ctx context.Context, businessID int) (int, error) {
 	return m.TotalPostsVal, nil
 }
 
 // TotalReactions returns the configured total reactions value.
-func (m *MockStatsRepo) TotalReactions(ctx context.Context, businessID int64) (int64, error) {
+func (m *MockStatsRepo) TotalReactions(ctx context.Context, businessID int) (int, error) {
 	return m.TotalReactionsVal, nil
 }
 
 // TotalViews returns the configured total views value.
-func (m *MockStatsRepo) TotalViews(ctx context.Context, businessID int64) (int64, error) {
+func (m *MockStatsRepo) TotalViews(ctx context.Context, businessID int) (int, error) {
 	return m.TotalViewsVal, nil
 }
 
 // EngagementStats returns all configured statistics values as a tuple.
-func (m *MockStatsRepo) EngagementStats(ctx context.Context, businessID int64) (int64, int64, int64, error) {
+func (m *MockStatsRepo) EngagementStats(ctx context.Context, businessID int) (int, int, int, error) {
 	return m.TotalPostsVal, m.TotalReactionsVal, m.TotalViewsVal, nil
 }
 
@@ -376,6 +375,6 @@ func NewMockPaymentRepo() *MockPaymentRepo {
 
 // CreatePayment creates a payment record and returns a payment ID.
 // This is a stub implementation that always returns ID 1.
-func (m *MockPaymentRepo) CreatePayment(ctx context.Context, businessID int64, amount int64, payFlag bool) (int64, error) {
+func (m *MockPaymentRepo) CreatePayment(ctx context.Context, businessID int, amount int, payFlag bool) (int, error) {
 	return 1, nil
 }

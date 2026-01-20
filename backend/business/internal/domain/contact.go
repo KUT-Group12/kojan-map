@@ -2,9 +2,6 @@ package domain
 
 import (
 	"time"
-
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // Contact は問い合わせを表すドメインモデル
@@ -15,25 +12,17 @@ import (
 // CreatedAt: 作成日時
 // Status: ステータス（new: 新規、resolved: 解決済み）
 type Contact struct {
-	ID        string `gorm:"primaryKey"`
-	GoogleID  string
-	Subject   string
-	Message   string
-	CreatedAt time.Time
-	Status    string // new, in_progress, resolved
+	ID      int       `gorm:"primaryKey;autoIncrement;column:askId"`
+	UserID  string    `gorm:"column:userId;type:varchar(50);not null"`
+	Subject string    `gorm:"column:subject;type:varchar(100);not null"`
+	Text    string    `gorm:"column:text;type:text;not null"`
+	Date    time.Time `gorm:"column:date;not null"`
+	AskFlag int       `gorm:"column:askFlag;not null"`
 }
 
 // TableName は対応するテーブル名を指定
 func (Contact) TableName() string {
-	return "contacts"
-}
-
-// BeforeCreate はレコード作成前にIDを生成します
-func (c *Contact) BeforeCreate(tx *gorm.DB) error {
-	if c.ID == "" {
-		c.ID = uuid.New().String()
-	}
-	return nil
+	return "ask"
 }
 
 // CreateContactRequest は問い合わせ送信のリクエスト

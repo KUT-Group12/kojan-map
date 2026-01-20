@@ -23,7 +23,7 @@ func NewStatsServiceImpl(statsRepo repository.StatsRepo) *StatsServiceImpl {
 
 // GetTotalPosts は投稿の総数を取得します（M3-7-1）。
 // 掲載投稿数は投稿テーブルのレコード数
-func (s *StatsServiceImpl) GetTotalPosts(ctx context.Context, businessID int64) (interface{}, error) {
+func (s *StatsServiceImpl) GetTotalPosts(ctx context.Context, businessID int) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -41,7 +41,7 @@ func (s *StatsServiceImpl) GetTotalPosts(ctx context.Context, businessID int64) 
 
 // GetTotalReactions はリアクションの総数を取得します（M3-7-2）。
 // リアクション数は同一ユーザーが同一投稿に複数回リアクションできないため COUNT(DISTINCT reaction)
-func (s *StatsServiceImpl) GetTotalReactions(ctx context.Context, businessID int64) (interface{}, error) {
+func (s *StatsServiceImpl) GetTotalReactions(ctx context.Context, businessID int) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -59,7 +59,7 @@ func (s *StatsServiceImpl) GetTotalReactions(ctx context.Context, businessID int
 
 // GetTotalViews は閲覧数の総数を取得します（M3-7-3）。
 // SSOT Rules: 表示回数は各投稿のビューカウントの合計
-func (s *StatsServiceImpl) GetTotalViews(ctx context.Context, businessID int64) (interface{}, error) {
+func (s *StatsServiceImpl) GetTotalViews(ctx context.Context, businessID int) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -77,7 +77,7 @@ func (s *StatsServiceImpl) GetTotalViews(ctx context.Context, businessID int64) 
 
 // GetEngagementRate はエンゲージメント率を計算します（M3-7-4）。
 // SSOT Rules: エンゲージメント率 = (リアクション数 + ビュー数) / (投稿数 * 100)
-func (s *StatsServiceImpl) GetEngagementRate(ctx context.Context, businessID int64) (interface{}, error) {
+func (s *StatsServiceImpl) GetEngagementRate(ctx context.Context, businessID int) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}

@@ -12,13 +12,13 @@ import (
 // Test cases cover valid business IDs and error conditions like negative IDs and zero posts.
 func TestStatsServiceImpl_GetTotalPosts(t *testing.T) {
 	type args struct {
-		businessID int64
+		businessID int
 	}
 
 	tests := []struct {
 		name          string
 		args          args
-		mockValue     int64
+		mockValue     int
 		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
@@ -82,13 +82,13 @@ func TestStatsServiceImpl_GetTotalPosts(t *testing.T) {
 // Test cases cover valid business IDs and error conditions.
 func TestStatsServiceImpl_GetTotalReactions(t *testing.T) {
 	type args struct {
-		businessID int64
+		businessID int
 	}
 
 	tests := []struct {
 		name          string
 		args          args
-		mockValue     int64
+		mockValue     int
 		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
@@ -144,13 +144,13 @@ func TestStatsServiceImpl_GetTotalReactions(t *testing.T) {
 // Test cases cover valid business IDs and error conditions.
 func TestStatsServiceImpl_GetTotalViews(t *testing.T) {
 	type args struct {
-		businessID int64
+		businessID int
 	}
 
 	tests := []struct {
 		name          string
 		args          args
-		mockValue     int64
+		mockValue     int
 		wantErr       bool
 		checkResponse func(t *testing.T, result interface{})
 	}{
@@ -206,13 +206,13 @@ func TestStatsServiceImpl_GetTotalViews(t *testing.T) {
 // Test cases cover valid business IDs, zero posts edge case, and error conditions.
 func TestStatsServiceImpl_GetEngagementRate(t *testing.T) {
 	type args struct {
-		businessID int64
+		businessID int
 	}
 
 	type mockStats struct {
-		posts     int64
-		reactions int64
-		views     int64
+		posts     int
+		reactions int
+		views     int
 	}
 
 	tests := []struct {

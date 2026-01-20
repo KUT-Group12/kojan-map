@@ -4,16 +4,15 @@ import "time"
 
 // User はユーザー基本情報（全ロール共通）
 type User struct {
-	ID        string `gorm:"primaryKey;column:id;type:varchar(50)"`
-	Gmail     string `gorm:"index;column:gmail;type:varchar(100)"`
-	Role      string `gorm:"column:role;type:enum('user','business','admin')"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID               string    `gorm:"primaryKey;column:googleId;type:varchar(50)"`
+	Gmail            string    `gorm:"column:gmail;type:varchar(100);not null"`
+	Role             string    `gorm:"column:role;type:enum('user','business','admin');not null"`
+	RegistrationDate time.Time `gorm:"column:registrationDate;not null"`
 }
 
 // TableName はテーブル名を指定
 func (User) TableName() string {
-	return "users"
+	return "user"
 }
 
 // GoogleAuthRequest はGoogle認証のリクエスト
@@ -54,7 +53,7 @@ type BusinessLoginRequest struct {
 type BusinessLoginResponse struct {
 	Token    string `json:"token"`
 	Business struct {
-		ID   int64  `json:"id"`
+		ID   int    `json:"id"`
 		Role string `json:"role"`
 	} `json:"business"`
 }

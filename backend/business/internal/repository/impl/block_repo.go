@@ -28,8 +28,8 @@ func (r *BlockRepoImpl) Create(ctx context.Context, blockerID, blockedID string)
 	}
 
 	block := &domain.Block{
-		BlockingUserID: blockerID,
-		BlockedUserID:  blockedID,
+		BlockerID: blockerID,
+		BlockedID: blockedID,
 	}
 
 	if err := r.db.WithContext(ctx).Create(block).Error; err != nil {
@@ -51,7 +51,7 @@ func (r *BlockRepoImpl) Delete(ctx context.Context, blockerID, blockedID string)
 	}
 
 	result := r.db.WithContext(ctx).
-		Where("blocking_user_id = ? AND blocked_google_id = ?", blockerID, blockedID).
+		Where("blockerId = ? AND blockedId = ?", blockerID, blockedID).
 		Delete(&domain.Block{})
 
 	if result.Error != nil {

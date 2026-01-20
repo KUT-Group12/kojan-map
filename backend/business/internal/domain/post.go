@@ -23,25 +23,22 @@ import (
 // Images: 投稿画像リスト（外部キー: PostID）
 // Genres: ジャンルリスト（多対多リレーション、中間テーブル: post_genre）
 type Post struct {
-	ID             int64 `gorm:"primaryKey;autoIncrement"`
-	AuthorID       string
-	BusinessMember BusinessMember `gorm:"foreignKey:AuthorID;references:UserID"`
-	LocationID     string
-	Title          string
-	Description    string
-	ViewCount      int64
-	ReactionCount  int64
-	PostedAt       time.Time
-	UpdatedAt      time.Time
-	AnonymizedAt   *time.Time  // 匿名化日時
-	IsActive       bool        // 論理削除フラグ
-	Images         []PostImage `gorm:"foreignKey:PostID"`
-	Genres         []Genre     `gorm:"many2many:post_genre;"` // 多対多リレーション
+	ID             int            `gorm:"primaryKey;autoIncrement;column:postId"`
+	PlaceID        int            `gorm:"column:placeId;not null"`
+	UserID         string         `gorm:"column:userId;type:varchar(50);not null"`
+	PostDate       time.Time      `gorm:"column:postDate;not null"`
+	Title          string         `gorm:"column:title;type:varchar(50);not null"`
+	Text           string         `gorm:"column:text;type:text;not null"`
+	PostImage      []byte         `gorm:"column:postImage;type:blob"`
+	NumReaction    int            `gorm:"column:numReaction;not null"`
+	NumView        int            `gorm:"column:numView;not null"`
+	GenreID        int            `gorm:"column:genreId;not null"`
+	BusinessMember BusinessMember `gorm:"foreignKey:UserID;references:UserID"`
 }
 
 // TableName は対応するテーブル名を指定
 func (Post) TableName() string {
-	return "posts"
+	return "post"
 }
 
 // PostImage は投稿画像を表すドメインモデル
@@ -50,7 +47,7 @@ func (Post) TableName() string {
 // ImageURL: 画像URL
 type PostImage struct {
 	ID       string `gorm:"primaryKey"`
-	PostID   int64
+	PostID   int
 	ImageURL string
 }
 
@@ -71,8 +68,8 @@ func (p *PostImage) BeforeCreate(tx *gorm.DB) error {
 // PostID: 投稿ID（複合主キー）
 // GenreID: ジャンルID（複合主キー）
 type PostGenre struct {
-	PostID  int64 `gorm:"primaryKey"`
-	GenreID int64 `json:"genreIds"`
+	PostID  int `gorm:"primaryKey"`
+	GenreID int `json:"genreIds"`
 }
 
 // TableName は対応するテーブル名を指定
@@ -84,13 +81,14 @@ func (PostGenre) TableName() string {
 // ID: 主キー
 // Name: ジャンル名
 type Genre struct {
-	ID   int64 `gorm:"primaryKey"`
-	Name string
+	ID        int    `gorm:"primaryKey;autoIncrement;column:genreId"`
+	GenreName string `gorm:"column:genreName;type:enum('food','event','scene','store','emergency','other');not null"`
+	Color     string `gorm:"column:color;type:varchar(6);not null"`
 }
 
 // TableName は対応するテーブル名を指定
 func (Genre) TableName() string {
-	return "genres"
+	return "genre"
 }
 
 // CreatePostRequest は投稿作成時のリクエスト
@@ -101,7 +99,7 @@ func (Genre) TableName() string {
 // images: 画像URLのリスト（任意）
 type CreatePostRequest struct {
 	LocationID  string   `json:"locationId" binding:"required"`
-	GenreIDs    []int64  `json:"genreIds" binding:"required,min=1"`
+	GenreIDs    []int    `json:"genreIds" binding:"required,min=1"`
 	Title       string   `json:"title" binding:"required"`
 	Description string   `json:"description" binding:"required"`
 	Images      []string `json:"images"`
@@ -119,12 +117,12 @@ type CreatePostRequest struct {
 // description: 説明
 // images: 画像URLのリスト
 type PostResponse struct {
-	PostID        int64    `json:"postId"`
+	PostID        int      `json:"postId"`
 	LocationID    string   `json:"locationId"`
-	GenreIDs      []int64  `json:"genreIds"`
+	GenreIDs      []int    `json:"genreIds"`
 	Title         string   `json:"title"`
-	ViewCount     int64    `json:"viewCount"`
-	ReactionCount int64    `json:"reactionCount"`
+	ViewCount     int      `json:"viewCount"`
+	ReactionCount int      `json:"reactionCount"`
 	AuthorID      string   `json:"authorId"`
 	PostedAt      string   `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
 	Description   string   `json:"description"`
@@ -139,16 +137,16 @@ type PostResponse struct {
 // postedAt: 投稿日時（ISO 8601形式: YYYY-MM-DDTHH:mm）
 // description: 説明
 type PostHistoryResponse struct {
-	PostID        int64   `json:"postId"`
-	GenreIDs      []int64 `json:"genreIds"`
-	Title         string  `json:"title"`
-	ReactionCount int64   `json:"reactionCount"`
-	PostedAt      string  `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
-	Description   string  `json:"description"`
+	PostID        int    `json:"postId"`
+	GenreIDs      []int  `json:"genreIds"`
+	Title         string `json:"title"`
+	ReactionCount int    `json:"reactionCount"`
+	PostedAt      string `json:"postedAt"` // ISO 8601形式 (YYYY-MM-DDTHH:mm)
+	Description   string `json:"description"`
 }
 
 // AnonymizePostRequest は投稿匿名化のリクエスト
 // postId: 必須。匿名化する投稿のID
 type AnonymizePostRequest struct {
-	PostID int64 `json:"postId" binding:"required"`
+	PostID int `json:"postId" binding:"required"`
 }

@@ -42,7 +42,7 @@ func (r *ReportRepoImpl) Create(ctx context.Context, reporterID string, payload 
 	// 重複する通報が存在するかを確認します（同じ通報者、通報対象ユーザー、投稿）
 	var existingReport domain.Report
 	err = r.db.WithContext(ctx).
-		Where("reporter_google_id = ? AND reported_google_id = ? AND target_post_id = ?", reporterID, req.ReportedGoogleID, req.TargetPostID).
+		Where("userId = ? AND postId = ?", reporterID, req.TargetPostID).
 		First(&existingReport).Error
 	if err == nil {
 		return fmt.Errorf("duplicate report already exists")
@@ -52,12 +52,12 @@ func (r *ReportRepoImpl) Create(ctx context.Context, reporterID string, payload 
 	}
 
 	report := &domain.Report{
-		ReporterGoogleID: reporterID,
-		ReportedGoogleID: req.ReportedGoogleID,
-		TargetPostID:     req.TargetPostID,
-		ReportReason:     req.ReportReason,
-		ReportedAt:       reportedAt,
-		Status:           "pending",
+		UserID:     reporterID,
+		PostID:     req.TargetPostID,
+		Reason:     req.ReportReason,
+		Date:       reportedAt,
+		ReportFlag: 0,
+		RemoveFlag: 0,
 	}
 
 	if err := r.db.WithContext(ctx).Create(report).Error; err != nil {

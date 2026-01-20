@@ -32,7 +32,7 @@ func (h *PostHandler) ListPosts(c *gin.Context) {
 		return
 	}
 
-	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
+	businessID, err := strconv.Atoi(businessIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
@@ -55,7 +55,7 @@ func (h *PostHandler) GetPost(c *gin.Context) {
 		return
 	}
 
-	postID, err := strconv.ParseInt(postIDStr, 10, 64)
+	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "postId must be a valid integer", c.Request.URL.Path)
 		return
@@ -85,7 +85,7 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
-	placeID := int64(0) // Placeholder
+	placeID := 0 // Placeholder
 
 	// GenreIDsはリクエストから取得
 	genreIDs := req.GenreIDs

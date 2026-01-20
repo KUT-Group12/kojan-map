@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/service"
 	"kojan-map/business/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 // PaymentHandler はStripe/決済関連のエンドポイントを処理するハンドラーです。
@@ -28,7 +29,7 @@ func (h *PaymentHandler) CreateRedirect(c *gin.Context) {
 		return
 	}
 
-	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
+	businessID, err := strconv.Atoi(businessIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return

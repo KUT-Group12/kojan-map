@@ -17,7 +17,7 @@ func NewPaymentRepoImpl(db *gorm.DB) *PaymentRepoImpl {
 }
 
 // CreatePayment はインターフェースを満たすためのプレースホルダー（何も実行しません）。
-func (r *PaymentRepoImpl) CreatePayment(ctx context.Context, businessID int64, amount int64, payFlag bool) (int64, error) {
+func (r *PaymentRepoImpl) CreatePayment(ctx context.Context, businessID int, amount int, payFlag bool) (int, error) {
 	// 何も実行しません: Stripe 統合はモックされており、ダミー ID を返します
 	return 0, nil
 }
