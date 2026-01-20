@@ -204,11 +204,11 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       pinsArray.map((p) =>
         p.userId === updatedUser.id
           ? {
-            ...p,
-            businessIcon: updatedUser.businessIcon,
-            businessName: updatedUser.businessName,
-            userName: updatedUser.name,
-          }
+              ...p,
+              businessIcon: updatedUser.businessIcon,
+              businessName: updatedUser.businessName,
+              userName: updatedUser.name,
+            }
           : p
       );
 
