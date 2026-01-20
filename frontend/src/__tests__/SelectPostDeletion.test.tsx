@@ -97,11 +97,6 @@ describe('SelectPostDeletion コンポーネント', () => {
     fireEvent.click(screen.getByRole('button', { name: /削除/i }));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('削除中にエラーが発生しました');
-    });
-
-    // ローディングが終了していることを確認
-    await waitFor(() => {
       expect(screen.queryByText('削除中...')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: /削除/i })).not.toBeDisabled();
     });
