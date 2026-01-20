@@ -209,7 +209,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       postImage: newPost.images,
       numReaction: 0,
       numView: 0,
-      genreId: Object.keys(genreLabels).indexOf(newPost.genre),
+      genreId: Math.max(0, Object.keys(genreLabels).indexOf(newPost.genre)),
     };
 
     const place: Place = {
