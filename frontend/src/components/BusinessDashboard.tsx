@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Eye,
   Heart,
-  Calendar,
   CreditCard,
   BarChart3,
   Building2,
@@ -47,22 +46,20 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('billing')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'billing'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'billing'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
+              : 'hover:bg-slate-700'
+              }`}
           >
             <CreditCard className="w-5 h-5" />
             <span>支払い情報</span>
@@ -249,27 +246,9 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
 
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
-                    <div className="space-y-2">
-                      {[
-                        { date: '2025年11月1日', amount: '¥2,000', status: '完了' },
-                        { date: '2025年10月1日', amount: '¥2,000', status: '完了' },
-                        { date: '2025年9月1日', amount: '¥2,000', status: '完了' },
-                      ].map((payment, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Calendar className="w-4 h-4 text-slate-500" />
-                            <span className="text-sm">{payment.date}</span>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <span>{payment.amount}</span>
-                            <Badge variant="outline">{payment.status}</Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-slate-500 text-center py-8">
+                      まだ支払い履歴がありません
+                    </p>
                   </div>
 
                   {/* 解約ボタンは廃止：事業者プランの解約操作は管理画面でのみ行えるため UI から削除しました */}
