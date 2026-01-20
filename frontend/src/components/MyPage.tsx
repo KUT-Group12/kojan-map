@@ -110,24 +110,33 @@ export function MyPage({
       const result = event.target?.result as string;
       setSelectedIcon(result);
     };
+    reader.onerror = () => {
+      toast.error('画像の読み込みに失敗しました');
+      setSelectedIcon(null);
+    };
     reader.readAsDataURL(file);
   };
 
-  const handleSaveIcon = () => {
+  const handleSaveIcon = async () => {
     if (!selectedIcon) return;
 
     setIsUploadingIcon(true);
+    try {
+      // アイコンを保存
+      const updatedUser = {
+        ...user,
+        businessIcon: selectedIcon,
+      };
 
-    // アイコンを保存
-    const updatedUser = {
-      ...user,
-      businessIcon: selectedIcon,
-    };
-
-    onUpdateUser(updatedUser);
-    toast.success('アイコンを更新しました');
-    setIsUploadingIcon(false);
-    setSelectedIcon(null);
+      await onUpdateUser(updatedUser);
+      toast.success('アイコンを更新しました');
+      setSelectedIcon(null);
+    } catch (error) {
+      console.error('Icon upload error:', error);
+      toast.error('アイコンの保存に失敗しました');
+    } finally {
+      setIsUploadingIcon(false);
+    }
   };
 
   const handleCancelIconUpload = () => {
@@ -401,10 +410,15 @@ export function MyPage({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
+                          onClick={async () => {
                             if (confirm('この投稿を削除しますか？')) {
-                              onDeletePin(pin.id);
-                              toast.success('投稿を削除しました');
+                              try {
+                                await onDeletePin(pin.id);
+                                toast.success('投稿を削除しました');
+                              } catch (error) {
+                                console.error('Delete error:', error);
+                                toast.error('削除に失敗しました');
+                              }
                             }
                           }}
                         >

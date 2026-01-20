@@ -26,7 +26,7 @@ func SetupAdminRoutes(r *gin.Engine, db *gorm.DB) {
 	// Initialize services
 	dashboardService := service.NewAdminDashboardService(userRepo, postRepo, reportRepo, businessMemberRepo)
 	reportService := service.NewAdminReportService(reportRepo, db)
-	businessService := service.NewAdminBusinessService(businessRequestRepo, userRepo, businessMemberRepo)
+	businessService := service.NewAdminBusinessService(db, businessRequestRepo, userRepo, businessMemberRepo)
 	userService := service.NewAdminUserService(userRepo)
 	contactService := service.NewAdminContactService(askRepo)
 	postService := service.NewAdminPostService(db)

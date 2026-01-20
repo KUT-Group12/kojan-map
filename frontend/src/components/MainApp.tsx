@@ -92,7 +92,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       // 実際のエンドポイントURLに合わせて調整してください
       //const response = await fetch(`/api/posts/${pin.id}`);
       // MainApp.tsx 内
-      const response = await fetch(`http://localhost:8080/api/posts/${pin.id}`);
+      const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+      const response = await fetch(`${API_BASE_URL}/api/posts/${pin.id}`);
       if (!response.ok) throw new Error('詳細の取得に失敗しました');
       
       const data = await response.json();
@@ -125,7 +126,8 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     setDetailData(null);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${pin.id}`);
+      const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+      const response = await fetch(`${API_BASE_URL}/api/posts/${pin.id}`);
       if (!response.ok) throw new Error('詳細の取得に失敗しました');
       
       const data = await response.json();
@@ -161,8 +163,9 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     setDetailData(null); 
   
     try {
-      const response = await fetch(`http://127.0.0.1:8080/api/posts/detail?id=${pin.id}`);
-      const url = `http://localhost:8080/api/posts/detail?id=${pin.id}`;
+      const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+      const response = await fetch(`${API_BASE_URL}/api/posts/detail?id=${pin.id}`);
+      const url = `${API_BASE_URL}/api/posts/detail?id=${pin.id}`;
       console.log("2. リクエスト送信先:", url);
       console.log("3. レスポンスステータス:", response.status); // ログ追加
 

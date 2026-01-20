@@ -69,19 +69,23 @@ func SetupUserRoutes(r *gin.Engine, _ *gorm.DB) {
 		// Business Registration
 		protected.POST("/business/application", businessAppHandler.CreateBusinessApplication)
 
-		// Business Dashboard (Business Role required - should add more middleware if needed)
-		protected.GET("/business/stats", businessHandler.GetBusinessStats)
-		protected.GET("/business/profile", businessHandler.GetBusinessProfile)
-		protected.PUT("/business/profile", businessHandler.UpdateBusinessProfile)
-		protected.POST("/business/icon", businessHandler.UploadBusinessIcon)
-		protected.GET("/business/posts/count", businessHandler.GetBusinessPostCount)
-		protected.GET("/business/revenue", businessHandler.GetBusinessRevenue)
-		protected.PUT("/business/name", businessHandler.UpdateBusinessName)
-		protected.PUT("/business/address", businessHandler.UpdateBusinessAddress)
-		protected.PUT("/business/phone", businessHandler.UpdateBusinessPhone)
-
 		// Auth (Logout/Withdrawal)
 		protected.PUT("/auth/logout", authHandler.Logout)
 		protected.PUT("/auth/withdrawal", authHandler.Withdrawal)
+	}
+
+	// Business-only routes (requires business role)
+	business := r.Group("/api/business")
+	business.Use(middleware.AuthMiddleware(), middleware.BusinessOnlyMiddleware())
+	{
+		business.GET("/stats", businessHandler.GetBusinessStats)
+		business.GET("/profile", businessHandler.GetBusinessProfile)
+		business.PUT("/profile", businessHandler.UpdateBusinessProfile)
+		business.POST("/icon", businessHandler.UploadBusinessIcon)
+		business.GET("/posts/count", businessHandler.GetBusinessPostCount)
+		business.GET("/revenue", businessHandler.GetBusinessRevenue)
+		business.PUT("/name", businessHandler.UpdateBusinessName)
+		business.PUT("/address", businessHandler.UpdateBusinessAddress)
+		business.PUT("/phone", businessHandler.UpdateBusinessPhone)
 	}
 }

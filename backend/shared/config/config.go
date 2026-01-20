@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 )
 
@@ -17,6 +18,12 @@ type Config struct {
 
 // Load loads configuration from environment variables with defaults
 func Load() *Config {
+	// JWT_SECRET_KEY is required for security
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET_KEY environment variable must be set")
+	}
+
 	return &Config{
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnv("DB_PORT", "3306"),
@@ -24,7 +31,7 @@ func Load() *Config {
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBName:     getEnv("DB_NAME", "kojanmap"),
 		ServerPort: getEnv("SERVER_PORT", "8080"),
-		JWTSecret:  getEnv("JWT_SECRET_KEY", "secret-key"),
+		JWTSecret:  jwtSecret,
 	}
 }
 

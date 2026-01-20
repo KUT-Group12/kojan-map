@@ -14,11 +14,15 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ user, onClose }: ContactModalProps) {
+  const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSubmitting) return;
 
     if (!subject.trim() || !message.trim()) {
       toast.error('件名とメッセージを入力してください');
@@ -27,7 +31,13 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
 
     try {
       const token = localStorage.getItem('kojanmap_jwt');
-      const response = await fetch('http://localhost:8080/api/contact/validate', {
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
+
+      setIsSubmitting(true);
+      const response = await fetch(`${API_BASE_URL}/api/contact/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,6 +57,8 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
     } catch (error) {
       console.error('Contact error:', error);
       toast.error('エラーが発生しました。時間をおいて再度お試しください。');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,10 +104,10 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
           </div>
 
           <div className="flex space-x-2 pt-4">
-            <Button type="submit" className="flex-1">
-              送信する
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting ? '送信中…' : '送信する'}
             </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               キャンセル
             </Button>
           </div>
