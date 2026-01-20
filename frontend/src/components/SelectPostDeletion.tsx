@@ -3,15 +3,15 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 
 interface SelectPostDeletionProps {
-  pinId: number;
+  postId: number;
   onDelete: (pinId: number) => void;
   onClose: () => void;
 }
 
-export function SelectPostDeletion({ pinId, onDelete, onClose }: SelectPostDeletionProps) {
+export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDeletionProps) {
   const handleDelete = () => {
     if (confirm('この投稿を削除してもよろしいですか？')) {
-      onDelete(pinId);
+      onDelete(postId);
       toast.success('投稿を削除しました');
       onClose();
     }

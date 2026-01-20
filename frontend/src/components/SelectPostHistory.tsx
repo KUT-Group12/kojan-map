@@ -1,15 +1,22 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
-import { Post } from '../types';
+import { Post, User } from '../types';
 import { DisplayPostHistory } from './DisplayPostHistory';
 import { SelectPostDeletion } from './SelectPostDeletion';
+import { Loader2 } from 'lucide-react';
 
 interface SelectPostHistoryProps {
-  posts: Post[];
+  user: User;
+  // posts: Post[];
   onPinClick: (post: Post) => void;
-  onDeletePin: (postId: number) => void;
+  // onDeletePin: (postId: number) => void;
+  // setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 }
 
-export function SelectPostHistory({ posts, onPinClick, onDeletePin }: SelectPostHistoryProps) {
+export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
       year: 'numeric',
@@ -17,6 +24,39 @@ export function SelectPostHistory({ posts, onPinClick, onDeletePin }: SelectPost
       day: 'numeric',
     });
   };
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        // API仕様: GET /api/posts/history?googleId=...
+        const response = await fetch(`/api/posts/history?googleId=${user.googleId}`);
+        if (!response.ok) throw new Error('履歴の取得に失敗しました');
+
+        const data = await response.json();
+        // 仕様書のレスポンス形式 { "posts": [Post] } に合わせてセット
+        setPosts(data.posts || []);
+      } catch (error) {
+        console.error('Fetch history error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [user.googleId]);
+
+  // 削除成功時にフロントエンドのリストから消去する
+  const handleRemoveFromList = (deletedId: number) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post.postId !== deletedId));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   if (posts.length === 0) {
     return (
@@ -33,13 +73,13 @@ export function SelectPostHistory({ posts, onPinClick, onDeletePin }: SelectPost
           key={post.postId}
           post={post}
           onPinClick={onPinClick}
-          onDeletePin={onDeletePin}
+          onDeletePin={handleRemoveFromList}
           formatDate={formatDate}
           /* 投稿削除 */
           deleteButton={
             <SelectPostDeletion
               postId={post.postId}
-              onDelete={(id) => onDeletePin(id)}
+              onDelete={handleRemoveFromList}
               onClose={() => {}}
             />
           }
