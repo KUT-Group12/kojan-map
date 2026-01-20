@@ -49,6 +49,7 @@ describe('SelectPostDeletion コンポーネント', () => {
     expect(window.confirm).toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(mockOnDelete).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
   });
 
   test('正常に削除（PUTリクエスト）が成功した場合、コールバックが呼ばれること', async () => {
@@ -79,9 +80,11 @@ describe('SelectPostDeletion コンポーネント', () => {
     });
 
     // 成功後の処理検証
-    expect(toast.success).toHaveBeenCalledWith('投稿を削除しました');
-    expect(mockOnDelete).toHaveBeenCalledWith(mockPostId);
-    expect(mockOnClose).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('投稿を削除しました');
+      expect(mockOnDelete).toHaveBeenCalledWith(mockPostId);
+      expect(mockOnClose).toHaveBeenCalled();
+    });
   });
 
   test('APIエラー時にエラーメッセージが表示され、ボタンが再活性化すること', async () => {

@@ -3,10 +3,7 @@ import { NewPostScreen } from '../components/NewPostScreen';
 import { toast } from 'sonner';
 
 // fetchのモック
-if (typeof window.fetch === 'undefined') {
-  window.fetch = jest.fn();
-}
-const fetchMock = window.fetch as jest.Mock;
+const fetchMock = jest.fn() as jest.Mock;
 
 // toastのモック
 jest.mock('sonner', () => ({
@@ -23,6 +20,7 @@ describe('NewPostScreen コンポーネント', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.fetch = fetchMock;
     fetchMock.mockReset();
   });
 
@@ -110,18 +108,18 @@ describe('NewPostScreen コンポーネント', () => {
 
   test('APIエラー時にトーストを表示し、画面を閉じないこと', async () => {
     fetchMock.mockRejectedValueOnce(new Error('Server Down'));
-
+  
     render(<NewPostScreen user={mockUser as any} onClose={mockOnClose} onCreate={mockOnCreate} />);
-
+  
     fireEvent.change(screen.getByLabelText(/タイトル/), { target: { value: 'エラーテスト' } });
     fireEvent.change(screen.getByLabelText(/説明/), { target: { value: '説明' } });
-
+  
     fireEvent.submit(screen.getByTestId('new-post-form'));
-
+  
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('投稿に失敗しました'));
     });
-
+  
     // 画面が閉じられていない（onCreateが呼ばれていない）ことを確認
     expect(mockOnCreate).not.toHaveBeenCalled();
     expect(mockOnClose).not.toHaveBeenCalled();
