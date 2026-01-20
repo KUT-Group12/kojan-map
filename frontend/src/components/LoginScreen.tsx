@@ -44,18 +44,18 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       setIsLoading(false);
     }
   };
-  /*
-  const handleLogin = async (role: UserRole, googleId: string) => {
-    // 【修正箇所①】role が "general" ではない場合、処理を中断する
-    if (role !== 'general') {
-      console.warn('一般会員以外のログイン試行をブロックしました:', role);
-      alert('一般会員以外はこのログインボタンを使用できません。');
-      return; // ここで関数を終了させ、fetchを実行させない
+
+  const handleRoleSelect = async (role: UserRole) => {
+    if (!googleId || !userEmail) {
+      alert('認証情報が不足しています');
+      return;
     }
 
     setIsLoading(true);
+
     try {
-      // 【修正箇所②】ここから下は role が "general" の時のみ実行される
+      // バックエンドへの登録処理（必要に応じて有効化）
+      /*
       const response = await fetch('http://localhost:8080/api/users/register', {
         method: 'POST',
         headers: {
@@ -64,35 +64,24 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         body: JSON.stringify({
           googleId: googleId,
           gmail: userEmail,
+          role: role,
         }),
       });
 
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) throw new Error('登録に失敗しました');
 
       const data = await response.json();
-      onLogin(role, googleId);
       console.log('Backend Response (SessionId):', data.sessionId);
-      alert(`サーバー接続成功: ${data.message}`);
-    } catch (error) {
-      console.error('接続エラー:', error);
-      alert('サーバーに接続できませんでした');
-    }
-  };
+      */
 
-  const handleRoleSelect = (role: UserRole) => {
-    if (googleId) {
-      handleLogin(role, googleId);
-    }
-  }; */
-
-  // バックエンドなしで動くコード
-
-  // <LoginScreen onLogin={handleLogin} />;
-
-  const handleRoleSelect = (role: UserRole) => {
-    if (googleId) {
+      // 親コンポーネントにログイン情報を渡す
       onLogin(role, googleId);
-      console.log('email:', userEmail);
+      console.log('Login successful:', { role, googleId, email: userEmail });
+    } catch (error) {
+      console.error('登録エラー:', error);
+      alert('登録処理に失敗しました。もう一度お試しください。');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -157,6 +146,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             /* ステップ2: 認証済みユーザーの役割選択 */
             <div className="space-y-4 text-center animate-in slide-in-from-bottom-4 duration-500">
               <p className="text-sm font-bold text-gray-700">認証が完了しました</p>
+              {userEmail && <p className="text-xs text-gray-500 mb-2">アカウント: {userEmail}</p>}
               <p className="text-xs text-gray-500 mb-4">登録するアカウント種別を選択してください</p>
 
               <div className="grid grid-cols-2 gap-4">
@@ -164,25 +154,44 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   variant="outline"
                   className="h-28 flex flex-col space-y-2 border-2 hover:border-blue-500"
                   onClick={() => handleRoleSelect('general')}
+                  disabled={isLoading}
                 >
-                  <User className="w-8 h-8 text-blue-500" />
-                  <span>一般会員</span>
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <User className="w-8 h-8 text-blue-500" />
+                      <span>一般会員</span>
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
                   className="h-28 flex flex-col space-y-2 border-2 hover:border-purple-500"
                   onClick={() => handleRoleSelect('business')}
+                  disabled={isLoading}
                 >
-                  <Building2 className="w-8 h-8 text-purple-500" />
-                  <span>事業者会員</span>
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Building2 className="w-8 h-8 text-purple-500" />
+                      <span>事業者会員</span>
+                    </>
+                  )}
                 </Button>
 
                 <Button
                   variant="outline"
                   className="h-28 w-1/2 justify-self-center col-span-2 flex flex-col items-center justify-center space-y-2 border-2 hover:border-amber-500"
                   onClick={() => handleRoleSelect('admin')}
+                  disabled={isLoading}
                 >
-                  <span className="font-bold">管理者</span>
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <span className="font-bold">管理者</span>
+                  )}
                 </Button>
               </div>
             </div>
