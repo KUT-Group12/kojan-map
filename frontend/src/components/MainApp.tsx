@@ -10,8 +10,7 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Pin, User } from '../types';
-//import type { Pin, User, PinGenre } from '../types';
+import { Pin, User, PinGenre } from '../types';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
@@ -39,7 +38,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const [currentView, setCurrentView] = useState<
     'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'
   >('map');
-  const [previousView, setPreviousView] = useState<'map' | 'mypage' | 'dashboard'>('map');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [reactedPins, setReactedPins] = useState<Set<string>>(new Set());
   // APIからのデータを保持する
@@ -77,133 +75,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     // 既存の関数を呼び出してモーダルを開く
     handleOpenCreateAtLocation(lat, lng);
   };
-
-  /*
-  const handlePinClick = (pin: Pin) => {
-    setSelectedPin(pin);
-  };*/
-  /*
-  const handlePinClick = async (pin: Pin) => {
-    setSelectedPin(pin);
-    setDetailData(null); // ローディング状態を作るために一旦クリア
-
-    try {
-      // Goバックエンドの GetPostDetail エンドポイントを呼び出し
-      // 実際のエンドポイントURLに合わせて調整してください
-      //const response = await fetch(`/api/posts/${pin.id}`);
-      // MainApp.tsx 内
-      const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
-      const response = await fetch(`${API_BASE_URL}/api/posts/${pin.id}`);
-      if (!response.ok) throw new Error('詳細の取得に失敗しました');
-      
-      const data = await response.json();
-
-      // Goから返ってきた最新のピン情報（閲覧数など）を反映
-      if (data.pin) {
-        setSelectedPin(data.pin);
-      }
-
-      // リアクション状態と周辺ピンをセット
-      setDetailData({
-        isReacted: data.isReacted,
-        pinsAtLocation: data.pinsAtLocation
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-      // エラー時のフォールバック（既存のローカルロジック）
-      setDetailData({
-        isReacted: reactedPins.has(pin.id),
-        pinsAtLocation: pins.filter(p => 
-          Math.abs(p.latitude - pin.latitude) < 0.0001 && 
-          Math.abs(p.longitude - pin.longitude) < 0.0001
-        )
-      });
-    }
-  };*/
-  /*
-  const handlePinClick = async (pin: Pin) => {
-    setSelectedPin(pin);
-    setDetailData(null);
-
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
-      const response = await fetch(`${API_BASE_URL}/api/posts/${pin.id}`);
-      if (!response.ok) throw new Error('詳細の取得に失敗しました');
-      
-      const data = await response.json();
-
-      if (data.pin) {
-        const formattedPin = {
-          ...data.pin,
-          createdAt: new Date(data.pin.createdAt) 
-        };
-        setSelectedPin(formattedPin);
-      }
-
-      setDetailData({
-        isReacted: data.isReacted,
-        pinsAtLocation: data.pinsAtLocation
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-      // フォールバック処理
-      setDetailData({
-        isReacted: reactedPins.has(pin.id),
-        pinsAtLocation: pins.filter(p => 
-          Math.abs(p.latitude - pin.latitude) < 0.0001 && 
-          Math.abs(p.longitude - pin.longitude) < 0.0001
-        )
-      });
-    }
-  };*/
-  /*
-  const handlePinClick = async (pin: Pin) => {
-    console.log("1. クリックされたピン:", pin.id);
-    setSelectedPin(pin);
-    setDetailData(null); 
-  
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
-      const response = await fetch(`${API_BASE_URL}/api/posts/detail?id=${pin.id}`);
-      const url = `${API_BASE_URL}/api/posts/detail?id=${pin.id}`;
-      console.log("2. リクエスト送信先:", url);
-      console.log("3. レスポンスステータス:", response.status); // ログ追加
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("4. サーバーエラー内容:", errorText);
-        throw new Error('詳細の取得に失敗しました');
-      }
-      
-      const data = await response.json();
-      console.log("5. 受信したデータ:", data);
-  
-      const updatedPin: Pin = {
-        ...data.pin,
-        createdAt: new Date(data.pin.createdAt) 
-      };
-      
-      setSelectedPin(updatedPin);
-      setDetailData({
-        isReacted: data.isReacted ?? reactedPins.has(pin.id),
-        // リスト内のピンの日付も Date オブジェクトに変換
-        pinsAtLocation: (data.pinsAtLocation || []).map((p: any) => ({
-          ...p,
-          createdAt: new Date(p.createdAt)
-        }))
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-      // フォールバック: ローカルデータを使用
-      setDetailData({
-        isReacted: reactedPins.has(pin.id),
-        pinsAtLocation: pins.filter(p => 
-          Math.abs(p.latitude - pin.latitude) < 0.0001 && 
-          Math.abs(p.longitude - pin.longitude) < 0.0001
-        )
-      });
-    }
-  };*/
 
   const handlePinClick = async (pin: Pin) => {
     setSelectedPin(pin);
@@ -269,88 +140,12 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       });
     }
   };
-  /*
-  const handleCreatePin = (newPin: Omit<Pin, 'id' | 'userId' | 'userName' | 'userRole' | 'reactions' | 'createdAt' | 'viewCount' | 'businessName' | 'businessIcon'>) => {
-    const pin: Pin = {
-      ...newPin,
-      id: `pin_${Date.now()}`,
-      userId: user.id,
-      userName: user.role === 'business' ? user.name : '匿名',
-      userRole: user.role,
-      businessName: user.businessName,
-      businessIcon: user.businessIcon,
-      reactions: 0,
-      createdAt: new Date(),
-      viewCount: 0,
-    };
-    setPins([pin, ...pins]);
-    setFilteredPins([pin, ...filteredPins]);
-    setIsCreateModalOpen(false);
-  };*/
 
   const handleDeletePin = (pinId: string) => {
     setPins(pins.filter((p) => p.id !== pinId));
     setFilteredPins(filteredPins.filter((p) => p.id !== pinId));
     setSelectedPin(null);
   };
-  /*
-  const handleCreatePin = async (newPinData: {
-    latitude: number;
-    longitude: number;
-    title: string;
-    description: string;
-    genre: PinGenre;
-    images: string[];
-  }) => {
-    try {
-      // 1. GoバックエンドへPOSTリクエスト
-      const response = await fetch(`${API_BASE_URL}/api/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newPinData,
-          // 必要に応じてユーザー情報を追加で送る場合はここに入れる
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('投稿に失敗しました');
-      }
-
-      const result = await response.json(); // { status: "success", id: "..." } が返ってくる想定
-
-      // 2. サーバーから返ってきたID等を使ってフロントエンドのStateを更新
-      const pin: Pin = {
-        ...newPinData,
-        genre: newPinData.genre as any, // または newPinData.genre as PinGenre
-        id: result.id,
-        userId: user.id,
-        userName: user.role === 'business' ? user.name : '匿名',
-        userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
-        reactions: 0,
-        createdAt: new Date(),
-        viewCount: 0,
-      };
-
-      // 画面上のピン一覧に追加
-      setPins((prev) => [pin, ...prev]);
-      setFilteredPins((prev) => [pin, ...prev]);
-      
-      // モーダルを閉じる
-      setIsCreateModalOpen(false);
-      setCreateInitialLatitude(undefined);
-      setCreateInitialLongitude(undefined);
-
-    } catch (error) {
-      console.error("Create pin error:", error);
-      // CreatePinModal側でtoastを表示させるためにerrorを再送出するか、ここでtoastを出す
-      throw error; 
-    }
-  };*/
 
   const handleCreatePin = async (newPinData: {
     latitude: number;
@@ -371,7 +166,12 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       const result = await response.json();
 
       const pin: Pin = {
-        ...newPinData,
+        latitude: newPinData.latitude,
+        longitude: newPinData.longitude,
+        title: newPinData.title,
+        description: newPinData.description,
+        genre: newPinData.genre as PinGenre,
+        images: newPinData.images,
         id: result.id,
         userId: user.id,
         userName: user.role === 'business' ? user.name : '匿名',
@@ -381,7 +181,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
         reactions: 0,
         createdAt: new Date(),
         viewCount: 0,
-        isHot: false, // 新規投稿はまだHotではない
+        isHot: false,
       };
 
       setPins((prev) => [pin, ...prev]);
@@ -404,11 +204,11 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       pinsArray.map((p) =>
         p.userId === updatedUser.id
           ? {
-              ...p,
-              businessIcon: updatedUser.businessIcon,
-              businessName: updatedUser.businessName,
-              userName: updatedUser.name,
-            }
+            ...p,
+            businessIcon: updatedUser.businessIcon,
+            businessName: updatedUser.businessName,
+            userName: updatedUser.name,
+          }
           : p
       );
 
@@ -432,17 +232,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   };
 
   const handleNavigate = (view: 'map' | 'mypage' | 'dashboard' | 'logout') => {
-    if (view === 'logout') {
-      // ログアウト画面に遷移する前に、現在の画面を保存
-      if (currentView === 'map' || currentView === 'mypage' || currentView === 'dashboard') {
-        setPreviousView(currentView);
-      }
-    }
     setCurrentView(view);
-  };
-
-  const handleLogoutBack = () => {
-    setCurrentView(previousView);
   };
 
   return (
@@ -506,9 +296,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           </div>
         )}
 
-        {currentView === 'logout' && (
-          <LogoutScreen user={user} onBack={handleLogoutBack} onLogout={onLogout} />
-        )}
+        {currentView === 'logout' && <LogoutScreen user={user} onLogout={onLogout} />}
 
         {currentView === 'deleteAccount' && (
           <DeleteAccountScreen

@@ -22,19 +22,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 interface AdminDashboardProps {
   user: User;
@@ -90,8 +78,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     },
   ]);
 
-  //データベースから持ってくるようにしなければならない？
   const [businessApplications, setBusinessApplications] = useState<UserInputBusiness[]>([]);
+  const [genreDistribution, setGenreDistribution] = useState<
+    Array<{ name: string; value: number; color: string }>
+  >([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,6 +120,28 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           );
           setBusinessApplications(normalized);
         }
+
+        // Genre distribution fetch
+        const genreResp = await fetch(`${API_BASE_URL}/api/admin/posts/genre-stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (genreResp.ok) {
+          const genreData = await genreResp.json();
+          const genreColors: Record<string, string> = {
+            グルメ: '#EF4444',
+            イベント: '#F59E0B',
+            景色: '#10B981',
+            お店: '#3B82F6',
+            緊急情報: '#8B5CF6',
+            その他: '#6B7280',
+          };
+          const formattedGenre = genreData.map((item: { genre: string; count: number }) => ({
+            name: item.genre,
+            value: item.count,
+            color: genreColors[item.genre] || '#6B7280',
+          }));
+          setGenreDistribution(formattedGenre);
+        }
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
       }
@@ -153,24 +165,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     businessUsers: summary.businessAccountCount,
     pendingReports: summary.unprocessedReportCount,
   };
-
-  const weeklyActivityData = [
-    { date: '10/28', users: 720, posts: 45, reactions: 156 },
-    { date: '10/29', users: 780, posts: 52, reactions: 189 },
-    { date: '10/30', users: 810, posts: 48, reactions: 201 },
-    { date: '10/31', users: 845, posts: 67, reactions: 234 },
-    { date: '11/01', users: 890, posts: 71, reactions: 267 },
-    { date: '11/02', users: 920, posts: 63, reactions: 298 },
-    { date: '11/03', users: 856, posts: 58, reactions: 315 },
-  ];
-
-  const genreDistribution = [
-    { name: 'グルメ', value: 2, color: '#EF4444' },
-    { name: 'イベント', value: 1, color: '#F59E0B' },
-    { name: '景色', value: 1, color: '#10B981' },
-    { name: 'お店', value: 1, color: '#3B82F6' },
-    { name: '緊急情報', value: 1, color: '#8B5CF6' },
-  ];
 
   const handleApproveBusinessAccount = async (appId: string) => {
     try {
@@ -458,35 +452,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
               </div>
 
               {/* グラフエリア */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-                      週間アクティビティ推移
-                    </CardTitle>
-                    <CardDescription>ユーザー活動とコンテンツ投稿の推移</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={weeklyActivityData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="posts" fill="#3b82f6" name="新規投稿" radius={[8, 8, 0, 0]} />
-                        <Bar
-                          dataKey="reactions"
-                          fill="#8b5cf6"
-                          name="リアクション"
-                          radius={[8, 8, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
+              <div className="grid grid-cols-1 gap-6">
                 <Card className="shadow-xl border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center">

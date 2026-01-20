@@ -12,18 +12,7 @@ import {
   Building2,
   Clock,
 } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+
 import { genreColors, genreLabels } from '../lib/mockData';
 
 interface BusinessDashboardProps {
@@ -34,31 +23,6 @@ interface BusinessDashboardProps {
 
 export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-
-  // モック統計データ
-  const weeklyData = [
-    { date: '10/28', reactions: 12, views: 45 },
-    { date: '10/29', reactions: 18, views: 67 },
-    { date: '10/30', reactions: 15, views: 52 },
-    { date: '10/31', reactions: 24, views: 89 },
-    { date: '11/01', reactions: 31, views: 112 },
-    { date: '11/02', reactions: 28, views: 98 },
-    { date: '11/03', reactions: 35, views: 134 },
-  ];
-
-  const genreStats = pins.reduce(
-    (acc, pin) => {
-      if (!acc[pin.genre]) {
-        acc[pin.genre] = { genre: genreLabels[pin.genre], count: 0, reactions: 0 };
-      }
-      acc[pin.genre].count++;
-      acc[pin.genre].reactions += pin.reactions;
-      return acc;
-    },
-    {} as Record<string, { genre: string; count: number; reactions: number }>
-  );
-
-  const genreStatsArray = Object.values(genreStats);
 
   const totalReactions = pins.reduce((sum, pin) => sum + pin.reactions, 0);
   const totalViews = pins.reduce((sum, pin) => sum + (pin.viewCount || 0), 0);
@@ -204,54 +168,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
               </div>
 
               {/* グラフ */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 週間推移 */}
-                <Card className="shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle>週間推移</CardTitle>
-                    <CardDescription>リアクション数と閲覧数の推移</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={weeklyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="reactions"
-                          stroke="#ef4444"
-                          name="リアクション"
-                        />
-                        <Line type="monotone" dataKey="views" stroke="#3b82f6" name="閲覧数" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
-                {/* ジャンル別統計 */}
-                <Card className="shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle>ジャンル別投稿数</CardTitle>
-                    <CardDescription>投稿のジャンル分布</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={genreStatsArray}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="genre" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" fill="#8b5cf6" name="投稿数" />
-                        <Bar dataKey="reactions" fill="#ef4444" name="リアクション" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
+              <div className="grid grid-cols-1 gap-6"></div>
 
               {/* 人気投稿 */}
               <Card className="shadow-xl border-slate-200">

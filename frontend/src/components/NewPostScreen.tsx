@@ -64,39 +64,6 @@ export function NewPostScreen({
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
-  /*
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!title.trim()) {
-      toast.error('タイトルを入力してください');
-      return;
-    }
-
-    if (!description.trim()) {
-      toast.error('説明を入力してください');
-      return;
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      toast.error('有効な位置情報を入力してください');
-      return;
-    }
-
-    onCreate({
-      latitude: lat,
-      longitude: lng,
-      title,
-      description,
-      genre,
-      images,
-    });
-
-    toast.success('投稿しました！');
-  };*/
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,10 +85,6 @@ export function NewPostScreen({
       toast.error('有効な位置情報を入力してください');
       return;
     }
-
-    // 送信前に数値を確定させる
-    //const lat = parseFloat(latitude);
-    //const lng = parseFloat(longitude);
 
     // バックエンドへAPIリクエスト (onCreateの中でfetchを呼ぶ想定)
     try {
@@ -235,7 +198,6 @@ export function NewPostScreen({
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800 flex items-start">
               <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-              <span>実際のアプリでは、地図上でクリックまたは店舗名検索で位置を指定できます</span>
             </p>
           </div>
 
