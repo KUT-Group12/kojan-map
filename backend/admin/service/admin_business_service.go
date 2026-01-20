@@ -99,7 +99,7 @@ func (s *AdminBusinessService) ApproveApplication(id int) error {
 		Address:          request.Address,
 		Phone:            request.Phone,
 		UserID:           request.UserID,
-		PlaceID:          0, // To be set later
+		PlaceID:          nil, // To be set later when place is created
 	}
 
 	return s.businessMemberRepo.Create(businessMember)
