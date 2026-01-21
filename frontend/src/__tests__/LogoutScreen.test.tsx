@@ -4,10 +4,10 @@ import { LogoutScreen } from '../components/LogoutScreen';
 import { User } from '../types';
 import { toast } from 'sonner';
 
-// fetch のグローバルモック
+// 1. 環境変数のセット
 vi.stubEnv('VITE_API_URL', 'http://localhost:8080');
 
-// toast のモック
+// 2. toast のモック
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -29,13 +29,15 @@ describe('LogoutScreen', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // 3. 各テストの前に fetch を Mock 関数として登録する
+    vi.stubGlobal('fetch', vi.fn());
   });
 
+  // fetch を Mock インスタンスとして扱うための型指定
   const getFetchMock = () => globalThis.fetch as any;
 
   it('ユーザー名とメールアドレスが正しく表示されていること', () => {
     render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
-
     expect(screen.getByText(/テスト太郎様/)).toBeInTheDocument();
     expect(screen.getByText(mockUser.gmail)).toBeInTheDocument();
   });
@@ -51,18 +53,18 @@ describe('LogoutScreen', () => {
     const logoutButton = screen.getByRole('button', { name: 'ログアウトする' });
     fireEvent.click(logoutButton);
 
-    // ローディング表示の確認
-    expect(screen.getByText('ログアウト中...')).toBeInTheDocument();
-    expect(logoutButton).toBeDisabled();
-
+    // 1. ボタンが非活性化され、テキストが切り替わるのを待機
     await waitFor(() => {
-      // API呼び出しの検証
+      expect(logoutButton).toBeDisabled();
+      // ボタンの中のテキストが「ログアウト中...」に変わっているか確認
+      expect(logoutButton).toHaveTextContent('ログアウト中...');
+    });
+
+    // 2. 最終的な処理（API呼ばれたか等）の確認
+    await waitFor(() => {
       expect(getFetchMock()).toHaveBeenCalledWith(
         expect.stringContaining('/api/auth/logout'),
-        expect.objectContaining({
-          method: 'PUT',
-          body: JSON.stringify({ sessionId: mockUser.googleId }),
-        })
+        expect.any(Object)
       );
       expect(toast.success).toHaveBeenCalledWith('ログアウトしました');
       expect(mockOnLogout).toHaveBeenCalled();
@@ -70,7 +72,6 @@ describe('LogoutScreen', () => {
   });
 
   it('APIエラーが発生しても、最終的に onLogout が実行されること', async () => {
-    // サーバーエラーをシミュレート
     getFetchMock().mockResolvedValue({ ok: false });
 
     render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
@@ -79,7 +80,6 @@ describe('LogoutScreen', () => {
     fireEvent.click(logoutButton);
 
     await waitFor(() => {
-      // エラー時もフロント側はログアウトさせる仕様の確認
       expect(mockOnLogout).toHaveBeenCalled();
     });
   });

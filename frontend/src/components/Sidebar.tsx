@@ -120,9 +120,9 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
                   <SelectItem value="1">グルメ</SelectItem>
                   <SelectItem value="2">イベント</SelectItem>
                   <SelectItem value="3">風景</SelectItem>
-                  <SelectItem value="3">お店</SelectItem>
-                  <SelectItem value="3">緊急情報</SelectItem>
-                  <SelectItem value="3">その他</SelectItem>
+                  <SelectItem value="4">お店</SelectItem>
+                  <SelectItem value="5">緊急情報</SelectItem>
+                  <SelectItem value="6">その他</SelectItem>
                 </SelectContent>
               </Select>
 
