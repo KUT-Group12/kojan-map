@@ -59,8 +59,8 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
           const endDate = new Date().toISOString().split('T')[0];
           const start = new Date();
           if (dateFilter === 'today') start.setDate(start.getDate());
-          if (dateFilter === 'week') start.setDate(start.getDate() - 7);
-          if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
+          else if (dateFilter === 'week') start.setDate(start.getDate() - 7);
+          else if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
           const startDate = start.toISOString().split('T')[0];
           url = `${API_BASE_URL}/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
         }
