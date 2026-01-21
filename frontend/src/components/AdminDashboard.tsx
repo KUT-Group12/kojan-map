@@ -120,10 +120,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const fetchInquiries = useCallback(async () => {
     try {
-      const res = await fetch(`/internal/asks`);
+      const res = await fetch(`${API_BASE}/admin/inquiries`);
       if (!res.ok) throw new Error('Failed to fetch inquiries');
       const data = await res.json();
-      setInquiries(data.asks || data);
+      setInquiries(data.inquiries || data);
     } catch (error) {
       console.error('Error fetching inquiries:', error);
     }
@@ -202,7 +202,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const handleDeleteAccount = async (googleId: string) => {
     if (!confirm('このアカウントを完全に削除してもよろしいですか？')) return;
     try {
-      const res = await fetch(`/internal/users/${googleId}`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/admin/users/${googleId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete user');
 
       setUsers((prev) => prev.filter((user) => user.googleId !== googleId));
@@ -216,7 +216,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const handleDeleteInquiry = async (askId: number) => {
     if (!confirm('この問い合わせを削除しますか？')) return;
     try {
-      const res = await fetch(`/internal/requests/${askId}/reject`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/reject`, { method: 'PUT' });
       if (!res.ok) throw new Error('Failed to delete');
 
       setInquiries((prev) => prev.filter((q) => q.askId !== askId));
@@ -229,7 +229,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const handleApproveInquiry = async (askId: number) => {
     try {
-      const res = await fetch(`/internal/requests/${askId}/approve`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/approve`, { method: 'PUT' });
       if (!res.ok) throw new Error('Failed to approve');
 
       setInquiries((prev) => prev.map((q) => (q.askId === askId ? { ...q, askFlag: true } : q)));
