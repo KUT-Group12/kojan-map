@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { Block } from '../types';
+import { getStoredJWT } from '../lib/auth';
 
 interface SelectBlockProps {
   userId: Block['blockedId'];
@@ -26,14 +27,18 @@ export function SelectBlock({ userId, blockerId, onBlockUser, onClose }: SelectB
     setIsSubmitting(true);
     try {
       // API仕様書(POST /api/users/block)に合わせてリクエスト
-      const response = await fetch('/api/users/block', {
+      const token = getStoredJWT();
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+      const response = await fetch(`${API_BASE_URL}/api/users/block`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           userId: userId, // API仕様のキー名に合わせる
-          blockerId: blockerId, // API仕様のキー名に合わせる
+          // blockerId: blockerId, // Backend extracts from token
         }),
       });
 

@@ -4,6 +4,7 @@ import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { Report } from '../types';
+import { getStoredJWT } from '../lib/auth';
 
 interface ReportScreenProps {
   postId: Report['postId'];
@@ -32,16 +33,19 @@ export function ReportScreen({
     setIsSubmitting(true);
 
     try {
-      // API仕様書(POST /api/posts/report)のキー名に合わせて送信
-      const response = await fetch('/api/posts/report', {
+      // API仕様書(POST /api/report)のキー名に合わせて送信
+      const token = getStoredJWT();
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+      const response = await fetch(`${API_BASE_URL}/api/report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           postId: postId,
-          reporterId: userId, // バックエンドのキー名: reporterId
-          reportReason: reason, // バックエンドのキー名: reportReason
+          reason: reason, // バックエンドのキー名: reason
         }),
       });
 

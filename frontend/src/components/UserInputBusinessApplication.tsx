@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Business, User } from '../types';
+import { getStoredJWT } from '../lib/auth';
 
 interface UserInputBusinessApplicationProps {
   user: User;
@@ -23,8 +24,10 @@ export function UserInputBusinessApplication({
 }: UserInputBusinessApplicationProps) {
   //状態管理の追加
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<BusinessApplicationData>({
+  const [formData, setFormData] = useState<BusinessApplicationData & { kanaBusinessName: string; zipCode: string }>({
     businessName: '',
+    kanaBusinessName: '',
+    zipCode: '',
     phone: '',
     address: '',
   });
@@ -35,6 +38,8 @@ export function UserInputBusinessApplication({
     const phoneNumber = Number(formData.phone);
     if (
       !formData.businessName ||
+      !formData.kanaBusinessName || // Check
+      !formData.zipCode || // Check
       !formData.phone ||
       !formData.address ||
       Number.isNaN(phoneNumber)
@@ -45,16 +50,24 @@ export function UserInputBusinessApplication({
 
     setIsLoading(true);
     try {
-      // 1. API仕様: POST /api/business/apply
-      const response = await fetch('/api/business/apply', {
+      // 1. API仕様: POST /api/business/application
+      const token = getStoredJWT();
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+      const response = await fetch(`${API_BASE_URL}/api/business/application`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          ...formData,
-          phone: phoneNumber,
-          userId: user.googleId, // 申請者のGoogle ID
+          // ...formData, // Expand explicitly to match casing if needed, relying on spread
+          userId: user.googleId, // Required by handler
+          businessName: formData.businessName,
+          kanaBusinessName: formData.kanaBusinessName,
+          zipCode: formData.zipCode,
+          address: formData.address,
+          phone: String(phoneNumber),
         }),
       });
 
@@ -94,6 +107,22 @@ export function UserInputBusinessApplication({
           className="w-full px-3 py-2 border rounded-lg"
           value={formData.businessName}
           onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+          disabled={isLoading}
+        />
+        <input
+          type="text"
+          placeholder="店舗名（カナ）"
+          className="w-full px-3 py-2 border rounded-lg"
+          value={formData.kanaBusinessName}
+          onChange={(e) => setFormData({ ...formData, kanaBusinessName: e.target.value })}
+          disabled={isLoading}
+        />
+        <input
+          type="text"
+          placeholder="郵便番号 (例: 7800000)"
+          className="w-full px-3 py-2 border rounded-lg"
+          value={formData.zipCode}
+          onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
           disabled={isLoading}
         />
         <input

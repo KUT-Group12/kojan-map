@@ -10,6 +10,7 @@ import { User, PinGenre, Business } from '../types';
 import { genreLabels, GENRE_MAP } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { getStoredJWT } from '../lib/auth';
 
 interface CreatePinModalProps {
   user: User;
@@ -111,15 +112,17 @@ export function NewPostScreen({
     }
     try {
       // 1. バックエンドと繋げる
+      const token = getStoredJWT();
       const response = await fetch('http://localhost:8080/api/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           placeId: 1, // placeIdの算出 (今は1固定)
           genreId: GENRE_MAP[genre], // 文字列を数値IDに変換
-          userId: user.googleId,
+          // userId: user.googleId, // Backend extracts from token
           title: title,
           text: text,
           postImage: images.length > 0 ? images[0] : '', // 仕様書の string 型に対応
