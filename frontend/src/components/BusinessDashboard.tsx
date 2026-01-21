@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-<<<<<<< HEAD
 import { User, Business, Post, PinGenre } from '../types';
 import { GENRE_MAP } from '../lib/mockData';
 
@@ -65,25 +64,6 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
     const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
     return (entry?.[0] as PinGenre) ?? 'other';
   };
-=======
-import { User, Pin } from '../types';
-import { TrendingUp, Eye, Heart, CreditCard, BarChart3, Building2, Clock } from 'lucide-react';
-
-interface BusinessDashboardProps {
-  user: User;
-  pins: Pin[];
-  onPinClick: (pin: Pin) => void;
-}
-
-export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardProps) {
-  const [activeTab, setActiveTab] = useState('overview');
-
-  const totalReactions = pins.reduce((sum, pin) => sum + pin.reactions, 0);
-  const totalViews = pins.reduce((sum, pin) => sum + (pin.viewCount || 0), 0);
-  const avgReactions = pins.length > 0 ? Math.round(totalReactions / pins.length) : 0;
-
-  const topPosts = [...pins].sort((a, b) => b.reactions - a.reactions).slice(0, 5);
->>>>>>> origin/main
 
   return (
     <div className="flex w-full h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -129,11 +109,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <div className="mt-auto p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">事業者名</p>
-<<<<<<< HEAD
             <p className="text-sm truncate">{business.businessName || user.fromName}</p>
-=======
-            <p className="text-sm truncate">{user.businessName || user.name}</p>
->>>>>>> origin/main
           </div>
         </div>
       </div>
@@ -149,11 +125,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                 {activeTab === 'billing' && '支払い情報'}
               </h1>
               <p className="text-sm text-slate-600 mt-1">
-<<<<<<< HEAD
                 {activeTab === 'overview' && business.businessName}
-=======
-                {activeTab === 'overview' && user.businessName}
->>>>>>> origin/main
                 {activeTab === 'billing' && (
                   <>
                     <Clock className="w-3 h-3 inline mr-1" />
@@ -180,11 +152,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="relative z-10">
-<<<<<<< HEAD
                     <div className="text-3xl">{posts.length}</div>
-=======
-                    <div className="text-3xl">{pins.length}</div>
->>>>>>> origin/main
                     <p className="text-xs opacity-75 mt-1">投稿</p>
                   </CardContent>
                 </Card>
@@ -235,7 +203,6 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
               </div>
 
               {/* グラフ */}
-<<<<<<< HEAD
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 週間推移 */}
                 <Card className="shadow-xl border-slate-200">
@@ -265,8 +232,6 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
 
                 
               </div>
-=======
->>>>>>> origin/main
 
               {/* 人気投稿 */}
               <Card className="shadow-xl border-slate-200">
@@ -279,17 +244,10 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     <p className="text-slate-500 text-center py-8">まだ投稿がありません</p>
                   ) : (
                     <div className="space-y-3">
-<<<<<<< HEAD
                       {topPosts.map((post, index) => (
                         <button
                           key={post.postId}
                           onClick={() => onPinClick(post)}
-=======
-                      {topPosts.map((pin, index) => (
-                        <button
-                          key={pin.id}
-                          onClick={() => onPinClick(pin)}
->>>>>>> origin/main
                           className="w-full p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left"
                         >
                           <div className="flex items-start justify-between">
@@ -299,7 +257,6 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
-<<<<<<< HEAD
                                   <h4>{post.title}</h4>
                                   <Badge
                                     style={{
@@ -312,32 +269,16 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-slate-600 line-clamp-1">{post.text}</p>
-=======
-                                  <h4>{pin.title}</h4>
-                                  <Badge variant="secondary">{pin.genre}</Badge>
-                                </div>
-                                <p className="text-sm text-slate-600 line-clamp-1">
-                                  {pin.description}
-                                </p>
->>>>>>> origin/main
                               </div>
                             </div>
                             <div className="text-right ml-4">
                               <div className="flex items-center text-red-500">
                                 <Heart className="w-4 h-4 mr-1" />
-<<<<<<< HEAD
                                 <span>{post.numReaction}</span>
                               </div>
                               <div className="flex items-center text-blue-500 text-sm mt-1">
                                 <Eye className="w-3 h-3 mr-1" />
                                 <span>{post.numView || 0}</span>
-=======
-                                <span>{pin.reactions}</span>
-                              </div>
-                              <div className="flex items-center text-blue-500 text-sm mt-1">
-                                <Eye className="w-3 h-3 mr-1" />
-                                <span>{pin.viewCount || 0}</span>
->>>>>>> origin/main
                               </div>
                             </div>
                           </div>
@@ -373,18 +314,13 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     </div>
                     <div>
                       <p className="text-sm text-slate-600">次回請求日</p>
-<<<<<<< HEAD
                       {/* バックエンドから取得した次回請求日を表示 */}
                       <p> - </p>
-=======
-                      <p>2025年12月1日</p>
->>>>>>> origin/main
                     </div>
                   </div>
 
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
-<<<<<<< HEAD
                     <div className="space-y-2">
                       {/* TODO: バックエンドから支払い履歴を取得 */}
                       {([] as { date: string; amount: string; status: string }[]).map(
@@ -405,9 +341,6 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                         )
                       )}
                     </div>
-=======
-                    <p className="text-slate-500 text-center py-8">まだ支払い履歴がありません</p>
->>>>>>> origin/main
                   </div>
 
                   {/* 解約ボタンは廃止：事業者プランの解約操作は管理画面でのみ行えるため UI から削除しました */}
