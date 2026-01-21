@@ -5,7 +5,6 @@ import { User, Business, Post, PinGenre } from '../types';
 import { GENRE_MAP } from '../lib/mockData';
 
 import {
-  TrendingUp,
   Eye,
   Heart,
   Calendar,
@@ -24,7 +23,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { genreLabels } from '../lib/mockData';
+import {genreLabels } from '../lib/mockData';
 
 interface BusinessDashboardProps {
   user: User;

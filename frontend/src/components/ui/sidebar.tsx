@@ -1,8 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 'use client';
 
 import * as React from 'react';

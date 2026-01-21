@@ -5,20 +5,12 @@ module.exports = {
 
   // ESMパッケージを ts-jest で変換するための設定
   transform: {
-<<<<<<< HEAD
-    '^.+\\.(t|j)sx?$': 'babel-jest',
-    /*
-      {
-        useESM: true,
-      },*/
-=======
     '^.+\\.(t|j)sx?$': [
       'ts-jest',
       {
         useESM: true,
       },
     ],
->>>>>>> main
   },
 
   // ⚠ 重要：react-leaflet とその依存関係を変換対象に含める
