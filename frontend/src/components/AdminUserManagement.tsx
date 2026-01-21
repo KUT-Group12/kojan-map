@@ -34,10 +34,11 @@ export default function AdminUserManagement({ users, onDeleteAccount }: AdminUse
           <div className="space-y-2">
             {users.length > 0 ? (
               users.map((userItem) => (
-                <div>
+                <div
                   key={userItem.googleId}
                   className="flex items-center justify-between p-4 border border-slate-200
                   rounded-lg"
+                >
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       {/* fromName が optional なのでフォールバックを設定 */}
