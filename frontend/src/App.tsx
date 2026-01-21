@@ -45,7 +45,8 @@ export default function App() {
 
     if (token && storedUserData) {
       const appUser: User = {
-        id: storedUserData.id,
+        // id: storedUserData.id,
+        id: storedUserData.googleId || storedUserData.id,
         email: storedUserData.email,
         name: storedUserData.email ? storedUserData.email.split('@')[0] : 'ユーザー',
         role: storedUserData.role as UserRole,
