@@ -32,9 +32,25 @@ export function UserDisplayMyPage({
 }: UserDisplayMyPageProps) {
   const [showBusinessRegistration, setShowBusinessRegistration] = useState(false);
 
-  const handleBusinessRegistration = () => {
-    toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
-    setShowBusinessRegistration(false);
+  const handleBusinessRegistration = async (data: { ShopName: string; PhoneNumber: string; address: string }) => {
+    try {
+      // TODO: バックエンドAPIへ申請データを送信
+      // const response = await fetch('/api/business-application', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(data),
+      // });
+      // if (!response.ok) throw new Error('申請の送信に失敗しました');
+      
+      // 仮実装: データを確認（本番前に削除）
+      console.log('送信する申請データ:', data);
+      
+      toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
+      setShowBusinessRegistration(false);
+    } catch (error) {
+      toast.error('申請の送信に失敗しました。もう一度お試しください。');
+      console.error('申請エラー:', error);
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -81,8 +97,7 @@ export function UserDisplayMyPage({
             ) : (
               <UserInputBusinessApplication
                 onUpdateUser={(data) => {
-                  console.log('申請データ:', data);
-                  handleBusinessRegistration();
+                  handleBusinessRegistration(data);
                 }}
                 onCancel={() => setShowBusinessRegistration(false)}
               />
