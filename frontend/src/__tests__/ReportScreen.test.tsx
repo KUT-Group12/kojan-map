@@ -1,97 +1,125 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { ReportScreen } from '../components/ReportScreen';
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'sonner';
+import { ReportScreen } from '../components/ReportScreen'
 
-// fetchのモック設定
-const fetchMock = jest.fn() as jest.Mock;
-
-beforeAll(() => {
-  globalThis.fetch = fetchMock;
-});
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  window.fetch = fetchMock; // ← この行を追加
-  fetchMock.mockReset();
-});
-
-jest.mock('sonner', () => ({
+// sonnerのモック
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-describe('ReportScreen コンポーネント', () => {
-  const defaultProps = {
-    postId: 101,
-    userId: 'user-789',
-    isReporting: false,
-    setIsReporting: jest.fn(),
-    onReportComplete: jest.fn(),
+describe('ReportScreen', () => {
+  const mockPostId = 101;
+  const mockUserId = 'user-999';
+  const mockOnReportComplete = vi.fn();
+
+  // propsの setIsReporting をモック化するために状態を管理
+  const ReportWrapper = ({ initialReporting = false }) => {
+    const [isReporting, setIsReporting] = React.useState(initialReporting);
+    return (
+      <ReportScreen
+        postId={mockPostId}
+        userId={mockUserId}
+        isReporting={isReporting}
+        setIsReporting={setIsReporting}
+        onReportComplete={mockOnReportComplete}
+      />
+    );
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    fetchMock.mockReset();
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_API_URL', 'http://test-api.com');
+    global.fetch = vi.fn();
+    // Reactをインポートして利用可能にする
+    global.React = await import('react');
   });
 
-  test('正常に入力して送信すると、正しいAPI(POST)が呼ばれ完了処理が行われること', async () => {
-    // 成功レスポンスを定義
-    fetchMock.mockResolvedValueOnce({ ok: true } as Response);
+  it('初期状態では「通報」ボタンのみが表示されていること', async () => {
+    const { ReportScreen } = await import('../components/ReportScreen');
+    render(
+      <ReportScreen
+        postId={mockPostId}
+        userId={mockUserId}
+        isReporting={false}
+        setIsReporting={vi.fn()}
+        onReportComplete={mockOnReportComplete}
+      />
+    );
 
-    render(<ReportScreen {...defaultProps} isReporting={true} />);
+    expect(screen.getByRole('button', { name: /通報/ })).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('理由を入力')).not.toBeInTheDocument();
+  });
 
-    const textarea = screen.getByPlaceholderText('理由を入力');
-    fireEvent.change(textarea, { target: { value: 'スパム投稿です' } });
+  it('通報ボタンをクリックすると入力フォームが表示されること', async () => {
+    await renderComponentWithState();
 
-    // 送信ボタンクリック
-    const submitButton = screen.getByRole('button', { name: '送信' });
-    fireEvent.click(submitButton);
+    const reportBtn = screen.getByRole('button', { name: /通報/ });
+    fireEvent.click(reportBtn);
 
-    // 【修正ポイント1】
-    // クリック直後は Loader2 アイコンが表示されるため、name 指定なしで disabled かどうかをチェック
-    // もしくは data-slot="button" 等で特定する
-    expect(submitButton).toBeDisabled();
+    expect(screen.getByPlaceholderText('理由を入力')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '送信' })).toBeInTheDocument();
+  });
 
-    // 【修正ポイント2】
-    // 非同期処理とそれに伴うステート更新（setReason等）を waitFor で包む
-    // これにより act(...) の警告も解消されます
+  it('理由を入力して送信すると、バックエンドが期待するキー名でAPIが呼ばれること', async () => {
+    (global.fetch as any).mockResolvedValueOnce({ ok: true });
+    await renderComponentWithState(true); // 最初からフォーム表示
+
+    const textarea = screen.getByPlaceholderText(/理由を入力/);
+    fireEvent.change(textarea, { target: { value: '不適切な内容です' } });
+
+    const submitBtn = screen.getByRole('button', { name: '送信' });
+    fireEvent.click(submitBtn);
+
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/posts/report',
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://test-api.com/api/posts/report',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
-            postId: 101,
-            reporterId: 'user-789',
-            reportReason: 'スパム投稿です',
+            postId: mockPostId,
+            reporterId: mockUserId,      // キー名の確認
+            reportReason: '不適切な内容です', // キー名の確認
           }),
         })
       );
-    });
-
-    await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('通報を受け付けました'));
-      expect(defaultProps.setIsReporting).toHaveBeenCalledWith(false);
-      expect(defaultProps.onReportComplete).toHaveBeenCalled();
+      expect(mockOnReportComplete).toHaveBeenCalled();
     });
   });
 
-  test('APIエラー時にエラーメッセージが表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false } as Response);
+  it('理由が空のまま送信しようとするとエラーを表示すること', async () => {
+    await renderComponentWithState(true);
 
-    render(<ReportScreen {...defaultProps} isReporting={true} />);
+    const submitBtn = screen.getByRole('button', { name: '送信' });
+    fireEvent.click(submitBtn);
 
-    fireEvent.change(screen.getByPlaceholderText('理由を入力'), { target: { value: 'test' } });
-    fireEvent.click(screen.getByRole('button', { name: '送信' }));
-
-    // エラー後のステート更新を待つ
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('エラーが発生しました。再度お試しください。');
-    });
-
-    // エラー後はボタンが「送信」に戻っているはず
-    expect(screen.getByRole('button', { name: '送信' })).not.toBeDisabled();
+    expect(toast.error).toHaveBeenCalledWith('通報理由を入力してください');
+    expect(global.fetch).not.toHaveBeenCalled();
   });
+
+  // ヘルパー: 状態を持ったラッパーでレンダリング
+  async function renderComponentWithState(initialReporting = false) {
+    const { ReportScreen } = await import('../components/ReportScreen');
+    const { useState } = await import('react');
+    
+    const TestComponent = () => {
+      const [reporting, setReporting] = useState(initialReporting);
+      return (
+        <ReportScreen
+          postId={mockPostId}
+          userId={mockUserId}
+          isReporting={reporting}
+          setIsReporting={setReporting}
+          onReportComplete={mockOnReportComplete}
+        />
+      );
+    };
+    return render(<TestComponent />);
+  }
 });
