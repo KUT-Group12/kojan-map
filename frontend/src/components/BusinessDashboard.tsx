@@ -40,8 +40,9 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
 
   // const genreStats = posts.reduce(
   //   (acc, post) => {
+  //     const genreKey = genreIdToKey(post.genreId);
   //     if (!acc[post.genreId]) {
-  //       acc[post.genreId] = { genre: genreLabels[post.genreId], count: 0, reactions: 0 };
+  //       acc[post.genreId] = { genre: genreLabels[genreKey], count: 0, reactions: 0 };
   //     }
   //     acc[post.genreId].count++;
   //     acc[post.genreId].reactions += post.numReaction;
