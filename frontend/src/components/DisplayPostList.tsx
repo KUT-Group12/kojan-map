@@ -99,7 +99,7 @@ export function DisplayPostList({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent ref={scrollContainerRef} className="max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* 1. ローディング中のオーバーレイ表示 */}
         {isDetailLoading && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
