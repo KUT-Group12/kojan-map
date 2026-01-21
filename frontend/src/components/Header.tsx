@@ -4,13 +4,12 @@ import { User } from '../types';
 
 interface HeaderProps {
   user: User;
-  onLogout: () => void;
   onNavigate: (view: 'map' | 'mypage' | 'dashboard' | 'logout') => void;
   currentView: 'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount';
   onContact: () => void;
 }
 
-export function Header({ user, onLogout, onNavigate, currentView, onContact }: HeaderProps) {
+export function Header({ user, onNavigate, currentView, onContact }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -53,10 +52,7 @@ export function Header({ user, onLogout, onNavigate, currentView, onContact }: H
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            onClick={onContact}
-          >
+          <Button variant="outline" onClick={onContact}>
             <Mail className="w-4 h-4 mr-2" />
             お問い合わせ
           </Button>

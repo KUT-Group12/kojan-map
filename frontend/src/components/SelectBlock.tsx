@@ -21,10 +21,7 @@ export function SelectBlock({ userId, onBlockUser, onClose }: SelectBlockProps) 
   };
 
   return (
-    <Button
-      onClick={handleBlock}
-      variant="destructive"
-    >
+    <Button onClick={handleBlock} variant="destructive">
       ブロック
     </Button>
   );

@@ -7,10 +7,19 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
-  businessName?: string;
-  businessIcon?: string;
   createdAt: Date;
   blockedUsers?: string[];
+  // 事業者会員向けプロパティ
+  businessId?: number;
+  businessName?: string;
+  kanaBusinessName?: string;
+  zipCode?: string;
+  address?: string;
+  phone?: string;
+  businessIcon?: string;
+  profileImage?: string;
+  placeId?: number;
+  registDate?: string;
 }
 
 export interface Pin {

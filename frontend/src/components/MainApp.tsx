@@ -10,8 +10,10 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Pin, User } from '../types';
-//import type { Pin, User, PinGenre } from '../types';
+import { Pin, User, PinGenre } from '../types';
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface MainAppProps {
   user: User;
@@ -30,44 +32,35 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createInitialLatitude, setCreateInitialLatitude] = useState<number | undefined>(undefined);
-  const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(undefined);
-  const [currentView, setCurrentView] = useState<'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'>('map');
-  const [previousView, setPreviousView] = useState<'map' | 'mypage' | 'dashboard'>('map');
+  const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(
+    undefined
+  );
+  const [currentView, setCurrentView] = useState<
+    'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'
+  >('map');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [reactedPins, setReactedPins] = useState<Set<string>>(new Set());
   // APIからのデータを保持する
   const [detailData, setDetailData] = useState<PinDetailExtra | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   useEffect(() => {
     const fetchPins = async () => {
       try {
-        // 全ピン取得
-        const response = await fetch('http://127.0.0.1:8080/api/posts');
+        const response = await fetch(`${API_BASE_URL}/api/posts`);
         if (!response.ok) throw new Error('ピンの取得に失敗しました');
         const data: Pin[] = await response.json();
 
-        // 各ピンに対して「投稿数50以上(isHot)」の状態をチェック
-        const pinsWithStatus = await Promise.all(
-          data.map(async (pin) => {
-            try {
-              const res = await fetch(`http://127.0.0.1:8080/api/posts/threshold?id=${pin.id}`);
-              const thresholdData = await res.json();
-              return { 
-                ...pin, 
-                isHot: thresholdData.isHot,
-                createdAt: new Date(pin.createdAt) // 日付の変換
-              };
-            } catch {
-              return { ...pin, createdAt: new Date(pin.createdAt) };
-            }
-          })
-        );
+        // 1回のレスポンスに含まれるフィールドをそのまま利用（N+1回の /threshold 呼び出しを削除）
+        const normalizedPins = data.map((pin) => ({
+          ...pin,
+          createdAt: new Date(pin.createdAt),
+          isHot: pin.isHot ?? false,
+        }));
 
-        setPins(pinsWithStatus);
-        setFilteredPins(pinsWithStatus);
+        setPins(normalizedPins);
+        setFilteredPins(normalizedPins);
       } catch (error) {
-        console.error("Fetch pins error:", error);
+        console.error('Fetch pins error:', error);
         // エラー時はモックデータなどを入れる、もしくは空にする
         setPins([]);
         setFilteredPins([]);
@@ -83,140 +76,33 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     handleOpenCreateAtLocation(lat, lng);
   };
 
-  /*
-  const handlePinClick = (pin: Pin) => {
-    setSelectedPin(pin);
-  };*/
-  /*
-  const handlePinClick = async (pin: Pin) => {
-    setSelectedPin(pin);
-    setDetailData(null); // ローディング状態を作るために一旦クリア
-
-    try {
-      // Goバックエンドの GetPostDetail エンドポイントを呼び出し
-      // 実際のエンドポイントURLに合わせて調整してください
-      //const response = await fetch(`/api/posts/${pin.id}`);
-      // MainApp.tsx 内
-      const response = await fetch(`http://localhost:8080/api/posts/${pin.id}`);
-      if (!response.ok) throw new Error('詳細の取得に失敗しました');
-      
-      const data = await response.json();
-
-      // Goから返ってきた最新のピン情報（閲覧数など）を反映
-      if (data.pin) {
-        setSelectedPin(data.pin);
-      }
-
-      // リアクション状態と周辺ピンをセット
-      setDetailData({
-        isReacted: data.isReacted,
-        pinsAtLocation: data.pinsAtLocation
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-      // エラー時のフォールバック（既存のローカルロジック）
-      setDetailData({
-        isReacted: reactedPins.has(pin.id),
-        pinsAtLocation: pins.filter(p => 
-          Math.abs(p.latitude - pin.latitude) < 0.0001 && 
-          Math.abs(p.longitude - pin.longitude) < 0.0001
-        )
-      });
-    }
-  };*/
-  /*
   const handlePinClick = async (pin: Pin) => {
     setSelectedPin(pin);
     setDetailData(null);
-
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${pin.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/posts/detail?id=${pin.id}`);
       if (!response.ok) throw new Error('詳細の取得に失敗しました');
-      
+
       const data = await response.json();
+      if (!data?.pin) throw new Error('詳細データが不正です');
 
-      if (data.pin) {
-        const formattedPin = {
-          ...data.pin,
-          createdAt: new Date(data.pin.createdAt) 
-        };
-        setSelectedPin(formattedPin);
-      }
-
-      setDetailData({
-        isReacted: data.isReacted,
-        pinsAtLocation: data.pinsAtLocation
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-      // フォールバック処理
-      setDetailData({
-        isReacted: reactedPins.has(pin.id),
-        pinsAtLocation: pins.filter(p => 
-          Math.abs(p.latitude - pin.latitude) < 0.0001 && 
-          Math.abs(p.longitude - pin.longitude) < 0.0001
-        )
-      });
-    }
-  };*/
-/*
-  const handlePinClick = async (pin: Pin) => {
-    console.log("1. クリックされたピン:", pin.id);
-    setSelectedPin(pin);
-    setDetailData(null); 
-  
-    try {
-      const response = await fetch(`http://127.0.0.1:8080/api/posts/detail?id=${pin.id}`);
-      const url = `http://localhost:8080/api/posts/detail?id=${pin.id}`;
-      console.log("2. リクエスト送信先:", url);
-      console.log("3. レスポンスステータス:", response.status); // ログ追加
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("4. サーバーエラー内容:", errorText);
-        throw new Error('詳細の取得に失敗しました');
-      }
-      
-      const data = await response.json();
-      console.log("5. 受信したデータ:", data);
-  
-      const updatedPin: Pin = {
+      // 取得したデータを正規化して設定
+      const normalizedPin: Pin = {
         ...data.pin,
-        createdAt: new Date(data.pin.createdAt) 
+        createdAt: new Date(data.pin.createdAt),
       };
-      
-      setSelectedPin(updatedPin);
+      setSelectedPin(normalizedPin);
       setDetailData({
         isReacted: data.isReacted ?? reactedPins.has(pin.id),
-        // リスト内のピンの日付も Date オブジェクトに変換
-        pinsAtLocation: (data.pinsAtLocation || []).map((p: any) => ({
+        pinsAtLocation: (data.pinsAtLocation ?? []).map((p: Pin) => ({
           ...p,
-          createdAt: new Date(p.createdAt)
-        }))
+          createdAt: new Date(p.createdAt),
+        })),
       });
+      // 詳細パネルはselectedPinの有無で制御するため、フラグは不要
     } catch (error) {
-      console.error("Fetch error:", error);
-      // フォールバック: ローカルデータを使用
-      setDetailData({
-        isReacted: reactedPins.has(pin.id),
-        pinsAtLocation: pins.filter(p => 
-          Math.abs(p.latitude - pin.latitude) < 0.0001 && 
-          Math.abs(p.longitude - pin.longitude) < 0.0001
-        )
-      });
-    }
-  };*/
-
-  const handlePinClick = async (pin: Pin) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/posts/detail?id=${pin.id}`);
-      const data = await response.json();
-      
-      // 3. 取得したデータをステートに入れて、パネルを開く
-      setSelectedPin(data.pin); // data.pin は Go側の PinDetailResponse 構造体の中身
-      setIsDetailOpen(true);
-    } catch (error) {
-      console.error("Fetch error:", error);
+      console.error('Fetch error:', error);
+      setDetailData(null);
     }
   };
 
@@ -229,117 +115,37 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   const handleReaction = (pinId: string) => {
     if (reactedPins.has(pinId)) {
       // リアクション取り消し
-      setPins(pins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p
-      ));
-      setFilteredPins(filteredPins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p
-      ));
-      setReactedPins(prev => {
+      setPins(pins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p)));
+      setFilteredPins(
+        filteredPins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions - 1 } : p))
+      );
+      setReactedPins((prev) => {
         const next = new Set(prev);
         next.delete(pinId);
         return next;
       });
     } else {
       // リアクション追加
-      setPins(pins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p
-      ));
-      setFilteredPins(filteredPins.map(p => 
-        p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p
-      ));
-      setReactedPins(prev => new Set(prev).add(pinId));
+      setPins(pins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p)));
+      setFilteredPins(
+        filteredPins.map((p) => (p.id === pinId ? { ...p, reactions: p.reactions + 1 } : p))
+      );
+      setReactedPins((prev) => new Set(prev).add(pinId));
     }
-    
+
     if (selectedPin && selectedPin.id === pinId) {
       setSelectedPin({
         ...selectedPin,
-        reactions: reactedPins.has(pinId) ? selectedPin.reactions - 1 : selectedPin.reactions + 1
+        reactions: reactedPins.has(pinId) ? selectedPin.reactions - 1 : selectedPin.reactions + 1,
       });
     }
   };
-  /*
-  const handleCreatePin = (newPin: Omit<Pin, 'id' | 'userId' | 'userName' | 'userRole' | 'reactions' | 'createdAt' | 'viewCount' | 'businessName' | 'businessIcon'>) => {
-    const pin: Pin = {
-      ...newPin,
-      id: `pin_${Date.now()}`,
-      userId: user.id,
-      userName: user.role === 'business' ? user.name : '匿名',
-      userRole: user.role,
-      businessName: user.businessName,
-      businessIcon: user.businessIcon,
-      reactions: 0,
-      createdAt: new Date(),
-      viewCount: 0,
-    };
-    setPins([pin, ...pins]);
-    setFilteredPins([pin, ...filteredPins]);
-    setIsCreateModalOpen(false);
-  };*/
 
   const handleDeletePin = (pinId: string) => {
-    setPins(pins.filter(p => p.id !== pinId));
-    setFilteredPins(filteredPins.filter(p => p.id !== pinId));
+    setPins(pins.filter((p) => p.id !== pinId));
+    setFilteredPins(filteredPins.filter((p) => p.id !== pinId));
     setSelectedPin(null);
   };
-  /*
-  const handleCreatePin = async (newPinData: {
-    latitude: number;
-    longitude: number;
-    title: string;
-    description: string;
-    genre: string;
-    images: string[];
-  }) => {
-    try {
-      // 1. GoバックエンドへPOSTリクエスト
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...newPinData,
-          // 必要に応じてユーザー情報を追加で送る場合はここに入れる
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('投稿に失敗しました');
-      }
-
-      const result = await response.json(); // { status: "success", id: "..." } が返ってくる想定
-
-      // 2. サーバーから返ってきたID等を使ってフロントエンドのStateを更新
-      const pin: Pin = {
-        ...newPinData,
-        genre: newPinData.genre as any, // または newPinData.genre as PinGenre
-        id: result.id,
-        userId: user.id,
-        userName: user.role === 'business' ? user.name : '匿名',
-        userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
-        reactions: 0,
-        createdAt: new Date(),
-        viewCount: 0,
-      };
-
-      // 画面上のピン一覧に追加
-      setPins((prev) => [pin, ...prev]);
-      setFilteredPins((prev) => [pin, ...prev]);
-      
-      // モーダルを閉じる
-      setIsCreateModalOpen(false);
-      setCreateInitialLatitude(undefined);
-      setCreateInitialLongitude(undefined);
-
-    } catch (error) {
-      console.error("Create pin error:", error);
-      // CreatePinModal側でtoastを表示させるためにerrorを再送出するか、ここでtoastを出す
-      throw error; 
-    }
-  };*/
 
   const handleCreatePin = async (newPinData: {
     latitude: number;
@@ -350,7 +156,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     images: string[];
   }) => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/api/posts', {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPinData),
@@ -360,26 +166,32 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       const result = await response.json();
 
       const pin: Pin = {
-        ...newPinData,
-        genre: newPinData.genre as any,
+        latitude: newPinData.latitude,
+        longitude: newPinData.longitude,
+        title: newPinData.title,
+        description: newPinData.description,
+        genre: newPinData.genre as PinGenre,
+        images: newPinData.images,
         id: result.id,
         userId: user.id,
         userName: user.role === 'business' ? user.name : '匿名',
         userRole: user.role,
-        businessName: user.businessName || "",
-        businessIcon: user.businessIcon || "",
+        businessName: user.businessName || '',
+        businessIcon: user.businessIcon || '',
         reactions: 0,
         createdAt: new Date(),
         viewCount: 0,
-        isHot: false, // 新規投稿はまだHotではない
+        isHot: false,
       };
 
       setPins((prev) => [pin, ...prev]);
       setFilteredPins((prev) => [pin, ...prev]);
       setIsCreateModalOpen(false);
+      setCreateInitialLatitude(undefined);
+      setCreateInitialLongitude(undefined);
     } catch (error) {
-      console.error("Create pin error:", error);
-      throw error; 
+      console.error('Create pin error:', error);
+      throw error;
     }
   };
 
@@ -413,7 +225,6 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
     }
   };
 
-
   const handleBlockUser = (blockUserId: string) => {
     const nextBlocked = Array.from(new Set([...(user.blockedUsers || []), blockUserId]));
     const updatedUser: User = { ...user, blockedUsers: nextBlocked };
@@ -421,90 +232,74 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
   };
 
   const handleNavigate = (view: 'map' | 'mypage' | 'dashboard' | 'logout') => {
-    if (view === 'logout') {
-      // ログアウト画面に遷移する前に、現在の画面を保存
-      if (currentView === 'map' || currentView === 'mypage' || currentView === 'dashboard') {
-        setPreviousView(currentView);
-      }
-    }
     setCurrentView(view);
-  };
-
-  const handleLogoutBack = () => {
-    setCurrentView(previousView);
   };
 
   return (
     <div className="h-screen flex flex-col">
-      <Header 
-        user={user} 
-        onLogout={onLogout}
+      <Header
+        user={user}
         onNavigate={handleNavigate}
         currentView={currentView}
         onContact={() => setIsContactModalOpen(true)}
       />
-      
+
       <div className="flex-1 flex overflow-hidden">
-      {currentView === 'map' && (
+        {currentView === 'map' && (
           <>
-            <Sidebar 
+            <Sidebar
               user={user}
-              pins={pins} // filteredPins ではなく全体を渡して Sidebar 内でフィルタリング
+              pins={pins}
               onFilterChange={setFilteredPins}
               onCreatePin={() => setIsCreateModalOpen(true)}
               onPinClick={handlePinClick}
             />
-            <MapViewScreen 
-              pins={pins} 
+            <MapViewScreen
+              pins={filteredPins}
               onPinClick={handlePinClick}
               onMapDoubleClick={handleMapDoubleClick}
             />
           </>
         )}
 
-        {currentView === 'mypage' && (
-          user.role === 'business' ? (
-            <BusinessDisplayMyPage 
+        {currentView === 'mypage' &&
+          (user.role === 'business' ? (
+            <BusinessDisplayMyPage
               user={user}
-              pins={pins.filter(p => p.userId === user.id)}
+              pins={pins.filter((p) => p.userId === user.id)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
           ) : (
-            <UserDisplayMyPage 
+            <UserDisplayMyPage
               user={user}
-              pins={pins.filter(p => p.userId === user.id)}
-              reactedPins={Array.from(reactedPins).map(id => pins.find(p => p.id === id)!).filter(Boolean)}
+              pins={pins.filter((p) => p.userId === user.id)}
+              reactedPins={Array.from(reactedPins)
+                .map((id) => pins.find((p) => p.id === id)!)
+                .filter(Boolean)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
-          )
-        )}
+          ))}
 
         {currentView === 'dashboard' && user.role === 'business' && (
           <div className="flex-1 h-full">
-            <BusinessDashboard 
+            <BusinessDashboard
               user={user}
-              pins={pins.filter(p => p.userId === user.id)}
+              pins={pins.filter((p) => p.userId === user.id)}
               onPinClick={handlePinClick}
             />
           </div>
         )}
 
-        {currentView === 'logout' && (
-          <LogoutScreen 
-            user={user}
-            onBack={handleLogoutBack}
-            onLogout={onLogout}
-          />
-        )}
+        {currentView === 'logout' && <LogoutScreen user={user} onLogout={onLogout} />}
 
         {currentView === 'deleteAccount' && (
-          <DeleteAccountScreen 
+          <DeleteAccountScreen
             user={user}
             onBack={() => setCurrentView('mypage')}
             onDeleteAccount={onLogout}
@@ -549,7 +344,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
           onSelectPin={handlePinClick}
         />
       )}
-      
+
       {isCreateModalOpen && (
         <NewPostScreen
           user={user}
@@ -565,10 +360,7 @@ export function MainApp({ user, onLogout, onUpdateUser }: MainAppProps) {
       )}
 
       {isContactModalOpen && (
-        <ContactModal
-          user={user}
-          onClose={() => setIsContactModalOpen(false)}
-        />
+        <ContactModal user={user} onClose={() => setIsContactModalOpen(false)} />
       )}
     </div>
   );
