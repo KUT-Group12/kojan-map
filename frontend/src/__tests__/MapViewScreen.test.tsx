@@ -12,10 +12,11 @@ vi.mock('react-leaflet', () => ({
     <div
       data-testid="map-marker"
       data-position={JSON.stringify(position)}
-      onClick={eventHandlers.click}
-      onMouseOver={eventHandlers.mouseover}
+      data-icon-html={icon?.options?.html ?? ''}
+      onClick={eventHandlers?.click}
+      onMouseOver={eventHandlers?.mouseover}
     >
-      <div dangerouslySetInnerHTML={{ __html: icon.options.html }} />
+      <div data-testid="marker-html">{icon?.options?.html ?? ''}</div>
     </div>
   ),
 }));

@@ -13,7 +13,7 @@ const mockPost = {
   postDate: '2024-01-21T10:00:00Z',
   numReaction: 5,
   numView: 10,
-  placeId: 'place-1',
+  placeId: 1,
 } as any;
 
 describe('DisplayPostList', () => {

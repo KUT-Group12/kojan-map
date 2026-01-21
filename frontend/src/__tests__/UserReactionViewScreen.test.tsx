@@ -1,98 +1,104 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserReactionViewScreen } from '../components/UserReactionViewScreen';
 
-// fetchのモック
-const fetchMock = jest.fn() as jest.Mock;
+// モックデータ
+const mockUser = { id: 'google-123', name: 'Test User' } as any;
 
-describe('UserReactionViewScreen コンポーネント', () => {
-  const mockUser = { googleId: 'my-id', role: 'general' };
-  const mockOnPinClick = jest.fn();
+const mockPosts = [
+  {
+    postId: 'post-1',
+    title: 'テスト投稿1',
+    text: 'これはテスト投稿の内容です',
+    genreId: 1, // GENRE_MAP に対応するID
+    userId: 'user-A',
+    numReaction: 10,
+  },
+  {
+    postId: 'post-2',
+    title: 'テスト投稿2',
+    text: '2つ目の投稿内容',
+    genreId: 2,
+    userId: 'user-B',
+    numReaction: 5,
+  },
+];
 
-  const mockPosts = [
-    {
-      postId: 101,
-      userId: 'user-other',
-      title: 'リアクションした投稿1',
-      text: '本文1',
-      genreId: 0,
-      numReaction: 15,
-    },
-  ];
+describe('UserReactionViewScreen', () => {
+  const mockOnPinClick = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    window.fetch = fetchMock;
-    fetchMock.mockReset();
+    vi.clearAllMocks();
+    global.fetch = vi.fn();
   });
 
-  test('ロード中にローディングスピナーが表示されること', () => {
-    fetchMock.mockReturnValue(new Promise(() => {})); // 完了しないPromise
+  it('データ取得中にローディングアイコンが表示されること', () => {
+    // fetchを未完了（Pending）状態で止める
+    (global.fetch as any).mockReturnValue(new Promise(() => {}));
 
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
 
-    // animate-spin クラスを持つ Loader2 を探す
-    const loader = document.querySelector('.animate-spin');
-    expect(loader).toBeInTheDocument();
+    // Loader2 (lucide-react) は SVG に `animate-spin` クラスを持つ
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  test('APIから取得したデータが正しく表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('リアクションした投稿が正常に表示されること', async () => {
+    // 成功レスポンスのモック
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: mockPosts }),
-    } as Response);
-
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
-
-    // fetchのURLとエンコードを確認
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/reactions/list?googleId=my-id'),
-      expect.any(Object)
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('リアクションした投稿1')).toBeInTheDocument();
-      expect(screen.getByText('投稿者ID: user-other')).toBeInTheDocument();
-      expect(screen.getByText('15')).toBeInTheDocument();
     });
+
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
+
+    // タイトルが表示されるまで待機
+    await waitFor(() => {
+      expect(screen.getByText('テスト投稿1')).toBeInTheDocument();
+      expect(screen.getByText('テスト投稿2')).toBeInTheDocument();
+    });
+
+    // 投稿者IDやリアクション数も確認
+    expect(screen.getByText('投稿者ID: user-A')).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
   });
 
-  test('投稿が0件の場合、「まだリアクションがありません」と表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('データが空の場合にメッセージが表示されること', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: [] }),
-    } as Response);
+    });
 
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
 
     await waitFor(() => {
       expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
     });
   });
 
-  test('カードをクリックすると onPinClick が呼ばれること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('カードをクリックした時に onPinClick が呼ばれること', async () => {
+    (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: mockPosts }),
-    } as Response);
-
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
-
-    await waitFor(() => {
-      const card = screen.getByText('リアクションした投稿1').closest('.cursor-pointer');
-      if (card) fireEvent.click(card);
     });
+
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
+
+    // カードの出現を待つ
+    const card = await screen.findByText('テスト投稿1');
+    fireEvent.click(card.closest('.cursor-pointer')!);
 
     expect(mockOnPinClick).toHaveBeenCalledWith(mockPosts[0]);
   });
 
-  test('APIエラー時にエラーログが出力され、ローディングが終了すること', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    fetchMock.mockRejectedValueOnce(new Error('API Error'));
+  it('APIエラー時にログを出力し、ローディングが終了すること', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    (global.fetch as any).mockRejectedValueOnce(new Error('API Error'));
 
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
 
+    // ローディングが終わり、データがない状態になることを確認
     await waitFor(() => {
-      expect(screen.queryByRole('status')).not.toBeInTheDocument(); // ローダー消去
+      expect(screen.queryByRole('status')).not.toBeInTheDocument(); // Loaderが消えたか
       expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
     });
 

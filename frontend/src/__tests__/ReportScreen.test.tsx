@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'sonner';
-import { ReportScreen } from '../components/ReportScreen'
+import { ReportScreen } from '../components/ReportScreen';
 
 // sonnerのモック
 vi.mock('sonner', () => ({
@@ -83,7 +83,7 @@ describe('ReportScreen', () => {
           method: 'POST',
           body: JSON.stringify({
             postId: mockPostId,
-            reporterId: mockUserId,      // キー名の確認
+            reporterId: mockUserId, // キー名の確認
             reportReason: '不適切な内容です', // キー名の確認
           }),
         })
@@ -107,7 +107,7 @@ describe('ReportScreen', () => {
   async function renderComponentWithState(initialReporting = false) {
     const { ReportScreen } = await import('../components/ReportScreen');
     const { useState } = await import('react');
-    
+
     const TestComponent = () => {
       const [reporting, setReporting] = useState(initialReporting);
       return (
