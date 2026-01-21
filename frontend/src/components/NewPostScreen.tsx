@@ -120,6 +120,7 @@ export function NewPostScreen({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          title: title,
           description: text,
           latitude: lat,
           longitude: lng,
