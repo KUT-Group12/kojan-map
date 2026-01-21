@@ -64,7 +64,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userReactedPosts, setUserReactedPosts] = useState<Post[]>([]);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
-  const [genres] = useState<Genre[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
 
   // ユーザー専用データの取得
   const fetchUserData = useCallback(async () => {
@@ -150,14 +150,42 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     try {
       const response = await fetch(`${API_BASE_URL}/api/posts/detail?postId=${post.postId}`);
       if (!response.ok) throw new Error('詳細取得に失敗しました');
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedPost(data.post || data);
-        setDetailData({
-          isReacted: data.isReacted || false,
-          postsAtLocation: data.postsAtLocation || [],
-        });
-      }
+
+      const data = await response.json();
+      // APIのレスポンスから投稿データを取得
+      const detailPost = data.post || data;
+      // 周辺の投稿リストを取得
+      const postsAtLocation = (data.postsAtLocation || []) as Post[];
+
+      setSelectedPost(detailPost as DisplayPost);
+      setDetailData({
+        isReacted: data.isReacted || false,
+        postsAtLocation: postsAtLocation,
+      });
+
+      // --- ジャンル設定ロジック ---
+      // 「今クリックした投稿」と「その場所にある他の投稿」を合算してジャンルを抽出
+      const allRelevantPosts = [detailPost, ...postsAtLocation];
+      const genreMap = new Map<number, Genre>();
+
+      // 既存のジャンルをMapにコピー（既存のものを保持したい場合）
+      genres.forEach((g) => genreMap.set(g.genreId, g));
+
+      allRelevantPosts.forEach((p) => {
+        // genreId が存在し、かつ Map にまだ登録されていない場合
+        if (p.genreId && !genreMap.has(p.genreId)) {
+          genreMap.set(p.genreId, {
+            genreId: p.genreId,
+            genreName: p.genreName || '未分類',
+            // 型定義に合わせて 'color' プロパティを使用
+            // DBから来る Post オブジェクトの 'genreColor' を代入
+            color: p.genreColor || '#64748b',
+          });
+        }
+      });
+
+      // 新しく判明したジャンルを含めて更新
+      setGenres(Array.from(genreMap.values()));
     } catch (error) {
       console.error('詳細取得エラー:', error);
       setDetailData({
