@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User } from '../types';
-import { mockPins, Inquiry } from '../lib/mockData';
-import { BusinessApplicationList, UserInputBusiness } from './AdminDisplayBusinessApplicationList';
+import { User, Report } from '../types';
+import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
+import AdminReport, { AdminReportProps } from './AdminReport';
+import AdminUserManagement, { AdminUser } from './AdminUserManagement';
+import AdminContactManagement, { Inquiry } from './AdminContactManagement';
 import {
   Users,
   AlertTriangle,
   TrendingUp,
   MapPin,
   UserCheck,
-  Trash2,
-  CheckCircle,
   LogOut,
   Activity,
   BarChart3,
@@ -22,244 +22,242 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 interface AdminDashboardProps {
   user: User;
   onLogout: () => void;
 }
 
-interface BusinessAppAPIResponse {
-  requestId: number;
-  businessName: string;
-  applicantName: string;
-  applicantEmail: string;
-  status: string;
-  phone: string;
-  address: string;
-  createdAt: string;
+interface SystemStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalPosts: number;
+  totalReactions: number;
+  businessUsers: number;
+  pendingReports: number;
+}
+
+interface GenreDistribution {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface WeeklyActivity {
+  date: string;
+  posts: number;
+  reactions: number;
 }
 
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
-  const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
   const [activeTab, setActiveTab] = useState('overview');
-  const [summary, setSummary] = useState({
-    totalUserCount: 0,
-    activeUserCount: 0,
-    totalPostCount: 0,
-    totalReactionCount: 0,
-    businessAccountCount: 0,
-    unprocessedReportCount: 0,
-  });
-  const [reports] = useState([
-    {
-      id: 'r1',
-      pinId: 'pin1',
-      reporter: '山田太郎',
-      reason: '不適切な内容',
-      status: 'pending' as const,
-      date: '2025-11-03',
-    },
-    {
-      id: 'r2',
-      pinId: 'pin3',
-      reporter: '佐藤花子',
-      reason: 'スパム',
-      status: 'pending' as const,
-      date: '2025-11-02',
-    },
-    {
-      id: 'r3',
-      pinId: 'pin2',
-      reporter: '鈴木一郎',
-      reason: '虚偽情報',
-      status: 'resolved' as const,
-      date: '2025-11-01',
-    },
-  ]);
 
-  const [businessApplications, setBusinessApplications] = useState<UserInputBusiness[]>([]);
-  const [genreDistribution, setGenreDistribution] = useState<
-    Array<{ name: string; value: number; color: string }>
-  >([]);
+  const [reports, setReports] = useState<Report[]>([]);
+  // const [businessApplications, setBusinessApplications]... removed
+  const [userList, setUsers] = useState<AdminUser[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+
+  const [systemStats, setSystemStats] = useState<SystemStats>({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalPosts: 0,
+    totalReactions: 0,
+    businessUsers: 0,
+    pendingReports: 0,
+  });
+  const [weeklyActivityData, setWeeklyActivityData] = useState<WeeklyActivity[]>([]);
+  const [genreDistribution, setGenreDistribution] = useState<GenreDistribution[]>([]);
+
+  const API_BASE = '/api';
+
+  const fetchOverviewData = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/summary`);
+      if (!res.ok) throw new Error('Failed to fetch summary');
+      const data = await res.json();
+      if (data.stats) setSystemStats(data.stats);
+      if (data.activity) setWeeklyActivityData(data.activity);
+      if (data.genres) setGenreDistribution(data.genres);
+    } catch (error) {
+      console.error('Error fetching overview:', error);
+    }
+  }, []);
+
+  const fetchReports = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/reports`);
+      if (!res.ok) throw new Error('Failed to fetch reports');
+      const data = await res.json();
+      setReports(data.reports || data);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+    }
+  }, []);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/users`);
+      if (!res.ok) throw new Error('Failed to fetch users');
+      const data = await res.json();
+      setUsers(data.users || data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  }, []);
+
+  const fetchInquiries = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/inquiries`);
+      if (!res.ok) throw new Error('Failed to fetch inquiries');
+      const data = await res.json();
+      const raw = data.inquiries ?? data.asks ?? data;
+      const safeInquiries = Array.isArray(raw) ? raw : [];
+      if (!Array.isArray(raw)) {
+        console.warn('Unexpected inquiries response shape', data);
+      }
+      setInquiries(safeInquiries);
+    } catch (error) {
+      console.error('Error fetching inquiries:', error);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('kojanmap_jwt');
-        if (!token) {
-          console.warn('No auth token found');
-          return;
-        }
-        // Summary fetch
-        const summaryResp = await fetch(`${API_BASE_URL}/api/admin/summary`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (summaryResp.ok) {
-          const summaryData = await summaryResp.json();
-          setSummary(summaryData);
-        }
+    switch (activeTab) {
+      case 'overview':
+        fetchOverviewData();
+        break;
+      case 'reports':
+        fetchReports();
+        break;
+      case 'users':
+        fetchUsers();
+        break;
+      case 'inquiries':
+        fetchInquiries();
+        break;
+    }
+  }, [
+    activeTab,
+    fetchOverviewData,
+    fetchReports,
+    // fetchBusinessApplications,
+    fetchUsers,
+    fetchInquiries,
+  ]);
 
-        // Applications fetch
-        const appResp = await fetch(`${API_BASE_URL}/api/admin/request`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (appResp.ok) {
-          const appData = await appResp.json();
-          // Normalize to UserInputBusiness
-          const normalized: UserInputBusiness[] = (appData.applications || []).map(
-            (app: BusinessAppAPIResponse) => ({
-              id: String(app.requestId),
-              userName: app.applicantName,
-              email: app.applicantEmail,
-              ShopName: app.businessName,
-              PhoneNumber: app.phone,
-              address: app.address,
-              date: app.createdAt.split('T')[0],
-            })
-          );
-          setBusinessApplications(normalized);
-        }
+  // const handleReject... removed
+  // const handleApprove... removed
 
-        // Genre distribution fetch
-        const genreResp = await fetch(`${API_BASE_URL}/api/admin/posts/genre-stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (genreResp.ok) {
-          const genreData = await genreResp.json();
-          // APIから返されるデータには既にcolorが含まれている想定
-          const formattedGenre = genreData.map(
-            (item: { genre: string; count: number; color: string }) => ({
-              name: item.genre,
-              value: item.count,
-              color: item.color,
-            })
-          );
-          setGenreDistribution(formattedGenre);
-        }
-
-        // Inquiries fetch
-        const inquiryResp = await fetch(`${API_BASE_URL}/api/admin/inquiries`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (inquiryResp.ok) {
-          const inquiryData = await inquiryResp.json();
-          setInquiries(inquiryData);
-        }
-
-        // Users fetch
-        const usersResp = await fetch(`${API_BASE_URL}/api/admin/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (usersResp.ok) {
-          const usersData = await usersResp.json();
-          setUsers(usersData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch admin data:', error);
-      }
-    };
-
-    fetchData();
-  }, [API_BASE_URL]);
-
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-  const [users, setUsers] = useState<
-    Array<{ id: string; name: string; email: string; role: string; posts: number }>
-  >([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showOnlyOpen, setShowOnlyOpen] = useState(false);
-  const [replyModalOpen, setReplyModalOpen] = useState(false);
-  const [replyingInquiry, setReplyingInquiry] = useState<Inquiry | null>(null);
-  const [replyText, setReplyText] = useState('');
-
-  const systemStats = {
-    totalUsers: summary.totalUserCount,
-    activeUsers: summary.activeUserCount,
-    totalPosts: summary.totalPostCount,
-    totalReactions: summary.totalReactionCount,
-    businessUsers: summary.businessAccountCount,
-    pendingReports: summary.unprocessedReportCount,
-  };
-
-  const handleApproveBusinessAccount = async (appId: string) => {
+  const handleResolveReport = async (reportId: number) => {
     try {
-      const token = localStorage.getItem('kojanmap_jwt');
-      if (!token) {
-        toast.error('ログインが必要です');
-        return;
-      }
-      const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/approve`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.status === 401 || response.status === 403) {
-        toast.error('認証が無効です。再ログインしてください');
-        onLogout();
-        return;
-      }
-      if (!response.ok) throw new Error('承認に失敗しました');
+      const res = await fetch(`${API_BASE}/admin/reports/${reportId}/handle`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Failed to resolve report');
 
-      toast.success('事業者アカウントを承認しました');
-      setBusinessApplications((prev) => prev.filter((app) => String(app.id) !== appId));
+      setReports((prev) =>
+        prev.map((report) =>
+          report.reportId === reportId ? { ...report, reportFlag: true } : report
+        )
+      );
+      // サイドバーのバッジ件数も即時更新
+      setSystemStats((prev) => ({
+        ...prev,
+        pendingReports: Math.max(0, (prev?.pendingReports ?? 1) - 1),
+      }));
+      toast.success('通報を処理済みにしました');
     } catch (error) {
-      console.error('Approval error:', error);
-      toast.error('承認処理中にエラーが発生しました');
+      console.error(error);
+      toast.error('処理に失敗しました');
     }
   };
 
-  const handleRejectBusinessAccount = async (appId: string) => {
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm('この投稿を削除しますか？')) return;
     try {
-      const token = localStorage.getItem('kojanmap_jwt');
-      if (!token) {
-        toast.error('ログインが必要です');
-        return;
+      const res = await fetch(`${API_BASE}/posts/${postId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        console.warn('Backend delete might not be implemented, updating UI only');
       }
-      const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/reject`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.status === 401 || response.status === 403) {
-        toast.error('認証が無効です。再ログインしてください');
-        onLogout();
-        return;
-      }
-      if (!response.ok) throw new Error('却下に失敗しました');
 
-      toast.success('事業者申請を却下しました');
-      setBusinessApplications((prev) => prev.filter((app) => String(app.id) !== appId));
+      setReports((prev) =>
+        prev.map((report) =>
+          report.postId === postId
+            ? {
+                ...report,
+                reportFlag: true,
+                removeFlag: true,
+              }
+            : report
+        )
+      );
+      toast.success('投稿を削除し、関連する通報を処理済みにしました');
     } catch (error) {
-      console.error('Rejection error:', error);
-      toast.error('却下処理中にエラーが発生しました');
+      console.error(error);
+      toast.error('削除操作に失敗しました');
     }
   };
 
-  const handleResolveReport = (_reportId: string) => {
-    toast.success('通報を処理しました');
-  };
+  const handleDeleteAccount = async (googleId: string) => {
+    if (!confirm('このアカウントを完全に削除してもよろしいですか？')) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${googleId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete user');
 
-  const handleDeletePost = (_pinId: string) => {
-    if (confirm('この投稿を削除しますか？')) {
-      toast.success('投稿を削除しました');
-    }
-  };
-
-  const handleDeleteAccount = (_userId: string) => {
-    if (confirm('このアカウントを削除しますか？関連する全ての投稿も削除されます。')) {
+      setUsers((prev) => prev.filter((user) => user.googleId !== googleId));
       toast.success('アカウントを削除しました');
+    } catch (error) {
+      console.error(error);
+      toast.error('アカウント削除に失敗しました');
     }
   };
 
-  const handleDeleteInquiry = (id: string) => {
-    if (confirm('この問い合わせを削除しますか？')) {
-      setInquiries((prev) => prev.filter((q) => q.id !== id));
+  const handleDeleteInquiry = async (askId: number) => {
+    if (!confirm('この問い合わせを削除しますか？')) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/reject`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Failed to delete');
+
+      setInquiries((prev) => prev.filter((q) => q.askId !== askId));
       toast.success('問い合わせを削除しました');
+    } catch (error) {
+      console.error(error);
+      toast.error('削除に失敗しました');
     }
+  };
+
+  const handleApproveInquiry = async (askId: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/approve`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Failed to approve');
+
+      setInquiries((prev) => prev.map((q) => (q.askId === askId ? { ...q, askFlag: true } : q)));
+      toast.success('問い合わせを対応済みにしました');
+    } catch (error) {
+      console.error(error);
+      toast.error('対応済みにできませんでした');
+    }
+  };
+
+  const reportProps: AdminReportProps = {
+    reports: reports,
+    onDeletePost: handleDeletePost,
+    onResolveReport: handleResolveReport,
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* サイドバー */}
       <div className="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white shadow-2xl z-20">
         <div className="p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
@@ -309,20 +307,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
-            {businessApplications.length > 0 && (
+            {/* {businessApplications.length > 0 && (
               <Badge className="bg-orange-500">{businessApplications.length}</Badge>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('posts')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'posts'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
-                : 'hover:bg-slate-700'
-            }`}
-          >
-            <MapPin className="w-5 h-5" />
-            <span>投稿管理</span>
+            )} */}
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -345,14 +332,16 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
-            {inquiries.length > 0 && <Badge className="bg-emerald-500">{inquiries.length}</Badge>}
+            {inquiries.filter((q) => !q.askFlag).length > 0 && (
+              <Badge className="bg-emerald-500">{inquiries.filter((q) => !q.askFlag).length}</Badge>
+            )}
           </button>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">ログイン中</p>
-            <p className="text-sm truncate">{user.name}</p>
+            <p className="text-sm font-medium">{user.fromName || user.gmail || '管理者'}</p>
           </div>
           <Button
             variant="outline"
@@ -365,9 +354,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         </div>
       </div>
 
-      {/* メインコンテンツ */}
       <div className="ml-64 min-h-screen">
-        {/* ヘッダー */}
         <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div>
@@ -375,8 +362,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 {activeTab === 'overview' && 'ダッシュボード概要'}
                 {activeTab === 'reports' && '通報管理'}
                 {activeTab === 'business' && '事業者申請'}
-                {activeTab === 'posts' && '投稿管理'}
                 {activeTab === 'users' && 'ユーザー管理'}
+                {activeTab === 'inquiries' && 'お問い合わせ管理'}
               </h1>
               <p className="text-sm text-slate-600 mt-1">
                 <Clock className="w-3 h-3 inline mr-1" />
@@ -387,10 +374,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         </header>
 
         <div className="p-8">
-          {/* 概要タブ */}
           {activeTab === 'overview' && (
             <div className="space-y-6 max-w-7xl">
-              {/* 統計カード */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
@@ -477,8 +462,46 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 </Card>
               </div>
 
-              {/* グラフエリア */}
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2 shadow-xl border-slate-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
+                      週間アクティビティ推移
+                    </CardTitle>
+                    <CardDescription>ユーザー活動とコンテンツ投稿の推移</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {weeklyActivityData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={weeklyActivityData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar
+                            dataKey="posts"
+                            fill="#3b82f6"
+                            name="新規投稿"
+                            radius={[8, 8, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="reactions"
+                            fill="#8b5cf6"
+                            name="リアクション"
+                            radius={[8, 8, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center text-slate-400">
+                        データがありません
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
                 <Card className="shadow-xl border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -488,462 +511,52 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                     <CardDescription>カテゴリー分布</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={genreDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => entry.name}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {genreDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {genreDistribution.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={genreDistribution}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={(entry) => entry.name}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {genreDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center text-slate-400">
+                        データがありません
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
             </div>
           )}
 
-          {/* 通報管理タブ */}
-          {activeTab === 'reports' && (
-            <div className="max-w-5xl space-y-4">
-              {reports.map((report) => (
-                <Card
-                  key={report.id}
-                  className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-3">
-                          <Badge
-                            className={report.status === 'pending' ? 'bg-red-500' : 'bg-slate-400'}
-                          >
-                            {report.status === 'pending' ? '未処理' : '処理済み'}
-                          </Badge>
-                          <span className="text-sm text-slate-500">{report.date}</span>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="flex items-center">
-                            <span className="text-sm text-slate-600 w-24">通報者:</span>
-                            <span>{report.reporter}</span>
-                          </p>
-                          <p className="flex items-center">
-                            <span className="text-sm text-slate-600 w-24">理由:</span>
-                            <span className="text-red-600">{report.reason}</span>
-                          </p>
-                          <p className="flex items-center">
-                            <span className="text-sm text-slate-600 w-24">対象投稿ID:</span>
-                            <span className="text-sm text-slate-700">{report.pinId}</span>
-                          </p>
-                        </div>
-                      </div>
-                      {report.status === 'pending' && (
-                        <div className="flex space-x-2 ml-4">
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeletePost(report.pinId)}
-                            className="shadow-md"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            投稿削除
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResolveReport(report.id)}
-                            className="shadow-md"
-                          >
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            却下
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          {activeTab === 'reports' && <AdminReport {...reportProps} />}
 
-          {/* ★事業者申請一覧表示 */}
-          {activeTab === 'business' && (
-            <div className="max-w-5xl space-y-4">
-              <BusinessApplicationList
-                applications={businessApplications}
-                onApprove={handleApproveBusinessAccount}
-                onReject={handleRejectBusinessAccount}
-              />
-            </div>
-          )}
+          {activeTab === 'business' && <ProcessBusinessRequestScreen />}
 
-          {/* 事業者申請タブ */}
-          {/*{activeTab === 'business' && (
-            <div className="max-w-5xl space-y-4">
-              {businessApplications.map((app) => (
-                <Card key={app.id} className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">事業者名</p>
-                          <p>{app.businessName}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">申請者</p>
-                          <p>{app.userName}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">メールアドレス</p>
-                          <p className="text-sm">{app.email}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">電話番号</p>
-                          <p>{app.phone}</p>
-                        </div>
-                        <div className="col-span-2 space-y-1">
-                          <p className="text-xs text-slate-500">住所</p>
-                          <p>{app.address}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-slate-500">申請日</p>
-                          <p className="text-sm">{app.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2 ml-6">
-                        <Button 
-                          size="sm"
-                          onClick={() => handleApproveBusinessAccount(app.id)}
-                          className="bg-green-600 hover:bg-green-700 shadow-md"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          承認
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleRejectBusinessAccount(app.id)}
-                          className="shadow-md"
-                        >
-                          <XCircle className="w-4 h-4 mr-1" />
-                          却下
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          */}
-
-          {/* 投稿管理タブ */}
-          {activeTab === 'posts' && (
-            <div className="max-w-5xl">
-              <Card className="shadow-xl border-slate-200">
-                <CardHeader>
-                  <CardTitle>投稿一覧</CardTitle>
-                  <CardDescription>全ての投稿の管理</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {mockPins.slice(0, 10).map((pin) => (
-                      <div
-                        key={pin.id}
-                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <p>{pin.title}</p>
-                          <p className="text-sm text-slate-600">
-                            投稿者: {pin.userRole === 'business' ? pin.businessName : pin.userName}
-                          </p>
-                          <div className="flex items-center space-x-3 mt-1">
-                            <Badge variant="outline">{pin.genre}</Badge>
-                            <span className="text-xs text-slate-500">
-                              リアクション: {pin.reactions}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeletePost(pin.id)}
-                          className="shadow-md"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* ユーザー管理タブ */}
           {activeTab === 'users' && (
-            <div className="max-w-5xl">
-              <Card className="shadow-xl border-slate-200">
-                <CardHeader>
-                  <CardTitle>ユーザー一覧</CardTitle>
-                  <CardDescription>全てのユーザーアカウントの管理</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {users.map((userItem) => (
-                      <div
-                        key={userItem.id}
-                        className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <p>{userItem.name}</p>
-                            <Badge
-                              className={
-                                userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
-                              }
-                            >
-                              {userItem.role === 'business' ? '事業者' : '一般'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-slate-600">{userItem.email}</p>
-                          <p className="text-xs text-slate-500 mt-1">投稿数: {userItem.posts}</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteAccount(userItem.id)}
-                          className="shadow-md"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          削除
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminUserManagement users={userList} onDeleteAccount={handleDeleteAccount} />
           )}
 
-          {/* お問い合わせタブ */}
           {activeTab === 'inquiries' && (
-            <div className="max-w-5xl space-y-4">
-              <Card className="shadow-lg border-slate-200">
-                <CardHeader>
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center space-x-3">
-                      <MessageSquare className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <CardTitle>お問い合わせ一覧</CardTitle>
-                        <CardDescription>
-                          一般会員・事業者からの問い合わせを管理します
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center bg-white rounded shadow px-2 py-1">
-                        <input
-                          className="w-64 px-2 py-1 text-sm outline-none"
-                          placeholder="検索（名前・メール・本文）"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
-                      <Button
-                        size="sm"
-                        variant={showOnlyOpen ? undefined : 'outline'}
-                        onClick={() => setShowOnlyOpen((v) => !v)}
-                        className="shadow-sm"
-                      >
-                        未対応のみ
-                      </Button>
-                      <Badge className="bg-emerald-500">{inquiries.length}</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {(() => {
-                      const q = searchQuery.trim().toLowerCase();
-                      const filtered = inquiries.filter((it) => {
-                        if (showOnlyOpen && it.status !== 'open') return false;
-                        if (!q) return true;
-                        return (
-                          it.fromName.toLowerCase().includes(q) ||
-                          it.email.toLowerCase().includes(q) ||
-                          it.message.toLowerCase().includes(q)
-                        );
-                      });
-
-                      if (filtered.length === 0) {
-                        return (
-                          <div className="text-sm text-slate-500">
-                            条件に一致する問い合わせはありません。
-                          </div>
-                        );
-                      }
-
-                      return filtered.map((inq) => (
-                        <Card key={inq.id} className="shadow-sm border-slate-100">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <p className="font-medium">{inq.fromName}</p>
-                                  <Badge
-                                    className={
-                                      inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
-                                    }
-                                  >
-                                    {inq.role === 'business' ? '事業者' : '一般'}
-                                  </Badge>
-                                  <span className="text-xs text-slate-500">{inq.date}</span>
-                                  <Badge
-                                    className={
-                                      inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'
-                                    }
-                                  >
-                                    {inq.status === 'open' ? '未対応' : '対応済み'}
-                                  </Badge>
-                                  {inq.draft && (
-                                    <Badge className="bg-yellow-500 text-slate-900">下書き</Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-slate-700 mb-2">{inq.message}</p>
-                                <p className="text-xs text-slate-500">{inq.email}</p>
-                              </div>
-                              <div className="flex flex-col ml-4 space-y-2">
-                                {inq.status === 'open' && (
-                                  <Button
-                                    size="sm"
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                    onClick={() => {
-                                      setReplyingInquiry(inq);
-                                      setReplyText('');
-                                      setReplyModalOpen(true);
-                                    }}
-                                  >
-                                    返信
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteInquiry(inq.id)}
-                                >
-                                  削除
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ));
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          {/* 返信モーダル（簡易実装・モックのメール送信） */}
-          {replyModalOpen && replyingInquiry && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-lg w-[640px] max-w-full p-4 shadow-lg">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
-                    <p className="text-sm text-slate-500">
-                      宛先: {replyingInquiry.email} ・{' '}
-                      {replyingInquiry.role === 'business' ? '事業者' : '一般'}
-                    </p>
-                  </div>
-                  <div>
-                    <button
-                      className="text-slate-500 hover:text-slate-700"
-                      onClick={() => {
-                        setReplyModalOpen(false);
-                        setReplyingInquiry(null);
-                        setReplyText('');
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <textarea
-                    className="w-full h-40 p-2 border rounded resize-none"
-                    placeholder="ここに返信内容を入力します（モック）。メール送信すると自動で対応済みに切り替わります。"
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                  />
-                </div>
-                <div className="flex justify-end space-x-2 mt-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setReplyModalOpen(false);
-                      setReplyingInquiry(null);
-                      setReplyText('');
-                    }}
-                  >
-                    キャンセル
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (!replyingInquiry) return;
-                      // モック: メール送信として扱い、問い合わせを対応済みにする
-                      setInquiries((prev) =>
-                        prev.map((q) =>
-                          q.id === replyingInquiry.id
-                            ? { ...q, status: 'responded', draft: undefined }
-                            : q
-                        )
-                      );
-                      toast.success(
-                        'メールを送信しました（モック）。問い合わせを対応済みにしました。'
-                      );
-                      setReplyModalOpen(false);
-                      setReplyingInquiry(null);
-                      setReplyText('');
-                    }}
-                  >
-                    メールで送信
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      if (!replyingInquiry) return;
-                      // 下書きを保存（モック）：draft フィールドに本文を保存、ステータスは変更しない
-                      setInquiries((prev) =>
-                        prev.map((q) =>
-                          q.id === replyingInquiry.id ? { ...q, draft: replyText } : q
-                        )
-                      );
-                      toast.success('下書きを保存しました（モック）。');
-                      setReplyModalOpen(false);
-                      setReplyingInquiry(null);
-                      setReplyText('');
-                    }}
-                  >
-                    下書き
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <AdminContactManagement
+              inquiries={inquiries}
+              setInquiries={setInquiries}
+              onDeleteInquiry={handleDeleteInquiry}
+              onApproveInquiry={handleApproveInquiry}
+            />
           )}
         </div>
       </div>

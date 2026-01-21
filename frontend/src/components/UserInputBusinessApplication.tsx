@@ -1,39 +1,79 @@
 //事業者申請 M2-7-1
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Shield } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Business, User } from '../types';
 
 interface UserInputBusinessApplicationProps {
-  onUpdateUser: (data: BusinessData) => void; //申請処理
+  user: User;
+  onUpdateUser: (user: User) => void; //申請処理
   onCancel: () => void; //キャンセル処理
 }
 
-//データ型の定義
-interface BusinessData {
-  ShopName: string;
-  PhoneNumber: string;
-  address: string;
-}
+// データ型の定義
+type BusinessApplicationData = Pick<Business, 'businessName' | 'address'> & {
+  phone: string;
+};
 
 export function UserInputBusinessApplication({
+  user,
   onUpdateUser,
   onCancel,
 }: UserInputBusinessApplicationProps) {
   //状態管理の追加
-  const [formData, setFormData] = useState<BusinessData>({
-    ShopName: '',
-    PhoneNumber: '',
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<BusinessApplicationData>({
+    businessName: '',
+    phone: '',
     address: '',
   });
 
   // 送信ハンドラ
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // バリデーション（任意）
-    if (!formData.ShopName || !formData.PhoneNumber || !formData.address) {
-      alert('すべての項目を入力してください');
+    const phoneNumber = Number(formData.phone);
+    if (
+      !formData.businessName ||
+      !formData.phone ||
+      !formData.address ||
+      Number.isNaN(phoneNumber)
+    ) {
+      toast.error('すべての項目を正しく入力してください');
       return;
     }
-    onUpdateUser(formData);
+
+    setIsLoading(true);
+    try {
+      // 1. API仕様: POST /api/business/apply
+      const response = await fetch('/api/business/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          phone: phoneNumber,
+          userId: user.googleId, // 申請者のGoogle ID
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('申請に失敗しました');
+      }
+
+      // 2. 成功時の処理
+      toast.success('事業者登録申請を送信しました。運営の承認をお待ちください。');
+
+      // フロントエンド側の状態を「申請中」等に更新（必要であれば）
+      onUpdateUser({ ...user });
+      onCancel(); // フォームを閉じる
+    } catch (error) {
+      console.error('Business application error:', error);
+      toast.error('通信エラーが発生しました。再度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,15 +92,17 @@ export function UserInputBusinessApplication({
           type="text"
           placeholder="店舗名"
           className="w-full px-3 py-2 border rounded-lg"
-          value={formData.ShopName}
-          onChange={(e) => setFormData({ ...formData, ShopName: e.target.value })}
+          value={formData.businessName}
+          onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+          disabled={isLoading}
         />
         <input
           type="tel"
           placeholder="電話番号"
           className="w-full px-3 py-2 border rounded-lg"
-          value={formData.PhoneNumber}
-          onChange={(e) => setFormData({ ...formData, PhoneNumber: e.target.value })}
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          disabled={isLoading}
         />
         <input
           type="text"
@@ -68,14 +110,21 @@ export function UserInputBusinessApplication({
           className="w-full px-3 py-2 border rounded-lg"
           value={formData.address}
           onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          disabled={isLoading}
         />
       </div>
 
       <div className="flex space-x-2">
-        <Button size="sm" onClick={handleSubmit}>
-          申請する
+        <Button size="sm" onClick={handleSubmit} disabled={isLoading} className="flex-1">
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '申請する'}
         </Button>
-        <Button size="sm" variant="outline" onClick={onCancel}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+          className="flex-1"
+        >
           キャンセル
         </Button>
       </div>

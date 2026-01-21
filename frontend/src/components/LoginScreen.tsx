@@ -1,133 +1,96 @@
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { MapPin, Loader2, AlertCircle } from 'lucide-react';
-import { exchangeGoogleTokenForJWT, storeJWT, storeUser } from '../lib/auth';
+import { useState } from 'react';
+import { MapPin, User, Building2, Loader2 } from 'lucide-react';
 
 type UserRole = 'general' | 'business' | 'admin';
 
-interface GoogleSignInResponse {
-  credential: string;
-}
-
-type GoogleButtonOptions = {
-  theme?: 'outline' | 'filled_blue' | 'filled_black';
-  size?: 'large' | 'medium' | 'small';
-  width?: string;
-};
-
-type GoogleAccountsId = {
-  initialize: (args: {
-    client_id: string;
-    callback: (response: GoogleSignInResponse) => void;
-    ux_mode?: 'popup' | 'redirect';
-  }) => void;
-  renderButton: (target: HTMLElement, options?: GoogleButtonOptions) => void;
-};
-
-declare global {
-  interface Window {
-    google?: {
-      accounts?: {
-        id?: GoogleAccountsId;
-      };
-    };
-  }
-}
-
 interface LoginScreenProps {
+  // ログイン成功時に Google ID と 選択した役割 を親コンポーネントに渡す
   onLogin: (role: UserRole, googleId: string) => void;
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [isSelectingRole, setIsSelectingRole] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [googleReady, setGoogleReady] = useState(false);
-  // GoogleIDはフロントでは使用しないためstate管理を削除
-  const [error, setError] = useState<string | null>(null);
-  const googleButtonRef = useRef<HTMLDivElement | null>(null);
-  const googleInitializedRef = useRef(false);
 
-  const handleGoogleSignInCallback = useCallback(
-    async (response: GoogleSignInResponse) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        if (response.credential) {
-          const token = response.credential;
+  // 取得した Google ID と Gmail を一時保存
+  const [googleId, setGoogleId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-          // トークンをデコード（署名検証はバックエンドで行う）
-          // base64url形式をbase64に正規化してからデコード
-          const base64url = token.split('.')[1];
-          const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-          const payload = JSON.parse(atob(base64));
-
-          // すべての新規会員は一般会員として登録する
-          const result = await exchangeGoogleTokenForJWT(token, 'general');
-
-          storeJWT(result.jwt_token);
-          storeUser(result.user);
-
-          if (payload.sub) {
-            onLogin('general', payload.sub);
-          }
-        }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'トークン取得に失敗しました';
-        setError(errorMsg);
-        console.error('Callback Error:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [onLogin]
-  );
-
-  // Google Identity Services スクリプトが読み込まれたかを検知
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (window.google?.accounts?.id) {
-        setGoogleReady(true);
-        clearInterval(timer);
-      }
-    }, 200);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // 利用規約に同意後、Google ボタンを初期化
-  useEffect(() => {
-    if (!agreedToTerms) return;
-    if (!googleReady) return;
-    if (googleInitializedRef.current) return;
-
-    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
-      setError('環境変数 VITE_GOOGLE_CLIENT_ID を設定してください');
+  const handleGoogleLoginClick = async () => {
+    if (!agreedToTerms) {
+      alert('利用規約に同意してください');
       return;
     }
 
-    setError(null);
+    setIsLoading(true);
 
-    window.google?.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: handleGoogleSignInCallback,
-      ux_mode: 'popup',
-    });
+    try {
+      if (import.meta.env.DEV) {
+        // 開発環境用のモック処理
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const mockGoogleId = 'user_google_123456789';
+        const mockEmail = 'example@gmail.com';
 
-    const target = googleButtonRef.current;
-    if (target) {
-      target.innerHTML = '';
-      window.google.accounts.id.renderButton(target, {
-        theme: 'outline',
-        size: 'large',
-        width: '100%',
-      });
+        setGoogleId(mockGoogleId);
+        setUserEmail(mockEmail);
+        setIsSelectingRole(true); // ID取得成功後に役割選択へ
+      } else {
+        // TODO: 本番環境用の実認証フロー（Google OAuth 等）をここに実装する
+        console.warn('Production auth not implemented yet');
+        alert('本番環境でのログインは未実装です。');
+      }
+    } catch (error) {
+      console.error('Auth Error:', error);
+      alert('Google認証に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRoleSelect = async (role: UserRole) => {
+    if (!googleId || !userEmail) {
+      alert('認証情報が不足しています');
+      return;
     }
 
-    googleInitializedRef.current = true;
-  }, [agreedToTerms, googleReady, handleGoogleSignInCallback]);
+    setIsLoading(true);
+
+    try {
+      // バックエンドへの登録処理（必要に応じて有効化）
+      /*
+      const response = await fetch('http://localhost:8080/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          googleId: googleId,
+          gmail: userEmail,
+          role: role,
+        }),
+      });
+
+      if (!response.ok) throw new Error('登録に失敗しました');
+
+      const data = await response.json();
+      console.log('Backend Response (SessionId):', data.sessionId);
+      */
+
+      // 親コンポーネントにログイン情報を渡す
+      onLogin(role, googleId);
+      console.log('Login successful:', { role, googleId, email: userEmail });
+    } catch (error) {
+      console.error('登録エラー:', error);
+      alert('登録処理に失敗しました。もう一度お試しください。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
@@ -143,120 +106,132 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
+          {!isSelectingRole ? (
+            /* ステップ1: 利用規約同意 & Google認証 */
+            <div className="space-y-4">
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                />
+                <label htmlFor="terms" className="text-sm leading-none cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => setShowTerms(!showTerms)}
+                    className="text-blue-600 hover:underline font-medium"
+                  >
+                    利用規約
+                  </button>
+                  に同意する
+                </label>
+              </div>
+
+              {showTerms && (
+                <div className="border rounded-lg p-4 bg-gray-50 max-h-40 overflow-y-auto text-xs text-gray-600 animate-in fade-in">
+                  <p className="font-bold">【利用規約】</p>
+                  <p>本サービスはGoogle IDを利用した認証を行います...</p>
+                </div>
+              )}
+
+              <Button
+                onClick={handleGoogleLoginClick}
+                className="w-full"
+                disabled={!agreedToTerms || isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <span className="flex items-center">
+                    <GoogleIcon />
+                    Googleでログイン
+                  </span>
+                )}
+              </Button>
+            </div>
+          ) : (
+            /* ステップ2: 認証済みユーザーの役割選択 */
+            <div className="space-y-4 text-center animate-in slide-in-from-bottom-4 duration-500">
+              <p className="text-sm font-bold text-gray-700">認証が完了しました</p>
+              {userEmail && <p className="text-xs text-gray-500 mb-2">アカウント: {userEmail}</p>}
+              <p className="text-xs text-gray-500 mb-4">登録するアカウント種別を選択してください</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  className="h-28 flex flex-col space-y-2 border-2 hover:border-blue-500"
+                  onClick={() => handleRoleSelect('general')}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <User className="w-8 h-8 text-blue-500" />
+                      <span>一般会員</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-28 flex flex-col space-y-2 border-2 hover:border-purple-500"
+                  onClick={() => handleRoleSelect('business')}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Building2 className="w-8 h-8 text-purple-500" />
+                      <span>事業者会員</span>
+                    </>
+                  )}
+                </Button>
+
+                {/* 管理者ロールは原則としてDB/バックエンド側で付与するため、フロントエンドでの選択は開発時のみに制限 */}
+                {import.meta.env.DEV && (
+                  <Button
+                    variant="outline"
+                    className="h-28 w-1/2 justify-self-center col-span-2 flex flex-col items-center justify-center space-y-2 border-2 hover:border-amber-500"
+                    onClick={() => handleRoleSelect('admin')}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <span className="font-bold">管理者 (Dev Only)</span>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
-
-          <div className="space-y-4">
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                checked={agreedToTerms}
-                onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
-              />
-              <label htmlFor="terms" className="text-sm leading-none cursor-pointer">
-                <button
-                  type="button"
-                  onClick={() => setShowTerms(!showTerms)}
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  利用規約
-                </button>
-                に同意する
-              </label>
-            </div>
-
-            {showTerms && (
-              <div className="border rounded-lg p-4 bg-gray-50 max-h-60 overflow-y-auto text-xs text-gray-700 animate-in fade-in space-y-3">
-                <p className="font-bold text-sm text-gray-900">こじゃんとやまっぷ 利用規約</p>
-
-                <div className="space-y-2">
-                  <p className="font-semibold">第1条（適用）</p>
-                  <p>
-                    本規約は、本サービスの利用に関する条件を定めるものです。ユーザーは、本規約に同意した上で本サービスを利用するものとします。
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold">第2条（利用登録）</p>
-                  <p>
-                    本サービスは、Google
-                    IDを利用した認証を行います。登録希望者が本規約に同意の上、Google認証を完了することで、利用登録が完了します。
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold">第3条（個人情報の取扱い）</p>
-                  <p>
-                    本サービスは、ユーザーの基本的なプロフィール情報（氏名、メールアドレス等）を取得します。取得した個人情報は、サービス提供の目的にのみ使用し、適切に管理します。
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold">第4条（禁止事項）</p>
-                  <p>ユーザーは、以下の行為を行ってはなりません：</p>
-                  <ul className="list-disc list-inside pl-2 space-y-1">
-                    <li>法令または公序良俗に違反する行為</li>
-                    <li>犯罪行為に関連する行為</li>
-                    <li>他のユーザーまたは第三者の権利を侵害する行為</li>
-                    <li>虚偽の情報を登録する行為</li>
-                    <li>本サービスの運営を妨害する行為</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold">第5条（免責事項）</p>
-                  <p>
-                    本サービスは現状有姿で提供されます。運営者は、本サービスの内容、品質、正確性について一切保証しません。本サービスの利用により生じた損害について、運営者は責任を負いません。
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold">第6条（規約の変更）</p>
-                  <p>
-                    運営者は、必要に応じて本規約を変更することができます。変更後の規約は、本サービス上に掲載した時点で効力を生じるものとします。
-                  </p>
-                </div>
-
-                <p className="text-right text-gray-500 mt-4">制定日：2026年1月21日</p>
-              </div>
-            )}
-
-            <div className="flex justify-center">
-              {!agreedToTerms && (
-                <Button className="w-full bg-white border-2 border-gray-300 text-gray-800" disabled>
-                  利用規約に同意してください
-                </Button>
-              )}
-
-              {agreedToTerms && !googleReady && (
-                <Button className="w-full bg-white border-2 border-gray-300 text-gray-800" disabled>
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Google を読み込み中
-                  </span>
-                </Button>
-              )}
-
-              {agreedToTerms && googleReady && (
-                <div ref={googleButtonRef} className="w-full flex justify-center" />
-              )}
-            </div>
-
-            {isLoading && (
-              <div className="flex justify-center">
-                <span className="flex items-center gap-2 text-sm text-gray-600">
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                  ログイン処理中です...
-                </span>
-              </div>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// アイコンをコンポーネント化してスッキリさせる
+function GoogleIcon() {
+  return (
+    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+      <path
+        fill="currentColor"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="currentColor"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="currentColor"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      />
+      <path
+        fill="currentColor"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      />
+    </svg>
   );
 }

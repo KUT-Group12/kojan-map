@@ -1,36 +1,69 @@
-import { Flag } from 'lucide-react';
+import { Flag, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { Report } from '../types';
 
 interface ReportScreenProps {
+  postId: Report['postId'];
+  userId: Report['userId'];
   isReporting: boolean;
   setIsReporting: (value: boolean) => void;
   onReportComplete: () => void;
 }
 
-export function ReportScreen({ isReporting, setIsReporting, onReportComplete }: ReportScreenProps) {
-  const [reportReason, setReportReason] = useState('');
+export function ReportScreen({
+  postId,
+  userId,
+  isReporting,
+  setIsReporting,
+  onReportComplete,
+}: ReportScreenProps) {
+  const [reason, setReason] = useState<Report['reason']>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleReport = () => {
-    if (!reportReason.trim()) {
+  const handleReport = async () => {
+    if (!reason.trim()) {
       toast.error('通報理由を入力してください');
       return;
     }
-    toast.success('通報を受け付けました。運営が確認いたします。');
-    setReportReason('');
-    setIsReporting(false);
-    onReportComplete();
+
+    setIsSubmitting(true);
+
+    try {
+      // API仕様書(POST /api/posts/report)のキー名に合わせて送信
+      const response = await fetch('/api/posts/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId: postId,
+          reporterId: userId, // バックエンドのキー名: reporterId
+          reportReason: reason, // バックエンドのキー名: reportReason
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('通報の送信に失敗しました');
+      }
+
+      toast.success('通報を受け付けました。運営が確認いたします。');
+      setReason('');
+      setIsReporting(false);
+      onReportComplete();
+    } catch (error) {
+      console.error('Report error:', error);
+      toast.error('エラーが発生しました。再度お試しください。');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isReporting) {
     return (
-      <Button
-        onClick={() => setIsReporting(true)}
-        variant="outline"
-        // w-full を削除して、元のサイズ感に戻す
-      >
+      <Button onClick={() => setIsReporting(true)} variant="outline">
         <Flag className="w-4 h-4 mr-2" />
         通報
       </Button>
@@ -41,21 +74,29 @@ export function ReportScreen({ isReporting, setIsReporting, onReportComplete }: 
     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3 w-full animate-in fade-in">
       <p className="text-sm font-medium text-yellow-800">通報理由：</p>
       <Textarea
-        value={reportReason}
-        onChange={(e) => setReportReason(e.target.value)}
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
         placeholder="理由を入力"
         rows={3}
         className="bg-white"
+        disabled={isSubmitting}
       />
       <div className="flex gap-2">
-        <Button onClick={handleReport} variant="destructive" size="sm" className="flex-1">
-          送信
+        <Button
+          onClick={handleReport}
+          variant="destructive"
+          size="sm"
+          className="flex-1"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : '送信'}
         </Button>
         <Button
           onClick={() => setIsReporting(false)}
           variant="outline"
           size="sm"
           className="flex-1"
+          disabled={isSubmitting}
         >
           キャンセル
         </Button>
