@@ -28,6 +28,9 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
   const [isLoading, setIsLoading] = useState(false);
 
   const initialPostsRef = useRef(initialPosts);
+  useEffect(() => {
+    initialPostsRef.current = initialPosts;
+  }, [initialPosts]);
 
   useEffect(() => {
     const controller = new AbortController();
