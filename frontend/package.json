@@ -72,7 +72,7 @@
     "build": "vite build",
     "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage --passWithNoTests",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src",
     "format:check": "prettier --check src"
   }
 }
