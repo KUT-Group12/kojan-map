@@ -55,7 +55,6 @@ describe('UserTriggerReaction', () => {
 
     await waitFor(() => {
       expect(defaultProps.onReaction).toHaveBeenCalledWith(101);
-      expect(defaultProps.onReaction).not.toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith('リアクションしました！');
     });
     consoleErrorSpy.mockRestore();
