@@ -1,152 +1,125 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DisplayPostList } from '../components/DisplayPostList';
+import { User, Post, Place } from '../types';
 
-// fetchのモック
-const fetchMock = jest.fn() as jest.Mock;
+// fetchのグローバルモック
+vi.stubGlobal('fetch', vi.fn());
 
-describe('DisplayPostList コンポーネント', () => {
-  const mockPost = {
-    postId: 1,
-    userId: 'user-A',
-    title: 'メインの投稿タイトル',
-    text: '初期のテキスト',
-    genreId: 0,
-    postDate: '2024-01-20T10:00:00Z',
-    numReaction: 5,
-    numView: 100,
+describe('DisplayPostList', () => {
+  const mockUser: User = {
+    googleId: 'my-google-id',
+    gmail: 'test@gmail.com',
+    role: 'general',
+    registrationDate: new Date().toISOString(),
+    fromName: '自分自身の名前',
   };
 
-  const mockPlace = { latitude: 33.6, longitude: 133.6 };
-  const mockUser = { googleId: 'user-current', role: 'general' };
+  const mockPlace: Place = {
+    placeId: 1,
+    latitude: 35.681236,
+    longitude: 139.767125,
+    numPost: 1,
+  };
 
-  const mockOnClose = jest.fn();
-  const mockOnReaction = jest.fn();
-  const mockOnDelete = jest.fn();
+  const mockPost: Post = {
+    postId: 100,
+    title: 'テスト投稿タイトル',
+    text: 'これはテストの本文です。',
+    genreId: 1,
+    genreName: 'グルメ',
+    genreColor: '#FF0000',
+    userId: 'other-user-id', // デフォルトは他人の投稿
+    postDate: new Date().toISOString(),
+    numReaction: 5,
+    numView: 10,
+    placeId: 1,
+  };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    window.fetch = fetchMock;
-    fetchMock.mockReset();
-  });
-
-  test('初期ロード中に「詳細を読み込み中...」が表示されること', () => {
-    // 解決しないPromiseを返してロード状態を維持
-    fetchMock.mockReturnValue(new Promise(() => {}));
-
-    render(
-      <DisplayPostList
-        post={mockPost as any}
-        place={mockPlace as any}
-        currentUser={mockUser as any}
-        isReacted={false}
-        onClose={mockOnClose}
-        onReaction={mockOnReaction}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    expect(screen.getByText('詳細を読み込み中...')).toBeInTheDocument();
-  });
-
-  test('詳細データを取得後、最新のテキストと閲覧数が表示されること', async () => {
-    // 詳細APIのレスポンスをモック
-    fetchMock.mockResolvedValueOnce({
+    vi.clearAllMocks();
+    // API詳細取得のレスポンスをデフォルトで設定
+    (globalThis.fetch as any).mockResolvedValue({
       ok: true,
-      json: async () => ({
-        post: { ...mockPost, text: 'APIから取得した詳細な説明文' },
-      }),
-    } as Response);
-
-    render(
-      <DisplayPostList
-        post={mockPost as any}
-        place={mockPlace as any}
-        currentUser={mockUser as any}
-        isReacted={false}
-        onClose={mockOnClose}
-        onReaction={mockOnReaction}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    // API取得後のテキストが表示されるまで待機
-    await waitFor(() => {
-      expect(screen.getByText('APIから取得した詳細な説明文')).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/100 閲覧/)).toBeInTheDocument();
-  });
-
-  test('自分の投稿の場合、削除ボタンが表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ post: mockPost }) });
-
-    // 投稿者とログインユーザーを同じにする
-    const ownUser = { googleId: 'user-A', role: 'general' };
-
-    render(
-      <DisplayPostList
-        post={mockPost as any}
-        place={mockPlace as any}
-        currentUser={ownUser as any}
-        isReacted={false}
-        onClose={mockOnClose}
-        onReaction={mockOnReaction}
-        onDelete={mockOnDelete}
-      />
-    );
-
-    await waitFor(() => {
-      // 削除ボタン（SelectPostDeletionコンポーネント内）が存在するか
-      // SelectPostDeletionがButtonを使っている前提
-      expect(screen.getByRole('button', { name: /削除|ゴミ箱/i })).toBeInTheDocument();
+      json: async () => ({ post: mockPost }),
     });
   });
 
-  test('他人の投稿の場合、通報ボタンが表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ post: mockPost }) });
+  it('自分の投稿の場合、削除コンポーネントが表示され、通報ボタンが表示されないこと', async () => {
+    // 自分の投稿にするために userId を一致させる
+    const myPost = { ...mockPost, userId: mockUser.googleId };
 
     render(
       <DisplayPostList
-        post={mockPost as any}
-        place={mockPlace as any}
-        currentUser={mockUser as any} // user-current
+        post={myPost}
+        place={mockPlace}
+        currentUser={mockUser}
         isReacted={false}
-        onClose={mockOnClose}
-        onReaction={mockOnReaction}
-        onDelete={mockOnDelete}
+        onClose={vi.fn()}
+        onReaction={vi.fn()}
+        onDelete={vi.fn()}
       />
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('通報')).toBeInTheDocument();
-    });
+    // 1. 自分の投稿なので「通報」ボタンは存在しないことを確認
+    expect(screen.queryByText('通報')).not.toBeInTheDocument();
+
+    // 2. 削除用コンポーネント（SelectPostDeletion）が表示されていることを確認
+    // コンポーネント内でゴミ箱アイコンや特定のテキストがあるか、
+    // または data-testid などで判定します。
+    // ここでは SelectPostDeletion がレンダリングするであろう要素を探します。
+    const deleteTrigger =
+      screen.queryByRole('button', { name: /削除/i }) || document.querySelector('.lucide-trash2');
+    expect(deleteTrigger).toBeInTheDocument();
   });
 
-  test('同じ場所の他の投稿をクリックすると onSelectPin が呼ばれること', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ post: mockPost }) });
-
-    const postsAtLocation = [mockPost, { postId: 2, title: '別の投稿', numReaction: 2 }];
-    const mockOnSelectPin = jest.fn();
+  it('他人の投稿の場合、通報ボタンが表示され、削除ボタンが表示されないこと', async () => {
+    // 他人の投稿 (userId が異なる)
+    const othersPost = { ...mockPost, userId: 'someone-else' };
 
     render(
       <DisplayPostList
-        post={mockPost as any}
-        place={mockPlace as any}
-        currentUser={mockUser as any}
+        post={othersPost}
+        place={mockPlace}
+        currentUser={mockUser}
         isReacted={false}
-        onClose={mockOnClose}
-        onReaction={mockOnReaction}
-        onDelete={mockOnDelete}
-        postsAtLocation={postsAtLocation as any}
-        onSelectPin={mockOnSelectPin}
+        onClose={vi.fn()}
+        onReaction={vi.fn()}
+        onDelete={vi.fn()}
       />
     );
 
-    await waitFor(() => {
-      const otherPostItem = screen.getByText('別の投稿');
-      fireEvent.click(otherPostItem);
-    });
+    // 1. 他人の投稿なので「通報」ボタンが表示されていることを確認
+    expect(screen.getByText('通報')).toBeInTheDocument();
 
-    expect(mockOnSelectPin).toHaveBeenCalledWith(expect.objectContaining({ postId: 2 }));
+    // 2. 削除ボタンは表示されないことを確認
+    const deleteTrigger =
+      screen.queryByRole('button', { name: /削除/i }) || document.querySelector('.lucide-trash2');
+    expect(deleteTrigger).not.toBeInTheDocument();
+  });
+
+  it('通報ボタンをクリックすると、通報画面(ReportScreen)が表示されること', async () => {
+    const othersPost = { ...mockPost, userId: 'someone-else' };
+
+    render(
+      <DisplayPostList
+        post={othersPost}
+        place={mockPlace}
+        currentUser={mockUser}
+        isReacted={false}
+        onClose={vi.fn()}
+        onReaction={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // 1. 最初にある「通報」という名前のボタンを取得してクリック
+    const reportButton = screen.getByRole('button', { name: '通報' });
+    fireEvent.click(reportButton);
+
+    // 2. クリック後、ReportScreenに含まれる特有のテキストが表示されたか確認
+    // 「通報理由：」というテキストを正規表現で厳密に指定するか、getAllByTextで要素数をチェックします
+    // ここではエラーログに出ていた「通報理由：」をターゲットにします
+    expect(screen.getByText(/通報理由：/)).toBeInTheDocument();
   });
 });

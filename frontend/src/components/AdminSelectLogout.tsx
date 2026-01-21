@@ -27,6 +27,7 @@ export function AdminSelectLogout() {
 {
   /*import { Button } from './ui/button';
 
+>>>>>>> main
 // 1. プロパティの型を定義
 interface AdminSelectLogoutProps {
   onLogoutAction?: (url: string) => void;

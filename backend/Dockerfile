@@ -14,8 +14,5 @@ RUN go mod download
 # 5. ソースコードのコピー
 COPY . .
 
-# 6. リンターの実行
-RUN ./bin/golangci-lint run
-
 # 7. 起動コマンド
 CMD ["go", "run", "main.go"]

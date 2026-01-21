@@ -9,6 +9,9 @@ import { User } from '../types';
 import { Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface ContactModalProps {
   user: User;
   onClose: () => void;
@@ -32,7 +35,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
 
     try {
       // バックエンドAPI仕様に基づいたリクエスト
-      const response = await fetch('/api/contact/validate', {
+      const response = await fetch(`${API_BASE_URL}/api/contact/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +74,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
           <DialogDescription className="sr-only">運営へのお問い合わせフォーム</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-label="contact-form">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
               ご質問や要望は、登録されているメールアドレス（{user.gmail}）に返信されます。

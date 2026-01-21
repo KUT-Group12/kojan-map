@@ -1,130 +1,154 @@
-// src/__tests__/AdminContactManagement.test.tsx
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AdminContactManagement, { Inquiry } from '../components/AdminContactManagement';
 
-describe('AdminContactManagement コンポーネント', () => {
-  const mockOnDelete = jest.fn();
-  const mockOnApprove = jest.fn();
-  const setInquiries = jest.fn();
-
-  const inquiries: Inquiry[] = [
+describe('AdminContactManagement', () => {
+  const mockInquiries: Inquiry[] = [
     {
       askId: 1,
-      fromName: '田中 太郎',
-      email: 'tanaka@example.com',
-      role: 'business',
-      subject: '問い合わせ1',
-      text: '内容1',
+      userId: 'user-001',
+      subject: 'ログインできない',
+      text: 'パスワードを忘れました。',
+      date: '2026-01-20',
       askFlag: false,
-      date: '2026-01-21',
-      userId: 'u1',
+      email: 'user1@example.com',
+      fromName: '利用者A',
+      role: 'general',
     },
     {
       askId: 2,
-      fromName: '佐藤 次郎',
-      email: 'sato@example.com',
-      role: 'general',
-      subject: '問い合わせ2',
-      text: '内容2',
+      userId: 'biz-001',
+      subject: '掲載情報の修正',
+      text: '営業時間を変更したいです。',
+      date: '2026-01-21',
       askFlag: true,
-      date: '2026-01-20',
-      userId: 'u2',
+      email: 'shop@example.com',
+      fromName: 'カフェ・オーナー',
+      role: 'business',
     },
   ];
 
+  const mockSetInquiries = vi.fn();
+  const mockOnDeleteInquiry = vi.fn();
+  const mockOnApproveInquiry = vi.fn();
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
-  test('問い合わせ一覧が表示される', () => {
+  it('お問い合わせ一覧が正しく表示されること', () => {
     render(
       <AdminContactManagement
-        inquiries={inquiries}
-        setInquiries={setInquiries}
-        onDeleteInquiry={mockOnDelete}
-        onApproveInquiry={mockOnApprove}
+        inquiries={mockInquiries}
+        setInquiries={mockSetInquiries}
+        onDeleteInquiry={mockOnDeleteInquiry}
+        onApproveInquiry={mockOnApproveInquiry}
       />
     );
 
-    expect(screen.getByText('田中 太郎')).toBeInTheDocument();
-    expect(screen.getByText('佐藤 次郎')).toBeInTheDocument();
-    expect(screen.getByText('問い合わせ1')).toBeInTheDocument();
-    expect(screen.getByText('問い合わせ2')).toBeInTheDocument();
-    expect(screen.getByText('未対応')).toBeInTheDocument();
-    expect(screen.getByText('対応済み')).toBeInTheDocument();
+    expect(screen.getByText('利用者A')).toBeInTheDocument();
+    expect(screen.getByText('カフェ・オーナー')).toBeInTheDocument();
+    expect(screen.getByText('一般')).toBeInTheDocument();
+    expect(screen.getByText('事業者')).toBeInTheDocument();
   });
 
-  test('検索フィルターが動作する', () => {
+  it('検索キーワードでお問い合わせをフィルタリングできること', () => {
     render(
       <AdminContactManagement
-        inquiries={inquiries}
-        setInquiries={setInquiries}
-        onDeleteInquiry={mockOnDelete}
-        onApproveInquiry={mockOnApprove}
+        inquiries={mockInquiries}
+        setInquiries={mockSetInquiries}
+        onDeleteInquiry={mockOnDeleteInquiry}
+        onApproveInquiry={mockOnApproveInquiry}
       />
     );
 
-    const input = screen.getByPlaceholderText(/検索/);
-    fireEvent.change(input, { target: { value: '田中' } });
+    const searchInput = screen.getByPlaceholderText(/検索/);
+    fireEvent.change(searchInput, { target: { value: 'ログイン' } });
 
-    expect(screen.getByText('田中 太郎')).toBeInTheDocument();
-    expect(screen.queryByText('佐藤 次郎')).not.toBeInTheDocument();
+    expect(screen.getByText('利用者A')).toBeInTheDocument();
+    expect(screen.queryByText('カフェ・オーナー')).not.toBeInTheDocument();
   });
 
-  test('未対応のみボタンでフィルターされる', () => {
+  it('「未対応のみ」の絞り込みが機能すること', () => {
     render(
       <AdminContactManagement
-        inquiries={inquiries}
-        setInquiries={setInquiries}
-        onDeleteInquiry={mockOnDelete}
-        onApproveInquiry={mockOnApprove}
+        inquiries={mockInquiries}
+        setInquiries={mockSetInquiries}
+        onDeleteInquiry={mockOnDeleteInquiry}
+        onApproveInquiry={mockOnApproveInquiry}
       />
     );
 
-    const btn = screen.getByRole('button', { name: /未対応のみ/i });
-    fireEvent.click(btn);
+    const filterButton = screen.getByRole('button', { name: '未対応のみ' });
+    fireEvent.click(filterButton);
 
-    expect(screen.getByText('田中 太郎')).toBeInTheDocument();
-    expect(screen.queryByText('佐藤 次郎')).not.toBeInTheDocument();
+    // 対応済み(askFlag: true)の「カフェ・オーナー」が消えることを確認
+    expect(screen.queryByText('カフェ・オーナー')).not.toBeInTheDocument();
+    expect(screen.getByText('利用者A')).toBeInTheDocument();
   });
 
-  test('返信ボタンでモーダルが開き、下書き保存・メール送信が動作する', () => {
+  it('返信ボタンをクリックするとモーダルが開き、送信できること', async () => {
     render(
       <AdminContactManagement
-        inquiries={inquiries}
-        setInquiries={setInquiries}
-        onDeleteInquiry={mockOnDelete}
-        onApproveInquiry={mockOnApprove}
+        inquiries={mockInquiries}
+        setInquiries={mockSetInquiries}
+        onDeleteInquiry={mockOnDeleteInquiry}
+        onApproveInquiry={mockOnApproveInquiry}
       />
     );
 
-    const replyBtn = screen.getByRole('button', { name: /返信/i });
-    fireEvent.click(replyBtn);
+    // 「返信」ボタンをクリック
+    const replyButton = screen.getAllByText('返信')[0];
+    fireEvent.click(replyButton);
 
-    expect(screen.getByText(/返信: 田中 太郎 様/)).toBeInTheDocument();
+    // モーダルが表示されたか
+    expect(screen.getByText(/返信: 利用者A 様/)).toBeInTheDocument();
 
-    const sendBtn = screen.getByRole('button', { name: /メールで送信/i });
-    fireEvent.click(sendBtn);
+    // テキストを入力
+    const textarea = screen.getByPlaceholderText(/返信内容を入力してください/);
+    fireEvent.change(textarea, { target: { value: '了解しました。' } });
 
-    expect(mockOnApprove).toHaveBeenCalledWith(1);
-    expect(setInquiries).toHaveBeenCalled();
+    // 送信
+    const sendButton = screen.getByText('メールで送信');
+    fireEvent.click(sendButton);
+
+    expect(mockOnApproveInquiry).toHaveBeenCalledWith(1);
+    // モーダルが閉じていることを確認
+    expect(screen.queryByText(/返信: 利用者A 様/)).not.toBeInTheDocument();
   });
 
-  test('削除ボタンで onDeleteInquiry が呼ばれる', () => {
+  it('下書き保存をクリックすると setInquiries が呼ばれること', () => {
     render(
       <AdminContactManagement
-        inquiries={inquiries}
-        setInquiries={setInquiries}
-        onDeleteInquiry={mockOnDelete}
-        onApproveInquiry={mockOnApprove}
+        inquiries={mockInquiries}
+        setInquiries={mockSetInquiries}
+        onDeleteInquiry={mockOnDeleteInquiry}
+        onApproveInquiry={mockOnApproveInquiry}
       />
     );
 
-    const deleteBtns = screen.getAllByRole('button', { name: /削除/i });
-    fireEvent.click(deleteBtns[0]);
+    fireEvent.click(screen.getAllByText('返信')[0]);
+    const textarea = screen.getByPlaceholderText(/返信内容を入力してください/);
+    fireEvent.change(textarea, { target: { value: '下書きテスト' } });
 
-    expect(mockOnDelete).toHaveBeenCalledWith(1);
+    fireEvent.click(screen.getByText('下書き保存'));
+
+    expect(mockSetInquiries).toHaveBeenCalled();
+  });
+
+  it('削除ボタンをクリックすると onDeleteInquiry が呼ばれること', () => {
+    render(
+      <AdminContactManagement
+        inquiries={mockInquiries}
+        setInquiries={mockSetInquiries}
+        onDeleteInquiry={mockOnDeleteInquiry}
+        onApproveInquiry={mockOnApproveInquiry}
+      />
+    );
+
+    const deleteButtons = screen.getAllByText('削除');
+    fireEvent.click(deleteButtons[0]);
+
+    expect(mockOnDeleteInquiry).toHaveBeenCalledWith(1);
   });
 });

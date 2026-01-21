@@ -5,6 +5,9 @@ import { DisplayPostHistory } from './DisplayPostHistory';
 import { SelectPostDeletion } from './SelectPostDeletion';
 import { Loader2 } from 'lucide-react';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface SelectPostHistoryProps {
   user: User;
   // posts: Post[];
@@ -33,7 +36,7 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
     const fetchHistory = async () => {
       try {
         // API仕様: GET /api/posts/history?googleId=...
-        const response = await fetch(`/api/posts/history?googleId=${user.googleId}`);
+        const response = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`);
         if (!response.ok) throw new Error('履歴の取得に失敗しました');
 
         const data = await response.json();

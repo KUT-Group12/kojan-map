@@ -4,6 +4,9 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { Reaction } from '../types';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface UserTriggerReactionProps {
   postId: Reaction['postId'];
   userId: Reaction['userId'];
@@ -32,7 +35,7 @@ export function UserTriggerReaction({
       // API仕様: POST(追加) または DELETE(削除)
       // ボディのキー名は仕様書の postId, userId に合わせる
       const method = isReacted ? 'DELETE' : 'POST';
-      const response = await fetch('/api/reactions', {
+      const response = await fetch(`${API_BASE_URL}/api/reactions`, {
         method: method,
         headers: {
           'Content-Type': 'application/json',

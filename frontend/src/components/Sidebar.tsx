@@ -1,145 +1,136 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Search } from 'lucide-react';
-import { Post, PinGenre, User } from '../types';
-import { genreLabels, genreColors, GENRE_MAP } from '../lib/mockData';
+import { Search, Loader2 } from 'lucide-react'; // Loader2を追加
+import { Post, User } from '../types';
+// 不要になった GENRE_MAP, genreColors, genreLabels のインポートを削除
+// もし検索条件のプルダウンを作るために genreLabels が必要な場合は残しますが、
+// ここでは「投稿に含まれるDBデータ」を優先する形に書き換えます。
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface SidebarProps {
   user: User;
   posts: Post[];
   onFilterChange: (filteredPosts: Post[]) => void;
-  // onCreatePin: () => void;
   onPinClick: (post: Post) => void;
 }
 
+type DateFilterType = 'all' | 'today' | 'week' | 'month';
+
 export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick }: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
-  // const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
-  //const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
-  // 検索結果を格納する
-  // const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts);
-
-  type DateFilterType = 'all' | 'today' | 'week' | 'month';
+  const [selectedGenre, setSelectedGenre] = useState<string>('all'); // string型に変更
   const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
-
-  // APIから取得した結果を管理するステート
   const [apiPosts, setApiPosts] = useState<Post[]>(initialPosts);
   const [isLoading, setIsLoading] = useState(false);
 
-  const genreIdToKey = (genreId: number): PinGenre => {
-    const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
-    return (entry?.[0] as PinGenre) ?? 'other';
-  };
+  const initialPostsRef = useRef(initialPosts);
+  useEffect(() => {
+    initialPostsRef.current = initialPosts;
+  }, [initialPosts]);
 
   useEffect(() => {
-    const fetchFilteredPosts = async () => {
-      // ユーザーが事業者の場合は全件表示のままにする（仕様に基づく）
+    const controller = new AbortController();
+
+    const fetchFilteredPosts = async (): Promise<void> => {
       if (user.role === 'business') {
-        setApiPosts(initialPosts);
+        setApiPosts(initialPostsRef.current);
         return;
       }
 
       setIsLoading(true);
       try {
-        let url = '/api/posts'; // デフォルトは全件
+        let url = `${API_BASE_URL}/api/posts`;
 
-        // 仕様書のエンドポイントを条件に合わせて使い分け
         if (searchKeyword) {
-          url = `/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
+          url = `${API_BASE_URL}/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
         } else if (selectedGenre !== 'all') {
-          const genreId = GENRE_MAP[selectedGenre];
-          url = `/api/posts/search/genre?genreId=${genreId}`;
+          // ジャンル選択時は selectedGenre (ID) をそのまま利用
+          url = `${API_BASE_URL}/api/posts/search/genre?genreId=${selectedGenre}`;
         } else if (dateFilter !== 'all') {
-          // 期間検索のパラメータ生成 (YYYY-MM-DD)
           const endDate = new Date().toISOString().split('T')[0];
-
           const start = new Date();
           if (dateFilter === 'today') start.setDate(start.getDate());
-          if (dateFilter === 'week') start.setDate(start.getDate() - 7);
-          if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
+          else if (dateFilter === 'week') start.setDate(start.getDate() - 7);
+          else if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
           const startDate = start.toISOString().split('T')[0];
-
-          url = `/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
+          url = `${API_BASE_URL}/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
         }
 
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error('検索に失敗しました');
-        const data = await response.json();
+
+        const data = (await response.json()) as { posts: Post[] };
         setApiPosts(data.posts || []);
-      } catch (error) {
-        console.error('Search error:', error);
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setApiPosts([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // デバウンス（入力のたびに叩きすぎないよう、少し待ってから実行）
-    const timer = setTimeout(fetchFilteredPosts, 500);
-    return () => clearTimeout(timer);
-  }, [searchKeyword, selectedGenre, dateFilter, initialPosts, user.role]);
+    const timer = setTimeout(fetchFilteredPosts, searchKeyword === '' ? 0 : 500);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchKeyword, selectedGenre, dateFilter, user.role, initialPosts]);
 
-  // 結果を送信
   useEffect(() => {
     onFilterChange(apiPosts);
   }, [apiPosts, onFilterChange]);
 
   const formatDate = (date: Date | string) => {
+    if (!date) return '';
     const d = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
 
-    if (diffHours < 1) {
-      return 'たった今';
-    } else if (diffHours < 24) {
-      return `${diffHours}時間前`;
-    } else {
-      const diffDays = Math.floor(diffHours / 24);
-      return `${diffDays}日前`;
-    }
+    if (diffHours < 1) return 'たった今';
+    if (diffHours < 24) return `${diffHours}時間前`;
+    return `${Math.floor(diffHours / 24)}日前`;
   };
 
   return (
-    <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
-      {/* 検索・フィルター */}
-      <div className="p-4 border-b border-gray-200 space-y-3">
+    <div className="w-96 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+      <div className="p-4 border-b border-gray-200 space-y-3 bg-slate-50/50">
         {user.role !== 'business' && (
           <>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
                 placeholder="キーワードで検索..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={selectedGenre}
-                onValueChange={(value) => setSelectedGenre(value as PinGenre | 'all')}
-              >
-                <SelectTrigger>
+              <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+                <SelectTrigger className="bg-white">
                   <SelectValue placeholder="ジャンル" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全ジャンル</SelectItem>
-                  {Object.entries(genreLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                  {/* ここはDBからジャンル一覧を取得して回すのが理想ですが、
+                      現状は投稿に含まれるデータを使うため、一旦固定値か、
+                      既存のGENRE_MAPが残っているならそれを利用します */}
+                  <SelectItem value="1">グルメ</SelectItem>
+                  <SelectItem value="2">イベント</SelectItem>
+                  <SelectItem value="3">風景</SelectItem>
+                  <SelectItem value="4">お店</SelectItem>
+                  <SelectItem value="5">緊急情報</SelectItem>
+                  <SelectItem value="6">その他</SelectItem>
                 </SelectContent>
               </Select>
 
-              <Select
-                value={dateFilter}
-                onValueChange={(value) => setDateFilter(value as DateFilterType)}
-              >
-                <SelectTrigger>
+              <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilterType)}>
+                <SelectTrigger className="bg-white">
                   <SelectValue placeholder="期間" />
                 </SelectTrigger>
                 <SelectContent>
@@ -154,42 +145,50 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
         )}
       </div>
 
-      {/* ピンリスト */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="p-8 text-center text-gray-500">検索中...</div>
+          <div className="flex flex-col items-center justify-center p-12 text-slate-400">
+            <Loader2 className="w-8 h-8 animate-spin mb-2" />
+            <p className="text-sm">検索中...</p>
+          </div>
         ) : apiPosts.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            <p>該当する投稿が見つかりませんでした</p>
+          <div className="p-12 text-center text-slate-500">
+            <p className="text-sm">該当する投稿が見つかりませんでした</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-slate-100">
             {apiPosts.map((post) => (
               <button
                 key={post.postId}
                 onClick={() => onPinClick(post)}
-                className="w-full p-4 hover:bg-gray-50 text-left transition-colors"
+                className="w-full p-4 hover:bg-slate-50 text-left transition-all active:bg-slate-100 group"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="flex-1 text-gray-900">{post.title}</h3>
+                <div className="flex items-start justify-between mb-1.5">
+                  <h3 className="flex-1 text-slate-900 font-bold leading-tight group-hover:text-blue-600 transition-colors">
+                    {post.title}
+                  </h3>
                   <Badge
                     style={{
-                      backgroundColor: genreColors[genreIdToKey(post.genreId) ?? 'other'],
+                      // DBから取得した色を直接適用
+                      backgroundColor: post.genreColor || '#64748b',
+                      color: '#ffffff',
                     }}
-                    className="ml-2"
+                    className="ml-2 border-none px-2 shadow-sm whitespace-nowrap"
                   >
-                    {genreLabels[genreIdToKey(post.genreId) ?? 'other']}
+                    {/* DBから取得した名前を表示 */}
+                    {post.genreName || 'その他'}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>
-                    {user.role === 'business'
-                      ? user.fromName || '名称未設定の事業者' // フォールバックを追加
-                      : '匿名'}
+                <p className="text-sm text-slate-600 mb-3 line-clamp-2 leading-relaxed">
+                  {post.text}
+                </p>
+                <div className="flex items-center justify-between text-[12px] text-slate-400">
+                  <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
+                    {post.businessName ||
+                      (user.role === 'business' ? user.fromName : '匿名ユーザー')}
                   </span>
-                  <div className="flex items-center space-x-3">
-                    <span>❤️ {post.numReaction}</span>
+                  <div className="flex items-center space-x-3 font-medium">
+                    <span className="flex items-center text-rose-400">❤️ {post.numReaction}</span>
                     <span>{formatDate(post.postDate)}</span>
                   </div>
                 </div>

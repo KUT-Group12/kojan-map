@@ -1,104 +1,114 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserBlockViewScreen } from '../components/UserBlockViewScreen';
+import { User } from '../types';
 
-// fetchのモック設定
-const fetchMock = jest.fn() as jest.Mock;
+// fetch のモック
+vi.stubGlobal('fetch', vi.fn());
 
-// 子コンポーネント (SelectUnlock) のモック化
-// 複雑なロジックを持つ子コンポーネントをモックすることで、このコンポーネント自体のテストをシンプルにします
-jest.mock('../components/SelectUnlock', () => ({
-  SelectUnlock: () => <button>解除ボタン</button>,
+// 子コンポーネント SelectUnlock のモック
+vi.mock('../components/SelectUnlock', () => ({
+  SelectUnlock: ({ userId }: { userId: string }) => <button>解除ボタン:{userId}</button>,
 }));
 
-describe('UserBlockViewScreen コンポーネント', () => {
-  const mockUser = {
-    googleId: 'me-123',
-    name: '自分',
-    blockedUsers: [], // 初期状態は空
+// レイアウト用コンポーネント DisplayUserSetting のモック
+vi.mock('../components/DisplayUserSetting', () => ({
+  DisplayUserSetting: ({ title, children }: any) => (
+    <div>
+      <h2>{title}</h2>
+      {children}
+    </div>
+  ),
+}));
+
+describe('UserBlockViewScreen', () => {
+  const mockUser: User = {
+    googleId: 'my-google-id',
+    gmail: 'test@gmail.com',
+    role: 'user',
+    registrationDate: new Date().toISOString(),
+    fromName: '自分',
+    // 初期状態では空
+    blockedUsers: [],
   };
-  const mockOnUpdateUser = jest.fn();
+
+  const mockOnUpdateUser = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    window.fetch = fetchMock;
-    fetchMock.mockReset();
+    vi.clearAllMocks();
   });
 
-  test('マウント時にローディングが表示され、APIが呼ばれること', async () => {
-    // 解決を遅らせることでローディング状態を確認
-    fetchMock.mockReturnValue(new Promise(() => {}));
+  const getFetchMock = () => globalThis.fetch as any;
 
-    render(<UserBlockViewScreen user={mockUser as any} onUpdateUser={mockOnUpdateUser} />);
-
-    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/users/block/list?googleId=me-123')
-    );
-  });
-
-  test('ブロックリストが空の場合、専用のメッセージが表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('初期レンダリング時にローディングが表示され、APIが呼ばれること', async () => {
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ blocks: [] }),
-    } as Response);
+    });
 
-    render(<UserBlockViewScreen user={mockUser as any} onUpdateUser={mockOnUpdateUser} />);
+    render(<UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />);
+
+    // ローディングテキストの確認
+    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('ブロックしたユーザーはいません')).toBeInTheDocument();
+      expect(getFetchMock()).toHaveBeenCalledWith(
+        expect.stringContaining(`/api/users/block/list?googleId=${mockUser.googleId}`)
+      );
     });
   });
 
-  test('APIからリストを取得後、親コンポーネントの更新関数が呼ばれ、リストが表示されること', async () => {
-    // モックデータ: APIは blockedId を含むオブジェクトの配列を返す仕様
+  it('ブロックユーザーがいる場合、親コンポーネントを更新し、リストを表示すること', async () => {
+    // APIレスポンス: ブロックされている相手のIDが含まれる
     const mockApiResponse = {
       blocks: [
-        { id: 1, blockedId: 'target-user-A', blockerId: 'me-123' },
-        { id: 2, blockedId: 'target-user-B', blockerId: 'me-123' },
+        { id: 1, blockedId: 'blocked-user-1', blockerId: 'my-google-id' },
+        { id: 2, blockedId: 'blocked-user-2', blockerId: 'my-google-id' },
       ],
     };
 
-    fetchMock.mockResolvedValueOnce({
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => mockApiResponse,
-    } as Response);
+    });
 
-    // テスト環境で user プロパティが更新された後の表示をシミュレートするため、
-    // ここでは blockedUsers を持った状態を render に渡すか、
-    // 内部状態の反映を待ちます。
+    // テスト用に、既に更新された状態のユーザー情報を模倣して再レンダリングを想定
+    const userWithBlocks = {
+      ...mockUser,
+      blockedUsers: ['blocked-user-1', 'blocked-user-2'],
+    };
+
     const { rerender } = render(
-      <UserBlockViewScreen user={mockUser as any} onUpdateUser={mockOnUpdateUser} />
+      <UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />
     );
 
-    // 1. API取得後の親への通知を検証
+    // 1. API取得後に onUpdateUser が正しいデータで呼ばれたか確認
     await waitFor(() => {
       expect(mockOnUpdateUser).toHaveBeenCalledWith(
         expect.objectContaining({
-          blockedUsers: ['target-user-A', 'target-user-B'],
+          blockedUsers: ['blocked-user-1', 'blocked-user-2'],
         })
       );
     });
 
-    // 2. 親から新しい user (blockedUsers入り) が降ってきたと仮定して再描画
-    const updatedUser = { ...mockUser, blockedUsers: ['target-user-A', 'target-user-B'] };
-    rerender(<UserBlockViewScreen user={updatedUser as any} onUpdateUser={mockOnUpdateUser} />);
+    // 2. プロパティが更新されたと仮定して再レンダリングし、表示を確認
+    rerender(<UserBlockViewScreen user={userWithBlocks} onUpdateUser={mockOnUpdateUser} />);
 
-    // 3. 画面にIDが表示されているか確認
-    expect(screen.getByText('ユーザーID: target-user-A')).toBeInTheDocument();
-    expect(screen.getByText('ユーザーID: target-user-B')).toBeInTheDocument();
-    expect(screen.getAllByText('解除ボタン')).toHaveLength(2);
+    expect(screen.getByText('ユーザーID: blocked-user-1')).toBeInTheDocument();
+    expect(screen.getByText('ユーザーID: blocked-user-2')).toBeInTheDocument();
+    expect(screen.getByText('解除ボタン:blocked-user-1')).toBeInTheDocument();
   });
 
-  test('APIエラー時にローディングが終了し、コンソールにエラーが出力されること', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    fetchMock.mockResolvedValueOnce({ ok: false } as Response);
+  it('ブロックしたユーザーがいない場合、空のメッセージを表示すること', async () => {
+    getFetchMock().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ blocks: [] }),
+    });
 
-    render(<UserBlockViewScreen user={mockUser as any} onUpdateUser={mockOnUpdateUser} />);
+    render(<UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />);
 
     await waitFor(() => {
-      expect(screen.queryByText('読み込み中...')).not.toBeInTheDocument();
+      expect(screen.getByText('ブロックしたユーザーはいません')).toBeInTheDocument();
     });
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 });

@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { Block } from '../types';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface SelectBlockProps {
   userId: Block['blockedId'];
   blockerId: Block['blockerId'];
@@ -26,7 +29,7 @@ export function SelectBlock({ userId, blockerId, onBlockUser, onClose }: SelectB
     setIsSubmitting(true);
     try {
       // API仕様書(POST /api/users/block)に合わせてリクエスト
-      const response = await fetch('/api/users/block', {
+      const response = await fetch(`${API_BASE_URL}/api/users/block`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

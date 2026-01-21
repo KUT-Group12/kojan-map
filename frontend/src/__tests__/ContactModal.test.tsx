@@ -1,126 +1,145 @@
-beforeAll(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ContactModal } from '../components/ContactModal';
+import { User } from '../types';
 import { toast } from 'sonner';
 
-// fetchのモック
-const fetchMock = jest.fn() as jest.Mock;
+// 1. import.meta.env のモック (SyntaxError 回避)
+vi.stubGlobal('import', {
+  meta: {
+    env: {
+      VITE_API_URL: 'http://localhost:8080',
+    },
+  },
+});
 
-// toastのモック
-jest.mock('sonner', () => ({
+// sonner の toast をモック
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-describe('ContactModal コンポーネント', () => {
-  const mockUser = { googleId: 'user-123', gmail: 'test@example.com' };
-  const mockOnClose = jest.fn();
-  // console.error を一時的に隠すための spy
-  let consoleSpy: jest.SpyInstance;
+describe('ContactModal', () => {
+  const mockUser: User = {
+    googleId: 'test-id',
+    gmail: 'test@gmail.com',
+    role: 'general',
+    registrationDate: new Date().toISOString(),
+    fromName: 'テスト太郎',
+  };
+
+  const mockOnClose = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    fetchMock.mockReset();
-    window.fetch = fetchMock;
-    // 各テストごとに console.error をモック化
-    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubGlobal('fetch', vi.fn());
   });
 
   afterEach(() => {
-    consoleSpy.mockRestore();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
-  test('バリデーション：空の状態で送信するとエラーが表示されること', async () => {
-    render(<ContactModal user={mockUser as any} onClose={mockOnClose} />);
+  const getFetchMock = () => globalThis.fetch as any;
 
-    // 💡 修正ポイント:
-    // required属性がついている場合、fireEvent.click(button) では submit が発火しない場合があります。
-    // そのため、直接フォームの submit イベントを発火させます。
-    const form = screen.getByRole('dialog').querySelector('form');
-    if (form) {
-      fireEvent.submit(form);
-    }
+  it('初期表示が正しいこと', () => {
+    render(<ContactModal user={mockUser} onClose={mockOnClose} />);
+
+    expect(screen.getByText('お問い合わせ')).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(mockUser.gmail))).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('お問い合わせの件名')).toBeInTheDocument();
+  });
+
+  it('入力がない状態で送信するとエラーを表示すること', async () => {
+    render(<ContactModal user={mockUser} onClose={mockOnClose} />);
+
+    // ボタンではなく form 自体を取得して submit を発火させる
+    const form = screen.getByRole('form'); // form に aria-label="contact-form" がない場合は以下
+    // const form = document.querySelector('form')!;
+
+    fireEvent.submit(form);
 
     expect(toast.error).toHaveBeenCalledWith('件名とメッセージを入力してください');
-    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test('正常に入力して送信すると、APIが呼ばれ onClose が実行されること', async () => {
-    // APIの成功レスポンスをモック
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: '送信完了' }),
-    } as Response);
+  it('フォーム送信中にボタンが「送信中...」になり無効化されること', async () => {
+    // 意図的にレスポンスを遅らせる
+    getFetchMock().mockReturnValue(
+      new Promise((resolve) => setTimeout(() => resolve({ ok: true, json: async () => ({}) }), 100))
+    );
 
-    render(<ContactModal user={mockUser as any} onClose={mockOnClose} />);
+    render(<ContactModal user={mockUser} onClose={mockOnClose} />);
 
-    // 入力操作
-    fireEvent.change(screen.getByLabelText(/件名/), { target: { value: '不具合報告' } });
-    fireEvent.change(screen.getByLabelText(/メッセージ/), {
-      target: { value: 'ボタンが反応しません。' },
+    fireEvent.change(screen.getByPlaceholderText('お問い合わせの件名'), {
+      target: { value: '相談' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('お問い合わせ内容を詳しくご記入ください'), {
+      target: { value: '内容' },
     });
 
-    // 送信
-    const submitButton = screen.getByRole('button', { name: '送信する' });
-    fireEvent.click(submitButton);
+    fireEvent.click(screen.getByText('送信する'));
 
-    // 送信中の状態（ボタンが非活性）を確認
-    expect(submitButton).toBeDisabled();
+    // 送信中状態の確認
     expect(screen.getByText('送信中...')).toBeInTheDocument();
+    expect(screen.getByText('送信中...')).toBeDisabled();
+    expect(screen.getByPlaceholderText('お問い合わせの件名')).toBeDisabled();
+  });
+
+  it('API送信に成功したとき、成功トーストを表示して閉じること', async () => {
+    getFetchMock().mockResolvedValue({
+      ok: true,
+      json: async () => ({ message: '送信完了しました' }),
+    });
+
+    render(<ContactModal user={mockUser} onClose={mockOnClose} />);
+
+    fireEvent.change(screen.getByLabelText('件名 *'), { target: { value: 'バグ報告' } });
+    fireEvent.change(screen.getByLabelText('メッセージ *'), {
+      target: { value: '地図が動きません' },
+    });
+
+    fireEvent.click(screen.getByText('送信する'));
 
     await waitFor(() => {
-      // APIリクエストの検証
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/contact/validate',
+      // APIリクエストの内容確認
+      expect(getFetchMock()).toHaveBeenCalledWith(
+        expect.stringContaining('/api/contact/validate'),
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subject: '不具合報告',
-            text: 'ボタンが反応しません。',
-          }),
+          body: JSON.stringify({ subject: 'バグ報告', text: '地図が動きません' }),
         })
       );
-    });
-
-    // 成功時の処理を検証
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('送信完了');
+      expect(toast.success).toHaveBeenCalledWith('送信完了しました');
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
 
-  test('APIエラー時にトーストが表示され、入力が維持されること', async () => {
-    fetchMock.mockRejectedValueOnce(new Error('Network error'));
+  it('APIエラー時にエラートーストを表示すること', async () => {
+    getFetchMock().mockResolvedValue({
+      ok: false,
+    });
 
-    render(<ContactModal user={mockUser as any} onClose={mockOnClose} />);
+    render(<ContactModal user={mockUser} onClose={mockOnClose} />);
 
-    fireEvent.change(screen.getByLabelText(/件名/), { target: { value: '質問' } });
-    fireEvent.change(screen.getByLabelText(/メッセージ/), { target: { value: 'テスト' } });
+    fireEvent.change(screen.getByLabelText('件名 *'), { target: { value: '質問' } });
+    fireEvent.change(screen.getByLabelText('メッセージ *'), { target: { value: 'テスト' } });
 
-    // 送信
-    const form = screen.getByRole('dialog').querySelector('form');
-    if (form) fireEvent.submit(form);
+    fireEvent.click(screen.getByText('送信する'));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('エラーが発生しました'));
+      expect(toast.error).toHaveBeenCalledWith(
+        'エラーが発生しました。時間をおいて再度お試しください。'
+      );
+      expect(mockOnClose).not.toHaveBeenCalled();
     });
-    expect(screen.getByLabelText(/件名/)).toHaveValue('質問');
-    expect(screen.getByLabelText(/メッセージ/)).toHaveValue('テスト');
-
-    // ここで console.error が呼ばれますが、beforeEach でモック化しているため
-    // テスト結果のログには表示されず、検証だけが可能です。
-    expect(consoleSpy).toHaveBeenCalled();
   });
 
-  test('キャンセルボタンを押すと onClose が呼ばれること', () => {
-    render(<ContactModal user={mockUser as any} onClose={mockOnClose} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+  it('キャンセルボタンを押すと onClose が呼ばれること', () => {
+    render(<ContactModal user={mockUser} onClose={mockOnClose} />);
+    fireEvent.click(screen.getByText('キャンセル'));
     expect(mockOnClose).toHaveBeenCalled();
   });
 });

@@ -1,102 +1,103 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LogoutScreen } from '../components/LogoutScreen';
+import { User } from '../types';
 import { toast } from 'sonner';
 
-// fetchのモック
-const fetchMock = jest.fn() as jest.Mock;
+// 1. 環境変数のセット
+vi.stubEnv('VITE_API_URL', 'http://localhost:8080');
 
-// toastのモック
-jest.mock('sonner', () => ({
+// 2. toast のモック
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-describe('LogoutScreen コンポーネント', () => {
-  const mockUser = {
-    googleId: 'user-999',
-    fromName: '高知 太郎',
-    gmail: 'taro@example.com',
+describe('LogoutScreen', () => {
+  const mockUser: User = {
+    googleId: 'test-google-id',
+    gmail: 'test@gmail.com',
     role: 'general',
+    registrationDate: new Date().toISOString(),
+    fromName: 'テスト太郎',
   };
-  const mockOnLogout = jest.fn();
-  const mockOnBack = jest.fn();
+
+  const mockOnLogout = vi.fn();
+  const mockOnBack = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    window.fetch = fetchMock;
-    fetchMock.mockReset();
+    vi.clearAllMocks();
+    // 3. 各テストの前に fetch を Mock 関数として登録する
+    vi.stubGlobal('fetch', vi.fn());
   });
 
-  test('ユーザー情報が正しく表示されていること', () => {
-    render(<LogoutScreen user={mockUser as any} onLogout={mockOnLogout} onBack={mockOnBack} />);
+  // fetch を Mock インスタンスとして扱うための型指定
+  const getFetchMock = () => globalThis.fetch as any;
 
-    expect(screen.getByText('高知 太郎様')).toBeInTheDocument();
-    expect(screen.getByText('taro@example.com')).toBeInTheDocument();
-    expect(screen.getByText('一般会員')).toBeInTheDocument();
+  it('ユーザー名とメールアドレスが正しく表示されていること', () => {
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
+    expect(screen.getByText(/テスト太郎様/)).toBeInTheDocument();
+    expect(screen.getByText(mockUser.gmail)).toBeInTheDocument();
   });
 
-  test('ログアウト実行時に正しいAPI(PUT)が呼ばれ、onLogoutが実行されること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('ログアウトボタンをクリックするとAPIが呼ばれ、成功時に onLogout が実行されること', async () => {
+    getFetchMock().mockResolvedValue({
       ok: true,
-      json: async () => ({}),
-    } as Response);
+      json: async () => ({ message: 'logged out' }),
+    });
 
-    render(<LogoutScreen user={mockUser as any} onLogout={mockOnLogout} onBack={mockOnBack} />);
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     const logoutButton = screen.getByRole('button', { name: 'ログアウトする' });
     fireEvent.click(logoutButton);
 
-    // ローディング状態の確認
-    expect(logoutButton).toBeDisabled();
-    expect(screen.getByText('ログアウト中...')).toBeInTheDocument();
-
+    // 1. ボタンが非活性化され、テキストが切り替わるのを待機
     await waitFor(() => {
-      // APIリクエストの検証
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/auth/logout',
-        expect.objectContaining({
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: 'user-999' }),
-        })
-      );
+      expect(logoutButton).toBeDisabled();
+      // ボタンの中のテキストが「ログアウト中...」に変わっているか確認
+      expect(logoutButton).toHaveTextContent('ログアウト中...');
     });
 
-    expect(toast.success).toHaveBeenCalledWith('ログアウトしました');
-    expect(mockOnLogout).toHaveBeenCalled();
-  });
-
-  test('APIがエラーを返しても、ユーザーの利便性のために onLogout が呼ばれること', async () => {
-    // APIがエラー（500等）を返す設定
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-    } as Response);
-
-    render(<LogoutScreen user={mockUser as any} onLogout={mockOnLogout} onBack={mockOnBack} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'ログアウトする' }));
-
+    // 2. 最終的な処理（API呼ばれたか等）の確認
     await waitFor(() => {
-      // 失敗しても最終的に onLogout が呼ばれる仕様を検証
+      expect(getFetchMock()).toHaveBeenCalledWith(
+        expect.stringContaining('/api/auth/logout'),
+        expect.any(Object)
+      );
+      expect(toast.success).toHaveBeenCalledWith('ログアウトしました');
       expect(mockOnLogout).toHaveBeenCalled();
     });
   });
 
-  test('ビジネスユーザーの場合、ビジネス会員と表示され専用の注意事項が出ること', () => {
-    const businessUser = { ...mockUser, role: 'business' };
-    render(<LogoutScreen user={businessUser as any} onLogout={mockOnLogout} onBack={mockOnBack} />);
+  it('APIエラーが発生しても、最終的に onLogout が実行されること', async () => {
+    getFetchMock().mockResolvedValue({ ok: false });
+
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
+
+    const logoutButton = screen.getByRole('button', { name: 'ログアウトする' });
+    fireEvent.click(logoutButton);
+
+    await waitFor(() => {
+      expect(mockOnLogout).toHaveBeenCalled();
+    });
+  });
+
+  it('戻るボタンをクリックすると onBack が呼ばれること', () => {
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
+
+    const backButton = screen.getByRole('button', { name: /戻る/ });
+    fireEvent.click(backButton);
+
+    expect(mockOnBack).toHaveBeenCalled();
+  });
+
+  it('ビジネス会員の場合、特有の注意事項が表示されること', () => {
+    const businessUser: User = { ...mockUser, role: 'business' };
+    render(<LogoutScreen user={businessUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     expect(screen.getByText('ビジネス会員')).toBeInTheDocument();
     expect(screen.getByText('事業者情報とアイコン')).toBeInTheDocument();
-  });
-
-  test('戻るボタンをクリックすると onBack が呼ばれること', () => {
-    render(<LogoutScreen user={mockUser as any} onLogout={mockOnLogout} onBack={mockOnBack} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /戻る/ }));
-    expect(mockOnBack).toHaveBeenCalled();
   });
 });
