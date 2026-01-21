@@ -227,8 +227,6 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-
-                
               </div>
 
               {/* 人気投稿 */}
