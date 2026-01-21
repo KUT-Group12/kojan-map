@@ -11,6 +11,7 @@ vi.mock('sonner', () => ({
 }));
 
 describe('SelectBlock', () => {
+  let confirmSpy: ReturnType<typeof vi.spyOn>;
   const mockUserId = 'target-user-123';
   const mockBlockerId = 'my-user-456';
   const mockOnBlockUser = vi.fn();
@@ -27,7 +28,7 @@ describe('SelectBlock', () => {
     global.fetch = vi.fn();
 
     // window.confirm のモック（デフォルトで「OK」を返す設定）
-    vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
   });
 
   /**
@@ -47,7 +48,6 @@ describe('SelectBlock', () => {
   };
 
   it('ブロックボタンをクリックした際、確認ダイアログが表示されること', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm');
     await renderComponent();
 
     fireEvent.click(screen.getByRole('button', { name: 'ブロック' }));
