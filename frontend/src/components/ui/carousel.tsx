@@ -75,18 +75,22 @@ function Carousel({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (orientation === 'horizontal' && event.key === 'ArrowLeft') {
-        event.preventDefault();
-        scrollPrev();
-      } else if (orientation === 'horizontal' && event.key === 'ArrowRight') {
-        event.preventDefault();
-        scrollNext();
-      } else if (orientation === 'vertical' && event.key === 'ArrowUp') {
-        event.preventDefault();
-        scrollPrev();
-      } else if (orientation === 'vertical' && event.key === 'ArrowDown') {
-        event.preventDefault();
-        scrollNext();
+      if (orientation === 'horizontal') {
+        if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          scrollPrev();
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          scrollNext();
+        }
+      } else if (orientation === 'vertical') {
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          scrollPrev();
+        } else if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          scrollNext();
+        }
       }
     },
     [orientation, scrollPrev, scrollNext]
@@ -104,7 +108,6 @@ function Carousel({
     api.on('select', onSelect);
 
     return () => {
-      api?.off('reInit', onSelect);
       api?.off('select', onSelect);
     };
   }, [api, onSelect]);

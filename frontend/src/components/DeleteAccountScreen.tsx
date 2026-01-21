@@ -61,7 +61,7 @@ export function DeleteAccountScreen({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          googleId: user.id, // 仕様書のリクエストパラメータ
+          googleId: user.googleId, // 仕様書のリクエストパラメータ
           reason: deleteReason,
         }),
       });
@@ -121,7 +121,7 @@ export function DeleteAccountScreen({
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
               {user.role === 'business' && business?.businessName && (
                 <div>

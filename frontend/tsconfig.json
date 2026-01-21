@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+<<<<<<< HEAD
     "types": [
       "node",
       "vitest/globals", // jest から vitest/globals に変更
@@ -9,6 +10,12 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ES2020"], // DOM.Iterable を追加（Reactで一般的）
+=======
+    "types": ["jest", "@testing-library/jest-dom"],
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "ES2020"],
+>>>>>>> main
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -16,6 +23,7 @@
     "strict": false,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
+<<<<<<< HEAD
     "moduleResolution": "Bundler", // Node から Bundler に変更（Vite 4/5以降の推奨）
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -24,6 +32,13 @@
     "paths": {
       "@/*": ["./src/*"] // vite.config.ts の alias と合わせる
     }
+=======
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+>>>>>>> main
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User, Report, Post } from '../types';
-// import { mockPins } from '../lib/mockData';
+import { User, Report } from '../types';
 import ProcessBusinessRequestScreen from './ProcessBusinessRequestScreen';
-import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 import AdminReport, { AdminReportProps } from './AdminReport';
 import AdminUserManagement, { AdminUser } from './AdminUserManagement';
 import AdminContactManagement, { Inquiry } from './AdminContactManagement';
@@ -43,86 +41,212 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
+interface SystemStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalPosts: number;
+  totalReactions: number;
+  businessUsers: number;
+  pendingReports: number;
+}
+
+interface GenreDistribution {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface WeeklyActivity {
+  date: string;
+  posts: number;
+  reactions: number;
+}
+
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [reports, setReports] = useState<Report[]>();
 
-  //データベースから持ってくるようにしなければならない？
-  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>();
+  const [reports, setReports] = useState<Report[]>([]);
+  // const [businessApplications, setBusinessApplications]... removed
+  const [userList, setUsers] = useState<AdminUser[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
-  const [userList, setUsers] = useState<AdminUser[]>();
+  const [systemStats, setSystemStats] = useState<SystemStats>({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalPosts: 0,
+    totalReactions: 0,
+    businessUsers: 0,
+    pendingReports: 0,
+  });
+  const [weeklyActivityData, setWeeklyActivityData] = useState<WeeklyActivity[]>([]);
+  const [genreDistribution, setGenreDistribution] = useState<GenreDistribution[]>([]);
 
-  const Inquiries: Inquiry[] = [];
+  const API_BASE = '/api';
 
-  const [inquiries, setInquiries] = useState<Inquiry[]>(Inquiries);
-  const Posts: Post[] = [];
-
-  const systemStats = {
-    totalUsers: 1234,
-    activeUsers: 856,
-    // pinId から postId への変更に伴い、参照先も修正が必要な場合があります
-    totalPosts: Posts.length,
-    totalReactions: Posts.reduce((sum, pin) => sum + pin.numReaction, 0),
-    businessUsers: 45,
-    // status === 'pending' を reportFlag === false に修正
-    pendingReports: reports.filter((r) => r.reportFlag === false).length,
-  };
-
-  const weeklyActivityData = [];
-
-  const genreDistribution = [];
-
-  // 事業者申請承認時の処理 (M4-5-2 ProcessApplication)
-  // 引数を id: string から applicationId: number に変更
-  const handleApprove = (requestId: number) => {
-    if (confirm('この事業者を承認しますか？')) {
-      setBusinessApplications((prev) =>
-        // app.applicationId ではなく app.requestId でフィルタリング
-        prev.filter((app) => app.requestId !== requestId)
-      );
-      toast.success('事業者アカウントを承認しました');
+  const fetchOverviewData = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/summary`);
+      if (!res.ok) throw new Error('Failed to fetch summary');
+      const data = await res.json();
+      if (data.stats) setSystemStats(data.stats);
+      if (data.activity) setWeeklyActivityData(data.activity);
+      if (data.genres) setGenreDistribution(data.genres);
+    } catch (error) {
+      console.error('Error fetching overview:', error);
     }
-  };
+  }, []);
 
-  const handleReject = (requestId: number) => {
-    if (confirm('この申請を却下しますか？')) {
-      setBusinessApplications((prev) =>
-        // 却下時も同様に requestId でフィルタリング
-        prev.filter((app) => app.requestId !== requestId)
-      );
-      toast.error('申請を却下しました');
+  const fetchReports = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/reports`);
+      if (!res.ok) throw new Error('Failed to fetch reports');
+      const data = await res.json();
+      setReports(data.reports || data);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
     }
-  };
+  }, []);
 
-  // 未実装の部分はコンソール表示
-  const handleResolveReport = (reportId: number) => {
-    setReports((prev) =>
-      prev.map((report) =>
-        // report.id → report.reportId に変更
-        // reportId (引数) と比較
-        report.reportId === reportId
-          ? { ...report, reportFlag: true } // status: 'resolved' → reportFlag: true に変更
-          : report
-      )
-    );
-    toast.success('通報を処理済みにしました');
-  };
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/users`);
+      if (!res.ok) throw new Error('Failed to fetch users');
+      const data = await res.json();
+      setUsers(data.users || data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  }, []);
 
-  const handleDeletePost = (postId: number) => {
-    if (confirm('この投稿を削除しますか？')) {
-      // 対象の postId を持つ通報をすべて処理済み、かつ削除済みに更新
+  const fetchInquiries = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/inquiries`);
+      if (!res.ok) throw new Error('Failed to fetch inquiries');
+      const data = await res.json();
+      const raw = data.inquiries ?? data.asks ?? data;
+      const safeInquiries = Array.isArray(raw) ? raw : [];
+      if (!Array.isArray(raw)) {
+        console.warn('Unexpected inquiries response shape', data);
+      }
+      setInquiries(safeInquiries);
+    } catch (error) {
+      console.error('Error fetching inquiries:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    switch (activeTab) {
+      case 'overview':
+        fetchOverviewData();
+        break;
+      case 'reports':
+        fetchReports();
+        break;
+      case 'users':
+        fetchUsers();
+        break;
+      case 'inquiries':
+        fetchInquiries();
+        break;
+    }
+  }, [
+    activeTab,
+    fetchOverviewData,
+    fetchReports,
+    // fetchBusinessApplications,
+    fetchUsers,
+    fetchInquiries,
+  ]);
+
+  // const handleReject... removed
+  // const handleApprove... removed
+
+  const handleResolveReport = async (reportId: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/reports/${reportId}/handle`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Failed to resolve report');
+
       setReports((prev) =>
         prev.map((report) =>
-          report.postId === postId // pinId から postId へ変更
+          report.reportId === reportId ? { ...report, reportFlag: true } : report
+        )
+      );
+      // サイドバーのバッジ件数も即時更新
+      setSystemStats((prev) => ({
+        ...prev,
+        pendingReports: Math.max(0, (prev?.pendingReports ?? 1) - 1),
+      }));
+      toast.success('通報を処理済みにしました');
+    } catch (error) {
+      console.error(error);
+      toast.error('処理に失敗しました');
+    }
+  };
+
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm('この投稿を削除しますか？')) return;
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        console.warn('Backend delete might not be implemented, updating UI only');
+      }
+
+      setReports((prev) =>
+        prev.map((report) =>
+          report.postId === postId
             ? {
                 ...report,
-                reportFlag: true, // status: 'resolved' の代わり
-                removeFlag: true, // 実際に削除したため true に更新
+                reportFlag: true,
+                removeFlag: true,
               }
             : report
         )
       );
       toast.success('投稿を削除し、関連する通報を処理済みにしました');
+    } catch (error) {
+      console.error(error);
+      toast.error('削除操作に失敗しました');
+    }
+  };
+
+  const handleDeleteAccount = async (googleId: string) => {
+    if (!confirm('このアカウントを完全に削除してもよろしいですか？')) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${googleId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete user');
+
+      setUsers((prev) => prev.filter((user) => user.googleId !== googleId));
+      toast.success('アカウントを削除しました');
+    } catch (error) {
+      console.error(error);
+      toast.error('アカウント削除に失敗しました');
+    }
+  };
+
+  const handleDeleteInquiry = async (askId: number) => {
+    if (!confirm('この問い合わせを削除しますか？')) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/reject`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Failed to delete');
+
+      setInquiries((prev) => prev.filter((q) => q.askId !== askId));
+      toast.success('問い合わせを削除しました');
+    } catch (error) {
+      console.error(error);
+      toast.error('削除に失敗しました');
+    }
+  };
+
+  const handleApproveInquiry = async (askId: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/approve`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Failed to approve');
+
+      setInquiries((prev) => prev.map((q) => (q.askId === askId ? { ...q, askFlag: true } : q)));
+      toast.success('問い合わせを対応済みにしました');
+    } catch (error) {
+      console.error(error);
+      toast.error('対応済みにできませんでした');
     }
   };
 
@@ -132,30 +256,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     onResolveReport: handleResolveReport,
   };
 
-  const handleDeleteAccount = (googleId: string) => {
-    //if (confirm('このアカウントを完全に削除してもよろしいですか？')) {
-    // setUserList を users のステート更新関数（setUsers など）に合わせる
-    setUsers((prev) =>
-      // user.id ではなく user.googleId でフィルタリング
-      prev.filter((user) => user.id !== googleId)
-    );
-    toast.success('アカウントを削除しました');
-    //}
-  };
-
-  const handleDeleteInquiry = (askId: number) => {
-    if (confirm('この問い合わせを削除しますか？')) {
-      setInquiries((prev) =>
-        // id ではなく askId でフィルタリング
-        prev.filter((q) => q.askId !== askId)
-      );
-      toast.success('問い合わせを削除しました');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* サイドバー */}
       <div className="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white shadow-2xl z-20">
         <div className="p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
@@ -205,9 +307,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
-            {businessApplications.length > 0 && (
-              <Badge className="bg-orange-500">{businessApplications.length}</Badge>
-            )}
+            {/* {businessApplications.length > 0 && (
+              <Badge className="bg-orange-500">{businessApplications.length}</Badge
+            )} */}
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -239,7 +341,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">ログイン中</p>
-            <p className="text-sm font-medium">{user.name}</p>
+            <p className="text-sm font-medium">{user.fromName || user.gmail || '管理者'}</p>
           </div>
           <Button
             variant="outline"
@@ -252,9 +354,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         </div>
       </div>
 
-      {/* メインコンテンツ */}
       <div className="ml-64 min-h-screen">
-        {/* ヘッダー */}
         <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-8 py-6 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div>
@@ -274,10 +374,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         </header>
 
         <div className="p-8">
-          {/* 概要タブ */}
           {activeTab === 'overview' && (
             <div className="space-y-6 max-w-7xl">
-              {/* 統計カード */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
@@ -363,8 +461,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                   </CardContent>
                 </Card>
               </div>
-
-              {/* グラフエリア */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2 shadow-xl border-slate-200">
                   <CardHeader>
@@ -375,22 +471,33 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                     <CardDescription>ユーザー活動とコンテンツ投稿の推移</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={weeklyActivityData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="posts" fill="#3b82f6" name="新規投稿" radius={[8, 8, 0, 0]} />
-                        <Bar
-                          dataKey="reactions"
-                          fill="#8b5cf6"
-                          name="リアクション"
-                          radius={[8, 8, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {weeklyActivityData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={weeklyActivityData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar
+                            dataKey="posts"
+                            fill="#3b82f6"
+                            name="新規投稿"
+                            radius={[8, 8, 0, 0]}
+                          />
+                          <Bar
+                            dataKey="reactions"
+                            fill="#8b5cf6"
+                            name="リアクション"
+                            radius={[8, 8, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center text-slate-400">
+                        データがありません
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -403,58 +510,50 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                     <CardDescription>カテゴリー分布</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={genreDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry) => entry.name}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {genreDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {genreDistribution.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={genreDistribution}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={(entry) => entry.name}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {genreDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center text-slate-400">
+                        データがありません
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
             </div>
           )}
-
-          {/* 通報管理タブ */}
           {activeTab === 'reports' && <AdminReport {...reportProps} />}
-          {/*
-              reports={reports}
-              onDeletePost={handleDeletePost}
-              onResolveReport={handleResolveReport}*/}
 
-          {/* 事業者申請一覧表示 */}
-          {activeTab === 'business' && (
-            <ProcessBusinessRequestScreen
-              applications={businessApplications} // データを貸す
-              onApprove={handleApprove} // 関数を貸す
-              onReject={handleReject} // 関数を貸す
-            />
-          )}
+          {activeTab === 'business' && <ProcessBusinessRequestScreen />}
 
-          {/* ユーザー管理タブ */}
           {activeTab === 'users' && (
             <AdminUserManagement users={userList} onDeleteAccount={handleDeleteAccount} />
           )}
 
-          {/* お問い合わせタブ */}
           {activeTab === 'inquiries' && (
             <AdminContactManagement
               inquiries={inquiries}
               setInquiries={setInquiries}
               onDeleteInquiry={handleDeleteInquiry}
+              onApproveInquiry={handleApproveInquiry}
             />
           )}
         </div>

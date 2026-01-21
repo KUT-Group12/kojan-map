@@ -24,7 +24,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
       const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: user.id }),
+        body: JSON.stringify({ sessionId: user.googleId }),
       });
 
       if (!response.ok) {
@@ -57,8 +57,8 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
             </div>
             <CardTitle className="text-xl">ログアウトの確認</CardTitle>
             <CardDescription>
-              {user.name && (
-                <span className="block font-bold text-gray-900 mb-1">{user.name}様</span>
+              {user.fromName && (
+                <span className="block font-bold text-gray-900 mb-1">{user.fromName}様</span>
               )}
               ログアウトしてもよろしいですか？
             </CardDescription>
@@ -79,7 +79,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">メールアドレス</span>
-                <span className="font-medium text-gray-800">{user.email}</span>
+                <span className="font-medium text-gray-800">{user.gmail}</span>
               </div>
             </div>
 

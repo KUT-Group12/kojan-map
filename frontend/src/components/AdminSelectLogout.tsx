@@ -1,5 +1,33 @@
 import { Button } from './ui/button';
 
+export function AdminSelectLogout() {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      //画面遷移
+      window.location.href = '/';
+    }
+  };
+
+  return (
+    <Button onClick={handleLogout} variant="outline">
+      ログアウト
+    </Button>
+  );
+}
+
+{
+  /*import { Button } from './ui/button';
+
+>>>>>>> main
 // 1. プロパティの型を定義
 interface AdminSelectLogoutProps {
   onLogoutAction?: (url: string) => void;
@@ -21,4 +49,6 @@ export function AdminSelectLogout({
       ログアウト
     </Button>
   );
+}
+  */
 }

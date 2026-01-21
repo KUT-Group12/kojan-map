@@ -283,7 +283,7 @@ export function NewPostScreen({
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
-                事業者名「{businessData?.businessName || user?.name || '（未設定）'}
+                事業者名「{businessData?.businessName || user?.fromName || '（未設定）'}
                 」として投稿されます
               </p>
             </div>
@@ -293,7 +293,6 @@ export function NewPostScreen({
             </div>
           )}
 
-          {/* 送信ボタン */}
           <div className="flex space-x-2 pt-4">
             <Button type="submit" className="flex-1">
               投稿する

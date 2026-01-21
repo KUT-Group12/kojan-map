@@ -45,6 +45,35 @@ export function DisplayPostList({
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
+
+  useEffect(() => {
+    if (!post?.postId) return;
+    const fetchPostDetail = async () => {
+      setIsDetailLoading(true);
+      try {
+        // バックエンドとの接続
+        const response = await fetch(
+          //`http://localhost:8080/api/posts/detail?postId=${post.postId}`
+          `${API_BASE_URL}/api/posts/detail?postId=${post.postId}`
+        );
+        if (!response.ok) throw new Error('詳細の取得に失敗しました');
+
+        const data = await response.json(); // Post オブジェクトが返る
+
+        setPostDetail(data.post);
+        console.log('data: ', data);
+      } catch (error) {
+        console.error('詳細取得エラー:', error);
+      } finally {
+        setIsDetailLoading(false);
+      }
+    };
+
+    fetchPostDetail();
+  }, [post?.postId]);
+
+  // スクロール制御
   useEffect(() => {
     if (!post?.postId) return;
     setPostDetail(null);
@@ -82,7 +111,7 @@ export function DisplayPostList({
     });
   };
 
-  const isOwnPost = post.userId === currentUser.id;
+  const isOwnPost = post.userId === currentUser.googleId;
 
   // 表示に使うデータを決定（詳細があればそちらを優先）
   const displayPost = postDetail || post;
@@ -134,7 +163,6 @@ export function DisplayPostList({
             </div>
           </div>
         </DialogHeader>
-
         <div className="space-y-6 mt-4">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
@@ -144,7 +172,7 @@ export function DisplayPostList({
               <div>
                 <p className="font-bold text-slate-700">
                   {displayPost.businessName ||
-                    (displayPost.userId === currentUser.id ? currentUser.name : '匿名ユーザー')}
+                    (displayPost.userId === currentUser.googleId ? currentUser.fromName : '匿名ユーザー')}
                 </p>
                 <p className="text-xs text-slate-400 font-medium">
                   {formatDate(displayPost.postDate)}
@@ -158,7 +186,6 @@ export function DisplayPostList({
               </div>
             )}
           </div>
-
           <div className="text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
             {displayPost.text}
           </div>
@@ -182,7 +209,6 @@ export function DisplayPostList({
               ))}
             </div>
           )}
-
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
             <div className="flex items-center text-slate-500 text-sm font-bold">
               <span className="mr-2">📍</span>
@@ -207,7 +233,7 @@ export function DisplayPostList({
 
               <UserTriggerReaction
                 postId={post.postId}
-                userId={currentUser.id}
+                userId={currentUser.googleId}
                 isReacted={isReacted}
                 userRole={currentUser.role}
                 isDisabled={false}
@@ -231,7 +257,7 @@ export function DisplayPostList({
                   {onBlockUser && (
                     <SelectBlock
                       userId={post.userId}
-                      blockerId={currentUser.id}
+                      blockerId={currentUser.googleId}
                       onBlockUser={onBlockUser}
                       onClose={onClose}
                     />
@@ -246,7 +272,7 @@ export function DisplayPostList({
               <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
                 <ReportScreen
                   postId={post.postId}
-                  userId={currentUser.id}
+                  userId={currentUser.googleId}
                   isReporting={isReporting}
                   setIsReporting={setIsReporting}
                   onReportComplete={onClose}

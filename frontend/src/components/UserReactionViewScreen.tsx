@@ -22,7 +22,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
     let active = true;
 
     const fetchReactedPosts = async () => {
-      if (!user?.id) {
+      if (!user?.googleId) {
         setReactedPosts([]);
         setIsLoading(false);
         return;
@@ -30,7 +30,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       setIsLoading(true);
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/reactions/list?googleId=${encodeURIComponent(user.id)}`,
+          `${API_BASE_URL}/api/reactions/list?googleId=${encodeURIComponent(user.googleId)}`,
           { signal: controller.signal }
         );
         if (!response.ok) throw new Error('リアクション履歴の取得に失敗しました');
@@ -46,13 +46,12 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
         if (active) setIsLoading(false);
       }
     };
-
     fetchReactedPosts();
     return () => {
       active = false;
       controller.abort();
     };
-  }, [user?.id]);
+  }, [user?.googleId]);
 
   // DBからデータが来るため、IDからキーへ変換するロジック (genreIdToKey) は削除
 

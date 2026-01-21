@@ -18,8 +18,6 @@ export function DisplayPostHistory({
   formatDate,
   deleteButton,
 }: DisplayPostHistoryProps) {
-  // genreIdToKey ロジックを削除（DBの値を直接使うため不要）
-
   return (
     <Card className="hover:shadow-md transition-all border-slate-200">
       <CardContent className="p-4 flex justify-between items-start">

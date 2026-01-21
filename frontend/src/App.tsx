@@ -1,90 +1,97 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
+import { LoadingScreen } from './components/LoadingScreen';
 import { LoginScreen } from './components/LoginScreen';
-const MainApp = lazy(() => import('./components/MainApp').then((m) => ({ default: m.MainApp })));
-const AdminDashboard = lazy(() =>
-  import('./components/AdminDashboard').then((m) => ({ default: m.AdminDashboard }))
-);
+import { MainApp } from './components/MainApp';
+import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
-import { getStoredJWT, getStoredUser, logout as authLogout } from './lib/auth';
-
-type UserRole = 'general' | 'business' | 'admin';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  businessName?: string;
-  businessIcon?: string;
-  createdAt: Date;
-}
+import { UserRole, User, Business } from './types';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(() => {
-    // コンポーネント作成時に一度だけ実行される
-    const saved = localStorage.getItem('user');
-    if (saved) {
-      try {
-        const storedUser = JSON.parse(saved);
-        return {
-          ...storedUser,
-          createdAt: new Date(storedUser.createdAt),
-        };
-      } catch (e) {
-        console.error('Failed to parse user from storage', e);
-        return null;
-      }
-    }
-    return null;
-  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
 
-  const handleLogin = () => {
-    // JWT とユーザー情報は LoginScreen で既に保存済み
-    const token = getStoredJWT();
-    const storedUserData = getStoredUser();
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (token && storedUserData) {
-      const appUser: User = {
-        // id: storedUserData.id,
-        id: storedUserData.googleId || storedUserData.id,
-        email: storedUserData.email,
-        name: storedUserData.email ? storedUserData.email.split('@')[0] : 'ユーザー',
-        role: storedUserData.role as UserRole,
-        businessName: storedUserData.businessName,
-        businessIcon: storedUserData.businessIcon,
-        createdAt: new Date(storedUserData.createdAt),
-      };
-      setUser(appUser);
+  // 引数として受け取ったデータをそのままステートにセットする
+  const handleLogin = (role: UserRole, googleId: string) => {
+    // 1. Userオブジェクトを組み立てる
+    const userData: User = {
+      googleId: googleId,
+      gmail: `${googleId}@example.com`, // 便宜上のメールアドレス
+      role: role,
+      registrationDate: new Date().toLocaleDateString(),
+    };
+
+    // 2. ステートを更新する
+    setUser(userData);
+
+    // ビジネスロールの場合は初期状態をセット（必要に応じて）
+    if (role === 'business') {
+      setBusiness({
+        businessId: 0, // 仮のID
+        businessName: '',
+        kanaBusinessName: '',
+        zipCode: '',
+        address: '',
+        phone: '',
+        registDate: new Date().toLocaleDateString(),
+        userId: googleId,
+        placeId: 0,
+      });
+    } else {
+      setBusiness(null);
     }
   };
 
   const handleLogout = () => {
-    // ローカルストレージから JWT とユーザー情報を削除
-    authLogout();
     setUser(null);
+    setBusiness(null);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-    setUser(updatedUser);
+  const handleUpdateUser = (updatedData: User | Business) => {
+    if ('businessId' in updatedData) {
+      setBusiness(updatedData as Business);
+    } else {
+      setUser(updatedData as User);
+    }
   };
 
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  // 1. 未ログイン時
   if (!user) {
+    // LoginScreen側で「ログイン成功時にUserオブジェクトを作って渡す」ようにします
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // 2. 管理者画面
   if (user.role === 'admin') {
     return (
-      <Suspense fallback={<div className="p-4">読み込み中...</div>}>
+      <>
         <AdminDashboard user={user} onLogout={handleLogout} />
         <Toaster />
-      </Suspense>
+      </>
     );
   }
 
+  // 3. メインアプリ（一般/事業者）
   return (
-    <Suspense fallback={<div className="p-4">読み込み中...</div>}>
-      <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
+    <>
+      <MainApp
+        user={user}
+        business={business}
+        onLogout={handleLogout}
+        onUpdateUser={handleUpdateUser}
+      />
       <Toaster />
-    </Suspense>
+    </>
   );
 }

@@ -1,24 +1,56 @@
-import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList'; // 名前が変更されている場合は調整してください
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
 import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationList';
 
-/**
- * 管理画面表示用の型定義
- * BusinessApplicationList と同じデータ構造を期待するため、ここで定義するか
- * 頻出するなら types/index.ts に移動しても良いでしょう。
- 
-interface AdminDisplayBusinessRequest extends BusinessRequest {
-  gmail: string;
-  applicationDate: string;
-}*/
+// Props definition removed as it now manages its own data
+// interface Props {}
 
-interface Props {
-  // BusinessApplication から AdminDisplayBusinessRequest に変更
-  applications: AdminDisplayBusinessRequest[];
-  onApprove: (requestId: number) => void;
-  onReject: (requestId: number) => void;
-}
+export default function ProcessBusinessRequestScreen() {
+  const [applications, setApplications] = useState<AdminDisplayBusinessRequest[]>([]);
 
-export default function ProcessBusinessRequestScreen({ applications, onApprove, onReject }: Props) {
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch('/api/admin/request');
+        if (!res.ok) throw new Error('Failed to fetch business requests');
+        const data = await res.json();
+        setApplications(data.requests || data);
+      } catch (error) {
+        console.error('Error fetching business applications:', error);
+      }
+    };
+    fetchApplications();
+  }, []);
+
+  const handleApprove = async (requestId: number) => {
+    if (!confirm('この事業者を承認しますか？')) return;
+    try {
+      const res = await fetch(`/api/applications/${requestId}/approve`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Approval failed');
+
+      setApplications((prev) => prev.filter((app) => app.requestId !== requestId));
+      toast.success('事業者アカウントを承認しました');
+    } catch (error) {
+      console.error(error);
+      toast.error('承認に失敗しました');
+    }
+  };
+
+  const handleReject = async (requestId: number) => {
+    if (!confirm('この申請を却下しますか？')) return;
+    try {
+      const res = await fetch(`/api/applications/${requestId}/reject`, { method: 'PUT' });
+      if (!res.ok) throw new Error('Rejection failed');
+
+      setApplications((prev) => prev.filter((app) => app.requestId !== requestId));
+      toast.error('申請を却下しました');
+    } catch (error) {
+      console.error(error);
+      toast.error('却下に失敗しました');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -35,11 +67,10 @@ export default function ProcessBusinessRequestScreen({ applications, onApprove, 
         </div>
       </div>
 
-      {/* 実際のリスト表示ロジック */}
       <BusinessApplicationList
         applications={applications}
-        onApprove={onApprove}
-        onReject={onReject}
+        onApprove={handleApprove}
+        onReject={handleReject}
       />
     </div>
   );

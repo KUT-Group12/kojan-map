@@ -1,7 +1,15 @@
+<<<<<<< HEAD
 // import { defineConfig } from 'vite';
 import { defineConfig, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
+=======
+//import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+import { defineConfig } from 'vitest/config';
+//import react from '@vitejs/plugin-react';
+>>>>>>> main
 
 export default defineConfig({
   plugins: [react()],
@@ -49,6 +57,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+<<<<<<< HEAD
   test: {
     globals: true,
     environment: 'jsdom',
@@ -97,9 +106,23 @@ export default defineConfig({
         },
       },
     },
+=======
+  build: {
+    target: 'esnext',
+    outDir: 'build',
+>>>>>>> main
   },
   server: {
     port: 5173,
     open: true,
   },
+<<<<<<< HEAD
 } as UserConfig & { test: any });
+=======
+  test: {
+    globals: true, // describe や expect をグローバルで使う
+    environment: 'jsdom', // ブラウザ環境をシミュレート
+    setupFiles: './src/setupTests.ts', // ここが重要
+  },
+});
+>>>>>>> main

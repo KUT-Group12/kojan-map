@@ -52,7 +52,7 @@ export function UserInputBusinessApplication({
         body: JSON.stringify({
           ...formData,
           phone: phone,
-          userId: user.id, // 申請者のGoogle ID
+          userId: user.googleId, // 申請者のGoogle ID
         }),
       });
 

@@ -3,7 +3,6 @@ export type UserRole = 'general' | 'business' | 'admin';
 export type PinGenre = 'food' | 'event' | 'scene' | 'store' | 'emergency' | 'other';
 
 // 会員情報
-/*
 export interface User {
   googleId: string; // Google ID (PK)
   gmail: string; // Gmailアドレス
@@ -12,7 +11,7 @@ export interface User {
   // postCount?: number; // 投稿数
   fromName?: string; // 表示名
   blocks?: Block[];
-}*/
+}
 
 // セッション情報インターフェース (セッション管理用)
 export interface UserSession {
@@ -110,59 +109,4 @@ export interface Reaction {
   reactionId: number; // リアクションID
   userId: string; // ユーザーID
   postId: number; // 投稿ID
-}
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  createdAt: Date;
-  blockedUsers?: string[];
-  // 事業者会員向けプロパティ
-  businessId?: number;
-  businessName?: string;
-  kanaBusinessName?: string;
-  zipCode?: string;
-  address?: string;
-  phone?: string;
-  businessIcon?: string;
-  profileImage?: string;
-  placeId?: number;
-  registDate?: string;
-}
-
-export interface Pin {
-  id: string;
-  userId: string;
-  userName: string;
-  userRole: UserRole;
-  businessName?: string;
-  businessIcon?: string;
-  latitude: number;
-  longitude: number;
-  title: string;
-  description: string;
-  genre: PinGenre;
-  images: string[];
-  reactions: number;
-  createdAt: Date;
-  viewCount?: number;
-  isHot?: boolean; // 投稿数がしきい値を超えたかどうか
-}
-
-export interface Reactions {
-  id: string;
-  pinId: string;
-  userId: string;
-  createdAt: Date;
-}
-
-export interface Reports {
-  id: string;
-  pinId: string;
-  reporterId: string;
-  reason: string;
-  createdAt: Date;
-  status: 'pending' | 'resolved' | 'dismissed';
 }
