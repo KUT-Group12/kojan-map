@@ -17,7 +17,7 @@ type Contact struct {
 	Subject string    `gorm:"column:subject;type:varchar(100);not null"`
 	Text    string    `gorm:"column:text;type:text;not null"`
 	Date    time.Time `gorm:"column:date;not null"`
-	AskFlag int32     `gorm:"column:askFlag;not null"`
+	AskFlag	bool     `gorm:"column:askFlag;not null"`
 }
 
 // TableName は対応するテーブル名を指定
