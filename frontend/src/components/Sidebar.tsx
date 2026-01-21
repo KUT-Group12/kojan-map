@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
@@ -33,13 +33,14 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
     return (entry?.[0] as PinGenre) ?? 'other';
   };
 
+  const initialPostsRef = useRef(initialPosts);
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchFilteredPosts = async (): Promise<void> => {
       // 事業者ロールの場合は検索機能をスキップし、初期投稿を表示
       if (user.role === 'business') {
-        setApiPosts(initialPosts);
+        setApiPosts(initialPostsRef.current);
         return;
       }
 
@@ -92,11 +93,11 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
   }, [searchKeyword, selectedGenre, dateFilter, user.role]);
 
   // apiPostsが更新されたら親コンポーネントへ通知
-  /*
   useEffect(() => {
-    // 取得したデータがある、または初回以降の変更である場合のみ通知
     onFilterChange(apiPosts);
-  }, [apiPosts]);*/
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiPosts]);
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
