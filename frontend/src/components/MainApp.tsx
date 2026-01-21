@@ -68,11 +68,13 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const fetchUserData = useCallback(async () => {
     setIsLoadingUserData(true);
     try {
-      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.id}`);
+      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`);
       const postsData = await postsRes.json();
       setUserPosts(postsData.posts || []);
 
-      const reactionsRes = await fetch(`${API_BASE_URL}/api/reactions/list?googleId=${user.id}`);
+      const reactionsRes = await fetch(
+        `${API_BASE_URL}/api/reactions/list?googleId=${user.googleId}`
+      );
       const reactionsData = await reactionsRes.json();
       setUserReactedPosts(reactionsData.posts || []);
     } catch (error) {
@@ -80,7 +82,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     } finally {
       setIsLoadingUserData(false);
     }
-  }, [user.id]);
+  }, [user.googleId]);
 
   // 初期データ（投稿と場所）の取得
   useEffect(() => {
@@ -204,30 +206,18 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         body: JSON.stringify({
           placeId: 1, // 本来は座標から判定
           genreId: Math.max(0, Object.keys(genreLabels).indexOf(newPost.genre)),
-          userId: user.id,
+          userId: user.googleId,
           title: newPost.title,
           text: newPost.text,
           postImage: newPost.images[0] || '',
         }),
       });
 
-    const post: Post = {
-      postId: sharedId,
-      placeId: sharedId,
-      userId: user.googleId,
-      postDate: new Date().toISOString(),
-      title: newPost.title,
-      text: newPost.text,
-      postImage: newPost.images,
-      numReaction: 0,
-      numView: 0,
-      genreId: Math.max(0, Object.keys(genreLabels).indexOf(newPost.genre)),
-    };
-
+      const sharedId = Date.now();
       const post: Post = {
-        postId: result.postId || Date.now(),
-        placeId: result.placeId || 1,
-        userId: user.id,
+        postId: sharedId,
+        placeId: sharedId,
+        userId: user.googleId,
         postDate: new Date().toISOString(),
         title: newPost.title,
         text: newPost.text,
@@ -286,10 +276,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     setCurrentView(view);
   };
 
-  const handleLogoutBack = () => {
-    setCurrentView(previousView);
-  };
-
   return (
     <div className="h-screen flex flex-col">
       <Header
@@ -328,7 +314,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
             <BusinessDisplayMyPage
               user={user}
               business={business!}
-              posts={posts.filter((p) => p.userId === user.id)}
+              posts={posts.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
               onUpdateUser={handleUpdateUser}
@@ -353,7 +339,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           <BusinessDashboard
             user={user}
             business={business}
-            posts={posts.filter((p) => p.userId === user.id)}
+            posts={posts.filter((p) => p.userId === user.googleId)}
             onPinClick={handlePinClick}
           />
         )}

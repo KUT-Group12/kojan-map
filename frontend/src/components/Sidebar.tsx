@@ -178,7 +178,8 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
                 </p>
                 <div className="flex items-center justify-between text-[12px] text-slate-400">
                   <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
-                    {post.businessName || (user.role === 'business' ? user.fromName : '匿名ユーザー')}
+                    {post.businessName ||
+                      (user.role === 'business' ? user.fromName : '匿名ユーザー')}
                   </span>
                   <div className="flex items-center space-x-3 font-medium">
                     <span className="flex items-center text-rose-400">❤️ {post.numReaction}</span>

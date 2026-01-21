@@ -31,7 +31,9 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
     const fetchBlockedUsers = async () => {
       try {
         // 1. API仕様: GET /api/users/block/list?googleId=...
-        const response = await fetch(`${API_BASE_URL}/api/users/block/list?googleId=${user.googleId}`);
+        const response = await fetch(
+          `${API_BASE_URL}/api/users/block/list?googleId=${user.googleId}`
+        );
 
         if (!response.ok) {
           throw new Error('ブロックリストの取得に失敗しました');

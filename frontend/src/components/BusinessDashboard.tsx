@@ -4,15 +4,7 @@ import { Badge } from './ui/badge';
 import { User, Business, Post, PinGenre } from '../types';
 import { GENRE_MAP } from '../lib/mockData';
 
-import {
-  Eye,
-  Heart,
-  Calendar,
-  CreditCard,
-  BarChart3,
-  Building2,
-  Clock,
-} from 'lucide-react';
+import { Eye, Heart, Calendar, CreditCard, BarChart3, Building2, Clock } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -23,7 +15,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import {genreLabels } from '../lib/mockData';
+import { genreLabels } from '../lib/mockData';
 
 interface BusinessDashboardProps {
   user: User;

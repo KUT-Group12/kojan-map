@@ -172,7 +172,9 @@ export function DisplayPostList({
               <div>
                 <p className="font-bold text-slate-700">
                   {displayPost.businessName ||
-                    (displayPost.userId === currentUser.googleId ? currentUser.fromName : '匿名ユーザー')}
+                    (displayPost.userId === currentUser.googleId
+                      ? currentUser.fromName
+                      : '匿名ユーザー')}
                 </p>
                 <p className="text-xs text-slate-400 font-medium">
                   {formatDate(displayPost.postDate)}
