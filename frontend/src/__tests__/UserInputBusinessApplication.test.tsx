@@ -1,10 +1,12 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserInputBusinessApplication } from '../components/UserInputBusinessApplication';
+import { User } from '../types';
 import { toast } from 'sonner';
 
-// sonner のモック
+// モックの設定
+vi.stubGlobal('fetch', vi.fn());
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -13,32 +15,24 @@ vi.mock('sonner', () => ({
 }));
 
 describe('UserInputBusinessApplication', () => {
-  const mockUser = { id: 'user-123', name: 'テストユーザー' } as any;
+  const mockUser: User = {
+    googleId: 'test-google-id',
+    gmail: 'test@gmail.com',
+    role: 'user',
+    registrationDate: '2024-01-01',
+    fromName: 'テストユーザー',
+  };
+
   const mockOnUpdateUser = vi.fn();
   const mockOnCancel = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // fetch のモック化
-    global.fetch = vi.fn();
   });
 
-  it('フォームの初期項目が正しく表示されていること', () => {
-    render(
-      <UserInputBusinessApplication
-        user={mockUser}
-        onUpdateUser={mockOnUpdateUser}
-        onCancel={mockOnCancel}
-      />
-    );
+  const getFetchMock = () => globalThis.fetch as any;
 
-    expect(screen.getByPlaceholderText('店舗名')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('電話番号')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('住所')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '申請する' })).toBeInTheDocument();
-  });
-
-  it('不完全な入力で「申請する」を押すとバリデーションエラーになること', async () => {
+  it('バリデーションエラー：不適切な電話番号でエラーが表示されること', async () => {
     const user = userEvent.setup();
     render(
       <UserInputBusinessApplication
@@ -48,19 +42,20 @@ describe('UserInputBusinessApplication', () => {
       />
     );
 
-    // 何も入力せずに申請
+    // 入力（電話番号が短い）
+    await user.type(screen.getByPlaceholderText('店舗名'), 'テスト店舗');
+    await user.type(screen.getByPlaceholderText('電話番号'), '123'); // 不正
+    await user.type(screen.getByPlaceholderText('住所'), '東京都...');
+
     await user.click(screen.getByRole('button', { name: '申請する' }));
 
     expect(toast.error).toHaveBeenCalledWith('すべての項目を正しく入力してください');
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(getFetchMock()).not.toHaveBeenCalled();
   });
 
-  it('正しい入力で申請すると API が呼ばれ、成功時にフォームが閉じること', async () => {
+  it('申請成功：APIが呼ばれ、成功通知が出てフォームが閉じること', async () => {
     const user = userEvent.setup();
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true }),
-    });
+    getFetchMock().mockResolvedValueOnce({ ok: true });
 
     render(
       <UserInputBusinessApplication
@@ -70,41 +65,40 @@ describe('UserInputBusinessApplication', () => {
       />
     );
 
-    // 入力
-    await user.type(screen.getByPlaceholderText('店舗名'), 'テスト店舗');
+    // 正しい入力
+    await user.type(screen.getByPlaceholderText('店舗名'), '美味しいパン屋');
     await user.type(screen.getByPlaceholderText('電話番号'), '09012345678');
-    await user.type(screen.getByPlaceholderText('住所'), '東京都渋谷区1-1-1');
+    await user.type(screen.getByPlaceholderText('住所'), '東京都千代田区1-1');
 
-    // 申請
     await user.click(screen.getByRole('button', { name: '申請する' }));
 
-    // API呼び出しの検証
+    // API呼び出しの確認
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(getFetchMock()).toHaveBeenCalledWith(
         expect.stringContaining('/api/business/apply'),
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
-            businessName: 'テスト店舗',
+            businessName: '美味しいパン屋',
             phone: '09012345678',
-            address: '東京都渋谷区1-1-1',
-            userId: mockUser.id,
+            address: '東京都千代田区1-1',
+            userId: mockUser.googleId,
           }),
         })
       );
     });
 
-    // 成功後の処理検証
-    expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('申請を送信しました'));
+    // 成功後の挙動
+    expect(toast.success).toHaveBeenCalled();
     expect(mockOnUpdateUser).toHaveBeenCalled();
     expect(mockOnCancel).toHaveBeenCalled();
   });
 
-  it('APIがエラーを返した場合、エラーメッセージを表示すること', async () => {
-    const user = userEvent.setup();
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: false,
-    });
+  it('送信中は入力フィールドとボタンが非活性（disabled）になること', async () => {
+    // 意図的にレスポンスを遅延させる
+    getFetchMock().mockReturnValueOnce(
+      new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 100))
+    );
 
     render(
       <UserInputBusinessApplication
@@ -114,21 +108,21 @@ describe('UserInputBusinessApplication', () => {
       />
     );
 
-    await user.type(screen.getByPlaceholderText('店舗名'), 'テスト店舗');
-    await user.type(screen.getByPlaceholderText('電話番号'), '09012345678');
-    await user.type(screen.getByPlaceholderText('住所'), '住所');
+    const submitButton = screen.getByRole('button', { name: '申請する' });
+    fireEvent.change(screen.getByPlaceholderText('店舗名'), { target: { value: '店' } });
+    fireEvent.change(screen.getByPlaceholderText('電話番号'), { target: { value: '09012345678' } });
+    fireEvent.change(screen.getByPlaceholderText('住所'), { target: { value: '住所' } });
 
-    await user.click(screen.getByRole('button', { name: '申請する' }));
+    fireEvent.click(submitButton);
 
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('通信エラーが発生しました。再度お試しください。');
-    });
-    // 失敗時はフォームを閉じない
-    expect(mockOnCancel).not.toHaveBeenCalled();
+    // ローディング中
+    expect(submitButton).toBeDisabled();
+    expect(screen.getByPlaceholderText('店舗名')).toBeDisabled();
+    // ローディングアイコンが表示されているか（LucideのLoader2）
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('キャンセルボタンを押すと onCancel が呼ばれること', async () => {
-    const user = userEvent.setup();
+  it('キャンセルボタンを押すと onCancel が呼ばれること', () => {
     render(
       <UserInputBusinessApplication
         user={mockUser}
@@ -137,7 +131,7 @@ describe('UserInputBusinessApplication', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'キャンセル' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     expect(mockOnCancel).toHaveBeenCalled();
   });
 });

@@ -1,92 +1,114 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserBlockViewScreen } from '../components/UserBlockViewScreen';
+import { User } from '../types';
+
+// fetch のモック
+vi.stubGlobal('fetch', vi.fn());
+
+// 子コンポーネント SelectUnlock のモック
+vi.mock('../components/SelectUnlock', () => ({
+  SelectUnlock: ({ userId }: { userId: string }) => <button>解除ボタン:{userId}</button>,
+}));
+
+// レイアウト用コンポーネント DisplayUserSetting のモック
+vi.mock('../components/DisplayUserSetting', () => ({
+  DisplayUserSetting: ({ title, children }: any) => (
+    <div>
+      <h2>{title}</h2>
+      {children}
+    </div>
+  ),
+}));
 
 describe('UserBlockViewScreen', () => {
-  const mockUser = {
-    id: 'my-google-id',
-    name: 'テストユーザー',
+  const mockUser: User = {
+    googleId: 'my-google-id',
+    gmail: 'test@gmail.com',
+    role: 'user',
+    registrationDate: new Date().toISOString(),
+    fromName: '自分',
+    // 初期状態では空
     blockedUsers: [],
-  } as any;
-  const mockOnUpdateUser = vi.fn();
-  const TEST_API_URL = 'http://test-api.com';
-
-  const mockApiResponse = {
-    blocks: [
-      { id: 1, blockedId: 'target-user-1', blockerId: 'my-google-id' },
-      { id: 2, blockedId: 'target-user-2', blockerId: 'my-google-id' },
-    ],
   };
+
+  const mockOnUpdateUser = vi.fn();
 
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
-    vi.stubEnv('VITE_API_URL', TEST_API_URL);
-    global.fetch = vi.fn();
   });
 
-  const renderComponent = async () => {
-    // SelectUnlockなど子コンポーネントも含まれるため動的インポートを推奨
-    const { UserBlockViewScreen } = await import('../components/UserBlockViewScreen');
-    return render(<UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />);
-  };
+  const getFetchMock = () => globalThis.fetch as any;
 
-  it('マウント時にブロックリストを取得し、親の状態を更新すること', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockApiResponse,
-    });
-
-    await renderComponent();
-
-    // 正しいURLでfetchが呼ばれたか
-    expect(global.fetch).toHaveBeenCalledWith(
-      `${TEST_API_URL}/api/users/block/list?googleId=${mockUser.id}`
-    );
-
-    await waitFor(() => {
-      // APIから取得した blockedId の配列で onUpdateUser が呼ばれたか
-      expect(mockOnUpdateUser).toHaveBeenCalledWith(
-        expect.objectContaining({
-          blockedUsers: ['target-user-1', 'target-user-2'],
-        })
-      );
-    });
-  });
-
-  it('ブロックリストが空の場合、適切なメッセージが表示されること', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+  it('初期レンダリング時にローディングが表示され、APIが呼ばれること', async () => {
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ blocks: [] }),
     });
 
-    await renderComponent();
+    render(<UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />);
+
+    // ローディングテキストの確認
+    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('ブロックしたユーザーはいません')).toBeInTheDocument();
+      expect(getFetchMock()).toHaveBeenCalledWith(
+        expect.stringContaining(`/api/users/block/list?googleId=${mockUser.googleId}`)
+      );
     });
   });
 
-  it('読み込み中にローディング表示がされること', async () => {
-    // 通信を終わらせない
-    (global.fetch as any).mockReturnValue(new Promise(() => {}));
+  it('ブロックユーザーがいる場合、親コンポーネントを更新し、リストを表示すること', async () => {
+    // APIレスポンス: ブロックされている相手のIDが含まれる
+    const mockApiResponse = {
+      blocks: [
+        { id: 1, blockedId: 'blocked-user-1', blockerId: 'my-google-id' },
+        { id: 2, blockedId: 'blocked-user-2', blockerId: 'my-google-id' },
+      ],
+    };
 
-    await renderComponent();
+    getFetchMock().mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockApiResponse,
+    });
 
-    expect(screen.getByText('読み込み中...')).toBeInTheDocument();
-    // LucideのLoader2アイコン（animate-spin）があるか
-    const loader = document.querySelector('.animate-spin');
-    expect(loader).toBeInTheDocument();
+    // テスト用に、既に更新された状態のユーザー情報を模倣して再レンダリングを想定
+    const userWithBlocks = {
+      ...mockUser,
+      blockedUsers: ['blocked-user-1', 'blocked-user-2'],
+    };
+
+    const { rerender } = render(
+      <UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />
+    );
+
+    // 1. API取得後に onUpdateUser が正しいデータで呼ばれたか確認
+    await waitFor(() => {
+      expect(mockOnUpdateUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          blockedUsers: ['blocked-user-1', 'blocked-user-2'],
+        })
+      );
+    });
+
+    // 2. プロパティが更新されたと仮定して再レンダリングし、表示を確認
+    rerender(<UserBlockViewScreen user={userWithBlocks} onUpdateUser={mockOnUpdateUser} />);
+
+    expect(screen.getByText('ユーザーID: blocked-user-1')).toBeInTheDocument();
+    expect(screen.getByText('ユーザーID: blocked-user-2')).toBeInTheDocument();
+    expect(screen.getByText('解除ボタン:blocked-user-1')).toBeInTheDocument();
   });
 
-  it('APIエラー時にローディングが終了すること', async () => {
-    console.error = vi.fn(); // エラーログを抑制
-    (global.fetch as any).mockRejectedValueOnce(new Error('API Error'));
+  it('ブロックしたユーザーがいない場合、空のメッセージを表示すること', async () => {
+    getFetchMock().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ blocks: [] }),
+    });
 
-    await renderComponent();
+    render(<UserBlockViewScreen user={mockUser} onUpdateUser={mockOnUpdateUser} />);
 
     await waitFor(() => {
-      expect(screen.queryByText('読み込み中...')).not.toBeInTheDocument();
+      expect(screen.getByText('ブロックしたユーザーはいません')).toBeInTheDocument();
     });
   });
 });

@@ -1,93 +1,133 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { SelectPostHistory } from '../components/SelectPostHistory';
+import { User, Post } from '../types';
+
+// fetch のモック
+vi.stubGlobal('fetch', vi.fn());
+
+// 子コンポーネント SelectPostDeletion のモック（複雑な挙動を単純化するため）
+vi.mock('../components/SelectPostDeletion', () => ({
+  SelectPostDeletion: ({ onDelete, postId }: any) => (
+    <button onClick={() => onDelete(postId)}>模擬削除ボタン</button>
+  ),
+}));
 
 describe('SelectPostHistory', () => {
-  const mockUser = { id: 'google-123', name: 'テストユーザー' } as any;
-  const mockOnPinClick = vi.fn();
-  const TEST_API_URL = 'http://test-api.com';
+  const mockUser: User = {
+    googleId: 'test-user-id',
+    gmail: 'test@gmail.com',
+    role: 'user',
+    registrationDate: new Date().toISOString(),
+    fromName: 'テストユーザー',
+  };
 
-  const mockPosts = [
+  const mockPosts: Post[] = [
     {
       postId: 1,
-      title: 'テスト投稿1',
-      description: '説明1',
-      genre: 'other',
-      createdAt: '2024-01-01T00:00:00Z',
+      title: '投稿1',
+      text: '本文1',
+      userId: 'test-user-id',
+      postDate: '2024-01-20T10:00:00Z',
+      numReaction: 0,
+      numView: 5,
+      genreId: 1,
+      genreName: 'グルメ',
+      genreColor: '#ff0000',
+      placeId: 1,
     },
     {
       postId: 2,
-      title: 'テスト投稿2',
-      description: '説明2',
-      genre: 'other',
-      createdAt: '2024-01-02T00:00:00Z',
+      title: '投稿2',
+      text: '本文2',
+      userId: 'test-user-id',
+      postDate: '2024-01-21T10:00:00Z',
+      numReaction: 3,
+      numView: 10,
+      genreId: 2,
+      genreName: '観光',
+      genreColor: '#00ff00',
+      placeId: 2,
     },
   ];
 
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
-    vi.stubEnv('VITE_API_URL', TEST_API_URL);
-    global.fetch = vi.fn();
   });
 
-  // コンポーネントを動的にインポートするヘルパー
-  const renderComponent = async () => {
-    const { SelectPostHistory } = await import('../components/SelectPostHistory');
-    return render(<SelectPostHistory user={mockUser} onPinClick={mockOnPinClick} />);
-  };
+  const getFetchMock = () => globalThis.fetch as any;
 
-  it('読み込み中にローディングアイコンが表示されること', async () => {
-    // レスポンスを未完了にする
-    (global.fetch as any).mockReturnValue(new Promise(() => {}));
+  it('初期表示でローディングが表示され、APIから取得後にデータが表示されること', async () => {
+    // APIレスポンスをシミュレート
+    getFetchMock().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: mockPosts }),
+    });
 
-    await renderComponent();
+    render(<SelectPostHistory user={mockUser} onPinClick={vi.fn()} />);
 
-    // role="img" ではなく、クラス名や DOM 構造で検索
-    const loader = document.querySelector('.animate-spin');
-    expect(loader).toBeInTheDocument();
-    expect(loader?.nodeName).toBe('svg');
+    // ローディングアイコンの確認
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+
+    // データ表示後の確認
+    await waitFor(() => {
+      expect(screen.getByText('投稿1')).toBeInTheDocument();
+      expect(screen.getByText('投稿2')).toBeInTheDocument();
+    });
+
+    // 正しいAPIパスで呼ばれたか確認
+    expect(getFetchMock()).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/posts/history?googleId=${mockUser.googleId}`)
+    );
   });
 
-  it('投稿がない場合にメッセージが表示されること', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+  it('投稿が空の場合、メッセージが表示されること', async () => {
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: [] }),
     });
 
-    await renderComponent();
+    render(<SelectPostHistory user={mockUser} onPinClick={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText('まだ投稿がありません')).toBeInTheDocument();
     });
   });
 
-  it('APIから取得した投稿履歴が正しく表示されること', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+  it('削除ボタン（onDelete）が呼ばれると、リストから該当する投稿が消えること', async () => {
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: mockPosts }),
     });
 
-    await renderComponent();
+    render(<SelectPostHistory user={mockUser} onPinClick={vi.fn()} />);
 
+    // データの表示を待つ
     await waitFor(() => {
-      // URLが環境変数のもの（http://test-api.com）であることを確認
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${TEST_API_URL}/api/posts/history?googleId=${mockUser.id}`
-      );
-      // 投稿タイトルが表示されているか
-      expect(screen.getByText('テスト投稿1')).toBeInTheDocument();
-      expect(screen.getByText('テスト投稿2')).toBeInTheDocument();
+      expect(screen.getByText('投稿1')).toBeInTheDocument();
+    });
+
+    // 「投稿1」の模擬削除ボタンをクリック
+    const deleteButtons = screen.getAllByText('模擬削除ボタン');
+    deleteButtons[0].click(); // 最初の投稿を削除
+
+    // リストから消えていることを確認
+    await waitFor(() => {
+      expect(screen.queryByText('投稿1')).not.toBeInTheDocument();
+      expect(screen.getByText('投稿2')).toBeInTheDocument(); // 2つ目は残っている
     });
   });
 
-  it('APIエラー時にローディングが終了すること', async () => {
-    (global.fetch as any).mockRejectedValueOnce(new Error('Fetch error'));
+  it('APIエラー時にローディングが終了し、コンソールにエラーが出ること', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    getFetchMock().mockResolvedValueOnce({ ok: false });
 
-    await renderComponent();
+    render(<SelectPostHistory user={mockUser} onPinClick={vi.fn()} />);
 
     await waitFor(() => {
-      // ローディングアイコンが消えていることを確認
       expect(document.querySelector('.animate-spin')).not.toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith('Fetch history error:', expect.any(Error));
     });
+    consoleSpy.mockRestore();
   });
 });

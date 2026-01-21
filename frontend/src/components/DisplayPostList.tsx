@@ -101,7 +101,7 @@ export function DisplayPostList({
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [post.postId]);
+  }, [post?.postId]);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '';

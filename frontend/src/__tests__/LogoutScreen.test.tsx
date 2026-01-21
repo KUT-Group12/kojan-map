@@ -1,74 +1,67 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { LogoutScreen } from '../components/LogoutScreen';
+import { User } from '../types';
 import { toast } from 'sonner';
 
-// sonnerのモック
+// fetch のグローバルモック
+vi.stubGlobal('fetch', vi.fn());
+
+// toast のモック
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
 describe('LogoutScreen', () => {
-  const mockUser = {
-    id: 'google-12345',
-    name: 'テスト太郎',
-    email: 'test@example.com',
+  const mockUser: User = {
+    googleId: 'test-google-id',
+    gmail: 'test@gmail.com',
     role: 'user',
-  } as any;
+    registrationDate: new Date().toISOString(),
+    fromName: 'テスト太郎',
+  };
 
   const mockOnLogout = vi.fn();
   const mockOnBack = vi.fn();
 
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
-    vi.stubEnv('VITE_API_URL', 'http://test-api.com');
-    global.fetch = vi.fn();
   });
 
-  const renderComponent = async () => {
-    const { LogoutScreen } = await import('../components/LogoutScreen');
-    return render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
-  };
+  const getFetchMock = () => globalThis.fetch as any;
 
-  it('ユーザー情報と会員区分（一般会員）が正しく表示されること', async () => {
-    await renderComponent();
+  it('ユーザー名とメールアドレスが正しく表示されていること', () => {
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
-    expect(screen.getByText('テスト太郎様')).toBeInTheDocument();
-    expect(screen.getByText('一般会員')).toBeInTheDocument();
-    expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    expect(screen.getByText(/テスト太郎様/)).toBeInTheDocument();
+    expect(screen.getByText(mockUser.gmail)).toBeInTheDocument();
   });
 
-  it('ビジネス会員の場合、表示が「ビジネス会員」に切り替わり、追加の注意事項が出ること', async () => {
-    const businessUser = { ...mockUser, role: 'business' };
-    const { LogoutScreen } = await import('../components/LogoutScreen');
-    render(<LogoutScreen user={businessUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
-    expect(screen.getByText('ビジネス会員')).toBeInTheDocument();
-    expect(screen.getByText('事業者情報とアイコン')).toBeInTheDocument();
-  });
-
-  it('ログアウトボタンをクリックするとAPIが呼ばれ、成功時にログアウト処理が実行されること', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+  it('ログアウトボタンをクリックするとAPIが呼ばれ、成功時に onLogout が実行されること', async () => {
+    getFetchMock().mockResolvedValue({
       ok: true,
-      json: async () => ({ message: 'success' }),
+      json: async () => ({ message: 'logged out' }),
     });
 
-    await renderComponent();
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     const logoutButton = screen.getByRole('button', { name: 'ログアウトする' });
     fireEvent.click(logoutButton);
 
-    // 送信中の状態確認
+    // ローディング表示の確認
     expect(screen.getByText('ログアウト中...')).toBeInTheDocument();
+    expect(logoutButton).toBeDisabled();
 
     await waitFor(() => {
-      // API呼び出しの確認（sessionIdにuser.idが含まれているか）
-      expect(global.fetch).toHaveBeenCalledWith(
-        'http://test-api.com/api/auth/logout',
+      // API呼び出しの検証
+      expect(getFetchMock()).toHaveBeenCalledWith(
+        expect.stringContaining('/api/auth/logout'),
         expect.objectContaining({
           method: 'PUT',
-          body: JSON.stringify({ sessionId: 'google-12345' }),
+          body: JSON.stringify({ sessionId: mockUser.googleId }),
         })
       );
       expect(toast.success).toHaveBeenCalledWith('ログアウトしました');
@@ -76,26 +69,35 @@ describe('LogoutScreen', () => {
     });
   });
 
-  it('APIエラー（通信失敗）が起きても、強制的にフロント側はログアウト処理を実行すること', async () => {
-    // 500エラーなどをシミュレート
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network Error'));
+  it('APIエラーが発生しても、最終的に onLogout が実行されること', async () => {
+    // サーバーエラーをシミュレート
+    getFetchMock().mockResolvedValue({ ok: false });
 
-    await renderComponent();
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'ログアウトする' }));
+    const logoutButton = screen.getByRole('button', { name: 'ログアウトする' });
+    fireEvent.click(logoutButton);
 
     await waitFor(() => {
-      // 通信が失敗しても、catchブロック内の onLogout() が呼ばれるはず
+      // エラー時もフロント側はログアウトさせる仕様の確認
       expect(mockOnLogout).toHaveBeenCalled();
     });
   });
 
-  it('戻るボタンをクリックすると onBack が呼ばれること', async () => {
-    await renderComponent();
+  it('戻るボタンをクリックすると onBack が呼ばれること', () => {
+    render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
 
     const backButton = screen.getByRole('button', { name: /戻る/ });
     fireEvent.click(backButton);
 
     expect(mockOnBack).toHaveBeenCalled();
+  });
+
+  it('ビジネス会員の場合、特有の注意事項が表示されること', () => {
+    const businessUser: User = { ...mockUser, role: 'business' };
+    render(<LogoutScreen user={businessUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
+
+    expect(screen.getByText('ビジネス会員')).toBeInTheDocument();
+    expect(screen.getByText('事業者情報とアイコン')).toBeInTheDocument();
   });
 });
