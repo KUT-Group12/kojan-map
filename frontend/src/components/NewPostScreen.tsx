@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
 import { User, PinGenre, Business } from '../types';
-import { genreLabels, GENRE_MAP } from '../lib/mockData';
+import { genreLabels } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -120,12 +120,11 @@ export function NewPostScreen({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          placeId: 1, // placeIdの算出 (今は1固定)
-          genreId: GENRE_MAP[genre], // 文字列を数値IDに変換
-          userId: user.id,
-          title: title,
-          text: text,
-          postImage: images.length > 0 ? images[0] : '', // 仕様書の string 型に対応
+          description: text,
+          latitude: lat,
+          longitude: lng,
+          genre: genre,
+          images: images,
         }),
       });
 
