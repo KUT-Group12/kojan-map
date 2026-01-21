@@ -1,3 +1,6 @@
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
 // src/__tests__/AdminSelectLogout.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdminSelectLogout } from '../components/AdminSelectLogout';

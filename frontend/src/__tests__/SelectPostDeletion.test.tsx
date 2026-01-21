@@ -1,3 +1,6 @@
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SelectPostDeletion } from '../components/SelectPostDeletion';
 import { toast } from 'sonner';

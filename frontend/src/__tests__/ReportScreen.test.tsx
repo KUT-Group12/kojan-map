@@ -1,3 +1,6 @@
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { ReportScreen } from '../components/ReportScreen';
 import { toast } from 'sonner';

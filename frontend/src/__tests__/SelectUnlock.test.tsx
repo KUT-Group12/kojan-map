@@ -1,3 +1,6 @@
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SelectUnlock } from '../components/SelectUnlock';
 import { toast } from 'sonner';

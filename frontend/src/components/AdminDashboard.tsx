@@ -123,7 +123,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       const res = await fetch(`${API_BASE}/admin/inquiries`);
       if (!res.ok) throw new Error('Failed to fetch inquiries');
       const data = await res.json();
-      const safeInquiries = Array.isArray(data.inquiries || data) ? (data.inquiries || data) : [];
+      const safeInquiries = Array.isArray(data.inquiries || data) ? data.inquiries || data : [];
       setInquiries(safeInquiries);
     } catch (error) {
       console.error('Error fetching inquiries:', error);

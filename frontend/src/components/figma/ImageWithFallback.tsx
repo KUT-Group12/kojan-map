@@ -23,7 +23,12 @@ export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElemen
       style={style}
     >
       <div className="flex items-center justify-center w-full h-full">
-        <img src={ERROR_IMG_SRC} alt={alt ?? 'Error loading image'} {...rest} data-original-url={src} />
+        <img
+          src={ERROR_IMG_SRC}
+          alt={alt ?? 'Error loading image'}
+          {...rest}
+          data-original-url={src}
+        />
       </div>
     </div>
   ) : (

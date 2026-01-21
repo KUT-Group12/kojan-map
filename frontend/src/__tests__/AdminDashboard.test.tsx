@@ -1,3 +1,4 @@
+import { act } from 'react-dom/test-utils';
 // src/__tests__/AdminDashboard.test.tsx
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -55,7 +56,7 @@ describe('AdminDashboard', () => {
             ]),
         });
       }
-      if (url.endsWith('/internal/asks')) {
+      if (url.endsWith('/admin/inquiries')) {
         return Promise.resolve({
           ok: true,
           json: () =>
@@ -92,23 +93,31 @@ describe('AdminDashboard', () => {
   });
 
   test('タブ切り替えで各子コンポーネントが表示される', async () => {
-    render(<AdminDashboard user={user} onLogout={onLogout} />);
+    await act(async () => {
+      render(<AdminDashboard user={user} onLogout={onLogout} />);
+    });
 
     // 通報管理タブ
     const reportTabButton = screen.getByRole('button', { name: /通報管理/ });
-    fireEvent.click(reportTabButton);
+    await act(async () => {
+      fireEvent.click(reportTabButton);
+    });
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: '通報管理' })).toBeInTheDocument();
     });
 
     // ユーザー管理タブ
-    fireEvent.click(screen.getByText('ユーザー管理'));
+    await act(async () => {
+      fireEvent.click(screen.getByText('ユーザー管理'));
+    });
     await waitFor(() => {
       expect(screen.getByText('テスト太郎')).toBeInTheDocument();
     });
 
     // お問い合わせタブ
-    fireEvent.click(screen.getByText('お問い合わせ'));
+    await act(async () => {
+      fireEvent.click(screen.getByText('お問い合わせ'));
+    });
     await waitFor(() => {
       expect(screen.getByText('田中 太郎')).toBeInTheDocument();
       expect(screen.getByText('問い合わせ1')).toBeInTheDocument();
