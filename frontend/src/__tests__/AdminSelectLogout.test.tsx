@@ -1,63 +1,54 @@
-beforeAll(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
-// src/__tests__/AdminSelectLogout.test.tsx
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdminSelectLogout } from '../components/AdminSelectLogout';
+
+// fetchのグローバルモック
+vi.stubGlobal('fetch', vi.fn());
 
 describe('AdminSelectLogout', () => {
   beforeEach(() => {
-    // fetch をモック
-    globalThis.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-      })
-    ) as jest.Mock;
-
-    // location.href をモック
-    // @ts-ignore
+    vi.clearAllMocks();
+    // window.location.href のモック化
+    // jsdomでは直接 location.href を書き換えられないため、deleteしてから再定義
+    const location = window.location;
     delete (window as any).location;
-    window.location = {
-      href: 'http://localhost/',
-      assign: jest.fn(),
-      replace: jest.fn(),
-      reload: jest.fn(),
-    } as any;
+    (window as any).location = { ...location, href: '' };
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const getFetchMock = () => globalThis.fetch as any;
 
-  it('ログアウトボタンが表示される', () => {
+  it('ログアウトボタンをクリックするとAPIが呼ばれ、トップページへ遷移すること', async () => {
+    // APIの成功をシミュレート
+    getFetchMock().mockResolvedValueOnce({ ok: true });
+
     render(<AdminSelectLogout />);
-    expect(screen.getByText('ログアウト')).toBeInTheDocument();
-  });
 
-  it('クリックで fetch が呼ばれて画面遷移する', async () => {
-    render(<AdminSelectLogout />);
-    fireEvent.click(screen.getByText('ログアウト'));
+    const logoutButton = screen.getByRole('button', { name: 'ログアウト' });
+    fireEvent.click(logoutButton);
 
+    // 1. API呼び出しの確認
+    expect(getFetchMock()).toHaveBeenCalledWith(
+      '/api/auth/logout',
+      expect.objectContaining({ method: 'PUT' })
+    );
+
+    // 2. 画面遷移の確認 (finallyブロックで実行されるため待機)
     await waitFor(() => {
-      // fetch が PUT メソッドで呼ばれる
-      expect(globalThis.fetch).toHaveBeenCalledWith('/api/auth/logout', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      // 画面遷移が発生
-      expect(window.location.href).toBe('http://localhost/');
+      expect(window.location.href).toBe('/');
     });
   });
 
-  it('fetch が失敗しても画面遷移する', async () => {
-    (globalThis.fetch as jest.Mock).mockImplementationOnce(() => Promise.reject('error'));
+  it('APIがエラーになってもトップページへ遷移すること (finallyブロックの動作)', async () => {
+    // APIのエラーをシミュレート
+    getFetchMock().mockRejectedValueOnce(new Error('Network Error'));
 
     render(<AdminSelectLogout />);
-    fireEvent.click(screen.getByText('ログアウト'));
+
+    const logoutButton = screen.getByRole('button', { name: 'ログアウト' });
+    fireEvent.click(logoutButton);
 
     await waitFor(() => {
-      expect(window.location.href).toContain('/');
+      expect(window.location.href).toBe('/');
     });
   });
 });

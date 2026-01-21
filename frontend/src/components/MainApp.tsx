@@ -394,7 +394,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           }}
           onReaction={handleReaction}
           onDelete={handleDeletePin}
-          onBlockUser={() => {}}
+          onBlockUser={handleBlockUser}
           postsAtLocation={detailData?.postsAtLocation || []}
           onOpenCreateAtLocation={(lat, lng) => {
             setCreateInitialLatitude(lat);
