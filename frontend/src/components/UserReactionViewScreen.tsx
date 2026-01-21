@@ -10,7 +10,6 @@ interface UserReactionViewScreenProps {
   onPinClick: (post: Post) => void;
 }
 
-<<<<<<< HEAD
 export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScreenProps) {
   const [reactedPosts, setReactedPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,10 +65,6 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
   }
 
   if (reactedPosts.length === 0) {
-=======
-export function UserReactionViewScreen({ reactedPins, onPinClick }: UserReactionViewScreenProps) {
-  if (reactedPins.length === 0) {
->>>>>>> origin/main
     return (
       <Card>
         <CardContent className="py-8 text-center text-gray-500">
@@ -81,19 +76,11 @@ export function UserReactionViewScreen({ reactedPins, onPinClick }: UserReaction
 
   return (
     <div className="grid gap-4">
-<<<<<<< HEAD
       {reactedPosts.map((post) => (
         <Card
           key={post.postId}
           className="hover:shadow-md transition-shadow cursor-pointer"
           onClick={() => onPinClick(post)}
-=======
-      {reactedPins.map((pin) => (
-        <Card
-          key={pin.id}
-          className="hover:shadow-md transition-shadow cursor-pointer"
-          onClick={() => onPinClick(pin)}
->>>>>>> origin/main
         >
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-2">
@@ -107,11 +94,7 @@ export function UserReactionViewScreen({ reactedPins, onPinClick }: UserReaction
                 {genreLabels[genreIdToKey(post.genreId) ?? 'other']}
               </Badge>
             </div>
-<<<<<<< HEAD
             <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.text}</p>
-=======
-            <p className="text-sm text-gray-600 mb-2 line-clamp-2">{pin.description}</p>
->>>>>>> origin/main
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center space-x-2">
                 <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">

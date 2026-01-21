@@ -17,8 +17,6 @@ import {
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -40,19 +38,19 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
 
   const weeklyData = [];
 
-  const genreStats = posts.reduce(
-    (acc, post) => {
-      if (!acc[post.genreId]) {
-        acc[post.genreId] = { genre: genreLabels[post.genreId], count: 0, reactions: 0 };
-      }
-      acc[post.genreId].count++;
-      acc[post.genreId].reactions += post.numReaction;
-      return acc;
-    },
-    {} as Record<string, { genre: string; count: number; reactions: number }>
-  );
+  // const genreStats = posts.reduce(
+  //   (acc, post) => {
+  //     if (!acc[post.genreId]) {
+  //       acc[post.genreId] = { genre: genreLabels[post.genreId], count: 0, reactions: 0 };
+  //     }
+  //     acc[post.genreId].count++;
+  //     acc[post.genreId].reactions += post.numReaction;
+  //     return acc;
+  //   },
+  //   {} as Record<string, { genre: string; count: number; reactions: number }>
+  // );
 
-  const genreStatsArray = Object.values(genreStats);
+  // const genreStatsArray = Object.values(genreStats); // 未使用のため削除
 
   const totalReactions = posts.reduce((sum, post) => sum + post.numReaction, 0);
   const totalViews = posts.reduce((sum, post) => sum + (post.numView || 0), 0);

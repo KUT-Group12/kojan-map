@@ -82,7 +82,6 @@ export function ReportScreen({
         disabled={isSubmitting}
       />
       <div className="flex gap-2">
-<<<<<<< HEAD
         <Button
           onClick={handleReport}
           variant="destructive"
@@ -91,20 +90,13 @@ export function ReportScreen({
           disabled={isSubmitting}
         >
           {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : '送信'}
-=======
-        <Button onClick={handleReport} variant="destructive" size="sm" className="flex-1">
-          送信
->>>>>>> origin/main
         </Button>
         <Button
           onClick={() => setIsReporting(false)}
           variant="outline"
           size="sm"
           className="flex-1"
-<<<<<<< HEAD
           disabled={isSubmitting}
-=======
->>>>>>> origin/main
         >
           キャンセル
         </Button>

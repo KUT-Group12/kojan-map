@@ -21,16 +21,9 @@ interface UserDisplayMyPageProps {
 
 export function UserDisplayMyPage({
   user,
-<<<<<<< HEAD
   posts = [],
   reactedPosts = [],
   onPinClick,
-=======
-  pins,
-  reactedPins,
-  onPinClick,
-  onDeletePin,
->>>>>>> origin/main
   onUpdateUser,
   onNavigateToDeleteAccount,
 }: UserDisplayMyPageProps) {
@@ -79,15 +72,8 @@ export function UserDisplayMyPage({
               </Button>
             ) : (
               <UserInputBusinessApplication
-<<<<<<< HEAD
                 user={user}
                 onUpdateUser={onUpdateUser}
-=======
-                onUpdateUser={(data) => {
-                  console.log('申請データ:', data);
-                  handleBusinessRegistration();
-                }}
->>>>>>> origin/main
                 onCancel={() => setShowBusinessRegistration(false)}
               />
             )}
@@ -103,20 +89,12 @@ export function UserDisplayMyPage({
 
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-<<<<<<< HEAD
             <SelectPostHistory user={user} onPinClick={onPinClick} />
-=======
-            <SelectPostHistory pins={pins} onPinClick={onPinClick} onDeletePin={onDeletePin} />
->>>>>>> origin/main
           </TabsContent>
 
           {/* リアクション履歴 */}
           <TabsContent value="reactions" className="space-y-4">
-<<<<<<< HEAD
             <UserReactionViewScreen user={user} onPinClick={onPinClick} />
-=======
-            <UserReactionViewScreen reactedPins={reactedPins} onPinClick={onPinClick} />
->>>>>>> origin/main
           </TabsContent>
 
           {/* 設定 */}

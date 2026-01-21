@@ -6,12 +6,8 @@ import { toast } from 'sonner';
 import { Business, User } from '../types';
 
 interface UserInputBusinessApplicationProps {
-<<<<<<< HEAD
   user: User;
   onUpdateUser: (user: User) => void; //申請処理
-=======
-  onUpdateUser: (data: BusinessData) => void; //申請処理
->>>>>>> origin/main
   onCancel: () => void; //キャンセル処理
 }
 
@@ -21,29 +17,19 @@ type BusinessApplicationData = Pick<Business, 'businessName' | 'address'> & {
 };
 
 export function UserInputBusinessApplication({
-<<<<<<< HEAD
   user,
-=======
->>>>>>> origin/main
   onUpdateUser,
   onCancel,
 }: UserInputBusinessApplicationProps) {
   //状態管理の追加
-<<<<<<< HEAD
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<BusinessApplicationData>({
     businessName: '',
     phone: '',
-=======
-  const [formData, setFormData] = useState<BusinessData>({
-    ShopName: '',
-    PhoneNumber: '',
->>>>>>> origin/main
     address: '',
   });
 
   // 送信ハンドラ
-<<<<<<< HEAD
   const handleSubmit = async () => {
     // バリデーション（任意）
     const phoneNumber = Number(formData.phone);
@@ -90,17 +76,6 @@ export function UserInputBusinessApplication({
     }
   };
 
-=======
-  const handleSubmit = () => {
-    // バリデーション（任意）
-    if (!formData.ShopName || !formData.PhoneNumber || !formData.address) {
-      alert('すべての項目を入力してください');
-      return;
-    }
-    onUpdateUser(formData);
-  };
-
->>>>>>> origin/main
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
       <p className="text-sm flex items-center gap-2">

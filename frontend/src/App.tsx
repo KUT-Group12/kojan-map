@@ -50,7 +50,6 @@ export default function App() {
   };
 
   const handleLogout = () => {
-<<<<<<< HEAD
     setUser(null);
     setBusiness(null);
   };
@@ -94,34 +93,5 @@ export default function App() {
       />
       <Toaster />
     </>
-=======
-    // ローカルストレージから JWT とユーザー情報を削除
-    authLogout();
-    setUser(null);
-  };
-
-  const handleUpdateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-  };
-
-  if (!user) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
-
-  if (user.role === 'admin') {
-    return (
-      <Suspense fallback={<div className="p-4">読み込み中...</div>}>
-        <AdminDashboard user={user} onLogout={handleLogout} />
-        <Toaster />
-      </Suspense>
-    );
-  }
-
-  return (
-    <Suspense fallback={<div className="p-4">読み込み中...</div>}>
-      <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
-      <Toaster />
-    </Suspense>
->>>>>>> origin/main
   );
 }
