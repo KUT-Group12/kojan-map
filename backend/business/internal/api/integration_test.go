@@ -23,7 +23,9 @@ import (
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository/impl"
 	serviceImpl "kojan-map/business/internal/service/impl"
+	"kojan-map/business/pkg/contextkeys"
 	"kojan-map/business/pkg/jwt"
+	"strings"
 )
 
 // setupTestDB はテスト用データベースをセットアップ
@@ -37,6 +39,10 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	require.NoError(t, err, "データベース接続に失敗")
+
+	// placeテーブルに必要なテストデータを挿入（placeId=0とplaceId=1）
+	db.Exec("INSERT IGNORE INTO place (placeId, numPost, latitude, longitude) VALUES (0, 0, 0, 0)")
+	db.Exec("INSERT IGNORE INTO place (placeId, numPost, latitude, longitude) VALUES (1, 0, 35.6895, 139.6917)")
 
 	return db
 }
@@ -58,6 +64,18 @@ func cleanupTestDB(t *testing.T, db *gorm.DB) {
 func setupTestRouter(db *gorm.DB) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
+	
+	// エラーハンドリングミドルウェアを追加
+	router.Use(gin.Recovery())
+	router.Use(func(c *gin.Context) {
+		c.Next()
+		// エラーがあればログに出力
+		if len(c.Errors) > 0 {
+			for _, err := range c.Errors {
+				fmt.Printf("Gin Error: %v\n", err)
+			}
+		}
+	})
 
 	authRepo := impl.NewAuthRepoImpl(db)
 	postRepo := impl.NewPostRepoImpl(db)
@@ -77,7 +95,37 @@ func setupTestRouter(db *gorm.DB) *gin.Engine {
 			authService.GoogleAuth(c.Request.Context(), c)
 		})
 
+		// 認証ミドルウェア: JWTトークンを検証してcontextに設定
+		authMiddleware := func(c *gin.Context) {
+			authHeader := c.GetHeader("Authorization")
+			if authHeader == "" {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "認証トークンが必要です"})
+				return
+			}
+
+			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+			claims, err := tokenManager.VerifyToken(tokenString)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "無効なトークン", "detail": err.Error()})
+				return
+			}
+
+			// BusinessMemberからBusinessIDを取得
+			var businessMember domain.BusinessMember
+			if err := db.Where("userId = ?", claims.UserID).First(&businessMember).Error; err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "事業者情報が見つかりません", "userId": claims.UserID, "detail": err.Error()})
+				return
+			}
+
+			// contextにユーザーIDと事業者IDを設定
+			ctx := contextkeys.WithUserID(c.Request.Context(), claims.UserID)
+			ctx = contextkeys.WithBusinessID(ctx, businessMember.ID)
+			c.Request = c.Request.WithContext(ctx)
+			c.Next()
+		}
+
 		authorized := api.Group("/")
+		authorized.Use(authMiddleware)
 		{
 			posts := authorized.Group("/posts")
 			{
@@ -147,7 +195,16 @@ func TestIntegration_POST001_CreatePost(t *testing.T) {
 	defer cleanupTestDB(t, db)
 
 	user := createTestUser(t, db, "test-user-1", "test1@example.com")
-	_ = createTestBusinessMember(t, db, user.ID, "Test Business")
+	businessMember := createTestBusinessMember(t, db, user.ID, "Test Business")
+	t.Logf("作成した BusinessMember: ID=%d, UserID=%s", businessMember.ID, businessMember.UserID)
+	
+	// DBで確認
+	var dbMember domain.BusinessMember
+	if err := db.Where("userId = ?", user.ID).First(&dbMember).Error; err != nil {
+		t.Fatalf("BusinessMemberがDBに存在しません: %v", err)
+	}
+	t.Logf("DBから取得した BusinessMember: ID=%d, UserID=%s", dbMember.ID, dbMember.UserID)
+	
 	genre := createTestGenre(t, db, "food", "FF0000")
 
 	router := setupTestRouter(db)
@@ -168,6 +225,13 @@ func TestIntegration_POST001_CreatePost(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
+
+	t.Logf("レスポンスステータス: %d", w.Code)
+	t.Logf("レスポンスボディ: %s", w.Body.String())
+	
+	if w.Code == http.StatusOK && w.Body.Len() == 0 {
+		t.Log("注意: ステータス200だが、レスポンスボディが空です。ハンドラーでエラーが発生している可能性があります。")
+	}
 
 	assert.Equal(t, http.StatusCreated, w.Code, "ステータスコードが201であること")
 
