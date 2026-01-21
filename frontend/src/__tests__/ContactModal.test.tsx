@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ContactModal } from '../components/ContactModal';
 import { User } from '../types';
 import { toast } from 'sonner';
@@ -33,8 +33,14 @@ describe('ContactModal', () => {
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
+    vi.resetModules();
     vi.clearAllMocks();
     vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   const getFetchMock = () => globalThis.fetch as any;
