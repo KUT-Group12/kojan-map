@@ -53,9 +53,9 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        # node-version: '20.18.1'
+        # node-version: '25.2.1'
         # バージョンを固定
-        node-version: '20.18.1'
+        node-version: '25.2.1'
         cache: 'npm'
         cache-dependency-path: './frontend/package-lock.json'
     
