@@ -1,95 +1,94 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DisplayPostHistory } from '../components/DisplayPostHistory';
 import { Post } from '../types';
 
 describe('DisplayPostHistory', () => {
-  // テスト用のダミーデータ
   const mockPost: Post = {
-    postId: 1,
-    title: 'テスト投稿',
-    text: 'これはテストの本文です。',
-    genreId: 1, // GENRE_MAPで定義されているIDに合わせる
-    numReaction: 10,
-    numView: 0, // 追加: 型定義で必須となっているため
-    placeId: 1,
-    postDate: '2024-01-21T12:00:00Z',
-    userId: 'user-1',
+    postId: 101,
+    title: '歴史ある投稿',
+    text: 'この投稿は履歴に表示されるためのものです。',
+    genreId: 2,
+    genreName: 'イベント', // DBからの値
+    genreColor: '#3b82f6', // DBからの値 (Blue-500)
+    postDate: '2024-01-21T10:00:00Z',
+    numReaction: 15,
+    numView: 120,
+    userId: 'user-123',
+    placeId: 5,
   };
 
   const mockOnPinClick = vi.fn();
-  const mockFormatDate = vi.fn((date: Date) => '2024/01/21');
-  const mockDeleteButton = <button>削除</button>;
+  const mockFormatDate = vi.fn((date: Date) => '2024年1月21日');
 
-  it('投稿内容が正しく表示されること', () => {
+  it('投稿内容とDBから取得したジャンル情報が正しく表示されること', () => {
     render(
       <DisplayPostHistory
         post={mockPost}
         onPinClick={mockOnPinClick}
         formatDate={mockFormatDate}
-        deleteButton={mockDeleteButton}
+        deleteButton={<button>削除</button>}
       />
     );
 
-    // タイトルと本文の確認
-    expect(screen.getByText('テスト投稿')).toBeInTheDocument();
-    expect(screen.getByText('これはテストの本文です。')).toBeInTheDocument();
+    // 基本情報の確認
+    expect(screen.getByText('歴史ある投稿')).toBeInTheDocument();
+    expect(screen.getByText('この投稿は履歴に表示されるためのものです。')).toBeInTheDocument();
+    expect(screen.getByText('15')).toBeInTheDocument(); // numReaction
+    expect(screen.getByText(/120 閲覧/)).toBeInTheDocument(); // numView
 
-    // リアクション数の確認
-    expect(screen.getByText('10')).toBeInTheDocument();
-
-    // 日付フォーマット関数の呼び出し確認
-    expect(mockFormatDate).toHaveBeenCalled();
-    expect(screen.getByText('2024/01/21')).toBeInTheDocument();
+    // DBから取得したジャンル名と色が適用されているか
+    const badge = screen.getByText('イベント');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveStyle({ backgroundColor: '#3b82f6' });
   });
 
-  it('カードをクリックしたときに onPinClick が呼ばれること', () => {
+  it('カード本体（コンテンツ部分）をクリックしたときに onPinClick が呼ばれること', () => {
     render(
       <DisplayPostHistory
         post={mockPost}
         onPinClick={mockOnPinClick}
         formatDate={mockFormatDate}
-        deleteButton={mockDeleteButton}
+        deleteButton={<button>削除</button>}
       />
     );
 
-    // クリック可能な領域（タイトルがある部分）をクリック
-    const clickArea = screen.getByText('テスト投稿').closest('div');
-    if (clickArea) fireEvent.click(clickArea);
+    // タイトル部分をクリック（cursor-pointerが付いているエリア）
+    const clickableArea = screen.getByText('歴史ある投稿').closest('.cursor-pointer');
+    if (!clickableArea) throw new Error('Clickable area not found');
+
+    fireEvent.click(clickableArea);
 
     expect(mockOnPinClick).toHaveBeenCalledWith(mockPost);
   });
 
-  it('deleteButton（ReactNode）が正しくレンダリングされること', () => {
+  it('propsで渡された deleteButton が正しくレンダリングされること', () => {
+    const deleteText = '消去する';
     render(
       <DisplayPostHistory
         post={mockPost}
         onPinClick={mockOnPinClick}
         formatDate={mockFormatDate}
-        deleteButton={mockDeleteButton}
+        deleteButton={<button>{deleteText}</button>}
       />
     );
 
-    // propsで渡したボタンが表示されているか
-    expect(screen.getByRole('button', { name: '削除' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: deleteText })).toBeInTheDocument();
   });
 
-  it('ジャンルIDに基づいてバッジのテキストが表示されること', () => {
-    // 実際の genreLabels と GENRE_MAP の定義に依存しますが、
-    // genreId: 1 が 'food' だとしたら 'グルメ' のようなラベルが出るか確認します
+  it('日付が props の formatDate 関数を通じて表示されること', () => {
     render(
       <DisplayPostHistory
         post={mockPost}
         onPinClick={mockOnPinClick}
         formatDate={mockFormatDate}
-        deleteButton={mockDeleteButton}
+        deleteButton={<button>削除</button>}
       />
     );
 
-    // バッジが表示されているか確認（役割が badge または span になっているはず）
-    // もし genreLabels[key] が期待通りの値になっているかテスト
-    // (mockDataの内容に応じて書き換えてください)
-    const badge = screen.getByText(/./, { selector: '.ml-2' }); // Badgeのクラスを指定
-    expect(badge).toBeInTheDocument();
+    // formatDate が呼ばれた結果が表示されているか
+    expect(screen.getByText(/2024年1月21日/)).toBeInTheDocument();
+    expect(mockFormatDate).toHaveBeenCalled();
   });
 });

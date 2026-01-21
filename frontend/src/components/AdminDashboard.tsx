@@ -45,42 +45,12 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [reports, setReports] = useState<Report[]>([
-    {
-      reportId: 1, // id -> reportId
-      userId: 'user_google_001', // reporter(名前)ではなくIDを保持
-      postId: 1, // pinId -> postId
-      reason: '不適切な内容',
-      date: '2025-11-03T10:00:00', // DATETIME形式
-      reportFlag: false, // pending相当
-      removeFlag: false,
-    },
-    {
-      reportId: 2,
-      userId: 'user_google_002',
-      postId: 3,
-      reason: 'スパム',
-      date: '2025-11-02T15:30:00',
-      reportFlag: false,
-      removeFlag: false,
-    },
-    {
-      reportId: 3,
-      userId: 'user_google_003',
-      postId: 2,
-      reason: '虚偽情報',
-      date: '2025-11-01T09:00:00',
-      reportFlag: true, // resolved相当
-      removeFlag: true, // 例：削除済みとする場合
-    },
-  ]);
+  const [reports, setReports] = useState<Report[]>();
 
   //データベースから持ってくるようにしなければならない？
-  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>(
-    []
-  );
+  const [businessApplications, setBusinessApplications] = useState<AdminDisplayBusinessRequest[]>();
 
-  const [userList, setUsers] = useState<AdminUser[]>([]);
+  const [userList, setUsers] = useState<AdminUser[]>();
 
   const Inquiries: Inquiry[] = [];
 

@@ -1,40 +1,47 @@
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Sidebar } from '../components/Sidebar';
-import { Post } from '../types';
-
-const mockUser = { id: 'u1', role: 'user', name: 'Test User' } as any;
-const mockPosts: Post[] = [
-  {
-    postId: 1,
-    title: '投稿1',
-    text: '本文1',
-    genreId: 1,
-    postDate: new Date().toISOString(),
-    numReaction: 0,
-    userId: 'a',
-    placeId: 1,
-    numView: 0,
-  },
-];
+import { Post, User } from '../types';
 
 describe('Sidebar', () => {
+  const mockUser: User = {
+    id: 'u1',
+    role: 'general',
+    name: 'Test User',
+    email: 'test@example.com',
+    createdAt: new Date(),
+  };
+
+  const mockPosts: Post[] = [
+    {
+      postId: 101,
+      title: '検索で見つかる投稿',
+      text: '美味しいランチでした',
+      genreId: 1,
+      genreName: 'グルメ',
+      genreColor: '#ff0000',
+      postDate: new Date().toISOString(),
+      numReaction: 10,
+      numView: 50,
+      userId: 'user-a',
+      placeId: 1,
+    },
+  ];
+
   const mockOnFilterChange = vi.fn();
   const mockOnPinClick = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // FakeTimers は使わない設定にする（または各テストで制御する）
+    // タイマーをモックせず、実際の時間経過を利用する
   });
 
-  it('キーワード入力時にデバウンスを経て正しくAPIが呼ばれること', async () => {
-    // 1. fetch のモック（即座に解決するようにする）
-    const mockFetch = vi.fn().mockResolvedValue({
+  it('キーワード入力時にデバウンスを経てAPIが呼ばれ、検索結果が表示されること', async () => {
+    // APIレスポンスをモック
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ posts: mockPosts }),
     });
-    global.fetch = mockFetch;
 
     render(
       <Sidebar
@@ -47,15 +54,80 @@ describe('Sidebar', () => {
 
     const input = screen.getByPlaceholderText('キーワードで検索...');
 
-    // 2. fireEvent で入力（userEvent.type より高速で安定）
+    // fireEvent.change で即時入力
     fireEvent.change(input, { target: { value: 'カフェ' } });
 
-    // 3. 500msのデバウンス + 通信時間を待つ
-    // waitFor のタイムアウトを少し長めにするか、findBy を使う
-    // findBy はデフォルトで 1000ms 待つので、500ms のデバウンスには最適です
-    const postTitle = await screen.findByText('投稿1', {}, { timeout: 2000 });
+    // findByText はデフォルトで 1000ms 待機するため、500ms のデバウンスを吸収できる
+    // 念のため timeout を指定して確実に待つ
+    const postTitle = await screen.findByText('検索で見つかる投稿', {}, { timeout: 2000 });
 
     expect(postTitle).toBeInTheDocument();
-    expect(mockFetch).toHaveBeenCalled();
+    expect(global.fetch).toHaveBeenCalled();
+  });
+
+  it('検索実行中にローディングアイコンが表示されること', async () => {
+    // APIが少し遅れて返る状況をシミュレート
+    global.fetch = vi.fn().mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: async () => ({ posts: mockPosts }),
+              }),
+            100
+          )
+        )
+    );
+
+    render(
+      <Sidebar
+        user={mockUser}
+        posts={[]}
+        onFilterChange={mockOnFilterChange}
+        onPinClick={mockOnPinClick}
+      />
+    );
+
+    const input = screen.getByPlaceholderText('キーワードで検索...');
+    fireEvent.change(input, { target: { value: 'a' } });
+
+    // デバウンス時間後、かつ API 完了前のタイミングで Loader2 が出ているか
+    await waitFor(
+      () => {
+        // 500msデバウンス後、フェッチが開始されるとアイコンが出る
+        // Loader2 (lucide-react) は animate-spin クラスを持つ
+        expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+      },
+      { timeout: 1500 }
+    );
+  });
+
+  it('検索結果が空の場合、適切なメッセージが表示されること', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ posts: [] }),
+    });
+
+    render(
+      <Sidebar
+        user={mockUser}
+        posts={[]}
+        onFilterChange={mockOnFilterChange}
+        onPinClick={mockOnPinClick}
+      />
+    );
+
+    const input = screen.getByPlaceholderText('キーワードで検索...');
+    fireEvent.change(input, { target: { value: '該当なし' } });
+
+    // メッセージが出るまで待つ
+    const emptyMsg = await screen.findByText(
+      '該当する投稿が見つかりませんでした',
+      {},
+      { timeout: 2000 }
+    );
+    expect(emptyMsg).toBeInTheDocument();
   });
 });

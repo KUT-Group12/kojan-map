@@ -1,9 +1,9 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Heart, Eye } from 'lucide-react';
+import { Heart, Eye, Loader2 } from 'lucide-react'; // Loader2を追加
 import { Post, User, Place } from '../types';
-import { genreLabels, genreColors, GENRE_MAP } from '../lib/mockData';
+// mockDataからの固定値インポートを削除
 import { useEffect, useRef, useState } from 'react';
 import { UserTriggerReaction } from './UserTriggerReaction';
 import { ReportScreen } from './ReportScreen';
@@ -22,11 +22,8 @@ interface PinDetailModalProps {
   onReaction: (postId: number) => void;
   onDelete: (postId: number) => void;
   onBlockUser?: (userId: string) => void;
-  // pins at the same/similar location to allow scrolling through nearby posts
   postsAtLocation?: Post[];
-  // open create modal prefilled with given coordinates
   onOpenCreateAtLocation?: (lat: number, lng: number) => void;
-  // 追加：別のピンを選択するための関数
   onSelectPin?: (post: Post) => void;
 }
 
@@ -44,27 +41,20 @@ export function DisplayPostList({
   onSelectPin,
 }: PinDetailModalProps) {
   const [isReporting, setIsReporting] = useState(false);
-
   const [postDetail, setPostDetail] = useState<Post | null>(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
   useEffect(() => {
     if (!post?.postId) return;
     setPostDetail(null);
     const fetchPostDetail = async () => {
       setIsDetailLoading(true);
       try {
-        // バックエンドとの接続
         const response = await fetch(`${API_BASE_URL}/api/posts/detail?postId=${post.postId}`);
         if (!response.ok) throw new Error('詳細の取得に失敗しました');
-
-        const data = await response.json(); // Post オブジェクトが返る
-
+        const data = await response.json();
         setPostDetail(data.post);
-        console.log(data);
       } catch (error) {
         setPostDetail(null);
         console.error('詳細取得エラー:', error);
@@ -72,11 +62,9 @@ export function DisplayPostList({
         setIsDetailLoading(false);
       }
     };
-
     fetchPostDetail();
   }, [post?.postId]);
 
-  // スクロール制御
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -84,6 +72,7 @@ export function DisplayPostList({
   }, [post.postId]);
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleString('ja-JP', {
       year: 'numeric',
       month: 'long',
@@ -95,172 +84,207 @@ export function DisplayPostList({
 
   const isOwnPost = post.userId === currentUser.id;
 
+  // 表示に使うデータを決定（詳細があればそちらを優先）
+  const displayPost = postDetail || post;
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent ref={scrollContainerRef} className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* 1. ローディング中のオーバーレイ表示 */}
+      <DialogContent
+        ref={scrollContainerRef}
+        className="max-w-2xl max-h-[90vh] overflow-y-auto border-none shadow-2xl"
+      >
         {isDetailLoading && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-[1px]">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm">
             <div className="flex flex-col items-center">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-              <p className="mt-2 text-sm text-gray-500 font-medium">詳細を読み込み中...</p>
+              <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+              <p className="mt-2 text-sm text-slate-500 font-bold">読み込み中...</p>
             </div>
           </div>
         )}
+
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <DialogTitle className="whitespace-pre-wrap break-words overflow-wrap-anywhere">
-                {post.title}
+              <DialogTitle className="text-2xl font-black text-slate-800 leading-tight whitespace-pre-wrap break-words">
+                {displayPost.title}
               </DialogTitle>
               <DialogDescription className="sr-only">投稿の詳細情報を表示します</DialogDescription>
-              <div className="flex items-center space-x-2 mt-2">
-                <Badge style={{ backgroundColor: genreColors[GENRE_MAP[post.genreId] || 'other'] }}>
-                  {genreLabels[GENRE_MAP[post.genreId] || 'other']}
+
+              <div className="flex items-center gap-2 mt-3">
+                <Badge
+                  style={{
+                    // DBから取得した色を適用
+                    backgroundColor: displayPost.genreColor || '#64748b',
+                    color: '#ffffff',
+                  }}
+                  className="px-3 py-1 border-none shadow-sm text-sm font-bold"
+                >
+                  {displayPost.genreName || 'その他'}
                 </Badge>
-                {currentUser.role === 'business' && <Badge variant="outline">事業者</Badge>}
+                {/* 投稿者のロールに応じたバッジ */}
+                {displayPost.role === 'business' && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-50 text-blue-600 border-blue-100 font-bold"
+                  >
+                    事業者
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* 投稿者情報 */}
-          <div className="flex items-center justify-between pb-4 border-b">
-            <div>
-              <p className="text-sm">
-                {currentUser.role === 'business' ? currentUser.name : '匿名'}
-              </p>
-              <p className="text-xs text-gray-500">{formatDate(post.postDate)}</p>
+        <div className="space-y-6 mt-4">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                👤
+              </div>
+              <div>
+                <p className="font-bold text-slate-700">
+                  {displayPost.businessName ||
+                    (displayPost.userId === currentUser.id ? currentUser.name : '匿名ユーザー')}
+                </p>
+                <p className="text-xs text-slate-400 font-medium">
+                  {formatDate(displayPost.postDate)}
+                </p>
+              </div>
             </div>
-            {post.numView !== undefined && (
-              <div className="flex items-center text-sm text-gray-500">
-                <Eye className="w-4 h-4 mr-1" />
-                {post.numView} 閲覧
+            {displayPost.numView !== undefined && (
+              <div className="flex items-center px-3 py-1 bg-slate-50 rounded-full text-xs font-bold text-slate-500">
+                <Eye className="w-3.5 h-3.5 mr-1" />
+                {displayPost.numView} 閲覧
               </div>
             )}
           </div>
 
-          {/* 説明文 */}
-          <div className="min-h-[1.5rem]">
-            <p className="text-gray-700 whitespace-pre-wrap">{postDetail?.text || post.text}</p>
+          <div className="text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+            {displayPost.text}
           </div>
 
-          {/* 画像表示エリア */}
-          {(postDetail?.postImage || post?.postImage) && (
-            <div className="grid grid-cols-2 gap-2">
-              {(Array.isArray(postDetail?.postImage || post.postImage)
-                ? postDetail?.postImage || post.postImage
-                : [postDetail?.postImage || post.postImage]
+          {displayPost.postImage && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(Array.isArray(displayPost.postImage)
+                ? displayPost.postImage
+                : [displayPost.postImage]
               ).map((image, index) => (
-                <img
+                <div
                   key={index}
-                  src={image}
-                  alt={`投稿画像 ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg shadow-sm"
-                />
+                  className="aspect-video overflow-hidden rounded-xl shadow-inner bg-slate-100"
+                >
+                  <img
+                    src={image}
+                    alt={`投稿画像 ${index + 1}`}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
               ))}
             </div>
           )}
 
-          {/* 位置情報 */}
-          <div className="bg-gray-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-600">
-              📍 位置: {place.latitude.toFixed(4)}, {place.longitude.toFixed(4)}
-            </p>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+            <div className="flex items-center text-slate-500 text-sm font-bold">
+              <span className="mr-2">📍</span>
+              {place.latitude.toFixed(6)}, {place.longitude.toFixed(6)}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:text-blue-700 font-bold"
+              onClick={() => onOpenCreateAtLocation?.(place.latitude, place.longitude)}
+            >
+              ここに投稿を追加
+            </Button>
           </div>
 
-          {/* リアクション数 と 投稿を追加ボタン */}
-          <div className="flex items-center space-x-3 text-gray-700">
-            <div className="flex items-center space-x-2">
-              <Heart className={`w-5 h-5 ${isReacted ? 'fill-red-500 text-red-500' : ''}`} />
-              <span>{post.numReaction} リアクション</span>
-            </div>
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center px-4 py-2 bg-rose-50 rounded-full text-rose-600 font-black shadow-sm border border-rose-100">
+                <Heart className={`w-5 h-5 mr-2 ${isReacted ? 'fill-current' : ''}`} />
+                {displayPost.numReaction}
+              </div>
 
-            <div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  onOpenCreateAtLocation && onOpenCreateAtLocation(place.latitude, place.longitude)
-                }
-              >
-                投稿を追加
-              </Button>
-            </div>
-          </div>
-
-          {/* アクションエリア */}
-          <div className="flex items-center space-x-2 pt-4 border-t">
-            {isReporting ? (
-              <ReportScreen
+              <UserTriggerReaction
                 postId={post.postId}
                 userId={currentUser.id}
-                isReporting={isReporting}
-                setIsReporting={setIsReporting}
-                onReportComplete={onClose}
+                isReacted={isReacted}
+                userRole={currentUser.role}
+                isDisabled={false}
+                onReaction={onReaction}
               />
-            ) : (
-              <>
-                {/* 1. リアクションボタン */}
-                <UserTriggerReaction
-                  postId={post.postId}
-                  userId={currentUser.id}
-                  isReacted={isReacted}
-                  userRole={currentUser.role}
-                  isDisabled={false}
-                  onReaction={onReaction}
-                />
+            </div>
 
-                {isOwnPost ? (
-                  /* 2. 削除ボタン */
-                  <SelectPostDeletion postId={post.postId} onDelete={onDelete} onClose={onClose} />
-                ) : (
-                  /* 3. 通報 & ブロック */
-                  <>
-                    <ReportScreen
-                      postId={post.postId}
-                      userId={currentUser.id}
-                      isReporting={isReporting}
-                      setIsReporting={setIsReporting}
-                      onReportComplete={onClose}
+            <div className="flex items-center gap-2">
+              {isOwnPost ? (
+                <SelectPostDeletion postId={post.postId} onDelete={onDelete} onClose={onClose} />
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:text-rose-500"
+                    onClick={() => setIsReporting(true)}
+                  >
+                    通報
+                  </Button>
+                  {onBlockUser && (
+                    <SelectBlock
+                      userId={post.userId}
+                      blockerId={currentUser.id}
+                      onBlockUser={onBlockUser}
+                      onClose={onClose}
                     />
-                    {typeof onBlockUser === 'function' && (
-                      <SelectBlock
-                        userId={post.userId}
-                        blockerId={currentUser.id}
-                        onBlockUser={onBlockUser} // Prop名を onBlockUser に合わせる
-                        onClose={onClose}
-                      />
-                    )}
-                  </>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
-          {/* 同一場所の投稿リスト（スクロール可能） */}
-          {postsAtLocation && postsAtLocation.length > 0 && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-sm font-bold mb-3">この場所の他の投稿</h3>
-              <div className="space-y-2">
+          {isReporting && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+                <ReportScreen
+                  postId={post.postId}
+                  userId={currentUser.id}
+                  isReporting={isReporting}
+                  setIsReporting={setIsReporting}
+                  onReportComplete={onClose}
+                />
+              </div>
+            </div>
+          )}
+
+          {postsAtLocation && postsAtLocation.length > 1 && (
+            <div className="mt-8 pt-8 border-t border-slate-100">
+              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                <span className="w-1 h-4 bg-blue-500 rounded-full mr-2" />
+                この場所の他の投稿
+              </h3>
+              <div className="grid gap-2">
                 {postsAtLocation.map((p) => (
-                  <div
+                  <button
                     key={p.postId}
-                    onClick={() => {
-                      if (p.postId !== post.postId && onSelectPin) onSelectPin(p);
-                    }}
-                    className={`cursor-pointer p-3 rounded-lg border transition-colors ${
+                    onClick={() => p.postId !== post.postId && onSelectPin?.(p)}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
                       p.postId === post.postId
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:bg-gray-50'
+                        ? 'border-blue-500 bg-blue-50 shadow-inner'
+                        : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">{p.title}</span>
-                      <span className="text-xs text-gray-500">{p.numReaction} ❤️</span>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: p.genreColor || '#cbd5e1' }}
+                      />
+                      <span
+                        className={`text-sm font-bold ${p.postId === post.postId ? 'text-blue-700' : 'text-slate-600'}`}
+                      >
+                        {p.title}
+                      </span>
                     </div>
-                  </div>
+                    <span className="text-xs font-bold text-rose-400">{p.numReaction} ❤️</span>
+                  </button>
                 ))}
               </div>
             </div>

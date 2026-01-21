@@ -64,6 +64,10 @@ export interface Post {
   numReaction: number; // リアクション数
   numView: number; // 閲覧数
   genreId: number; // ジャンルID
+  genreName?: string; // DBから返ってくるジャンル名
+  genreColor?: string; // DBから返ってくるカラーコード (#FFFFFF形式など)
+  businessName?: string; // 投稿者の名前（事業者名）
+  role?: UserRole;
 }
 
 // 場所情報インターフェース (場所管理テーブル)
