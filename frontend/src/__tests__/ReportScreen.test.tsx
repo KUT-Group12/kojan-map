@@ -1,14 +1,14 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { toast } from 'sonner';
 import { ReportScreen } from '../components/ReportScreen';
 
-// sonnerのモック
+const toastSuccess = vi.fn();
+const toastError = vi.fn();
 vi.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: toastSuccess,
+    error: toastError,
   },
 }));
 
@@ -88,7 +88,7 @@ describe('ReportScreen', () => {
           }),
         })
       );
-      expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('通報を受け付けました'));
+      expect(toastSuccess).toHaveBeenCalledWith(expect.stringContaining('通報を受け付けました'));
       expect(mockOnReportComplete).toHaveBeenCalled();
     });
   });
@@ -99,7 +99,7 @@ describe('ReportScreen', () => {
     const submitBtn = screen.getByRole('button', { name: '送信' });
     fireEvent.click(submitBtn);
 
-    expect(toast.error).toHaveBeenCalledWith('通報理由を入力してください');
+    expect(toastError).toHaveBeenCalledWith('通報理由を入力してください');
     expect(global.fetch).not.toHaveBeenCalled();
   });
 

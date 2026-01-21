@@ -75,12 +75,11 @@ describe('MapViewScreen', () => {
     expect(markers).toHaveLength(2);
 
     // p1のマーカー（投稿が2つある方）にはカウントバッジ "2" が表示されているか
-    const badge2 = screen.getByText('2');
-    expect(badge2).toBeInTheDocument();
-    expect(badge2.closest('[data-testid="map-marker"]')).toHaveAttribute(
-      'data-position',
-      JSON.stringify([33.6, 133.6])
+    const markerWithCount = markers.find((m) =>
+      />(\s*2\s*)</.test(m.getAttribute('data-icon-html') ?? '')
     );
+    expect(markerWithCount).toBeTruthy();
+    expect(markerWithCount).toHaveAttribute('data-position', JSON.stringify([33.6, 133.6]));
   });
 
   it('マーカーをクリックしたときに onPinClick が呼ばれること', () => {
