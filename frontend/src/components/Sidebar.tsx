@@ -83,18 +83,20 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
     };
 
     // 入力中の負荷を抑えるためのデバウンス処理
-    const timer = setTimeout(fetchFilteredPosts, 500);
+    const timer = setTimeout(fetchFilteredPosts, searchKeyword === '' ? 0 : 500);
 
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [searchKeyword, selectedGenre, dateFilter, initialPosts, user.role]);
+  }, [searchKeyword, selectedGenre, dateFilter, user.role]);
 
   // apiPostsが更新されたら親コンポーネントへ通知
+  /*
   useEffect(() => {
+    // 取得したデータがある、または初回以降の変更である場合のみ通知
     onFilterChange(apiPosts);
-  }, [apiPosts, onFilterChange]);
+  }, [apiPosts]);*/
 
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
