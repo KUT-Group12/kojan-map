@@ -38,7 +38,7 @@ type Post struct {
 
 // TableName は対応するテーブル名を指定
 func (Post) TableName() string {
-	return "post"
+	return "posts"
 }
 
 // PostImage は投稿画像を表すドメインモデル
@@ -88,7 +88,7 @@ type Genre struct {
 
 // TableName は対応するテーブル名を指定
 func (Genre) TableName() string {
-	return "genre"
+	return "genres"
 }
 
 // CreatePostRequest は投稿作成時のリクエスト
