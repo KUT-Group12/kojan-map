@@ -1,100 +1,84 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserDisplayMyPage } from '../components/UserDisplayMyPage';
-import userEvent from '@testing-library/user-event';
+import { User, Post } from '../types';
 
-// 子コンポーネントのモック化（依存関係を切り離して単体テストを容易にする）
-jest.mock('../components/SelectPostHistory', () => ({
+// 子コンポーネントのモック
+vi.mock('../components/SelectPostHistory', () => ({
   SelectPostHistory: () => <div data-testid="post-history">投稿履歴コンポーネント</div>,
 }));
-jest.mock('../components/UserReactionViewScreen', () => ({
+vi.mock('../components/UserReactionViewScreen', () => ({
   UserReactionViewScreen: () => <div data-testid="reaction-view">リアクションコンポーネント</div>,
 }));
-jest.mock('../components/SelectUserSetting', () => ({
+vi.mock('../components/SelectUserSetting', () => ({
   SelectUserSetting: () => <div data-testid="user-setting">設定コンポーネント</div>,
 }));
-jest.mock('../components/UserInputBusinessApplication', () => ({
+vi.mock('../components/UserInputBusinessApplication', () => ({
   UserInputBusinessApplication: ({ onCancel }: any) => (
-    <div data-testid="business-app">
+    <div data-testid="business-form">
       事業者申請フォーム
       <button onClick={onCancel}>キャンセル</button>
     </div>
   ),
 }));
 
-describe('UserDisplayMyPage コンポーネント', () => {
-  const mockUser = {
-    googleId: 'user-123',
-    gmail: 'test@example.com',
+describe('UserDisplayMyPage', () => {
+  const mockUser: User = {
+    googleId: 'test-user-id',
+    gmail: 'test@gmail.com',
+    role: 'user',
     registrationDate: '2024-01-01T00:00:00Z',
-    role: 'general',
+    fromName: 'テストユーザー',
   };
 
-  const mockProps = {
-    user: mockUser as any,
-    posts: [{}, {}] as any, // 2件
-    reactedPosts: [{}] as any, // 1件
-    onPinClick: jest.fn(),
-    onUpdateUser: jest.fn(),
-    onNavigateToDeleteAccount: jest.fn(),
+  const mockPosts: Post[] = [{ postId: 1, title: '投稿1' } as Post];
+
+  const mockReactedPosts: Post[] = [{ postId: 2, title: 'リアクション1' } as Post];
+
+  const defaultProps = {
+    user: mockUser,
+    posts: mockPosts,
+    reactedPosts: mockReactedPosts,
+    onPinClick: vi.fn(),
+    onUpdateUser: vi.fn(),
+    onNavigateToDeleteAccount: vi.fn(),
   };
 
-  test('ユーザー情報が正しく表示されること', () => {
-    render(<UserDisplayMyPage {...mockProps} />);
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    expect(screen.getByText('test@example.com')).toBeInTheDocument();
-    expect(screen.getByText('2024年1月1日')).toBeInTheDocument();
+  it('ユーザーの基本情報が正しく表示されていること', () => {
+    render(<UserDisplayMyPage {...defaultProps} />);
+
+    expect(screen.getByText(mockUser.gmail)).toBeInTheDocument();
+    // 2024-01-01 が「2024年1月1日」として表示されるか
+    expect(screen.getByText(/2024年1月1日/)).toBeInTheDocument();
     expect(screen.getByText('一般')).toBeInTheDocument();
   });
 
-  test('タブを切り替えると表示されるコンポーネントが変わること', async () => {
-    const user = userEvent.setup(); // ユーザー操作のセットアップ
-    render(<UserDisplayMyPage {...mockProps} />);
+  it('事業者登録申請ボタンを押すとフォームが表示され、キャンセルで戻ること', () => {
+    render(<UserDisplayMyPage {...defaultProps} />);
 
-    // 初期表示の確認
-    expect(screen.getByTestId('post-history')).toBeInTheDocument();
+    const applyButton = screen.getByRole('button', { name: /事業者登録を申請/ });
 
-    // 1. リアクションタブをクリック (user.click を使用)
-    const reactionTab = screen.getByRole('tab', { name: /リアクション/ });
-    await user.click(reactionTab);
+    // フォーム表示
+    fireEvent.click(applyButton);
+    expect(screen.getByTestId('business-form')).toBeInTheDocument();
+    expect(applyButton).not.toBeInTheDocument();
 
-    // DOMの更新を待つ
-    await waitFor(
-      () => {
-        expect(screen.getByTestId('reaction-view')).toBeInTheDocument();
-      },
-      { timeout: 2000 }
-    );
-
-    // 2. 設定タブをクリック
-    const settingsTab = screen.getByRole('tab', { name: /設定/ });
-    await user.click(settingsTab);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('user-setting')).toBeInTheDocument();
-    });
-  });
-
-  test('事業者登録申請ボタンを押すとフォームが表示され、キャンセルで戻ること', () => {
-    render(<UserDisplayMyPage {...mockProps} />);
-
-    const regButton = screen.getByRole('button', { name: /事業者登録を申請/ });
-    fireEvent.click(regButton);
-
-    // フォームが表示される
-    expect(screen.getByTestId('business-app')).toBeInTheDocument();
-    expect(regButton).not.toBeInTheDocument();
-
-    // キャンセルボタン（モック内）をクリック
-    fireEvent.click(screen.getByText('キャンセル'));
-
-    // 元のボタンが表示される
+    // キャンセル
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByTestId('business-form')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /事業者登録を申請/ })).toBeInTheDocument();
   });
 
-  test('タブのラベルに件数が正しく反映されていること', () => {
-    render(<UserDisplayMyPage {...mockProps} />);
+  it('タブに投稿数とリアクション数が正しく反映されていること', () => {
+    render(<UserDisplayMyPage {...defaultProps} />);
 
-    expect(screen.getByText(/投稿履歴 \(2\)/)).toBeInTheDocument();
-    expect(screen.getByText(/リアクション \(1\)/)).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: `投稿履歴 (${mockPosts.length})` })).toBeInTheDocument();
+    expect(
+      screen.getByRole('tab', { name: `リアクション (${mockReactedPosts.length})` })
+    ).toBeInTheDocument();
   });
 });

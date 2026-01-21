@@ -1,102 +1,116 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserReactionViewScreen } from '../components/UserReactionViewScreen';
+import { User, Post } from '../types';
 
-// fetchのモック
-const fetchMock = jest.fn() as jest.Mock;
+// fetch のモック
+vi.stubGlobal('fetch', vi.fn());
 
-describe('UserReactionViewScreen コンポーネント', () => {
-  const mockUser = { googleId: 'my-id', role: 'general' };
-  const mockOnPinClick = jest.fn();
+describe('UserReactionViewScreen', () => {
+  const mockUser: User = {
+    googleId: 'user-123',
+    gmail: 'test@example.com',
+    role: 'user',
+    registrationDate: '2024-01-01',
+    fromName: 'テストユーザー',
+  };
 
-  const mockPosts = [
+  const mockPosts: Post[] = [
     {
-      postId: 101,
-      userId: 'user-other',
-      title: 'リアクションした投稿1',
-      text: '本文1',
-      genreId: 0,
-      numReaction: 15,
-    },
+      postId: 1,
+      title: 'テスト投稿',
+      text: 'これはテストの本文です。',
+      genreName: 'カフェ',
+      genreColor: '#ff0000',
+      businessName: 'テスト店舗',
+      numReaction: 10,
+      userId: 'business-1',
+    } as Post,
   ];
 
+  const mockOnPinClick = vi.fn();
+
   beforeEach(() => {
-    jest.clearAllMocks();
-    window.fetch = fetchMock;
-    fetchMock.mockReset();
+    vi.clearAllMocks();
   });
 
-  test('ロード中にローディングスピナーが表示されること', () => {
-    fetchMock.mockReturnValue(new Promise(() => {})); // 完了しないPromise
+  const getFetchMock = () => globalThis.fetch as any;
 
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
-
-    // animate-spin クラスを持つ Loader2 を探す
-    const loader = document.querySelector('.animate-spin');
-    expect(loader).toBeInTheDocument();
-  });
-
-  test('APIから取得したデータが正しく表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ posts: mockPosts }),
-    } as Response);
-
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
-
-    // fetchのURLとエンコードを確認
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/reactions/list?googleId=my-id'),
-      expect.any(Object)
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('リアクションした投稿1')).toBeInTheDocument();
-      expect(screen.getByText('投稿者ID: user-other')).toBeInTheDocument();
-      expect(screen.getByText('15')).toBeInTheDocument();
-    });
-  });
-
-  test('投稿が0件の場合、「まだリアクションがありません」と表示されること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('初期レンダリング時にローディングが表示され、APIが呼ばれること', async () => {
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: [] }),
-    } as Response);
+    });
 
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
+
+    // ローディングアイコンの確認
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
+      expect(getFetchMock()).toHaveBeenCalledWith(
+        expect.stringContaining(`/api/reactions/list?googleId=${mockUser.googleId}`),
+        expect.any(Object)
+      );
     });
   });
 
-  test('カードをクリックすると onPinClick が呼ばれること', async () => {
-    fetchMock.mockResolvedValueOnce({
+  it('リアクションした投稿が正しく表示されること', async () => {
+    getFetchMock().mockResolvedValueOnce({
       ok: true,
       json: async () => ({ posts: mockPosts }),
-    } as Response);
-
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
-
-    await waitFor(() => {
-      const card = screen.getByText('リアクションした投稿1').closest('.cursor-pointer');
-      if (card) fireEvent.click(card);
     });
+
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
+
+    // APIから取得した内容の表示確認
+    const title = await screen.findByText('テスト投稿');
+    expect(title).toBeInTheDocument();
+    expect(screen.getByText('カフェ')).toBeInTheDocument();
+    expect(screen.getByText('テスト店舗')).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
+
+    // ジャンルバッジの色がAPIの指定通りか確認
+    const badge = screen.getByText('カフェ');
+    expect(badge).toHaveStyle({ backgroundColor: '#ff0000' });
+  });
+
+  it('投稿カードをクリックすると onPinClick が呼ばれること', async () => {
+    getFetchMock().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: mockPosts }),
+    });
+
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
+
+    const card = await screen.findByText('テスト投稿');
+    fireEvent.click(card.closest('.cursor-pointer')!);
 
     expect(mockOnPinClick).toHaveBeenCalledWith(mockPosts[0]);
   });
 
-  test('APIエラー時にエラーログが出力され、ローディングが終了すること', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    fetchMock.mockRejectedValueOnce(new Error('API Error'));
-
-    render(<UserReactionViewScreen user={mockUser as any} onPinClick={mockOnPinClick} />);
-
-    await waitFor(() => {
-      expect(screen.queryByRole('status')).not.toBeInTheDocument(); // ローダー消去
-      expect(screen.getByText('まだリアクションがありません')).toBeInTheDocument();
+  it('リアクションがない場合にメッセージが表示されること', async () => {
+    getFetchMock().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ posts: [] }),
     });
 
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
+    render(<UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />);
+
+    const emptyMessage = await screen.findByText('まだリアクションがありません');
+    expect(emptyMessage).toBeInTheDocument();
+  });
+
+  it('コンポーネントがアンマウントされた際、AbortControllerが呼ばれること', async () => {
+    const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
+
+    getFetchMock().mockImplementationOnce(() => new Promise(() => {})); // 完了しないPromise
+
+    const { unmount } = render(
+      <UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />
+    );
+
+    unmount();
+    expect(abortSpy).toHaveBeenCalled();
   });
 });

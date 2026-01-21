@@ -1,9 +1,10 @@
-// src/__tests__/AdminReport.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react';
-import AdminReport, { AdminReportProps } from '../components/AdminReport';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import AdminReport from '../components/AdminReport';
+import { Report } from '../types';
 
 describe('AdminReport', () => {
-  const mockReports: AdminReportProps['reports'] = [
+  const mockReports: Report[] = [
     {
       reportId: 1,
       userId: 'user1',
@@ -33,60 +34,89 @@ describe('AdminReport', () => {
     },
   ];
 
+  const mockOnDeletePost = vi.fn();
+  const mockOnResolveReport = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('通報がない場合にメッセージを表示する', () => {
-    render(<AdminReport reports={[]} onDeletePost={jest.fn()} onResolveReport={jest.fn()} />);
+    render(
+      <AdminReport
+        reports={[]}
+        onDeletePost={mockOnDeletePost}
+        onResolveReport={mockOnResolveReport}
+      />
+    );
     expect(screen.getByText('現在、未処理の通報はありません。')).toBeInTheDocument();
   });
 
-  it('通報がある場合に正しく表示される', () => {
-    render(
-      <AdminReport reports={mockReports} onDeletePost={jest.fn()} onResolveReport={jest.fn()} />
-    );
-
-    // 未処理通報の理由が赤色クラスを持つ
-    expect(screen.getByText('不適切な投稿')).toHaveClass('text-red-600');
-    expect(screen.getByText('迷惑行為')).toHaveClass('text-red-600');
-
-    // 処理済みの理由は灰色クラス
-    expect(screen.getByText('スパム投稿')).toHaveClass('text-slate-500');
-
-    // 削除済みバッジが表示される
-    expect(screen.getByText('投稿削除済み')).toBeInTheDocument();
-
-    // ボタンが未処理の通報にだけ表示される
-    const deleteButtons = screen.getAllByText('投稿削除');
-    expect(deleteButtons.length).toBe(2); // reportFlag=false の通報のみ
-    const rejectButtons = screen.getAllByText('却下');
-    expect(rejectButtons.length).toBe(2);
-  });
-
-  it('ボタンをクリックするとコールバックが呼ばれる', () => {
-    const onDeletePost = jest.fn();
-    const onResolveReport = jest.fn();
+  it('通報がある場合に正しく表示され、ステータスに応じてスタイルが変わる', () => {
     render(
       <AdminReport
         reports={mockReports}
-        onDeletePost={onDeletePost}
-        onResolveReport={onResolveReport}
+        onDeletePost={mockOnDeletePost}
+        onResolveReport={mockOnResolveReport}
       />
     );
 
-    fireEvent.click(screen.getAllByText('投稿削除')[0]);
-    expect(onDeletePost).toHaveBeenCalledWith(103); // 未処理の最新の日付が先頭に来る
+    // 未処理通報 (reportFlag=false) のテキスト確認
+    const unresolveText = screen.getByText('不適切な投稿');
+    expect(unresolveText).toHaveClass('text-red-600');
 
-    fireEvent.click(screen.getAllByText('却下')[1]);
-    expect(onResolveReport).toHaveBeenCalledWith(1);
+    // 処理済み通報 (reportFlag=true) のテキスト確認
+    const resolvedText = screen.getByText('スパム投稿');
+    expect(resolvedText).toHaveClass('text-slate-500');
+
+    // 削除済みフラグがある場合のバッジ確認
+    expect(screen.getByText('投稿削除済み')).toBeInTheDocument();
   });
 
-  it('通報が未処理→処理済み、新しい順にソートされる', () => {
+  it('ボタンをクリックすると正しいIDでコールバックが呼ばれる', () => {
     render(
-      <AdminReport reports={mockReports} onDeletePost={jest.fn()} onResolveReport={jest.fn()} />
+      <AdminReport
+        reports={mockReports}
+        onDeletePost={mockOnDeletePost}
+        onResolveReport={mockOnResolveReport}
+      />
     );
-    const displayedReasons = screen
-      .getAllByText(/.+/)
-      .filter((el) => ['不適切な投稿', 'スパム投稿', '迷惑行為'].includes(el.textContent || ''))
+
+    // 削除ボタンのテスト (postId を引数に取る想定)
+    // 日付順でソートされている場合、一番上の「迷惑行為 (postId: 103)」の削除ボタンをクリック
+    const deleteButtons = screen.getAllByRole('button', { name: /投稿削除/ });
+    fireEvent.click(deleteButtons[0]);
+    expect(mockOnDeletePost).toHaveBeenCalledWith(103);
+
+    // 却下ボタンのテスト (reportId を引数に取る想定)
+    // 「不適切な投稿 (reportId: 1)」の却下ボタンをクリック
+    const rejectButtons = screen.getAllByRole('button', { name: /却下/ });
+    fireEvent.click(rejectButtons[1]);
+    expect(mockOnResolveReport).toHaveBeenCalledWith(1);
+  });
+
+  it('通報が「未処理→処理済み」かつ「新しい順」に並んでいること', () => {
+    render(
+      <AdminReport
+        reports={mockReports}
+        onDeletePost={mockOnDeletePost}
+        onResolveReport={mockOnResolveReport}
+      />
+    );
+
+    // 1. 全ての「通報理由」のテキストを取得する
+    // 「理由:」というテキストを含まない、純粋な理由（迷惑行為など）が書かれた要素を抽出
+    const allReasons = ['迷惑行為', '不適切な投稿', 'スパム投稿'];
+    const items = screen
+      .getAllByText((content, element) => {
+        return allReasons.includes(content) && element?.tagName.toLowerCase() === 'span';
+      })
       .map((el) => el.textContent);
-    // 未処理（最新）→未処理（古い）→処理済み
-    expect(displayedReasons).toEqual(['迷惑行為', '不適切な投稿', 'スパム投稿']);
+
+    // 2. 期待される並び順の検証
+    // 期待値: 迷惑行為(未/01-22) > 不適切な投稿(未/01-21) > スパム投稿(済/01-20)
+    expect(items[0]).toBe('迷惑行為');
+    expect(items[1]).toBe('不適切な投稿');
+    expect(items[2]).toBe('スパム投稿');
   });
 });

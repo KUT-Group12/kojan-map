@@ -5,6 +5,9 @@ import { LogOut, Check, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { User } from '../types';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface LogoutScreenProps {
   user: User;
   onLogout: () => void;
@@ -18,7 +21,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
     try {
       // 1. API仕様: PUT /api/auth/logout
       // ボディに sessionId (通常は googleId 等) を含めて送信
-      const response = await fetch('/api/auth/logout', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: user.googleId }),

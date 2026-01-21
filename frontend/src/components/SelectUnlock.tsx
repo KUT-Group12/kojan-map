@@ -4,8 +4,11 @@ import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface UserWithBlocked extends User {
-  googleId: string;
+  id: string;
   blockedUsers?: string[];
 }
 
@@ -22,14 +25,14 @@ export function SelectUnlock({ userId, user, onUpdateUser }: SelectUnlockProps) 
     try {
       // 1. API仕様: DELETE /api/users/block
       // リクエストボディ形式で userId(相手) と blockerId(自分) を送信
-      const response = await fetch('/api/users/block', {
+      const response = await fetch(`${API_BASE_URL}/api/users/block`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           userId: userId, // ブロックされているユーザー
-          blockerId: user.googleId, // ブロックした人（自分）
+          blockerId: user.id, // ブロックした人（自分）
         }),
       });
 

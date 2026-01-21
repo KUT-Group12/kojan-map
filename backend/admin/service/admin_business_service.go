@@ -56,6 +56,7 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 	var responses []BusinessApplicationResponse
 	for _, req := range requests {
 		user, err := s.userRepo.FindByGoogleID(req.UserID)
+
 		if err != nil {
 			// Log error but continue processing other requests
 			// In production, use proper logging: log.Printf("Failed to find user %s: %v", req.UserID, err)

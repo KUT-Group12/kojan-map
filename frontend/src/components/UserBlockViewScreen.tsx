@@ -4,7 +4,11 @@ import { UserX, Loader2 } from 'lucide-react';
 import { DisplayUserSetting } from './DisplayUserSetting';
 import { SelectUnlock } from './SelectUnlock';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface UserWithBlocked extends User {
+  id: string;
   blockedUsers?: string[];
 }
 
@@ -27,7 +31,9 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
     const fetchBlockedUsers = async () => {
       try {
         // 1. API仕様: GET /api/users/block/list?googleId=...
-        const response = await fetch(`/api/users/block/list?googleId=${user.googleId}`);
+        const response = await fetch(
+          `${API_BASE_URL}/api/users/block/list?googleId=${user.googleId}`
+        );
 
         if (!response.ok) {
           throw new Error('ブロックリストの取得に失敗しました');
