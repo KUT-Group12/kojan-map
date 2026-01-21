@@ -337,7 +337,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">ログイン中</p>
-            <p className="text-sm font-medium">{user.fromName}</p>
+            <p className="text-sm font-medium">{user.fromName || user.gmail || '管理者'}</p>
           </div>
           <Button
             variant="outline"
