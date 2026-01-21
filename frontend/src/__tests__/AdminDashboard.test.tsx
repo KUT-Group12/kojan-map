@@ -6,6 +6,14 @@ import { User } from '../types';
 // fetch のモック
 vi.stubGlobal('fetch', vi.fn());
 
+// toast のモック
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 // Recharts はテスト環境で正しく描画されないことが多いためモック化
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
@@ -25,6 +33,9 @@ vi.mock('recharts', () => ({
 vi.mock('../components/AdminReport', () => ({
   default: () => <div data-testid="admin-report">AdminReport Component</div>,
 }));
+
+// toast をインポート
+import { toast } from 'sonner';
 
 describe('AdminDashboard', () => {
   const mockAdminUser: User = {
@@ -115,7 +126,10 @@ describe('AdminDashboard', () => {
     // const statCardValue = screen.getByText('3', { selector: '.text-3xl' });
   });
 
-  it('APIエラー時に toast.error が表示されること', async () => {
+  it('APIエラー時にエラーがログ出力されること', async () => {
+    // console.error をモック
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     // ユーザー一覧取得でエラーを発生させる
     (globalThis.fetch as any).mockResolvedValueOnce({ ok: false });
 
@@ -124,8 +138,12 @@ describe('AdminDashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: /ユーザー管理/ }));
 
     await waitFor(() => {
-      // console.error などが呼ばれていることを確認（toastのモックも有効であればそれを確認）
+      // fetch が呼ばれたことを確認
       expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/users'));
+      // console.error が呼ばれたことを確認
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
+
+    consoleErrorSpy.mockRestore();
   });
 });
