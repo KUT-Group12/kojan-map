@@ -20,5 +20,5 @@ type Report struct {
 
 // TableName テーブル名を指定
 func (Report) TableName() string {
-	return "reports"
+	return "report"
 }
