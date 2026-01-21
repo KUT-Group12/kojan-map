@@ -1,23 +1,68 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { User, Pin } from '../types';
-import { TrendingUp, Eye, Heart, CreditCard, BarChart3, Building2, Clock } from 'lucide-react';
+import { User, Business, Post, PinGenre } from '../types';
+import { GENRE_MAP } from '../lib/mockData';
+
+import {
+  TrendingUp,
+  Eye,
+  Heart,
+  Calendar,
+  CreditCard,
+  BarChart3,
+  Building2,
+  Clock,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import { genreColors, genreLabels } from '../lib/mockData';
 
 interface BusinessDashboardProps {
   user: User;
-  pins: Pin[];
-  onPinClick: (pin: Pin) => void;
+  business: Business;
+  posts: Post[];
+  onPinClick: (post: Post) => void;
 }
 
-export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardProps) {
+export function BusinessDashboard({ user, business, posts, onPinClick }: BusinessDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const totalReactions = pins.reduce((sum, pin) => sum + pin.reactions, 0);
-  const totalViews = pins.reduce((sum, pin) => sum + (pin.viewCount || 0), 0);
-  const avgReactions = pins.length > 0 ? Math.round(totalReactions / pins.length) : 0;
+  const weeklyData = [];
 
-  const topPosts = [...pins].sort((a, b) => b.reactions - a.reactions).slice(0, 5);
+  // const genreStats = posts.reduce(
+  //   (acc, post) => {
+  //     const genreKey = genreIdToKey(post.genreId);
+  //     if (!acc[post.genreId]) {
+  //       acc[post.genreId] = { genre: genreLabels[genreKey], count: 0, reactions: 0 };
+  //     }
+  //     acc[post.genreId].count++;
+  //     acc[post.genreId].reactions += post.numReaction;
+  //     return acc;
+  //   },
+  //   {} as Record<string, { genre: string; count: number; reactions: number }>
+  // );
+
+  // const genreStatsArray = Object.values(genreStats); // 未使用のため削除
+
+  const totalReactions = posts.reduce((sum, post) => sum + post.numReaction, 0);
+  const totalViews = posts.reduce((sum, post) => sum + (post.numView || 0), 0);
+  const avgReactions = posts.length > 0 ? Math.round(totalReactions / posts.length) : 0;
+
+  const topPosts = [...posts].sort((a, b) => b.numReaction - a.numReaction).slice(0, 5);
+
+  const genreIdToKey = (genreId: number): PinGenre => {
+    const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);
+    return (entry?.[0] as PinGenre) ?? 'other';
+  };
 
   return (
     <div className="flex w-full h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -63,7 +108,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
         <div className="mt-auto p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">事業者名</p>
-            <p className="text-sm truncate">{user.businessName || user.name}</p>
+            <p className="text-sm truncate">{business.businessName || user.fromName}</p>
           </div>
         </div>
       </div>
@@ -79,7 +124,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                 {activeTab === 'billing' && '支払い情報'}
               </h1>
               <p className="text-sm text-slate-600 mt-1">
-                {activeTab === 'overview' && user.businessName}
+                {activeTab === 'overview' && business.businessName}
                 {activeTab === 'billing' && (
                   <>
                     <Clock className="w-3 h-3 inline mr-1" />
@@ -106,7 +151,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <div className="text-3xl">{pins.length}</div>
+                    <div className="text-3xl">{posts.length}</div>
                     <p className="text-xs opacity-75 mt-1">投稿</p>
                   </CardContent>
                 </Card>
@@ -157,6 +202,33 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
               </div>
 
               {/* グラフ */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* 週間推移 */}
+                <Card className="shadow-xl border-slate-200">
+                  <CardHeader>
+                    <CardTitle>週間推移</CardTitle>
+                    <CardDescription>リアクション数と閲覧数の推移</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={weeklyData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="reactions"
+                          stroke="#ef4444"
+                          name="リアクション"
+                        />
+                        <Line type="monotone" dataKey="views" stroke="#3b82f6" name="閲覧数" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* 人気投稿 */}
               <Card className="shadow-xl border-slate-200">
@@ -169,10 +241,10 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     <p className="text-slate-500 text-center py-8">まだ投稿がありません</p>
                   ) : (
                     <div className="space-y-3">
-                      {topPosts.map((pin, index) => (
+                      {topPosts.map((post, index) => (
                         <button
-                          key={pin.id}
-                          onClick={() => onPinClick(pin)}
+                          key={post.postId}
+                          onClick={() => onPinClick(post)}
                           className="w-full p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors text-left"
                         >
                           <div className="flex items-start justify-between">
@@ -182,22 +254,28 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
-                                  <h4>{pin.title}</h4>
-                                  <Badge variant="secondary">{pin.genre}</Badge>
+                                  <h4>{post.title}</h4>
+                                  <Badge
+                                    style={{
+                                      backgroundColor:
+                                        genreColors[genreIdToKey(post.genreId) ?? 'other'],
+                                    }}
+                                    className="ml-2"
+                                  >
+                                    {genreLabels[genreIdToKey(post.genreId) ?? 'other']}
+                                  </Badge>
                                 </div>
-                                <p className="text-sm text-slate-600 line-clamp-1">
-                                  {pin.description}
-                                </p>
+                                <p className="text-sm text-slate-600 line-clamp-1">{post.text}</p>
                               </div>
                             </div>
                             <div className="text-right ml-4">
                               <div className="flex items-center text-red-500">
                                 <Heart className="w-4 h-4 mr-1" />
-                                <span>{pin.reactions}</span>
+                                <span>{post.numReaction}</span>
                               </div>
                               <div className="flex items-center text-blue-500 text-sm mt-1">
                                 <Eye className="w-3 h-3 mr-1" />
-                                <span>{pin.viewCount || 0}</span>
+                                <span>{post.numView || 0}</span>
                               </div>
                             </div>
                           </div>
@@ -233,13 +311,33 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                     </div>
                     <div>
                       <p className="text-sm text-slate-600">次回請求日</p>
-                      <p>2025年12月1日</p>
+                      {/* バックエンドから取得した次回請求日を表示 */}
+                      <p> - </p>
                     </div>
                   </div>
 
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
-                    <p className="text-slate-500 text-center py-8">まだ支払い履歴がありません</p>
+                    <div className="space-y-2">
+                      {/* TODO: バックエンドから支払い履歴を取得 */}
+                      {([] as { date: string; amount: string; status: string }[]).map(
+                        (payment, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <Calendar className="w-4 h-4 text-slate-500" />
+                              <span className="text-sm">{payment.date}</span>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <span>{payment.amount}</span>
+                              <Badge variant="outline">{payment.status}</Badge>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
 
                   {/* 解約ボタンは廃止：事業者プランの解約操作は管理画面でのみ行えるため UI から削除しました */}

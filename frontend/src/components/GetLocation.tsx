@@ -13,7 +13,7 @@ interface GetLocationProps {
 }
 
 // 座標を小数点以下4桁に丸め込む
-export const roundCoord = (num: number): number => {
+const roundCoord = (num: number): number => {
   return Math.round(num * 10000) / 10000;
 };
 
@@ -35,6 +35,7 @@ export function GetLocation({ onLocationSelected, enabled }: GetLocationProps) {
   return null;
 }
 
+/*
 export const truncateCoord = (coord: number): number => {
   return Math.round(coord * 10000) / 10000;
-};
+};*/

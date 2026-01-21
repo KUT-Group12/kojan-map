@@ -3,9 +3,8 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
-import { User, Pin } from '../types';
+import { User, Post } from '../types';
 import { Shield } from 'lucide-react';
-import { toast } from 'sonner';
 import { SelectPostHistory } from './SelectPostHistory';
 import { UserReactionViewScreen } from './UserReactionViewScreen';
 import { SelectUserSetting } from './SelectUserSetting';
@@ -13,29 +12,22 @@ import { UserInputBusinessApplication } from './UserInputBusinessApplication';
 
 interface UserDisplayMyPageProps {
   user: User;
-  pins: Pin[];
-  reactedPins: Pin[];
-  onPinClick: (pin: Pin) => void;
-  onDeletePin: (pinId: string) => void;
+  posts: Post[];
+  reactedPosts: Post[];
+  onPinClick: (post: Post) => void;
   onUpdateUser: (user: User) => void;
   onNavigateToDeleteAccount: () => void;
 }
 
 export function UserDisplayMyPage({
   user,
-  pins,
-  reactedPins,
+  posts = [],
+  reactedPosts = [],
   onPinClick,
-  onDeletePin,
   onUpdateUser,
   onNavigateToDeleteAccount,
 }: UserDisplayMyPageProps) {
   const [showBusinessRegistration, setShowBusinessRegistration] = useState(false);
-
-  const handleBusinessRegistration = () => {
-    toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
-    setShowBusinessRegistration(false);
-  };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -61,7 +53,7 @@ export function UserDisplayMyPage({
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.email}</p>
+                <p>{user.gmail}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">アカウント種別</p>
@@ -69,7 +61,7 @@ export function UserDisplayMyPage({
               </div>
               <div>
                 <p className="text-sm text-gray-600">登録日</p>
-                <p>{formatDate(user.createdAt)}</p>
+                <p>{formatDate(new Date(user.registrationDate))}</p>
               </div>
             </div>
 
@@ -80,10 +72,8 @@ export function UserDisplayMyPage({
               </Button>
             ) : (
               <UserInputBusinessApplication
-                onUpdateUser={(data) => {
-                  console.log('申請データ:', data);
-                  handleBusinessRegistration();
-                }}
+                user={user}
+                onUpdateUser={onUpdateUser}
                 onCancel={() => setShowBusinessRegistration(false)}
               />
             )}
@@ -92,19 +82,19 @@ export function UserDisplayMyPage({
 
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="posts">投稿履歴 ({pins.length})</TabsTrigger>
-            <TabsTrigger value="reactions">リアクション ({reactedPins.length})</TabsTrigger>
+            <TabsTrigger value="posts">投稿履歴 ({posts.length})</TabsTrigger>
+            <TabsTrigger value="reactions">リアクション ({reactedPosts.length})</TabsTrigger>
             <TabsTrigger value="settings">設定</TabsTrigger>
           </TabsList>
 
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-            <SelectPostHistory pins={pins} onPinClick={onPinClick} onDeletePin={onDeletePin} />
+            <SelectPostHistory user={user} onPinClick={onPinClick} />
           </TabsContent>
 
           {/* リアクション履歴 */}
           <TabsContent value="reactions" className="space-y-4">
-            <UserReactionViewScreen reactedPins={reactedPins} onPinClick={onPinClick} />
+            <UserReactionViewScreen user={user} onPinClick={onPinClick} />
           </TabsContent>
 
           {/* 設定 */}

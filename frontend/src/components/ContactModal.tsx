@@ -1,11 +1,12 @@
-import { useState } from 'react';
+// import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { User } from '../types';
-import { Mail } from 'lucide-react';
+import { Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ContactModalProps {
@@ -14,48 +15,45 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ user, onClose }: ContactModalProps) {
-  const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 送信中状態を追加
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (isSubmitting) return;
 
     if (!subject.trim() || !message.trim()) {
       toast.error('件名とメッセージを入力してください');
       return;
     }
 
-    try {
-      const token = localStorage.getItem('kojanmap_jwt');
-      if (!token) {
-        toast.error('ログインが必要です');
-        return;
-      }
+    setIsSubmitting(true);
 
-      setIsSubmitting(true);
-      const response = await fetch(`${API_BASE_URL}/api/contact/validate`, {
+    try {
+      // バックエンドAPI仕様に基づいたリクエスト
+      const response = await fetch('/api/contact/validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: user.id,
-          subject: subject.trim(),
-          text: message.trim(),
+          subject: subject,
+          text: message, // 仕様書のリクエストパラメータ名は "text"
         }),
       });
 
-      if (!response.ok) throw new Error('送信に失敗しました');
+      if (!response.ok) {
+        throw new Error('送信に失敗しました');
+      }
 
-      toast.success('お問い合わせを送信しました。運営から返信をお待ちください。');
+      const data = await response.json();
+      const successMessage =
+        data?.message ?? 'お問い合わせを送信しました。運営からの返信をお待ちください。';
+      toast.success(successMessage);
       onClose();
     } catch (error) {
-      console.error('Contact error:', error);
+      console.error('Contact submit error:', error);
       toast.error('エラーが発生しました。時間をおいて再度お試しください。');
     } finally {
       setIsSubmitting(false);
@@ -76,7 +74,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
-              ご質問や要望は、登録されているメールアドレス（{user.email}）に返信されます。
+              ご質問や要望は、登録されているメールアドレス（{user.gmail}）に返信されます。
             </p>
           </div>
 
@@ -88,6 +86,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
               onChange={(e) => setSubject(e.target.value)}
               placeholder="お問い合わせの件名"
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -100,14 +99,26 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
               placeholder="お問い合わせ内容を詳しくご記入ください"
               rows={6}
               required
+              disabled={isSubmitting}
             />
           </div>
 
           <div className="flex space-x-2 pt-4">
+            {/*
+            <Button type="submit" className="flex-1">
+              送信する
+            </Button>*/}
             <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting ? '送信中…' : '送信する'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  送信中...
+                </>
+              ) : (
+                '送信する'
+              )}
             </Button>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={onClose}>
               キャンセル
             </Button>
           </div>
