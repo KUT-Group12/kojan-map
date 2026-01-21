@@ -230,26 +230,7 @@ export function BusinessDashboard({ user, business, posts, onPinClick }: Busines
                   </CardContent>
                 </Card>
 
-                {/* ジャンル別統計 */}
-                <Card className="shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle>ジャンル別投稿数</CardTitle>
-                    <CardDescription>投稿のジャンル分布</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={genreStatsArray}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="genre" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" fill="#8b5cf6" name="投稿数" />
-                        <Bar dataKey="reactions" fill="#ef4444" name="リアクション" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+                
               </div>
 
               {/* 人気投稿 */}
