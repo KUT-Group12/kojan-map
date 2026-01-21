@@ -23,8 +23,11 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("テストDBへの接続に失敗しました: %v", err)
 	}
 
-	config.DB = db
-	return db
+	config.DB = db	
+	// genreテーブルの初期化 (FK制約対策)
+	db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (1, 'food', 'FF0000')")
+	db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (2, 'event', '00FF00')")
+		return db
 }
 
 // cleanupTestDB テストデータをクリーンアップ
