@@ -1,4 +1,4 @@
-import { act } from 'react-dom/test-utils';
+import { act } from 'react';
 // src/__tests__/AdminDashboard.test.tsx
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -111,7 +111,8 @@ describe('AdminDashboard', () => {
       fireEvent.click(screen.getByText('ユーザー管理'));
     });
     await waitFor(() => {
-      expect(screen.getByText('テスト太郎')).toBeInTheDocument();
+      // テスト太郎が2つ以上存在する場合も考慮し、1つ以上存在することを検証
+      expect(screen.getAllByText('テスト太郎').length).toBeGreaterThan(0);
     });
 
     // お問い合わせタブ
