@@ -15,7 +15,7 @@ const (
 
 // Ask represents the 問い合わせ情報 table
 type Ask struct {
-	AskID   int       `gorm:"column:askId;primaryKey;autoIncrement" json:"askId"`
+	AskID   int32     `gorm:"column:askId;primaryKey;autoIncrement" json:"askId"`
 	Date    time.Time `gorm:"column:date;not null" json:"date"`
 	Subject string    `gorm:"column:subject;not null;size:100" json:"subject"`
 	Text    string    `gorm:"column:text;not null;type:text" json:"text"`

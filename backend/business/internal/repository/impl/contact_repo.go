@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"gorm.io/gorm"
 	"kojan-map/business/internal/domain"
+
+	"gorm.io/gorm"
 )
 
 // ContactRepoImpl は GORM を使用して ContactRepo を実装します。
@@ -22,11 +23,11 @@ func NewContactRepoImpl(db *gorm.DB) *ContactRepoImpl {
 // Create は新しいお問い合わせを保存します（M1-11-2）。
 func (r *ContactRepoImpl) Create(ctx context.Context, googleID string, subject, message string) error {
 	contact := &domain.Contact{
-		GoogleID:  googleID,
-		Subject:   subject,
-		Message:   message,
-		Status:    "new",
-		CreatedAt: time.Now(),
+		UserID:  googleID,
+		Subject: subject,
+		Text:    message,
+		AskFlag: 0,
+		Date:    time.Now(),
 	}
 
 	if err := r.db.WithContext(ctx).Create(contact).Error; err != nil {

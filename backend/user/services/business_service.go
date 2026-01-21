@@ -51,8 +51,8 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 		return nil, errors.New("failed to fetch posts")
 	}
 
-	totalReactions := 0
-	totalViews := 0
+	totalReactions := int32(0)
+	totalViews := int32(0)
 	for _, post := range posts {
 		totalReactions += post.NumReaction
 		totalViews += post.NumView
@@ -60,13 +60,13 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 
 	avgReactions := 0
 	if len(posts) > 0 {
-		avgReactions = totalReactions / len(posts)
+		avgReactions = int(totalReactions) / len(posts)
 	}
 
 	stats := &BusinessStats{
 		TotalPosts:       len(posts),
-		TotalReactions:   totalReactions,
-		TotalViews:       totalViews,
+		TotalReactions:   int(totalReactions),
+		TotalViews:       int(totalViews),
 		AverageReactions: avgReactions,
 		WeeklyData: []struct {
 			Date      string `json:"date"`
@@ -81,8 +81,8 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 		dayStart := time.Now().AddDate(0, 0, -i).Truncate(24 * time.Hour)
 		dayEnd := dayStart.Add(24 * time.Hour)
 
-		dayReactions := 0
-		dayViews := 0
+		dayReactions := int32(0)
+		dayViews := int32(0)
 		for _, post := range posts {
 			if post.PostDate.After(dayStart) && post.PostDate.Before(dayEnd) {
 				dayReactions += post.NumReaction
@@ -96,8 +96,8 @@ func (bs *BusinessService) GetBusinessStats(userID string) (*BusinessStats, erro
 			Views     int    `json:"views"`
 		}{
 			Date:      date,
-			Reactions: dayReactions,
-			Views:     dayViews,
+			Reactions: int(dayReactions),
+			Views:     int(dayViews),
 		})
 	}
 
@@ -116,14 +116,14 @@ func (bs *BusinessService) GetBusinessProfile(userID string) (*BusinessProfileRe
 	}
 
 	return &BusinessProfileResponse{
-		BusinessID:       app.ID,
+		BusinessID:       int(app.ID),
 		BusinessName:     app.BusinessName,
 		KanaBusinessName: app.KanaBusinessName,
 		ZipCode:          app.ZipCode,
 		Address:          app.Address,
 		Phone:            app.Phone,
 		UserID:           app.UserID,
-		PlaceID:          app.PlaceID,
+		PlaceID:          int(app.PlaceID),
 		RegistDate:       app.RegistDate.Format("2006-01-02T15:04:05Z07:00"),
 	}, nil
 }
@@ -162,14 +162,14 @@ func (bs *BusinessService) UpdateBusinessProfile(
 	}
 
 	return &BusinessProfileResponse{
-		BusinessID:       app.ID,
+		BusinessID:       int(app.ID),
 		BusinessName:     app.BusinessName,
 		KanaBusinessName: app.KanaBusinessName,
 		ZipCode:          app.ZipCode,
 		Address:          app.Address,
 		Phone:            app.Phone,
 		UserID:           app.UserID,
-		PlaceID:          app.PlaceID,
+		PlaceID:          int(app.PlaceID),
 		RegistDate:       app.RegistDate.Format("2006-01-02T15:04:05Z07:00"),
 	}, nil
 }

@@ -27,7 +27,7 @@ func (r *BusinessRequestRepository) FindAll() ([]models.BusinessRequest, error) 
 }
 
 // FindAllPaginated retrieves business requests with pagination
-func (r *BusinessRequestRepository) FindAllPaginated(page, pageSize int, status *string) ([]models.BusinessRequest, int64, error) {
+func (r *BusinessRequestRepository) FindAllPaginated(page, pageSize int, status *string) ([]models.BusinessRequest, int, error) {
 	var requests []models.BusinessRequest
 	var total int64
 
@@ -46,11 +46,11 @@ func (r *BusinessRequestRepository) FindAllPaginated(page, pageSize int, status 
 		return nil, 0, result.Error
 	}
 
-	return requests, total, nil
+	return requests, int(total), nil
 }
 
 // FindByID finds a business request by ID
-func (r *BusinessRequestRepository) FindByID(id int) (*models.BusinessRequest, error) {
+func (r *BusinessRequestRepository) FindByID(id int32) (*models.BusinessRequest, error) {
 	var request models.BusinessRequest
 	result := r.db.Where("requestId = ?", id).First(&request)
 	if result.Error != nil {
@@ -60,20 +60,20 @@ func (r *BusinessRequestRepository) FindByID(id int) (*models.BusinessRequest, e
 }
 
 // UpdateStatus updates the status of a business request
-func (r *BusinessRequestRepository) UpdateStatus(id int, status string) error {
+func (r *BusinessRequestRepository) UpdateStatus(id int32, status string) error {
 	return r.db.Model(&models.BusinessRequest{}).
 		Where("requestId = ?", id).
 		Update("status", status).Error
 }
 
 // Delete deletes a business request
-func (r *BusinessRequestRepository) Delete(id int) error {
+func (r *BusinessRequestRepository) Delete(id int32) error {
 	return r.db.Where("requestId = ?", id).Delete(&models.BusinessRequest{}).Error
 }
 
 // CountPending counts pending business requests
-func (r *BusinessRequestRepository) CountPending() (int64, error) {
+func (r *BusinessRequestRepository) CountPending() (int, error) {
 	var count int64
 	result := r.db.Model(&models.BusinessRequest{}).Where("status = ?", "pending").Count(&count)
-	return count, result.Error
+	return int(count), result.Error
 }

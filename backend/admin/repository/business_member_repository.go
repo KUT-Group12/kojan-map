@@ -17,10 +17,10 @@ func NewBusinessMemberRepository(db *gorm.DB) *BusinessMemberRepository {
 }
 
 // CountAll counts all business members
-func (r *BusinessMemberRepository) CountAll() (int64, error) {
+func (r *BusinessMemberRepository) CountAll() (int, error) {
 	var count int64
 	result := r.db.Model(&models.BusinessMember{}).Count(&count)
-	return count, result.Error
+	return int(count), result.Error
 }
 
 // Create creates a new business member from an approved request

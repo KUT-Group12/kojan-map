@@ -80,7 +80,7 @@ func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) 
 type ReportService struct{}
 
 // CreateReport 通報を作成
-func (rs *ReportService) CreateReport(userID string, postID int, reason string) error {
+func (rs *ReportService) CreateReport(userID string, postID int32, reason string) error {
 	if userID == "" || postID == 0 || reason == "" {
 		return errors.New("userID, postID, and reason are required")
 	}

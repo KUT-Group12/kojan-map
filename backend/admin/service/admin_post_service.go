@@ -65,15 +65,15 @@ func (s *AdminPostService) GetPostByID(postID int) (*PostDetailResponse, error) 
 	}
 
 	return &PostDetailResponse{
-		PostID:      post.PostID,
-		PlaceID:     post.PlaceID,
+		PostID:      int(post.PostID),
+		PlaceID:     int(post.PlaceID),
 		UserID:      post.UserID,
 		PostDate:    post.PostDate.Format("2006-01-02T15:04:05Z07:00"),
 		Title:       post.Title,
 		Text:        post.Text,
-		NumReaction: post.NumReaction,
-		NumView:     post.NumView,
-		GenreID:     post.GenreID,
+		NumReaction: int(post.NumReaction),
+		NumView:     int(post.NumView),
+		GenreID:     int(post.GenreID),
 	}, nil
 }
 

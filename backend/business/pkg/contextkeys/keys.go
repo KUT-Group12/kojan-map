@@ -26,13 +26,13 @@ func GetUserID(ctx context.Context) (string, bool) {
 }
 
 // WithBusinessID はContextにBusinessIDを設定します
-func WithBusinessID(ctx context.Context, businessID int64) context.Context {
+func WithBusinessID(ctx context.Context, businessID int32) context.Context {
 	return context.WithValue(ctx, ContextKeyBusinessID, businessID)
 }
 
 // GetBusinessID はContextからBusinessIDを取得します
-func GetBusinessID(ctx context.Context) (int64, bool) {
-	businessID, ok := ctx.Value(ContextKeyBusinessID).(int64)
+func GetBusinessID(ctx context.Context) (int32, bool) {
+	businessID, ok := ctx.Value(ContextKeyBusinessID).(int32)
 	return businessID, ok
 }
 
@@ -60,7 +60,7 @@ func GetRole(ctx context.Context) (string, bool) {
 
 // WithAuthContext はContextにUserID, BusinessID, Gmail, Roleを全て設定します
 // (便利メソッド)
-func WithAuthContext(ctx context.Context, userID string, businessID int64, gmail, role string) context.Context {
+func WithAuthContext(ctx context.Context, userID string, businessID int32, gmail, role string) context.Context {
 	ctx = WithUserID(ctx, userID)
 	ctx = WithBusinessID(ctx, businessID)
 	ctx = WithGmail(ctx, gmail)

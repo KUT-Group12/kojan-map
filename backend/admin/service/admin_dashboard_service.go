@@ -8,12 +8,12 @@ import (
 
 // DashboardSummary represents the admin dashboard summary response
 type DashboardSummary struct {
-	TotalUserCount         int64 `json:"totalUserCount"`
-	ActiveUserCount        int64 `json:"activeUserCount"`
-	TotalPostCount         int64 `json:"totalPostCount"`
-	TotalReactionCount     int64 `json:"totalReactionCount"`
-	BusinessAccountCount   int64 `json:"businessAccountCount"`
-	UnprocessedReportCount int64 `json:"unprocessedReportCount"`
+	TotalUserCount         int `json:"totalUserCount"`
+	ActiveUserCount        int `json:"activeUserCount"`
+	TotalPostCount         int `json:"totalPostCount"`
+	TotalReactionCount     int `json:"totalReactionCount"`
+	BusinessAccountCount   int `json:"businessAccountCount"`
+	UnprocessedReportCount int `json:"unprocessedReportCount"`
 }
 
 // AdminDashboardService handles admin dashboard business logic

@@ -77,8 +77,8 @@ func (uh *UserHandler) GetReactionHistory(c *gin.Context) {
 		return
 	}
 
-	postIDs := make([]int, 0, len(reactions))
-	seen := make(map[int]struct{})
+	postIDs := make([]int32, 0, len(reactions))
+	seen := make(map[int32]struct{})
 	for _, reaction := range reactions {
 		if _, ok := seen[reaction.PostID]; ok {
 			continue

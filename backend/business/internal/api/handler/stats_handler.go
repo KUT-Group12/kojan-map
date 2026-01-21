@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"kojan-map/business/internal/service"
 	"kojan-map/business/pkg/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 // StatsHandler は統計関連のエンドポイントを処理するハンドラーです。
@@ -29,13 +30,13 @@ func (h *StatsHandler) GetTotalPosts(c *gin.Context) {
 		return
 	}
 
-	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
+	businessID, err := strconv.Atoi(businessIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
-	result, err := h.statsService.GetTotalPosts(c.Request.Context(), businessID)
+	result, err := h.statsService.GetTotalPosts(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -52,13 +53,13 @@ func (h *StatsHandler) GetTotalReactions(c *gin.Context) {
 		return
 	}
 
-	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
+	businessID, err := strconv.Atoi(businessIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
-	result, err := h.statsService.GetTotalReactions(c.Request.Context(), businessID)
+	result, err := h.statsService.GetTotalReactions(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -75,13 +76,13 @@ func (h *StatsHandler) GetTotalViews(c *gin.Context) {
 		return
 	}
 
-	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
+	businessID, err := strconv.Atoi(businessIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
-	result, err := h.statsService.GetTotalViews(c.Request.Context(), businessID)
+	result, err := h.statsService.GetTotalViews(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return
@@ -99,13 +100,13 @@ func (h *StatsHandler) GetEngagementRate(c *gin.Context) {
 		return
 	}
 
-	businessID, err := strconv.ParseInt(businessIDStr, 10, 64)
+	businessID, err := strconv.Atoi(businessIDStr)
 	if err != nil {
 		response.SendProblem(c, http.StatusBadRequest, "bad-request", "businessId must be a valid integer", c.Request.URL.Path)
 		return
 	}
 
-	result, err := h.statsService.GetEngagementRate(c.Request.Context(), businessID)
+	result, err := h.statsService.GetEngagementRate(c.Request.Context(), int32(businessID))
 	if err != nil {
 		c.Error(err)
 		return

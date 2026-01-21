@@ -419,3 +419,56 @@ $ docker run kojan-map-backend go test ./... -v
 - [ ] テーブルドリブンテスト（複数ケース）を使用
 - [ ] 正常系と異常系を分離（`wantErr bool`）
 - [ ] `setup` / `cleanup` 関数を用意（必要な場合）
+---
+
+## 統合テスト（DB結合テスト）
+
+### 実施日: 2026年1月21日
+
+#### テスト環境
+- データベース: MySQL 8.0 (Docker Container)
+- データベース名: kojanmap_test
+- 初期化: kojanmap_dump.sql
+
+#### 統合テスト項目一覧
+
+| No. | テストID | テスト項目 | 前提条件 | 操作 | 期待結果 | 結果 | 備考 |
+|-----|---------|-----------|---------|------|---------|------|------|
+| 9 | POST-001 | 投稿を作成できる | ログイン済み | タイトル、説明、位置情報、ジャンルを入力して投稿 | 投稿が作成されDBに保存される | ❌ FAIL | 認証エラー(401) - ER-015 |
+| 12 | POST-004 | 位置情報を正しく保存できる | ログイン済み | 地図上で位置を選択して投稿 | 緯度/経度が正しくDBに保存される | ❌ FAIL | 認証エラー(401) - ER-015 |
+| 26 | REPORT-001 | 投稿を通報できる | ログイン済み | 投稿詳細→通報→理由入力→送信 | 通報がDBに保存される | ❌ FAIL | 認証エラー(401) - ER-015 |
+| 34 | BIZ-001 | 事業者申請を送信できる | 一般ユーザー | 事業者名等を入力→申請 | 申請がDBに保存される(status=pending) | ⏭️ SKIP | business_requestsテーブル不在 - ER-016 |
+| - | AUTH-001 | ログインフローが正常に動作する | - | JWTトークン生成と検証 | トークンが正常に生成・検証される | ✅ PASS | 追加項目 |
+| - | POST-002 | 投稿取得時に閲覧数が増加する | 投稿が存在 | 投稿を取得 | 閲覧数(NumView)が1増加する | ✅ PASS | 追加項目 |
+
+**統計:**
+- 成功: 2/6 (33%)
+- 失敗: 3/6 (50%)
+- スキップ: 1/6 (17%)
+
+#### 発見された障害
+- **ER-015**: 統合テスト用認証ミドルウェア未設定（認証エラー）
+- **ER-016**: business_requestsテーブルのスキーマ不在
+- **ER-017**: 外部キー制約によるテストデータ挿入エラー
+
+#### 実行コマンド
+```bash
+# テスト用データベース作成
+docker exec kojan-map-db-1 mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS kojanmap_test;"
+
+# データベース初期化
+docker exec -i kojan-map-db-1 mysql -uroot -proot kojanmap_test < kojanmap_dump.sql
+
+# テスト用基本データ挿入
+docker exec kojan-map-db-1 mysql -uroot -proot kojanmap_test -e "INSERT IGNORE INTO place (placeId, numPost, latitude, longitude) VALUES (1, 0, 35.6895, 139.6917);"
+
+# 統合テスト実行
+cd backend/business
+DATABASE_URL="root:root@tcp(localhost:3306)/kojanmap_test?parseTime=true&charset=utf8mb4&loc=Local" \
+  go test -tags=integration ./internal/api -v -timeout 30s
+```
+
+#### 今後の対応
+1. **優先度: 高** - 認証ミドルウェアの統合テスト対応（ER-015）
+2. **優先度: 中** - business_requestsテーブルの調査・追加（ER-016）
+3. **優先度: 中** - テスト環境セットアップの自動化（ER-017）

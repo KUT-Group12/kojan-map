@@ -10,7 +10,7 @@ import (
 // UserListResponse represents the paginated user list response
 type UserListResponse struct {
 	Users []models.User `json:"users"`
-	Total int64         `json:"total"`
+	Total int           `json:"total"`
 	Page  int           `json:"page"`
 }
 

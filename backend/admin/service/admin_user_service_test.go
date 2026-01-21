@@ -70,7 +70,7 @@ func TestUserListResponse(t *testing.T) {
 		}
 
 		assert.Equal(t, 2, len(response.Users))
-		assert.Equal(t, int64(100), response.Total)
+		assert.Equal(t, 100, response.Total)
 		assert.Equal(t, 1, response.Page)
 	})
 }

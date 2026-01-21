@@ -78,7 +78,7 @@ func (s *MemberServiceImpl) GetBusinessDetails(ctx context.Context, googleID str
 
 // UpdateBusinessName は事業者名を更新します（M3-4-2）。
 // 事業者名の更新は永続ストレージに反映する、空文字や不正な形式のエラーとする
-func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID int64, name string) error {
+func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID int32, name string) error {
 	if strings.TrimSpace(name) == "" || utf8.RuneCountInString(name) > 50 {
 		return errors.NewAPIError(errors.ErrValidationFailed, "business name must be between 1 and 50 characters")
 	}
@@ -103,7 +103,7 @@ func (s *MemberServiceImpl) UpdateBusinessName(ctx context.Context, businessID i
 
 // UpdateBusinessIcon は事業者アイコンを更新します（M3-5-2）。
 // 画像は PNG または JPEG のみ、5MB以下、ログイン済みかつ本人のみ更新可能
-func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID int64, icon []byte) error {
+func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID int32, icon []byte) error {
 	if len(icon) == 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "icon data is required")
 	}
@@ -137,7 +137,7 @@ func (s *MemberServiceImpl) UpdateBusinessIcon(ctx context.Context, businessID i
 
 // AnonymizeMember はメンバー情報を匿名化します（M3-3）。
 // 識別可能な個人情報は復元不能な値に置き換える
-func (s *MemberServiceImpl) AnonymizeMember(ctx context.Context, businessID int64) error {
+func (s *MemberServiceImpl) AnonymizeMember(ctx context.Context, businessID int32) error {
 	// 権限チェック: 管理者または本人のみ匿名化可能
 	ctxBusinessID, ok := contextkeys.GetBusinessID(ctx)
 	if !ok {
