@@ -25,7 +25,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 
 	config.DB = db
 	// genreテーブルの初期化 (FK制約対策)
-		if err := db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (1, 'food', 'FF0000')").Error; err != nil {
+	if err := db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (1, 'food', 'FF0000')").Error; err != nil {
 		t.Fatalf("genre 初期化に失敗しました: %v", err)
 	}
 	if err := db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (2, 'event', '00FF00')").Error; err != nil {
