@@ -17,15 +17,15 @@ func NewPostRepository(db *gorm.DB) *PostRepository {
 }
 
 // CountAll counts all posts
-func (r *PostRepository) CountAll() (int64, error) {
+func (r *PostRepository) CountAll() (int, error) {
 	var count int64
 	result := r.db.Model(&models.Post{}).Count(&count)
-	return count, result.Error
+	return int(count), result.Error
 }
 
 // SumReactions sums all reactions across all posts
-func (r *PostRepository) SumReactions() (int64, error) {
+func (r *PostRepository) SumReactions() (int, error) {
 	var sum int64
 	result := r.db.Model(&models.Post{}).Select("COALESCE(SUM(numReaction), 0)").Scan(&sum)
-	return sum, result.Error
+	return int(sum), result.Error
 }

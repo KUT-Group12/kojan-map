@@ -57,7 +57,6 @@ export default function AdminContactManagement({
 
     //API呼んでいる？
     onApproveInquiry(replyingInquiry.askId);
-
     setInquiries((prev) =>
       prev.map((q) =>
         q.askId === replyingInquiry.askId ? { ...q, askFlag: true, draft: undefined } : q

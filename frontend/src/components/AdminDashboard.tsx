@@ -308,7 +308,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
             {/* {businessApplications.length > 0 && (
-              <Badge className="bg-orange-500">{businessApplications.length}</Badge>
+              <Badge className="bg-orange-500">{businessApplications.length}</Badge
             )} */}
           </button>
           <button
@@ -461,7 +461,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                   </CardContent>
                 </Card>
               </div>
-
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2 shadow-xl border-slate-200">
                   <CardHeader>
@@ -541,7 +540,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
               </div>
             </div>
           )}
-
           {activeTab === 'reports' && <AdminReport {...reportProps} />}
 
           {activeTab === 'business' && <ProcessBusinessRequestScreen />}

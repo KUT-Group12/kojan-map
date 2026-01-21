@@ -198,7 +198,7 @@ func (s *AuthServiceImpl) BusinessLogin(ctx context.Context, sessionID, gmail, m
 	response := &domain.BusinessLoginResponse{
 		Token: token,
 	}
-	response.Business.ID = member.ID
+	response.Business.ID = int(member.ID)
 	response.Business.Role = userData.Role
 
 	return response, nil

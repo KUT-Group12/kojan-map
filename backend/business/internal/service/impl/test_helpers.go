@@ -4,6 +4,7 @@ import (
 	"kojan-map/business/internal/domain"
 	"kojan-map/business/internal/repository/mock"
 	"kojan-map/business/pkg/jwt"
+	"time"
 )
 
 // TestFixtures は各テストで使用する共通フィクスチャを管理します
@@ -70,13 +71,13 @@ func (f *TestFixtures) SetupUser(googleID, gmail string) *domain.User {
 
 // SetupBusinessMember はモックリポジトリにビジネス会員を登録します
 func (f *TestFixtures) SetupBusinessMember(
-	businessID int64,
+	businessID int32,
 	googleID string,
 	businessName string,
 	profileImage []byte,
 ) *domain.BusinessMember {
 	member := &domain.BusinessMember{
-		ID:           businessID,
+		ID:           int32(businessID),
 		BusinessName: businessName,
 		UserID:       googleID,
 		ProfileImage: profileImage,
@@ -88,19 +89,19 @@ func (f *TestFixtures) SetupBusinessMember(
 
 // SetupPost はモックリポジトリにテスト投稿を登録します
 func (f *TestFixtures) SetupPost(
-	postID int64,
+	postID int32,
 	authorID string,
 	title string,
 	description string,
-	viewCount int64,
+	viewCount int32,
 ) *domain.Post {
 	post := &domain.Post{
-		ID:          postID,
-		AuthorID:    authorID,
-		Title:       title,
-		Description: description,
-		ViewCount:   viewCount,
-		IsActive:    true,
+		ID:       int32(postID),
+		UserID:   authorID,
+		Title:    title,
+		Text:     description,
+		NumView:  viewCount,
+		PostDate: time.Now(),
 	}
 	f.PostRepo.Posts[postID] = post
 	return post
@@ -108,9 +109,9 @@ func (f *TestFixtures) SetupPost(
 
 // SetupStatsValue はモック統計リポジトリに集計値を設定します
 func (f *TestFixtures) SetupStatsValue(
-	totalPosts int64,
-	totalReactions int64,
-	totalViews int64,
+	totalPosts int32,
+	totalReactions int32,
+	totalViews int32,
 ) {
 	f.StatsRepo.TotalPostsVal = totalPosts
 	f.StatsRepo.TotalReactionsVal = totalReactions
@@ -120,12 +121,12 @@ func (f *TestFixtures) SetupStatsValue(
 // Helper functions for validation
 
 // validateBusinessID はビジネスIDの妥当性を検証します
-func validateBusinessID(businessID int64) bool {
+func validateBusinessID(businessID int32) bool {
 	return businessID > 0
 }
 
 // validatePostID は投稿IDの妥当性を検証します
-func validatePostID(postID int64) bool {
+func validatePostID(postID int32) bool {
 	return postID > 0
 }
 

@@ -17,7 +17,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 // FindAll retrieves all users with pagination
-func (r *UserRepository) FindAll(page, pageSize int) ([]models.User, int64, error) {
+func (r *UserRepository) FindAll(page, pageSize int) ([]models.User, int, error) {
 	var users []models.User
 	var total int64
 
@@ -29,7 +29,7 @@ func (r *UserRepository) FindAll(page, pageSize int) ([]models.User, int64, erro
 		return nil, 0, result.Error
 	}
 
-	return users, total, nil
+	return users, int(total), nil
 }
 
 // FindByGoogleID finds a user by their Google ID
@@ -43,17 +43,17 @@ func (r *UserRepository) FindByGoogleID(googleID string) (*models.User, error) {
 }
 
 // CountAll counts all users
-func (r *UserRepository) CountAll() (int64, error) {
+func (r *UserRepository) CountAll() (int, error) {
 	var count int64
 	result := r.db.Model(&models.User{}).Count(&count)
-	return count, result.Error
+	return int(count), result.Error
 }
 
 // CountByRole counts users by role
-func (r *UserRepository) CountByRole(role models.Role) (int64, error) {
+func (r *UserRepository) CountByRole(role models.Role) (int, error) {
 	var count int64
 	result := r.db.Model(&models.User{}).Where("role = ?", role).Count(&count)
-	return count, result.Error
+	return int(count), result.Error
 }
 
 // SoftDelete marks a user as deleted

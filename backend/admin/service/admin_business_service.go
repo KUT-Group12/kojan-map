@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	adminrepo "kojan-map/admin/repository"
@@ -13,7 +14,7 @@ import (
 
 // BusinessApplicationResponse represents a business application with user info
 type BusinessApplicationResponse struct {
-	RequestID      int    `json:"requestId"`
+	RequestID      int32  `json:"requestId"`
 	BusinessName   string `json:"businessName"`
 	ApplicantName  string `json:"applicantName"`
 	ApplicantEmail string `json:"applicantEmail"`
@@ -57,8 +58,8 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 	for _, req := range requests {
 		user, err := s.userRepo.FindByGoogleID(req.UserID)
 		if err != nil {
-			// Log error but continue processing other requests
-			// In production, use proper logging: log.Printf("Failed to find user %s: %v", req.UserID, err)
+			log.Printf("Failed to find user %s: %v", req.UserID, err)
+			// Continue processing other requests
 		}
 		applicantName := ""
 		applicantEmail := ""
@@ -84,7 +85,7 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 }
 
 // ApproveApplication approves a business application
-func (s *AdminBusinessService) ApproveApplication(id int) error {
+func (s *AdminBusinessService) ApproveApplication(id int32) error {
 	request, err := s.requestRepo.FindByID(id)
 	if err != nil {
 		return errors.New("application not found")
@@ -127,7 +128,7 @@ func (s *AdminBusinessService) ApproveApplication(id int) error {
 }
 
 // RejectApplication rejects a business application
-func (s *AdminBusinessService) RejectApplication(id int) error {
+func (s *AdminBusinessService) RejectApplication(id int32) error {
 	request, err := s.requestRepo.FindByID(id)
 	if err != nil {
 		return errors.New("application not found")

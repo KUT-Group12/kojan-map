@@ -19,7 +19,7 @@ func NewPaymentServiceImpl(paymentRepo repository.PaymentRepo) *PaymentServiceIm
 }
 
 // CreateRedirect はモックのStripeリダイレクトURLを返します（M1-15-3）。
-func (s *PaymentServiceImpl) CreateRedirect(ctx context.Context, businessID int64) (string, error) {
+func (s *PaymentServiceImpl) CreateRedirect(ctx context.Context, businessID int32) (string, error) {
 	if businessID <= 0 {
 		return "", errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}

@@ -8,16 +8,16 @@ import (
 
 // Post 投稿モデル
 type Post struct {
-	ID          int            `gorm:"column:postId;primaryKey" json:"postId"`
-	PlaceID     int            `gorm:"column:placeId;index" json:"placeId"`
+	ID          int32          `gorm:"column:postId;primaryKey" json:"postId"`
+	PlaceID     int32          `gorm:"column:placeId;index" json:"placeId"`
 	UserID      string         `gorm:"column:userId;index" json:"userId"`
 	PostDate    time.Time      `gorm:"column:postDate" json:"postDate"`
 	Title       string         `gorm:"column:title;type:varchar(50)" json:"title"`
 	Text        string         `gorm:"column:text;type:text" json:"text"`
 	PostImage   []byte         `gorm:"column:postImage;type:blob" json:"postImage"`
-	NumReaction int            `gorm:"column:numReaction;default:0" json:"numReaction"`
-	NumView     int            `gorm:"column:numView;default:0" json:"numView"`
-	GenreID     int            `gorm:"column:genreId;index" json:"genreId"`
+	NumReaction int32          `gorm:"column:numReaction;default:0" json:"numReaction"`
+	NumView     int32          `gorm:"column:numView;default:0" json:"numView"`
+	GenreID     int32          `gorm:"column:genreId;index" json:"genreId"`
 	DeletedAt   gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
 }
 
@@ -28,9 +28,9 @@ func (Post) TableName() string {
 
 // UserReaction ユーザーのリアクション記録（表17）
 type UserReaction struct {
-	ID        int       `gorm:"column:reactionId;primaryKey" json:"reactionId"`
+	ID        int32     `gorm:"column:reactionId;primaryKey" json:"reactionId"`
 	UserID    string    `gorm:"column:userId;index" json:"userId"`
-	PostID    int       `gorm:"column:postId;index" json:"postId"`
+	PostID    int32     `gorm:"column:postId;index" json:"postId"`
 	CreatedAt time.Time `gorm:"column:createdAt" json:"createdAt"`
 }
 

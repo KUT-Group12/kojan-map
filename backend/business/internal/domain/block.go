@@ -2,9 +2,6 @@ package domain
 
 import (
 	"time"
-
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // Block はブロック情報を表すドメインモデル
@@ -13,23 +10,15 @@ import (
 // BlockedUserID: ブロック対象のGoogleID
 // CreatedAt: 作成日時
 type Block struct {
-	ID             string `gorm:"primaryKey"`
-	BlockingUserID string `gorm:"uniqueIndex:idx_block_pair"` // ブロックを実行した事業者のGoogleID
-	BlockedUserID  string `gorm:"uniqueIndex:idx_block_pair"` // ブロック対象のGoogleID
-	CreatedAt      time.Time
+	ID        int32     `gorm:"primaryKey;autoIncrement;column:blockId"`
+	BlockerID string    `gorm:"column:blockerId;type:varchar(50);not null"`
+	BlockedID string    `gorm:"column:blockedId;type:varchar(50);not null"`
+	CreatedAt time.Time `gorm:"column:createdAt"` // SQLダンプにないが一旦残す
 }
 
 // TableName は対応するテーブル名を指定
 func (Block) TableName() string {
-	return "blocks"
-}
-
-// BeforeCreate はレコード作成前にIDを生成します
-func (b *Block) BeforeCreate(tx *gorm.DB) error {
-	if b.ID == "" {
-		b.ID = uuid.New().String()
-	}
-	return nil
+	return "block"
 }
 
 // CreateBlockRequest はブロック登録のリクエスト

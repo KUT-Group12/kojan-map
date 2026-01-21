@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"kojan-map/user/models"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"kojan-map/user/models"
 )
 
 var jwtSecret []byte

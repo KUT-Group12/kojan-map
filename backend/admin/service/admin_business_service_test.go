@@ -43,7 +43,7 @@ func TestBusinessApplicationResponse(t *testing.T) {
 			CreatedAt:      "2025-01-10T12:00:00Z",
 		}
 
-		assert.Equal(t, 1, response.RequestID)
+		assert.Equal(t, int32(1), response.RequestID)
 		assert.Equal(t, "Test Business", response.BusinessName)
 		assert.Equal(t, "pending", response.Status)
 	})

@@ -23,7 +23,7 @@ func NewPostServiceImpl(postRepo repository.PostRepo) *PostServiceImpl {
 }
 
 // List は事業者の全投稿を取得します（M1-6-1）。
-func (s *PostServiceImpl) List(ctx context.Context, businessID int64) (interface{}, error) {
+func (s *PostServiceImpl) List(ctx context.Context, businessID int32) (interface{}, error) {
 	if businessID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -37,7 +37,7 @@ func (s *PostServiceImpl) List(ctx context.Context, businessID int64) (interface
 }
 
 // Get はIDで投稿を取得します（M1-7-2）。
-func (s *PostServiceImpl) Get(ctx context.Context, postID int64) (interface{}, error) {
+func (s *PostServiceImpl) Get(ctx context.Context, postID int32) (interface{}, error) {
 	if postID <= 0 {
 		return nil, errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
@@ -60,7 +60,7 @@ func (s *PostServiceImpl) Get(ctx context.Context, postID int64) (interface{}, e
 
 // Create は新しい投稿を作成します（M1-8-4）。
 // 画像は PNG または JPEG のみ、5MB以下
-func (s *PostServiceImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
+func (s *PostServiceImpl) Create(ctx context.Context, businessID int32, placeID int32, genreIDs []int32, payload interface{}) (int32, error) {
 	if businessID <= 0 {
 		return 0, errors.NewAPIError(errors.ErrInvalidInput, "businessId must be greater than 0")
 	}
@@ -82,7 +82,7 @@ func (s *PostServiceImpl) Create(ctx context.Context, businessID int64, placeID 
 }
 
 // SetGenres は投稿のジャンルを設定します（M1-8-4）。
-func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
+func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int32, genreIDs []int32) error {
 	if postID <= 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
@@ -100,7 +100,7 @@ func (s *PostServiceImpl) SetGenres(ctx context.Context, postID int64, genreIDs 
 }
 
 // Anonymize は投稿を匿名化します（M1-13-2）。
-func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
+func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int32) error {
 	if postID <= 0 {
 		return errors.NewAPIError(errors.ErrInvalidInput, "postId must be greater than 0")
 	}
@@ -122,8 +122,8 @@ func (s *PostServiceImpl) Anonymize(ctx context.Context, postID int64) error {
 		return errors.NewAPIError(errors.ErrOperationFailed, "invalid post type")
 	}
 
-	// 投稿の作成者（AuthorID）とログインユーザー（UserID）が一致するか確認
-	if postData.AuthorID != userID {
+	// 投稿の作成者（UserID）とログインユーザー（UserID）が一致するか確認
+	if postData.UserID != userID {
 		return errors.NewAPIError(errors.ErrUnauthorized, "you are not authorized to anonymize this post")
 	}
 

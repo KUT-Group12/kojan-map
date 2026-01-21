@@ -63,7 +63,7 @@ func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 		return
 	}
 
-	err = h.service.ApproveApplication(id)
+	err = h.service.ApproveApplication(int32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -90,7 +90,7 @@ func (h *AdminBusinessHandler) RejectApplication(c *gin.Context) {
 		return
 	}
 
-	err = h.service.RejectApplication(id)
+	err = h.service.RejectApplication(int32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -22,16 +22,11 @@ func NewPostRepoImpl(db *gorm.DB) *PostRepoImpl {
 }
 
 // ListByBusiness は事業者のすべての投稿を取得します（M1-6-1）。
-func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (interface{}, error) {
+func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int32) (interface{}, error) {
 	var posts []domain.Post
-	// businessID is int64, but AuthorID in DB might be string. Ensure consistency.
-	// Assuming AuthorID is string in domain.Post as per previous view.
-	// If needed convert int64 to string for query if column is VARCHAR.
-	// Since Post.AuthorID is string, we convert:
-	bidStr := fmt.Sprintf("%d", businessID)
 	if err := r.db.WithContext(ctx).
-		Where("author_id = ? AND is_active = ?", bidStr, true).
-		Order("posted_at DESC").
+		Where("userId = (SELECT userId FROM business WHERE businessId = ?)", businessID).
+		Order("postDate DESC").
 		Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to list posts: %w", err)
 	}
@@ -39,9 +34,9 @@ func (r *PostRepoImpl) ListByBusiness(ctx context.Context, businessID int64) (in
 }
 
 // GetByID は ID を使用して投稿を取得します（M1-7-2）。
-func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, error) {
+func (r *PostRepoImpl) GetByID(ctx context.Context, postID int32) (interface{}, error) {
 	var post domain.Post
-	if err := r.db.WithContext(ctx).Where("id = ?", postID).First(&post).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("postId = ?", postID).First(&post).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("post not found for id %d", postID)
 		}
@@ -51,11 +46,11 @@ func (r *PostRepoImpl) GetByID(ctx context.Context, postID int64) (interface{}, 
 }
 
 // IncrementViewCount は投稿の閲覧数を1増やします。
-func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) error {
+func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int32) error {
 	result := r.db.WithContext(ctx).
 		Model(&domain.Post{}).
-		Where("id = ?", postID).
-		UpdateColumn("view_count", gorm.Expr("view_count + 1"))
+		Where("postId = ?", postID).
+		UpdateColumn("numView", gorm.Expr("numView + 1"))
 
 	if result.Error != nil {
 		return fmt.Errorf("failed to increment view count for post %d: %w", postID, result.Error)
@@ -70,76 +65,71 @@ func (r *PostRepoImpl) IncrementViewCount(ctx context.Context, postID int64) err
 
 // Create は新しい投稿を作成します（M1-8-4）。
 // 投稿はビジネスメンバーのみ作成可能、画像は5MB以下、ジャンルは複数指定可能
-func (r *PostRepoImpl) Create(ctx context.Context, businessID int64, placeID int64, genreIDs []int64, payload interface{}) (int64, error) {
+func (r *PostRepoImpl) Create(ctx context.Context, businessID int32, placeID int32, genreIDs []int32, payload interface{}) (int32, error) {
 	req, ok := payload.(*domain.CreatePostRequest)
 	if !ok {
 		return 0, fmt.Errorf("invalid payload type: expected *domain.CreatePostRequest")
 	}
 
+	// ビジネスメンバーのUserIDを取得
+	var business domain.BusinessMember
+	if err := r.db.WithContext(ctx).Where("businessId = ?", businessID).First(&business).Error; err != nil {
+		return 0, fmt.Errorf("failed to find business member: %w", err)
+	}
+
+	genreID := int32(0)
+	if len(genreIDs) > 0 {
+		genreID = int32(genreIDs[0])
+	}
+
 	post := &domain.Post{
-		AuthorID:      fmt.Sprintf("%d", businessID), // or use string businessID
-		Title:         req.Title,
-		Description:   req.Description,
-		LocationID:    req.LocationID,
-		ViewCount:     0,
-		ReactionCount: 0,
-		IsActive:      true,
-		PostedAt:      time.Now(),
-		UpdatedAt:     time.Now(),
+		UserID:      business.UserID,
+		Title:       req.Title,
+		Text:        req.Description,
+		PlaceID:     placeID,
+		NumView:     0,
+		NumReaction: 0,
+		PostDate:    time.Now(),
+		GenreID:     genreID,
 	}
 
 	if err := r.db.WithContext(ctx).Create(post).Error; err != nil {
 		return 0, fmt.Errorf("failed to create post: %w", err)
 	}
 
-	// ジャンルを設定します（多対多）
-	if len(genreIDs) > 0 {
-		if err := r.SetGenres(ctx, post.ID, genreIDs); err != nil {
-			return 0, err
-		}
-	}
-
-	// Post.ID の型を int64 に統一した場合
 	return post.ID, nil
 }
 
-// SetGenres は投稿に対してジャンルを設定します（多対多）（M1-8-4）。
-// PostGenreは中間テーブルで、各行が1つのPostIDと1つのGenreIDのペアを表します。
-func (r *PostRepoImpl) SetGenres(ctx context.Context, postID int64, genreIDs []int64) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// 既存のジャンル関連付けを削除
-		if err := tx.Where("post_id = ?", postID).Delete(&domain.PostGenre{}).Error; err != nil {
-			return fmt.Errorf("failed to delete existing genres: %w", err)
-		}
-
-		if len(genreIDs) == 0 {
-			return nil
-		}
-
-		// 各genreIDに対して個別のPostGenre行を作成
-		for _, genreID := range genreIDs {
-			postGenre := &domain.PostGenre{
-				PostID:  postID,
-				GenreID: genreID,
-			}
-			if err := tx.Create(postGenre).Error; err != nil {
-				return fmt.Errorf("failed to create post_genre association for genreID %d: %w", genreID, err)
-			}
-		}
-
+// SetGenres は投稿に対してジャンルを設定します（M1-8-4）。
+// 注意: このスキーマでは投稿に対して1つのジャンルのみ設定可能です。genreIDsの最初の要素を使用します。
+func (r *PostRepoImpl) SetGenres(ctx context.Context, postID int32, genreIDs []int32) error {
+	if len(genreIDs) == 0 {
 		return nil
-	})
+	}
+
+	result := r.db.WithContext(ctx).Model(&domain.Post{}).
+		Where("postId = ?", postID).
+		Update("genreId", genreIDs[0])
+
+	if result.Error != nil {
+		return fmt.Errorf("failed to set genre for post %d: %w", postID, result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("post not found for id %d", postID)
+	}
+
+	return nil
 }
 
 // Anonymize は投稿を匿名化します（M1-13-2）。
 // 投稿内容は復元不能な値に置き換える、主キーおよび外部キーは変更しない
-func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int64) error {
+func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int32) error {
 	result := r.db.WithContext(ctx).Model(&domain.Post{}).
-		Where("id = ?", postID).
+		Where("postId = ?", postID).
 		Updates(map[string]interface{}{
-			"title":        "[Anonymized]",
-			"description":  "[Anonymized]",
-			"anonymizedAt": gorm.Expr("NOW()"),
+			"title": "[Anonymized]",
+			"text":  "[Anonymized]",
 		})
 
 	if result.Error != nil {
@@ -157,8 +147,8 @@ func (r *PostRepoImpl) Anonymize(ctx context.Context, postID int64) error {
 func (r *PostRepoImpl) History(ctx context.Context, googleID string) (interface{}, error) {
 	var posts []domain.Post
 	if err := r.db.WithContext(ctx).
-		Where("author_id = ? AND is_active = ?", googleID, true).
-		Order("posted_at DESC").
+		Where("userId = ?", googleID).
+		Order("postDate DESC").
 		Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to get post history: %w", err)
 	}

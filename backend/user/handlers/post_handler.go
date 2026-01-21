@@ -53,7 +53,7 @@ func (ph *PostHandler) GetPostDetail(c *gin.Context) {
 		return
 	}
 
-	post, err := ph.postService.GetPostDetail(postID)
+	post, err := ph.postService.GetPostDetail(int32(postID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -116,8 +116,8 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	post := models.Post{
-		PlaceID:     placeID,
-		GenreID:     genreID,
+		PlaceID:     int32(placeID),
+		GenreID:     int32(genreID),
 		UserID:      userID,
 		Title:       req.Title,
 		Text:        req.Description,
@@ -168,7 +168,7 @@ func (ph *PostHandler) GetPinSize(c *gin.Context) {
 		return
 	}
 
-	pinSize, err := ph.postService.GetPinSize(placeID)
+	pinSize, err := ph.postService.GetPinSize(int32(placeID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -195,7 +195,7 @@ func (ph *PostHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
-	if err := ph.postService.AddReaction(userID, req.PostID); err != nil {
+	if err := ph.postService.AddReaction(userID, int32(req.PostID)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -235,7 +235,7 @@ func (ph *PostHandler) SearchByGenre(c *gin.Context) {
 		return
 	}
 
-	posts, err := ph.postService.SearchPostsByGenre(genreID)
+	posts, err := ph.postService.SearchPostsByGenre(int32(genreID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -290,7 +290,7 @@ func (ph *PostHandler) DeletePost(c *gin.Context) {
 		return
 	}
 
-	if err := ph.postService.DeletePost(req.PostID, userID); err != nil {
+	if err := ph.postService.DeletePost(int32(req.PostID), userID); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		return
 	}
@@ -319,7 +319,7 @@ func (ph *PostHandler) CheckReactionStatus(c *gin.Context) {
 		return
 	}
 
-	isReacted, err := ph.postService.IsUserReacted(userID, postID)
+	isReacted, err := ph.postService.IsUserReacted(userID, int32(postID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check reaction status"})
 		return

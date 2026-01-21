@@ -6,6 +6,9 @@ import { useState } from 'react';
 import { Report } from '../types';
 import { getStoredJWT } from '../lib/auth';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface ReportScreenProps {
   postId: Report['postId'];
   userId: Report['userId'];
@@ -33,11 +36,16 @@ export function ReportScreen({
     setIsSubmitting(true);
 
     try {
+<<<<<<< HEAD
       // API仕様書(POST /api/report)のキー名に合わせて送信
       const token = getStoredJWT();
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
       const response = await fetch(`${API_BASE_URL}/api/report`, {
+=======
+      // API仕様書(POST /api/posts/report)のキー名に合わせて送信
+      const response = await fetch(`${API_BASE_URL}/api/posts/report`, {
+>>>>>>> origin/main
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
