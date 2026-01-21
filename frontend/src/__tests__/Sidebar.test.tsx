@@ -5,11 +5,11 @@ import { Post, User } from '../types';
 
 describe('Sidebar', () => {
   const mockUser: User = {
-    id: 'u1',
+    googleId: 'u1',
     role: 'general',
-    name: 'Test User',
-    email: 'test@example.com',
-    createdAt: new Date(),
+    fromName: 'Test User',
+    gmail: 'test@example.com',
+    registrationDate: new Date().toISOString(),
   };
 
   const mockPosts: Post[] = [
