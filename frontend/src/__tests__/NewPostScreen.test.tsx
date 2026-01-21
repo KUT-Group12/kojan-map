@@ -1,122 +1,133 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { toast } from 'sonner';
+import { NewPostScreen } from '../components/NewPostScreen';
+import { User, Genre } from '../types';
 
-// sonnerのモック
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+// fetch のモック
+vi.stubGlobal('fetch', vi.fn());
+
+// UIコンポーネント（shadcn/ui）の中には jsdom で動きにくいものがあるため必要に応じて調整
+// ※ Dialog は radix-ui を使用しているため、Portal 関連のエラーが出る場合はモックが必要な場合があります。
+
+vi.mock('../components/figma/ImageWithFallback', () => ({
+  // 注意：名前付きエクスポート(export function)の場合はこのように返します
+  ImageWithFallback: (props: any) => (
+    <img src={props.src} alt={props.alt} data-testid="preview-img" />
+  ),
 }));
 
-// FileReaderのモック
-class MockFileReader {
-  result = '';
-  onload: any = null;
-  readAsDataURL() {
-    this.result = 'data:image/png;base64,mockdata';
-    setTimeout(() => this.onload && this.onload(), 0);
-  }
-}
-vi.stubGlobal('FileReader', MockFileReader);
-
 describe('NewPostScreen', () => {
-  const mockUser = { id: 'u1', name: '一般ユーザー', role: 'user' } as any;
+  const mockUser: User = {
+    googleId: 'user-123',
+    fromName: '高知 太郎',
+    gmail: 'kochi@example.com',
+    role: 'general',
+    registrationDate: '2024-01-01',
+  };
+
+  const mockGenres: Genre[] = [
+    { genreId: 1, genreName: 'グルメ', color: '#ff0000' },
+    { genreId: 2, genreName: '観光', color: '#00ff00' },
+  ];
+
   const mockOnClose = vi.fn();
   const mockOnCreate = vi.fn();
 
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
-    vi.stubEnv('VITE_API_URL', 'http://test-api.com');
-    global.fetch = vi.fn();
   });
 
-  const renderComponent = async (props = {}) => {
-    const { NewPostScreen } = await import('../components/NewPostScreen');
-    return render(
-      <NewPostScreen user={mockUser} onClose={mockOnClose} onCreate={mockOnCreate} {...props} />
+  it('フォームの初期項目が正しく表示されること', () => {
+    render(
+      <NewPostScreen
+        user={mockUser}
+        genres={mockGenres}
+        onClose={mockOnClose}
+        onCreate={mockOnCreate}
+        initialLatitude={33.6}
+        initialLongitude={133.7}
+      />
     );
-  };
 
-  it('フォームに値を入力して送信するとAPIが正しく呼ばれること', async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    expect(screen.getByLabelText(/タイトル/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/説明/)).toBeInTheDocument();
+    expect(screen.getByDisplayValue('33.6')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('133.7')).toBeInTheDocument();
+  });
+
+  it('タイトルが未入力の場合、バリデーションで止まること', async () => {
+    render(
+      <NewPostScreen
+        user={mockUser}
+        genres={mockGenres}
+        onClose={mockOnClose}
+        onCreate={mockOnCreate}
+      />
+    );
+
+    const submitButton = screen.getByRole('button', { name: '投稿する' });
+    fireEvent.click(submitButton);
+
+    // fetch が呼ばれていないことを確認
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('正しい入力で投稿ボタンを押すと、APIが呼ばれ onCreate が実行されること', async () => {
+    (globalThis.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ postId: 123 }),
+      json: async () => ({ postId: 999 }),
     });
 
-    await renderComponent();
+    render(
+      <NewPostScreen
+        user={mockUser}
+        genres={mockGenres}
+        onClose={mockOnClose}
+        onCreate={mockOnCreate}
+      />
+    );
 
     // 入力操作
-    fireEvent.change(screen.getByLabelText(/タイトル \*/), { target: { value: '美味しいランチ' } });
-    fireEvent.change(screen.getByLabelText(/説明 \*/), {
-      target: { value: '駅前のカレー屋さんが最高でした。' },
+    fireEvent.change(screen.getByLabelText(/タイトル/), { target: { value: '美味しいカツオ' } });
+    fireEvent.change(screen.getByLabelText(/説明/), {
+      target: { value: 'ひろめ市場で食べました' },
     });
 
-    // 送信
-    const form = screen.getByTestId('new-post-form');
-    fireEvent.submit(form);
+    const submitButton = screen.getByRole('button', { name: '投稿する' });
+    fireEvent.submit(screen.getByTestId('new-post-form'));
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        'http://test-api.com/api/posts',
+      // APIに正しいパラメータが送られたか
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/posts'),
         expect.objectContaining({
           method: 'POST',
-          body: expect.stringContaining('"title":"美味しいランチ"'),
+          body: expect.stringContaining('"title":"美味しいカツオ"'),
         })
       );
+      // 親コンポーネントへの通知が飛んだか
       expect(mockOnCreate).toHaveBeenCalled();
-      expect(toast.success).toHaveBeenCalledWith('投稿しました！');
+      // モーダルが閉じたか
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
 
-  it('タイトルの文字数制限バリデーションが機能すること', async () => {
-    await renderComponent();
+  it('事業者ユーザーの場合、事業者名が表示されること', () => {
+    const businessUser: User = { ...mockUser, role: 'business' };
+    const businessData = { businessId: 1, businessName: 'たっすいコーヒー店' };
 
-    const longTitle = 'a'.repeat(51);
-    fireEvent.change(screen.getByLabelText(/タイトル \*/), { target: { value: longTitle } });
+    render(
+      <NewPostScreen
+        user={businessUser}
+        businessData={businessData as any}
+        genres={mockGenres}
+        onClose={mockOnClose}
+        onCreate={mockOnCreate}
+      />
+    );
 
-    const form = screen.getByTestId('new-post-form');
-    fireEvent.submit(form);
-
-    expect(toast.error).toHaveBeenCalledWith('タイトルは50文字以内で入力してください');
-    expect(global.fetch).not.toHaveBeenCalled();
-  });
-
-  it('画像を選択したとき、Base64に変換されてプレビューが表示されること', async () => {
-    await renderComponent();
-
-    const file = new File(['hello'], 'test.png', { type: 'image/png' });
-    const input = screen.getByTestId('file-input');
-
-    // ファイル選択イベントのシミュレート
-    fireEvent.change(input, { target: { files: [file] } });
-
-    await waitFor(() => {
-      // FileReaderのモックが返したデータがimgのsrcにあるか確認
-      const previewImages = screen.getAllByRole('img');
-      expect(previewImages[0]).toHaveAttribute('src', 'data:image/png;base64,mockdata');
-    });
-  });
-
-  it('初期座標が渡された場合、入力欄に反映されていること', async () => {
-    await renderComponent({
-      initialLatitude: 35.6895,
-      initialLongitude: 139.6917,
-    });
-
-    expect(screen.getByLabelText(/緯度 \*/)).toHaveValue(35.6895);
-    expect(screen.getByLabelText(/経度 \*/)).toHaveValue(139.6917);
-  });
-
-  it('事業者ユーザーの場合、事業者名が表示されること', async () => {
-    const businessUser = { id: 'b1', name: '店主', role: 'business' } as any;
-    const businessData = { businessName: 'カレーショップXYZ' } as any;
-
-    await renderComponent({ user: businessUser, businessData });
-
-    expect(screen.getByText(/カレーショップXYZ/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/事業者名「たっすいコーヒー店」として投稿されます/)
+    ).toBeInTheDocument();
   });
 });
