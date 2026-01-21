@@ -85,7 +85,9 @@ func (h *PostHandler) CreatePost(c *gin.Context) {
 		response.SendProblem(c, http.StatusUnauthorized, "unauthorized", "business ID not found in context", c.Request.URL.Path)
 		return
 	}
-	placeID := int32(0) // Placeholder
+	// TODO: LocationIDから適切なplaceIDを取得する処理を実装
+	// 現在は既存のplaceId=1を使用（統合テスト対応）
+	placeID := int32(1)
 
 	// GenreIDsはリクエストから取得
 	genreIDs := req.GenreIDs

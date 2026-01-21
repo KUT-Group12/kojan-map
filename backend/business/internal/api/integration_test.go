@@ -350,20 +350,19 @@ func TestIntegration_BIZ001_BusinessRequest(t *testing.T) {
 	db := setupTestDB(t)
 	defer cleanupTestDB(t, db)
 
-	if !db.Migrator().HasTable("business_requests") {
-		t.Skip("business_requests テーブルが存在しないためスキップ")
+	if !db.Migrator().HasTable("businessReq") {
+		t.Skip("businessReq テーブルが存在しないためスキップ")
 	}
 
 	user := createTestUser(t, db, "applicant-1", "applicant@example.com")
 
+	// businessReqテーブルの構造に合わせた構造体
 	type BusinessRequest struct {
-		RequestID int64     `gorm:"primaryKey;autoIncrement;column:requestId"`
-		Name      string    `gorm:"column:name;not null"`
-		Address   string    `gorm:"column:address;not null"`
-		Phone     string    `gorm:"column:phone;not null"`
-		UserID    string    `gorm:"column:userId;not null"`
-		Status    string    `gorm:"column:status;not null;default:'pending'"`
-		CreatedAt time.Time `gorm:"column:createdAt;autoCreateTime"`
+		RequestID int64  `gorm:"primaryKey;autoIncrement;column:requestId"`
+		Name      string `gorm:"column:name;not null"`
+		Address   string `gorm:"column:address;not null"`
+		Phone     string `gorm:"column:phone"`
+		UserID    string `gorm:"column:userId;not null"`
 	}
 
 	request := &BusinessRequest{
@@ -371,19 +370,18 @@ func TestIntegration_BIZ001_BusinessRequest(t *testing.T) {
 		Address: "東京都千代田区",
 		Phone:   "03-1234-5678",
 		UserID:  user.ID,
-		Status:  "pending",
 	}
 
-	err := db.Table("business_requests").Create(request).Error
+	err := db.Table("businessReq").Create(request).Error
 	require.NoError(t, err, "事業者申請の作成に失敗")
 
 	var savedRequest BusinessRequest
-	err = db.Table("business_requests").First(&savedRequest, "userId = ?", user.ID).Error
+	err = db.Table("businessReq").First(&savedRequest, "userId = ?", user.ID).Error
 	assert.NoError(t, err, "事業者申請がDBに保存されていること")
-	assert.Equal(t, "pending", savedRequest.Status, "ステータスがpendingであること")
 	assert.Equal(t, "新規事業者", savedRequest.Name, "事業者名が正しく保存されていること")
+	assert.Equal(t, "東京都千代田区", savedRequest.Address, "住所が正しく保存されていること")
 
-	t.Logf("✅ BIZ-001: 事業者申請作成成功 (RequestID: %d, Status: %s)", savedRequest.RequestID, savedRequest.Status)
+	t.Logf("✅ BIZ-001: 事業者申請作成成功 (RequestID: %d, Name: %s)", savedRequest.RequestID, savedRequest.Name)
 }
 
 // TestIntegration_AUTH001_LoginFlow は追加テスト項目
