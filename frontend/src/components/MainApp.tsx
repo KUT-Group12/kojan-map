@@ -223,11 +223,13 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       });
 
       if (!response.ok) throw new Error('投稿の保存に失敗しました');
+      const created = await response.json();
+      const postId = created.postId ?? sharedId;
 
       // 3. クライアント側の状態更新用のオブジェクト作成
       // DBから色が来るまでの間、一時的に表示するための色/名前をセット
       const post: Post = {
-        postId: sharedId,
+        postId,
         placeId: sharedId,
         userId: user.googleId,
         postDate: new Date().toISOString(),
