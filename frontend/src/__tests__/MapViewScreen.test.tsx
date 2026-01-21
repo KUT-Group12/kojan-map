@@ -33,11 +33,11 @@ vi.mock('../components/GetLocation', () => ({
 
 describe('MapViewScreen', () => {
   const mockUser: User = {
-    id: 'u1',
+    googleId: 'u1',
+    gmail: 'test@example.com',
     role: 'general',
-    name: 'Test User',
-    email: 'test@example.com',
-    createdAt: new Date(),
+    registrationDate: new Date().toISOString(),
+    fromName: 'Test User',
   };
 
   const mockPlaces: Place[] = [{ placeId: 10, numPost: 10, latitude: 33.6, longitude: 133.6 }];
