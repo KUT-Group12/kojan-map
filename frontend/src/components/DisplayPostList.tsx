@@ -64,7 +64,7 @@ export function DisplayPostList({
         const data = await response.json(); // Post オブジェクトが返る
 
         setPostDetail(data.post);
-        console.log('data: ', data);
+        console.log(data);
       } catch (error) {
         setPostDetail(null);
         console.error('詳細取得エラー:', error);
@@ -94,8 +94,6 @@ export function DisplayPostList({
   };
 
   const isOwnPost = post.userId === currentUser.id;
-
-  console.log(post.text);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
