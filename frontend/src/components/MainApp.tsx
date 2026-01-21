@@ -147,6 +147,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/posts/detail?postId=${post.postId}`);
+      if (!response.ok) throw new Error('詳細取得に失敗しました');
       if (response.ok) {
         const data = await response.json();
         setSelectedPost(data.post || data);
