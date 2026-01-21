@@ -59,7 +59,7 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 		// Log error but continue processing other requests
 		// In production, use proper logging
 		_ = err // Ignore error and continue with empty user data
-		
+
 		applicantName := ""
 		applicantEmail := ""
 		if user != nil {

@@ -23,25 +23,25 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		t.Fatalf("テストDBへの接続に失敗しました: %v", err)
 	}
 
-	config.DB = db	
+	config.DB = db
 	// genreテーブルの初期化 (FK制約対策)
 	db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (1, 'food', 'FF0000')")
 	db.Exec("INSERT IGNORE INTO genre (genreId, genreName, color) VALUES (2, 'event', '00FF00')")
-		return db
+	return db
 }
 
 // cleanupTestDB テストデータをクリーンアップ
 func cleanupTestDB(t *testing.T, db *gorm.DB) {
 	// 外部キー制約を無効化
 	db.Exec("SET FOREIGN_KEY_CHECKS = 0")
-	
+
 	// テストデータを削除
 	db.Exec("DELETE FROM report WHERE reportId >= 10000")
 	db.Exec("DELETE FROM post WHERE postId >= 12345")
 	db.Exec("DELETE FROM session WHERE googleId LIKE 'test-%' OR googleId LIKE '%test%'")
 	db.Exec("DELETE FROM user WHERE googleId LIKE 'test-%' OR googleId LIKE '%test%' OR gmail LIKE '%test%' OR googleId LIKE '%creator%' OR googleId LIKE '%viewer%' OR googleId LIKE '%reporter%' OR googleId LIKE '%reported%'")
 	db.Exec("DELETE FROM place WHERE placeId >= 9000")
-	
+
 	// 外部キー制約を再度有効化
 	db.Exec("SET FOREIGN_KEY_CHECKS = 1")
 }
@@ -88,7 +88,7 @@ func TestIntegration_USER001_UserRegistrationFlow(t *testing.T) {
 
 	// ユーザーを直接作成
 	userGoogleID := createTestUser(t, db, googleID, email)
-	
+
 	// セッションを作成
 	sessionID := createTestSession(t, db, googleID)
 
@@ -107,7 +107,7 @@ func TestIntegration_USER001_UserRegistrationFlow(t *testing.T) {
 	assert.NoError(t, err, "セッションがDBに保存されていません")
 	assert.Equal(t, googleID, dbSessionGoogleID, "GoogleIDが一致しません")
 	assert.True(t, dbExpiry.After(time.Now()), "セッションの有効期限が過去です")
-	
+
 	_ = userGoogleID // unused
 }
 
@@ -214,7 +214,7 @@ func TestIntegration_USER005_SessionExtensionOnLogin(t *testing.T) {
 
 	// 既存ユーザーとセッションを作成
 	userGoogleID := createTestUser(t, db, googleID, email)
-	
+
 	// 旧セッション作成（1時間後に期限切れ）
 	oldSessionID := "test-old-" + uuid.New().String()
 	oldExpiry := time.Now().Add(1 * time.Hour)

@@ -64,7 +64,7 @@ func cleanupTestDB(t *testing.T, db *gorm.DB) {
 func setupTestRouter(db *gorm.DB) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	
+
 	// エラーハンドリングミドルウェアを追加
 	router.Use(gin.Recovery())
 	router.Use(func(c *gin.Context) {
@@ -197,14 +197,14 @@ func TestIntegration_POST001_CreatePost(t *testing.T) {
 	user := createTestUser(t, db, "test-user-1", "test1@example.com")
 	businessMember := createTestBusinessMember(t, db, user.ID, "Test Business")
 	t.Logf("作成した BusinessMember: ID=%d, UserID=%s", businessMember.ID, businessMember.UserID)
-	
+
 	// DBで確認
 	var dbMember domain.BusinessMember
 	if err := db.Where("userId = ?", user.ID).First(&dbMember).Error; err != nil {
 		t.Fatalf("BusinessMemberがDBに存在しません: %v", err)
 	}
 	t.Logf("DBから取得した BusinessMember: ID=%d, UserID=%s", dbMember.ID, dbMember.UserID)
-	
+
 	genre := createTestGenre(t, db, "food", "FF0000")
 
 	router := setupTestRouter(db)
@@ -228,7 +228,7 @@ func TestIntegration_POST001_CreatePost(t *testing.T) {
 
 	t.Logf("レスポンスステータス: %d", w.Code)
 	t.Logf("レスポンスボディ: %s", w.Body.String())
-	
+
 	if w.Code == http.StatusOK && w.Body.Len() == 0 {
 		t.Log("注意: ステータス200だが、レスポンスボディが空です。ハンドラーでエラーが発生している可能性があります。")
 	}
