@@ -41,7 +41,6 @@ export default function AdminUserManagement({ users, onDeleteAccount }: AdminUse
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       {/* fromName が optional なのでフォールバックを設定 */}
-                      <p className="font-medium text-slate-900">{userItem.name || '名称未設定'}</p>
                       <p className="font-medium text-slate-900">
                         {userItem.fromName || '名称未設定'}
                       </p>
