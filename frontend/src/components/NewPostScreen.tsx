@@ -11,6 +11,9 @@ import { genreLabels, GENRE_MAP } from '../lib/mockData';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface CreatePinModalProps {
   user: User;
   businessData?: Business;
@@ -111,7 +114,7 @@ export function NewPostScreen({
     }
     try {
       // 1. バックエンドと繋げる
-      const response = await fetch('http://localhost:8080/api/posts', {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +122,7 @@ export function NewPostScreen({
         body: JSON.stringify({
           placeId: 1, // placeIdの算出 (今は1固定)
           genreId: GENRE_MAP[genre], // 文字列を数値IDに変換
-          userId: user.googleId,
+          userId: user.id,
           title: title,
           text: text,
           postImage: images.length > 0 ? images[0] : '', // 仕様書の string 型に対応
@@ -280,7 +283,7 @@ export function NewPostScreen({
           {user.role === 'business' ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-sm text-blue-800">
-                事業者名「{businessData?.businessName || user?.fromName || '（未設定）'}
+                事業者名「{businessData?.businessName || user?.name || '（未設定）'}
                 」として投稿されます
               </p>
             </div>
@@ -290,6 +293,7 @@ export function NewPostScreen({
             </div>
           )}
 
+          {/* 送信ボタン */}
           <div className="flex space-x-2 pt-4">
             <Button type="submit" className="flex-1">
               投稿する

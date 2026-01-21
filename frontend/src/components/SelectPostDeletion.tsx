@@ -3,6 +3,9 @@ import { Trash2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface SelectPostDeletionProps {
   postId: number;
   onDelete: (postId: number) => void;
@@ -25,7 +28,7 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
 
     try {
       // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
-      const response = await fetch('/api/posts/anonymize', {
+      const response = await fetch(`${API_BASE_URL}/api/posts/anonymize`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

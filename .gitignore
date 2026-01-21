@@ -26,8 +26,8 @@ dist-ssr/
 .env
 .env.local
 .env.*.local
-.env.backend
 .env.frontend
+.env.backend
 
 # IDE
 .vscode/

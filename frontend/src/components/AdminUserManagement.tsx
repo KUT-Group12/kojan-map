@@ -35,15 +35,13 @@ export default function AdminUserManagement({ users, onDeleteAccount }: AdminUse
             {users.length > 0 ? (
               users.map((userItem) => (
                 <div
-                  key={userItem.googleId}
+                  key={userItem.id}
                   className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
                 >
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
                       {/* fromName が optional なのでフォールバックを設定 */}
-                      <p className="font-medium text-slate-900">
-                        {userItem.fromName || '名称未設定'}
-                      </p>
+                      <p className="font-medium text-slate-900">{userItem.name || '名称未設定'}</p>
                       <Badge
                         className={
                           userItem.role === 'business'
@@ -60,7 +58,7 @@ export default function AdminUserManagement({ users, onDeleteAccount }: AdminUse
                             : '一般'}
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-600">{userItem.gmail}</p>
+                    <p className="text-sm text-slate-600">{userItem.email}</p>
                     <div className="flex space-x-4 mt-1">
                       <p className="text-xs text-slate-500">
                         投稿数: <span className="font-semibold">{userItem.postCount}</span>

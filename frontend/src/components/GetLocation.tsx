@@ -34,8 +34,3 @@ export function GetLocation({ onLocationSelected, enabled }: GetLocationProps) {
 
   return null;
 }
-
-/*
-export const truncateCoord = (coord: number): number => {
-  return Math.round(coord * 10000) / 10000;
-};*/

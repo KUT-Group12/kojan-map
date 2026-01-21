@@ -6,6 +6,9 @@ import { Search } from 'lucide-react';
 import { Post, PinGenre, User } from '../types';
 import { genreLabels, genreColors, GENRE_MAP } from '../lib/mockData';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface SidebarProps {
   user: User;
   posts: Post[];
@@ -48,10 +51,10 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
 
         // 仕様書のエンドポイントを条件に合わせて使い分け
         if (searchKeyword) {
-          url = `/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
+          url = `${API_BASE_URL}/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
         } else if (selectedGenre !== 'all') {
           const genreId = GENRE_MAP[selectedGenre];
-          url = `/api/posts/search/genre?genreId=${genreId}`;
+          url = `${API_BASE_URL}/api/posts/search/genre?genreId=${genreId}`;
         } else if (dateFilter !== 'all') {
           // 期間検索のパラメータ生成 (YYYY-MM-DD)
           const endDate = new Date().toISOString().split('T')[0];
@@ -62,7 +65,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
           if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
           const startDate = start.toISOString().split('T')[0];
 
-          url = `/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
+          url = `${API_BASE_URL}/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
         }
 
         const response = await fetch(url);
@@ -185,7 +188,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <span>
                     {user.role === 'business'
-                      ? user.fromName || '名称未設定の事業者' // フォールバックを追加
+                      ? user.name || '名称未設定の事業者' // フォールバックを追加
                       : '匿名'}
                   </span>
                   <div className="flex items-center space-x-3">

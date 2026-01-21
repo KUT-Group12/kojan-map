@@ -5,6 +5,9 @@ import { Heart, Loader2 } from 'lucide-react';
 import { Post, PinGenre, User } from '../types';
 import { genreColors, genreLabels, GENRE_MAP } from '../lib/mockData';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface UserReactionViewScreenProps {
   user: User; // ログイン中の自分
   onPinClick: (post: Post) => void;
@@ -18,7 +21,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
     const controller = new AbortController();
     let active = true;
     const fetchReactedPosts = async () => {
-      if (!user?.googleId) {
+      if (!user?.id) {
         setReactedPosts([]);
         setIsLoading(false);
         return;
@@ -28,7 +31,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       try {
         // API仕様: GET /api/reactions/list?googleId=...
         const response = await fetch(
-          `/api/reactions/list?googleId=${encodeURIComponent(user.googleId)}`,
+          `${API_BASE_URL}/api/reactions/list?googleId=${encodeURIComponent(user.id)}`,
           { signal: controller.signal }
         );
         if (!response.ok) throw new Error('リアクション履歴の取得に失敗しました');
@@ -49,7 +52,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       active = false;
       controller.abort();
     };
-  }, [user?.googleId]);
+  }, [user?.id]);
 
   const genreIdToKey = (genreId: number): PinGenre => {
     const entry = Object.entries(GENRE_MAP).find(([, id]) => id === genreId);

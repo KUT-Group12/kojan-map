@@ -5,6 +5,9 @@ import { Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Business, User } from '../types';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface UserInputBusinessApplicationProps {
   user: User;
   onUpdateUser: (user: User) => void; //申請処理
@@ -46,7 +49,7 @@ export function UserInputBusinessApplication({
     setIsLoading(true);
     try {
       // 1. API仕様: POST /api/business/apply
-      const response = await fetch('/api/business/apply', {
+      const response = await fetch(`${API_BASE_URL}/api/business/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,7 +57,7 @@ export function UserInputBusinessApplication({
         body: JSON.stringify({
           ...formData,
           phone: phoneNumber,
-          userId: user.googleId, // 申請者のGoogle ID
+          userId: user.id, // 申請者のGoogle ID
         }),
       });
 
@@ -75,7 +78,6 @@ export function UserInputBusinessApplication({
       setIsLoading(false);
     }
   };
-
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
       <p className="text-sm flex items-center gap-2">

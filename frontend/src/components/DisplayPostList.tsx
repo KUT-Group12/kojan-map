@@ -10,6 +10,9 @@ import { ReportScreen } from './ReportScreen';
 import { SelectBlock } from './SelectBlock';
 import { SelectPostDeletion } from './SelectPostDeletion';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface PinDetailModalProps {
   post: Post;
   place: Place;
@@ -48,19 +51,13 @@ export function DisplayPostList({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
-  // const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-  const API_BASE_URL = 'http://localhost:8080';
-
   useEffect(() => {
     if (!post?.postId) return;
     const fetchPostDetail = async () => {
       setIsDetailLoading(true);
       try {
         // バックエンドとの接続
-        const response = await fetch(
-          //`http://localhost:8080/api/posts/detail?postId=${post.postId}`
-          `${API_BASE_URL}/api/posts/detail?postId=${post.postId}`
-        );
+        const response = await fetch(`${API_BASE_URL}/api/posts/detail?postId=${post.postId}`);
         if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
         const data = await response.json(); // Post オブジェクトが返る
@@ -94,7 +91,7 @@ export function DisplayPostList({
     });
   };
 
-  const isOwnPost = post.userId === currentUser.googleId;
+  const isOwnPost = post.userId === currentUser.id;
 
   console.log(post.text);
 
@@ -132,7 +129,7 @@ export function DisplayPostList({
           <div className="flex items-center justify-between pb-4 border-b">
             <div>
               <p className="text-sm">
-                {currentUser.role === 'business' ? currentUser.fromName : '匿名'}
+                {currentUser.role === 'business' ? currentUser.name : '匿名'}
               </p>
               <p className="text-xs text-gray-500">{formatDate(post.postDate)}</p>
             </div>
@@ -198,7 +195,7 @@ export function DisplayPostList({
             {isReporting ? (
               <ReportScreen
                 postId={post.postId}
-                userId={currentUser.googleId}
+                userId={currentUser.id}
                 isReporting={isReporting}
                 setIsReporting={setIsReporting}
                 onReportComplete={onClose}
@@ -208,7 +205,7 @@ export function DisplayPostList({
                 {/* 1. リアクションボタン */}
                 <UserTriggerReaction
                   postId={post.postId}
-                  userId={currentUser.googleId}
+                  userId={currentUser.id}
                   isReacted={isReacted}
                   userRole={currentUser.role}
                   isDisabled={false}
@@ -223,7 +220,7 @@ export function DisplayPostList({
                   <>
                     <ReportScreen
                       postId={post.postId}
-                      userId={currentUser.googleId}
+                      userId={currentUser.id}
                       isReporting={isReporting}
                       setIsReporting={setIsReporting}
                       onReportComplete={onClose}
@@ -231,7 +228,7 @@ export function DisplayPostList({
                     {typeof onBlockUser === 'function' && (
                       <SelectBlock
                         userId={post.userId}
-                        blockerId={currentUser.googleId}
+                        blockerId={currentUser.id}
                         onBlockUser={onBlockUser} // Prop名を onBlockUser に合わせる
                         onClose={onClose}
                       />

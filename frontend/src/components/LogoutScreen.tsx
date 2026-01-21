@@ -5,6 +5,9 @@ import { LogOut, Check, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { User } from '../types';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface LogoutScreenProps {
   user: User;
   onLogout: () => void;
@@ -18,10 +21,10 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
     try {
       // 1. API仕様: PUT /api/auth/logout
       // ボディに sessionId (通常は googleId 等) を含めて送信
-      const response = await fetch('/api/auth/logout', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: user.googleId }),
+        body: JSON.stringify({ sessionId: user.id }),
       });
 
       if (!response.ok) {
@@ -54,8 +57,8 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
             </div>
             <CardTitle className="text-xl">ログアウトの確認</CardTitle>
             <CardDescription>
-              {user.fromName && (
-                <span className="block font-bold text-gray-900 mb-1">{user.fromName}様</span>
+              {user.name && (
+                <span className="block font-bold text-gray-900 mb-1">{user.name}様</span>
               )}
               ログアウトしてもよろしいですか？
             </CardDescription>
@@ -76,7 +79,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">メールアドレス</span>
-                <span className="font-medium text-gray-800">{user.gmail}</span>
+                <span className="font-medium text-gray-800">{user.email}</span>
               </div>
             </div>
 

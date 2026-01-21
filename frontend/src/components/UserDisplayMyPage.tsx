@@ -53,7 +53,7 @@ export function UserDisplayMyPage({
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.gmail}</p>
+                <p>{user.email}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">アカウント種別</p>
@@ -61,7 +61,7 @@ export function UserDisplayMyPage({
               </div>
               <div>
                 <p className="text-sm text-gray-600">登録日</p>
-                <p>{formatDate(new Date(user.registrationDate))}</p>
+                <p>{formatDate(new Date(user.createdAt))}</p>
               </div>
             </div>
 

@@ -167,7 +167,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
     // setUserList を users のステート更新関数（setUsers など）に合わせる
     setUsers((prev) =>
       // user.id ではなく user.googleId でフィルタリング
-      prev.filter((user) => user.googleId !== googleId)
+      prev.filter((user) => user.id !== googleId)
     );
     toast.success('アカウントを削除しました');
     //}
@@ -269,7 +269,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
           <div className="mb-3 px-2">
             <p className="text-xs text-slate-400">ログイン中</p>
-            <p className="text-sm font-medium">{user.fromName}</p>
+            <p className="text-sm font-medium">{user.name}</p>
           </div>
           <Button
             variant="outline"

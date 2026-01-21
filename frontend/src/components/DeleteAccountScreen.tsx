@@ -8,6 +8,9 @@ import { User, Business } from '../types';
 import { AlertTriangle, ArrowLeft, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 interface DeleteAccountScreenProps {
   user: User;
   business?: Business;
@@ -52,13 +55,13 @@ export function DeleteAccountScreen({
 
     try {
       // API仕様: PUT /api/auth/withdrawal
-      const response = await fetch('/api/auth/withdrawal', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/withdrawal`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          googleId: user.googleId, // 仕様書のリクエストパラメータ
+          googleId: user.id, // 仕様書のリクエストパラメータ
           reason: deleteReason,
         }),
       });
@@ -118,7 +121,7 @@ export function DeleteAccountScreen({
               </div>
               <div>
                 <p className="text-sm text-gray-600">メールアドレス</p>
-                <p>{user.gmail}</p>
+                <p>{user.email}</p>
               </div>
               {user.role === 'business' && business?.businessName && (
                 <div>
