@@ -95,7 +95,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
   // apiPostsが更新されたら親コンポーネントへ通知
   useEffect(() => {
     onFilterChange(apiPosts);
-    
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiPosts]);
 
