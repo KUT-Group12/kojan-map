@@ -49,14 +49,15 @@ export function DisplayPostList({
 
   useEffect(() => {
     if (!post?.postId) return;
+    setPostDetail(null);
+    const controller = new AbortController();
     const fetchPostDetail = async () => {
       setIsDetailLoading(true);
       try {
         // バックエンドとの接続
-        const response = await fetch(
-          //`http://localhost:8080/api/posts/detail?postId=${post.postId}`
-          `${API_BASE_URL}/api/posts/detail?postId=${post.postId}`
-        );
+        const response = await fetch(`${API_BASE_URL}/api/posts/detail?postId=${post.postId}`, {
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error('詳細の取得に失敗しました');
 
         const data = await response.json(); // Post オブジェクトが返る
@@ -64,13 +65,15 @@ export function DisplayPostList({
         setPostDetail(data.post);
         console.log('data: ', data);
       } catch (error) {
+        if ((error as Error).name === 'AbortError') return;
         console.error('詳細取得エラー:', error);
       } finally {
-        setIsDetailLoading(false);
+        if (!controller.signal.aborted) setIsDetailLoading(false);
       }
     };
 
     fetchPostDetail();
+    return () => controller.abort();
   }, [post?.postId]);
 
   // スクロール制御
