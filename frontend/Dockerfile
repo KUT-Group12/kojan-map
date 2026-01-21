@@ -1,5 +1,5 @@
 # 1. ベースイメージ: Node.js 20.11.1 (Alpine版)
-FROM node:20.11.1-alpine
+FROM node:20-alpine
 
 # 2. 作業ディレクトリの設定
 WORKDIR /app

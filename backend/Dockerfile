@@ -1,5 +1,5 @@
-# 1. ベースイメージ: Go 1.23.0 (Alpine版)
-FROM golang:1.23.0-alpine
+# 1. ベースイメージ: Go 1.23 (Alpine版)
+FROM golang:1.23-alpine
 
 # 2. 作業ディレクトリ
 WORKDIR /app
