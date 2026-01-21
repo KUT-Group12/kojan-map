@@ -6,8 +6,7 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
-import { User, PinGenre, Business } from '../types';
-import { genreLabels } from '../lib/mockData';
+import { User, Business, Genre } from '../types';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -17,13 +16,14 @@ const API_BASE_URL =
 interface CreatePinModalProps {
   user: User;
   businessData?: Business;
+  genres: Genre[];
   onClose: () => void;
   onCreate: (pin: {
     latitude: number;
     longitude: number;
     title: string;
     text: string;
-    genre: PinGenre;
+    genre: Genre;
     images: string[];
   }) => void;
   initialLatitude?: number;
@@ -33,6 +33,7 @@ interface CreatePinModalProps {
 export function NewPostScreen({
   user,
   businessData,
+  genres,
   onClose,
   onCreate,
   initialLatitude,
@@ -40,7 +41,7 @@ export function NewPostScreen({
 }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  const [genre, setGenre] = useState<PinGenre>('other');
+  const [selectedGenre, setSelectedGenre] = useState<Genre | null>(genres[0] || null);
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
   const [latitude, setLatitude] = useState(String(initialLatitude ?? 33.6071));
@@ -124,7 +125,7 @@ export function NewPostScreen({
           description: text,
           latitude: lat,
           longitude: lng,
-          genre: genre,
+          genre: selectedGenre,
           images: images,
         }),
       });
@@ -140,7 +141,7 @@ export function NewPostScreen({
         longitude: lng,
         title,
         text,
-        genre,
+        genre: selectedGenre,
         images,
       });
 
@@ -194,14 +195,24 @@ export function NewPostScreen({
           {/* ジャンル選択 */}
           <div>
             <Label htmlFor="genre">ジャンル *</Label>
-            <Select value={genre} onValueChange={(value) => setGenre(value as PinGenre)}>
+            <Select
+              value={selectedGenre?.genreId.toString()}
+              onValueChange={(id) => {
+                const g = genres.find((item) => item.genreId.toString() === id);
+                if (g) setSelectedGenre(g);
+              }}
+            >
               <SelectTrigger id="genre">
-                <SelectValue />
+                <SelectValue placeholder="ジャンルを選択" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(genreLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
+                {/* 5. DBから取得した genres を回す */}
+                {genres.map((g) => (
+                  <SelectItem key={g.genreId} value={g.genreId.toString()}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.color }} />
+                      {g.genreName}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

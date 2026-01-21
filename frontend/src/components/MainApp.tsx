@@ -10,8 +10,10 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Post, Place, User, Business } from '../types';
+import { Post, Place, User, Business, Genre } from '../types';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+// import { PinGenre } from '../types'
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
@@ -62,6 +64,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userReactedPosts, setUserReactedPosts] = useState<Post[]>([]);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
+  const [genres] = useState<Genre[]>([]);
 
   // ユーザー専用データの取得
   const fetchUserData = useCallback(async () => {
@@ -196,11 +199,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     longitude: number;
     title: string;
     text: string;
-    genre: PinGenre; // genreId, genreName, genreColorの代わりにPinGenreオブジェクトを受け取る
+    genre: Genre; // genreId, genreName, genreColorの代わりにPinGenreオブジェクトを受け取る
     images: string[];
   }) => {
-    // genreオブジェクトから必要な値を取り出す
-    const { id: genreId, name: genreName, color: genreColor } = newPost.genre;
+    const { genreId, genreName, color } = newPost.genre;
 
     const sharedId = Date.now();
     const existingPlace = places.find(
@@ -242,7 +244,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         numView: 0,
         genreId: genreId, // 分解した値を使用
         genreName: genreName, // 分解した値を使用
-        genreColor: genreColor, // 分解した値を使用
+        genreColor: color, // 分解した値を使用
       };
 
       const place: Place = {
@@ -297,6 +299,17 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       setPreviousView(currentView as 'map' | 'mypage' | 'dashboard');
     }
     setCurrentView(view);
+  };
+
+  const handleBlockUser = (userId: string) => {
+    // ユーザーをブロックした後の処理
+    setPosts((prev) => prev.filter((post) => post.userId !== userId));
+    setFilteredPosts((prev) => prev.filter((post) => post.userId !== userId));
+    setDetailData((prev) => ({
+      ...prev,
+      postsAtLocation: prev?.postsAtLocation.filter((post) => post.userId !== userId) || [],
+    }));
+    toast.success('ユーザーをブロックしました');
   };
 
   return (
@@ -410,6 +423,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         <NewPostScreen
           user={user}
           businessData={business}
+          genres={genres}
           onClose={() => setIsCreateModalOpen(false)}
           onCreate={handleCreatePin}
           initialLatitude={createInitialLatitude}
