@@ -358,7 +358,7 @@ func TestIntegration_BIZ001_BusinessRequest(t *testing.T) {
 
 	// businessReqテーブルの構造に合わせた構造体
 	type BusinessRequest struct {
-		RequestID int64  `gorm:"primaryKey;autoIncrement;column:requestId"`
+		RequestID int32  `gorm:"primaryKey;autoIncrement;column:requestId"`
 		Name      string `gorm:"column:name;not null"`
 		Address   string `gorm:"column:address;not null"`
 		Phone     string `gorm:"column:phone"`

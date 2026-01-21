@@ -110,7 +110,7 @@ func TestIntegration_ADMIN002_BusinessRequestCRUD(t *testing.T) {
 	userGoogleID := createTestUser(t, db, "admin-test-applicant-1", "applicant@test.com", "user")
 
 	// 事業者申請作成
-	requestID := int64(20001)
+	requestID := int32(20001)
 	query := "INSERT INTO businessReq (requestId, name, address, phone, userId) VALUES (?, ?, ?, ?, ?)"
 	err := db.Exec(query, requestID, "テスト事業者", "東京都渋谷区", "03-1234-5678", userGoogleID).Error
 	assert.NoError(t, err, "事業者申請の作成に失敗しました")

@@ -13,7 +13,7 @@ import (
 
 // BusinessApplicationResponse represents a business application with user info
 type BusinessApplicationResponse struct {
-	RequestID      int    `json:"requestId"`
+	RequestID      int32  `json:"requestId"`
 	BusinessName   string `json:"businessName"`
 	ApplicantName  string `json:"applicantName"`
 	ApplicantEmail string `json:"applicantEmail"`
@@ -69,7 +69,7 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 		}
 
 		responses = append(responses, BusinessApplicationResponse{
-			RequestID:      int(req.RequestID),
+			RequestID:      req.RequestID,
 			BusinessName:   req.Name,
 			ApplicantName:  applicantName,
 			ApplicantEmail: applicantEmail,
