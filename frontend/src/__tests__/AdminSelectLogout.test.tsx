@@ -46,7 +46,7 @@ describe('AdminSelectLogout', () => {
       });
 
       // 画面遷移が発生
-      expect(window.location.href).toBe('/');
+      expect(window.location.href).toBe('http://localhost/');
     });
   });
 
