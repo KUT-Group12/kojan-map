@@ -18,16 +18,67 @@ interface MyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpdateUser, onNavigateToDeleteAccount }: MyPageProps) {
+// 環境変数の読み込み
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
+export function MyPage({
+  user,
+  pins,
+  reactedPins,
+  onPinClick,
+  onDeletePin,
+  onUpdateUser,
+  onNavigateToDeleteAccount,
+}: MyPageProps) {
   const [showBusinessRegistration, setShowBusinessRegistration] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingNameValue, setEditingNameValue] = useState(user.name || '');
+  const [businessName, setBusinessName] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
 
-  const handleBusinessRegistration = () => {
-    toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
-    setShowBusinessRegistration(false);
+  const handleBusinessRegistration = async () => {
+    if (!businessName.trim() || !businessPhone.trim() || !businessAddress.trim()) {
+      toast.error('店舗名・電話番号・住所をすべて入力してください');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
+      const response = await fetch(`${API_BASE_URL}/api/business/application`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          businessName: businessName.trim(),
+          kanaBusinessName: businessName.trim(), // Placeholder or add field
+          zipCode: '000-0000', // Placeholder or add field
+          address: businessAddress.trim(),
+          phone: businessPhone.trim(),
+        }),
+      });
+
+      if (!response.ok) throw new Error('申請に失敗しました');
+
+      toast.success('事業者登録申請を送信しました。運営からの承認をお待ちください。');
+      setShowBusinessRegistration(false);
+      setBusinessName('');
+      setBusinessPhone('');
+      setBusinessAddress('');
+    } catch (error) {
+      console.error('Business registration error:', error);
+      toast.error('エラーが発生しました。時間をおいて再度お試しください。');
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -59,24 +110,33 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
       const result = event.target?.result as string;
       setSelectedIcon(result);
     };
+    reader.onerror = () => {
+      toast.error('画像の読み込みに失敗しました');
+      setSelectedIcon(null);
+    };
     reader.readAsDataURL(file);
   };
 
-  const handleSaveIcon = () => {
+  const handleSaveIcon = async () => {
     if (!selectedIcon) return;
 
     setIsUploadingIcon(true);
+    try {
+      // アイコンを保存
+      const updatedUser = {
+        ...user,
+        businessIcon: selectedIcon,
+      };
 
-    // アイコンを保存
-    const updatedUser = {
-      ...user,
-      businessIcon: selectedIcon,
-    };
-
-    onUpdateUser(updatedUser);
-    toast.success('アイコンを更新しました');
-    setIsUploadingIcon(false);
-    setSelectedIcon(null);
+      await onUpdateUser(updatedUser);
+      toast.success('アイコンを更新しました');
+      setSelectedIcon(null);
+    } catch (error) {
+      console.error('Icon upload error:', error);
+      toast.error('アイコンの保存に失敗しました');
+    } finally {
+      setIsUploadingIcon(false);
+    }
   };
 
   const handleCancelIconUpload = () => {
@@ -105,21 +165,37 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                           value={editingNameValue}
                           onChange={(e) => setEditingNameValue(e.target.value)}
                         />
-                        <Button size="sm" onClick={() => {
-                          const updatedUser = { ...user, name: editingNameValue };
-                          onUpdateUser(updatedUser);
-                          setIsEditingName(false);
-                        }}>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            if (!editingNameValue.trim()) {
+                              toast.error('ユーザー名を入力してください');
+                              return;
+                            }
+                            const updatedUser = { ...user, name: editingNameValue.trim() };
+                            onUpdateUser(updatedUser);
+                            setIsEditingName(false);
+                          }}
+                        >
                           保存
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => { setIsEditingName(false); setEditingNameValue(user.name); }}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditingName(false);
+                            setEditingNameValue(user.name);
+                          }}
+                        >
                           キャンセル
                         </Button>
                       </>
                     ) : (
                       <>
                         <p>{user.name}</p>
-                        <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>編集</Button>
+                        <Button size="sm" variant="outline" onClick={() => setIsEditingName(true)}>
+                          編集
+                        </Button>
                       </>
                     )}
                   </div>
@@ -161,23 +237,33 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                     type="text"
                     placeholder="店舗名"
                     className="w-full px-3 py-2 border rounded-lg"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
                   />
                   <input
                     type="tel"
                     placeholder="電話番号"
                     className="w-full px-3 py-2 border rounded-lg"
+                    value={businessPhone}
+                    onChange={(e) => setBusinessPhone(e.target.value)}
                   />
                   <input
                     type="text"
                     placeholder="住所"
                     className="w-full px-3 py-2 border rounded-lg"
+                    value={businessAddress}
+                    onChange={(e) => setBusinessAddress(e.target.value)}
                   />
                 </div>
                 <div className="flex space-x-2">
                   <Button onClick={handleBusinessRegistration} size="sm">
                     申請する
                   </Button>
-                  <Button onClick={() => setShowBusinessRegistration(false)} variant="outline" size="sm">
+                  <Button
+                    onClick={() => setShowBusinessRegistration(false)}
+                    variant="outline"
+                    size="sm"
+                  >
                     キャンセル
                   </Button>
                 </div>
@@ -235,12 +321,8 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
                       <label htmlFor="icon-upload" className="cursor-pointer">
                         <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600 mb-1">
-                          クリックして画像を選択
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          推奨: 正方形の画像、最大5MB
-                        </p>
+                        <p className="text-sm text-gray-600 mb-1">クリックして画像を選択</p>
+                        <p className="text-xs text-gray-500">推奨: 正方形の画像、最大5MB</p>
                         <input
                           id="icon-upload"
                           type="file"
@@ -285,7 +367,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
 
         {/* タブコンテンツ */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className={`grid w-full ${user.role === 'business' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          <TabsList
+            className={`grid w-full ${user.role === 'business' ? 'grid-cols-2' : 'grid-cols-3'}`}
+          >
             <TabsTrigger value="posts">投稿履歴 ({pins.length})</TabsTrigger>
             {user.role !== 'business' && (
               <TabsTrigger value="reactions">リアクション履歴 ({reactedPins.length})</TabsTrigger>
@@ -326,10 +410,15 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
+                          onClick={async () => {
                             if (confirm('この投稿を削除しますか？')) {
-                              onDeletePin(pin.id);
-                              toast.success('投稿を削除しました');
+                              try {
+                                await onDeletePin(pin.id);
+                                toast.success('投稿を削除しました');
+                              } catch (error) {
+                                console.error('Delete error:', error);
+                                toast.error('削除に失敗しました');
+                              }
                             }
                           }}
                         >
@@ -355,7 +444,11 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
               ) : (
                 <div className="grid gap-4">
                   {reactedPins.map((pin) => (
-                    <Card key={pin.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onPinClick(pin)}>
+                    <Card
+                      key={pin.id}
+                      className="hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => onPinClick(pin)}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center space-x-2 mb-2">
                           <h3>{pin.title}</h3>
@@ -365,7 +458,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                         </div>
                         <p className="text-sm text-gray-600 mb-2">{pin.description}</p>
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>{pin.userRole === 'business' ? pin.businessName : pin.userName}</span>
+                          <span>
+                            {pin.userRole === 'business' ? pin.businessName : pin.userName}
+                          </span>
                           <span className="flex items-center">
                             <Heart className="w-4 h-4 mr-1 fill-red-500 text-red-500" />
                             {pin.reactions}
@@ -387,21 +482,28 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                 <CardDescription>ブロックしたユーザーの管理</CardDescription>
               </CardHeader>
               <CardContent>
-                {(!user.blockedUsers || user.blockedUsers.length === 0) ? (
+                {!user.blockedUsers || user.blockedUsers.length === 0 ? (
                   <p className="text-gray-500 text-sm">ブロックしたユーザーはいません</p>
                 ) : (
                   <div className="space-y-2">
                     {user.blockedUsers.map((userId) => (
-                      <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={userId}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center space-x-2">
                           <UserX className="w-4 h-4 text-gray-500" />
                           <span className="text-sm">ユーザーID: {userId}</span>
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => {
-                          const next = (user.blockedUsers || []).filter(id => id !== userId);
-                          const updatedUser = { ...user, blockedUsers: next };
-                          onUpdateUser(updatedUser);
-                        }}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const next = (user.blockedUsers || []).filter((id) => id !== userId);
+                            const updatedUser = { ...user, blockedUsers: next };
+                            onUpdateUser(updatedUser);
+                          }}
+                        >
                           ブロック解除
                         </Button>
                       </div>

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { Search, Plus, SlidersHorizontal } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Pin, PinGenre, User } from '../types';
 import { genreLabels, genreColors } from '../lib/mockData';
 
@@ -15,10 +14,16 @@ interface SidebarProps {
   onPinClick: (pin: Pin) => void;
 }
 
-export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }: SidebarProps) {
+export function Sidebar({
+  user,
+  pins,
+  onFilterChange,
+  onCreatePin: _onCreatePin,
+  onPinClick,
+}: SidebarProps) {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<PinGenre | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'reactions' | 'distance'>('date');
+  const [sortBy] = useState<'date' | 'reactions' | 'distance'>('date');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   useEffect(() => {
@@ -32,30 +37,31 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
 
     // キーワード検索
     if (searchKeyword) {
-      filtered = filtered.filter(pin => 
-        pin.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        pin.description.toLowerCase().includes(searchKeyword.toLowerCase())
+      filtered = filtered.filter(
+        (pin) =>
+          pin.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          pin.description.toLowerCase().includes(searchKeyword.toLowerCase())
       );
     }
 
     // ジャンルフィルター
     if (selectedGenre !== 'all') {
-      filtered = filtered.filter(pin => pin.genre === selectedGenre);
+      filtered = filtered.filter((pin) => pin.genre === selectedGenre);
     }
 
     // 日付フィルター
     const now = new Date();
     if (dateFilter === 'today') {
-      filtered = filtered.filter(pin => {
+      filtered = filtered.filter((pin) => {
         const pinDate = new Date(pin.createdAt);
         return pinDate.toDateString() === now.toDateString();
       });
     } else if (dateFilter === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(pin => new Date(pin.createdAt) >= weekAgo);
+      filtered = filtered.filter((pin) => new Date(pin.createdAt) >= weekAgo);
     } else if (dateFilter === 'month') {
       const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(pin => new Date(pin.createdAt) >= monthAgo);
+      filtered = filtered.filter((pin) => new Date(pin.createdAt) >= monthAgo);
     }
 
     /*
@@ -70,13 +76,13 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
     }*/
 
     onFilterChange(filtered);
-  }, [searchKeyword, selectedGenre, sortBy, dateFilter, pins, onFilterChange]);
+  }, [searchKeyword, selectedGenre, sortBy, dateFilter, pins, user, onFilterChange]);
 
   const formatDate = (date: Date) => {
     const d = new Date(date);
     const now = new Date();
     const diffHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffHours < 1) {
       return 'たった今';
     } else if (diffHours < 24) {
@@ -91,11 +97,12 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
     <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
       {/* 検索・フィルター */}
       <div className="p-4 border-b border-gray-200 space-y-3">
-        {/*}
+        {/*
         <Button onClick={onCreatePin} className="w-full">
           <Plus className="w-4 h-4 mr-2" />
           新規投稿
-        </Button>*/}
+        </Button>
+        */}
         {user.role !== 'business' && (
           <>
             <div className="relative">
@@ -109,19 +116,29 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <Select value={selectedGenre} onValueChange={(value) => setSelectedGenre(value as PinGenre | 'all')}>
+              <Select
+                value={selectedGenre}
+                onValueChange={(value) => setSelectedGenre(value as PinGenre | 'all')}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="ジャンル" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全ジャンル</SelectItem>
                   {Object.entries(genreLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as any)}>
+              <Select
+                value={dateFilter}
+                onValueChange={(value) =>
+                  setDateFilter(value as 'all' | 'today' | 'week' | 'month')
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="期間" />
                 </SelectTrigger>
@@ -165,10 +182,7 @@ export function Sidebar({ user, pins, onFilterChange, onCreatePin, onPinClick }:
               >
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="flex-1 text-gray-900">{pin.title}</h3>
-                  <Badge 
-                    style={{ backgroundColor: genreColors[pin.genre] }}
-                    className="ml-2"
-                  >
+                  <Badge style={{ backgroundColor: genreColors[pin.genre] }} className="ml-2">
                     {genreLabels[pin.genre]}
                   </Badge>
                 </div>

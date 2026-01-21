@@ -26,7 +26,18 @@ interface PinDetailModalProps {
   onSelectPin?: (pin: Pin) => void;
 }
 
-export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReaction, onDelete, onBlockUser, pinsAtLocation, onOpenCreateAtLocation, onSelectPin }: PinDetailModalProps) {
+export function DisplayPostList({
+  pin,
+  currentUser,
+  isReacted,
+  onClose,
+  onReaction,
+  onDelete,
+  onBlockUser,
+  pinsAtLocation,
+  onOpenCreateAtLocation,
+  onSelectPin,
+}: PinDetailModalProps) {
   const [isReporting, setIsReporting] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -56,16 +67,12 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <DialogTitle>{pin.title}</DialogTitle>
-              <DialogDescription className="sr-only">
-                投稿の詳細情報を表示します
-              </DialogDescription>
+              <DialogDescription className="sr-only">投稿の詳細情報を表示します</DialogDescription>
               <div className="flex items-center space-x-2 mt-2">
                 <Badge style={{ backgroundColor: genreColors[pin.genre] }}>
                   {genreLabels[pin.genre]}
                 </Badge>
-                {pin.userRole === 'business' && (
-                  <Badge variant="outline">事業者</Badge>
-                )}
+                {pin.userRole === 'business' && <Badge variant="outline">事業者</Badge>}
               </div>
             </div>
           </div>
@@ -75,9 +82,7 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           {/* 投稿者情報 */}
           <div className="flex items-center justify-between pb-4 border-b">
             <div>
-              <p className="text-sm">
-                {pin.userRole === 'business' ? pin.businessName : '匿名'}
-              </p>
+              <p className="text-sm">{pin.userRole === 'business' ? pin.businessName : '匿名'}</p>
               <p className="text-xs text-gray-500">{formatDate(pin.createdAt)}</p>
             </div>
             {pin.viewCount !== undefined && (
@@ -125,7 +130,9 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onOpenCreateAtLocation && onOpenCreateAtLocation(pin.latitude, pin.longitude)}
+                onClick={() =>
+                  onOpenCreateAtLocation && onOpenCreateAtLocation(pin.latitude, pin.longitude)
+                }
               >
                 投稿を追加
               </Button>
@@ -135,7 +142,11 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           {/* アクションエリア */}
           <div className="flex items-center space-x-2 pt-4 border-t">
             {isReporting ? (
-              <ReportScreen isReporting={isReporting} setIsReporting={setIsReporting} onReportComplete={onClose} />
+              <ReportScreen
+                isReporting={isReporting}
+                setIsReporting={setIsReporting}
+                onReportComplete={onClose}
+              />
             ) : (
               <>
                 {/* 1. リアクションボタン */}
@@ -149,15 +160,15 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
 
                 {isOwnPost ? (
                   /* 2. 削除ボタン */
-                  <SelectPostDeletion
-                    pinId={pin.id}
-                    onDelete={onDelete}
-                    onClose={onClose}
-                  />
+                  <SelectPostDeletion pinId={pin.id} onDelete={onDelete} onClose={onClose} />
                 ) : (
                   /* 3. 通報 & ブロック */
                   <>
-                    <ReportScreen isReporting={isReporting} setIsReporting={setIsReporting} onReportComplete={onClose} />
+                    <ReportScreen
+                      isReporting={isReporting}
+                      setIsReporting={setIsReporting}
+                      onReportComplete={onClose}
+                    />
                     {typeof onBlockUser === 'function' && (
                       <SelectBlock
                         userId={pin.userId}
@@ -182,10 +193,11 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
                     onClick={() => {
                       if (p.id !== pin.id && onSelectPin) onSelectPin(p);
                     }}
-                    className={`cursor-pointer p-3 rounded-lg border transition-colors ${p.id === pin.id
+                    className={`cursor-pointer p-3 rounded-lg border transition-colors ${
+                      p.id === pin.id
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:bg-gray-50'
-                      }`}
+                    }`}
                   >
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">{p.title}</span>

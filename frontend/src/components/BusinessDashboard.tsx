@@ -2,19 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { User, Pin } from '../types';
-import { 
-  TrendingUp, 
-  Eye, 
-  Heart, 
-  Calendar, 
-  CreditCard, 
-  BarChart3,
-  MapPin,
-  Building2,
-  Clock
-} from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { genreColors, genreLabels } from '../lib/mockData';
+import { TrendingUp, Eye, Heart, CreditCard, BarChart3, Building2, Clock } from 'lucide-react';
 
 interface BusinessDashboardProps {
   user: User;
@@ -24,28 +12,6 @@ interface BusinessDashboardProps {
 
 export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-
-  // モック統計データ
-  const weeklyData = [
-    { date: '10/28', reactions: 12, views: 45 },
-    { date: '10/29', reactions: 18, views: 67 },
-    { date: '10/30', reactions: 15, views: 52 },
-    { date: '10/31', reactions: 24, views: 89 },
-    { date: '11/01', reactions: 31, views: 112 },
-    { date: '11/02', reactions: 28, views: 98 },
-    { date: '11/03', reactions: 35, views: 134 },
-  ];
-
-  const genreStats = pins.reduce((acc, pin) => {
-    if (!acc[pin.genre]) {
-      acc[pin.genre] = { genre: genreLabels[pin.genre], count: 0, reactions: 0 };
-    }
-    acc[pin.genre].count++;
-    acc[pin.genre].reactions += pin.reactions;
-    return acc;
-  }, {} as Record<string, { genre: string; count: number; reactions: number }>);
-
-  const genreStatsArray = Object.values(genreStats);
 
   const totalReactions = pins.reduce((sum, pin) => sum + pin.reactions, 0);
   const totalViews = pins.reduce((sum, pin) => sum + (pin.viewCount || 0), 0);
@@ -73,8 +39,8 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
           <button
             onClick={() => setActiveTab('overview')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'overview'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -84,8 +50,8 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
           <button
             onClick={() => setActiveTab('billing')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'billing' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+              activeTab === 'billing'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
             }`}
           >
@@ -191,49 +157,6 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
               </div>
 
               {/* グラフ */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* 週間推移 */}
-                <Card className="shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle>週間推移</CardTitle>
-                    <CardDescription>リアクション数と閲覧数の推移</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={weeklyData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="reactions" stroke="#ef4444" name="リアクション" />
-                        <Line type="monotone" dataKey="views" stroke="#3b82f6" name="閲覧数" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
-                {/* ジャンル別統計 */}
-                <Card className="shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle>ジャンル別投稿数</CardTitle>
-                    <CardDescription>投稿のジャンル分布</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={genreStatsArray}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="genre" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" fill="#8b5cf6" name="投稿数" />
-                        <Bar dataKey="reactions" fill="#ef4444" name="リアクション" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
 
               {/* 人気投稿 */}
               <Card className="shadow-xl border-slate-200">
@@ -260,11 +183,11 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
                                   <h4>{pin.title}</h4>
-                                  <Badge style={{ backgroundColor: genreColors[pin.genre] }}>
-                                    {genreLabels[pin.genre]}
-                                  </Badge>
+                                  <Badge variant="secondary">{pin.genre}</Badge>
                                 </div>
-                                <p className="text-sm text-slate-600 line-clamp-1">{pin.description}</p>
+                                <p className="text-sm text-slate-600 line-clamp-1">
+                                  {pin.description}
+                                </p>
                               </div>
                             </div>
                             <div className="text-right ml-4">
@@ -316,24 +239,7 @@ export function BusinessDashboard({ user, pins, onPinClick }: BusinessDashboardP
 
                   <div className="border-t pt-4">
                     <h4 className="mb-3">支払い履歴</h4>
-                    <div className="space-y-2">
-                      {[
-                        { date: '2025年11月1日', amount: '¥2,000', status: '完了' },
-                        { date: '2025年10月1日', amount: '¥2,000', status: '完了' },
-                        { date: '2025年9月1日', amount: '¥2,000', status: '完了' },
-                      ].map((payment, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <Calendar className="w-4 h-4 text-slate-500" />
-                            <span className="text-sm">{payment.date}</span>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <span>{payment.amount}</span>
-                            <Badge variant="outline">{payment.status}</Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-slate-500 text-center py-8">まだ支払い履歴がありません</p>
                   </div>
 
                   {/* 解約ボタンは廃止：事業者プランの解約操作は管理画面でのみ行えるため UI から削除しました */}

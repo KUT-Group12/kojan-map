@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User } from '../types';
-import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
-import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
+import { mockPins, Inquiry } from '../lib/mockData';
+import { BusinessApplicationList, UserInputBusiness } from './AdminDisplayBusinessApplicationList';
 import {
   Users,
   AlertTriangle,
@@ -14,38 +13,160 @@ import {
   UserCheck,
   Trash2,
   CheckCircle,
-  XCircle,
   LogOut,
   Activity,
   BarChart3,
   Shield,
   Clock,
-  Eye
-  , MessageSquare
+  Eye,
+  MessageSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 interface AdminDashboardProps {
   user: User;
   onLogout: () => void;
 }
 
+interface BusinessAppAPIResponse {
+  requestId: number;
+  businessName: string;
+  applicantName: string;
+  applicantEmail: string;
+  status: string;
+  phone: string;
+  address: string;
+  createdAt: string;
+}
+
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
+  const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
   const [activeTab, setActiveTab] = useState('overview');
+  const [summary, setSummary] = useState({
+    totalUserCount: 0,
+    activeUserCount: 0,
+    totalPostCount: 0,
+    totalReactionCount: 0,
+    businessAccountCount: 0,
+    unprocessedReportCount: 0,
+  });
   const [reports] = useState([
-    { id: 'r1', pinId: 'pin1', reporter: '山田太郎', reason: '不適切な内容', status: 'pending' as const, date: '2025-11-03' },
-    { id: 'r2', pinId: 'pin3', reporter: '佐藤花子', reason: 'スパム', status: 'pending' as const, date: '2025-11-02' },
-    { id: 'r3', pinId: 'pin2', reporter: '鈴木一郎', reason: '虚偽情報', status: 'resolved' as const, date: '2025-11-01' },
+    {
+      id: 'r1',
+      pinId: 'pin1',
+      reporter: '山田太郎',
+      reason: '不適切な内容',
+      status: 'pending' as const,
+      date: '2025-11-03',
+    },
+    {
+      id: 'r2',
+      pinId: 'pin3',
+      reporter: '佐藤花子',
+      reason: 'スパム',
+      status: 'pending' as const,
+      date: '2025-11-02',
+    },
+    {
+      id: 'r3',
+      pinId: 'pin2',
+      reporter: '鈴木一郎',
+      reason: '虚偽情報',
+      status: 'resolved' as const,
+      date: '2025-11-01',
+    },
   ]);
 
-  //データベースから持ってくるようにしなければならない？
-  const [businessApplications] = useState([
-    { id: 'ba1', userName: '田中商店', email: 'tanaka@example.com', ShopName: '田中商店', PhoneNumber: '090-1234-5678', address: '山田市1-2-3', date: '2025-11-03' },
-    { id: 'ba2', userName: '鈴木食堂', email: 'suzuki@example.com', ShopName: '鈴木食堂', PhoneNumber: '090-8765-4321', address: '山田市4-5-6', date: '2025-11-02' },
-  ]);
+  const [businessApplications, setBusinessApplications] = useState<UserInputBusiness[]>([]);
+  const [genreDistribution, setGenreDistribution] = useState<
+    Array<{ name: string; value: number; color: string }>
+  >([]);
 
-  const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('kojanmap_jwt');
+        if (!token) {
+          console.warn('No auth token found');
+          return;
+        }
+        // Summary fetch
+        const summaryResp = await fetch(`${API_BASE_URL}/api/admin/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (summaryResp.ok) {
+          const summaryData = await summaryResp.json();
+          setSummary(summaryData);
+        }
+
+        // Applications fetch
+        const appResp = await fetch(`${API_BASE_URL}/api/admin/request`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (appResp.ok) {
+          const appData = await appResp.json();
+          // Normalize to UserInputBusiness
+          const normalized: UserInputBusiness[] = (appData.applications || []).map(
+            (app: BusinessAppAPIResponse) => ({
+              id: String(app.requestId),
+              userName: app.applicantName,
+              email: app.applicantEmail,
+              ShopName: app.businessName,
+              PhoneNumber: app.phone,
+              address: app.address,
+              date: app.createdAt.split('T')[0],
+            })
+          );
+          setBusinessApplications(normalized);
+        }
+
+        // Genre distribution fetch
+        const genreResp = await fetch(`${API_BASE_URL}/api/admin/posts/genre-stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (genreResp.ok) {
+          const genreData = await genreResp.json();
+          // APIから返されるデータには既にcolorが含まれている想定
+          const formattedGenre = genreData.map(
+            (item: { genre: string; count: number; color: string }) => ({
+              name: item.genre,
+              value: item.count,
+              color: item.color,
+            })
+          );
+          setGenreDistribution(formattedGenre);
+        }
+
+        // Inquiries fetch
+        const inquiryResp = await fetch(`${API_BASE_URL}/api/admin/inquiries`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (inquiryResp.ok) {
+          const inquiryData = await inquiryResp.json();
+          setInquiries(inquiryData);
+        }
+
+        // Users fetch
+        const usersResp = await fetch(`${API_BASE_URL}/api/admin/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (usersResp.ok) {
+          const usersData = await usersResp.json();
+          setUsers(usersData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch admin data:', error);
+      }
+    };
+
+    fetchData();
+  }, [API_BASE_URL]);
+
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [users, setUsers] = useState<
+    Array<{ id: string; name: string; email: string; role: string; posts: number }>
+  >([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showOnlyOpen, setShowOnlyOpen] = useState(false);
   const [replyModalOpen, setReplyModalOpen] = useState(false);
@@ -53,59 +174,80 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [replyText, setReplyText] = useState('');
 
   const systemStats = {
-    totalUsers: 1234,
-    activeUsers: 856,
-    totalPosts: mockPins.length,
-    totalReactions: mockPins.reduce((sum, pin) => sum + pin.reactions, 0),
-    businessUsers: 45,
-    pendingReports: reports.filter(r => r.status === 'pending').length,
+    totalUsers: summary.totalUserCount,
+    activeUsers: summary.activeUserCount,
+    totalPosts: summary.totalPostCount,
+    totalReactions: summary.totalReactionCount,
+    businessUsers: summary.businessAccountCount,
+    pendingReports: summary.unprocessedReportCount,
   };
 
-  const weeklyActivityData = [
-    { date: '10/28', users: 720, posts: 45, reactions: 156 },
-    { date: '10/29', users: 780, posts: 52, reactions: 189 },
-    { date: '10/30', users: 810, posts: 48, reactions: 201 },
-    { date: '10/31', users: 845, posts: 67, reactions: 234 },
-    { date: '11/01', users: 890, posts: 71, reactions: 267 },
-    { date: '11/02', users: 920, posts: 63, reactions: 298 },
-    { date: '11/03', users: 856, posts: 58, reactions: 315 },
-  ];
+  const handleApproveBusinessAccount = async (appId: string) => {
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
+      const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/approve`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 401 || response.status === 403) {
+        toast.error('認証が無効です。再ログインしてください');
+        onLogout();
+        return;
+      }
+      if (!response.ok) throw new Error('承認に失敗しました');
 
-  const genreDistribution = [
-    { name: 'グルメ', value: 2, color: '#EF4444' },
-    { name: 'イベント', value: 1, color: '#F59E0B' },
-    { name: '景色', value: 1, color: '#10B981' },
-    { name: 'お店', value: 1, color: '#3B82F6' },
-    { name: '緊急情報', value: 1, color: '#8B5CF6' },
-  ];
-
-  const handleApproveBusinessAccount = (appId: string) => {
-    toast.success('事業者アカウントを承認しました');
+      toast.success('事業者アカウントを承認しました');
+      setBusinessApplications((prev) => prev.filter((app) => String(app.id) !== appId));
+    } catch (error) {
+      console.error('Approval error:', error);
+      toast.error('承認処理中にエラーが発生しました');
+    }
   };
 
-  const handleRejectBusinessAccount = (appId: string) => {
-    toast.success('事業者申請を却下しました');
+  const handleRejectBusinessAccount = async (appId: string) => {
+    try {
+      const token = localStorage.getItem('kojanmap_jwt');
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
+      const response = await fetch(`${API_BASE_URL}/api/applications/${appId}/reject`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 401 || response.status === 403) {
+        toast.error('認証が無効です。再ログインしてください');
+        onLogout();
+        return;
+      }
+      if (!response.ok) throw new Error('却下に失敗しました');
+
+      toast.success('事業者申請を却下しました');
+      setBusinessApplications((prev) => prev.filter((app) => String(app.id) !== appId));
+    } catch (error) {
+      console.error('Rejection error:', error);
+      toast.error('却下処理中にエラーが発生しました');
+    }
   };
 
-  const handleResolveReport = (reportId: string) => {
+  const handleResolveReport = (_reportId: string) => {
     toast.success('通報を処理しました');
   };
 
-  const handleDeletePost = (pinId: string) => {
+  const handleDeletePost = (_pinId: string) => {
     if (confirm('この投稿を削除しますか？')) {
       toast.success('投稿を削除しました');
     }
   };
 
-  const handleDeleteAccount = (userId: string) => {
+  const handleDeleteAccount = (_userId: string) => {
     if (confirm('このアカウントを削除しますか？関連する全ての投稿も削除されます。')) {
       toast.success('アカウントを削除しました');
     }
-  };
-
-  const handleRespondInquiry = (id: string) => {
-    setInquiries((prev) => prev.map((q) => (q.id === id ? { ...q, status: 'responded' } : q)));
-    toast.success('問い合わせを返信済みにしました');
   };
 
   const handleDeleteInquiry = (id: string) => {
@@ -134,20 +276,22 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'overview'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-              }`}
+            }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'reports'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'reports'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-              }`}
+            }`}
           >
             <AlertTriangle className="w-5 h-5" />
             <span className="flex-1 text-left">通報管理</span>
@@ -157,10 +301,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('business')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'business'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'business'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-              }`}
+            }`}
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
@@ -170,36 +315,37 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'posts'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'posts'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-              }`}
+            }`}
           >
             <MapPin className="w-5 h-5" />
             <span>投稿管理</span>
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'users'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'users'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-              }`}
+            }`}
           >
             <Users className="w-5 h-5" />
             <span>ユーザー管理</span>
           </button>
           <button
             onClick={() => setActiveTab('inquiries')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'inquiries'
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+              activeTab === 'inquiries'
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-              }`}
+            }`}
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
-            {inquiries.length > 0 && (
-              <Badge className="bg-emerald-500">{inquiries.length}</Badge>
-            )}
+            {inquiries.length > 0 && <Badge className="bg-emerald-500">{inquiries.length}</Badge>}
           </button>
         </nav>
 
@@ -332,30 +478,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
               </div>
 
               {/* グラフエリア */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 shadow-xl border-slate-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-                      週間アクティビティ推移
-                    </CardTitle>
-                    <CardDescription>ユーザー活動とコンテンツ投稿の推移</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={weeklyActivityData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="posts" fill="#3b82f6" name="新規投稿" radius={[8, 8, 0, 0]} />
-                        <Bar dataKey="reactions" fill="#8b5cf6" name="リアクション" radius={[8, 8, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
+              <div className="grid grid-cols-1 gap-6">
                 <Card className="shadow-xl border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -394,7 +517,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           {activeTab === 'reports' && (
             <div className="max-w-5xl space-y-4">
               {reports.map((report) => (
-                <Card key={report.id} className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
+                <Card
+                  key={report.id}
+                  className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -522,8 +648,6 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
           */}
 
-
-
           {/* 投稿管理タブ */}
           {activeTab === 'posts' && (
             <div className="max-w-5xl">
@@ -546,7 +670,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           </p>
                           <div className="flex items-center space-x-3 mt-1">
                             <Badge variant="outline">{pin.genre}</Badge>
-                            <span className="text-xs text-slate-500">リアクション: {pin.reactions}</span>
+                            <span className="text-xs text-slate-500">
+                              リアクション: {pin.reactions}
+                            </span>
                           </div>
                         </div>
                         <Button
@@ -575,11 +701,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {[
-                      { id: 'u1', name: '山田太郎', email: 'yamada@example.com', role: 'general', posts: 5 },
-                      { id: 'u2', name: '山田商店', email: 'yamadashouten@example.com', role: 'business', posts: 12 },
-                      { id: 'u3', name: '佐藤花子', email: 'sato@example.com', role: 'general', posts: 3 },
-                    ].map((userItem) => (
+                    {users.map((userItem) => (
                       <div
                         key={userItem.id}
                         className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
@@ -588,7 +710,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           <div className="flex items-center space-x-2 mb-1">
                             <p>{userItem.name}</p>
                             <Badge
-                              className={userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'}
+                              className={
+                                userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
+                              }
                             >
                               {userItem.role === 'business' ? '事業者' : '一般'}
                             </Badge>
@@ -623,7 +747,9 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       <MessageSquare className="w-5 h-5 text-blue-600" />
                       <div>
                         <CardTitle>お問い合わせ一覧</CardTitle>
-                        <CardDescription>一般会員・事業者からの問い合わせを管理します</CardDescription>
+                        <CardDescription>
+                          一般会員・事業者からの問い合わせを管理します
+                        </CardDescription>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -635,7 +761,12 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                       </div>
-                      <Button size="sm" variant={showOnlyOpen ? undefined : 'outline'} onClick={() => setShowOnlyOpen((v) => !v)} className="shadow-sm">
+                      <Button
+                        size="sm"
+                        variant={showOnlyOpen ? undefined : 'outline'}
+                        onClick={() => setShowOnlyOpen((v) => !v)}
+                        className="shadow-sm"
+                      >
                         未対応のみ
                       </Button>
                       <Badge className="bg-emerald-500">{inquiries.length}</Badge>
@@ -657,7 +788,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       });
 
                       if (filtered.length === 0) {
-                        return <div className="text-sm text-slate-500">条件に一致する問い合わせはありません。</div>;
+                        return (
+                          <div className="text-sm text-slate-500">
+                            条件に一致する問い合わせはありません。
+                          </div>
+                        );
                       }
 
                       return filtered.map((inq) => (
@@ -667,11 +802,19 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                               <div className="flex-1">
                                 <div className="flex items-center space-x-3 mb-2">
                                   <p className="font-medium">{inq.fromName}</p>
-                                  <Badge className={inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'}>
+                                  <Badge
+                                    className={
+                                      inq.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'
+                                    }
+                                  >
                                     {inq.role === 'business' ? '事業者' : '一般'}
                                   </Badge>
                                   <span className="text-xs text-slate-500">{inq.date}</span>
-                                  <Badge className={inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'}>
+                                  <Badge
+                                    className={
+                                      inq.status === 'open' ? 'bg-red-500' : 'bg-slate-400'
+                                    }
+                                  >
                                     {inq.status === 'open' ? '未対応' : '対応済み'}
                                   </Badge>
                                   {inq.draft && (
@@ -683,11 +826,23 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                               </div>
                               <div className="flex flex-col ml-4 space-y-2">
                                 {inq.status === 'open' && (
-                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => { setReplyingInquiry(inq); setReplyText(''); setReplyModalOpen(true); }}>
+                                  <Button
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                    onClick={() => {
+                                      setReplyingInquiry(inq);
+                                      setReplyText('');
+                                      setReplyModalOpen(true);
+                                    }}
+                                  >
                                     返信
                                   </Button>
                                 )}
-                                <Button size="sm" variant="destructive" onClick={() => handleDeleteInquiry(inq.id)}>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteInquiry(inq.id)}
+                                >
                                   削除
                                 </Button>
                               </div>
@@ -708,10 +863,22 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
-                    <p className="text-sm text-slate-500">宛先: {replyingInquiry.email} ・ {replyingInquiry.role === 'business' ? '事業者' : '一般'}</p>
+                    <p className="text-sm text-slate-500">
+                      宛先: {replyingInquiry.email} ・{' '}
+                      {replyingInquiry.role === 'business' ? '事業者' : '一般'}
+                    </p>
                   </div>
                   <div>
-                    <button className="text-slate-500 hover:text-slate-700" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>✕</button>
+                    <button
+                      className="text-slate-500 hover:text-slate-700"
+                      onClick={() => {
+                        setReplyModalOpen(false);
+                        setReplyingInquiry(null);
+                        setReplyText('');
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 </div>
                 <div className="mt-3">
@@ -723,25 +890,57 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                   />
                 </div>
                 <div className="flex justify-end space-x-2 mt-3">
-                  <Button variant="outline" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>キャンセル</Button>
-                  <Button size="sm" onClick={() => {
-                    if (!replyingInquiry) return;
-                    // モック: メール送信として扱い、問い合わせを対応済みにする
-                    setInquiries((prev) => prev.map((q) => q.id === replyingInquiry.id ? { ...q, status: 'responded' } : q));
-                    toast.success('メールを送信しました（モック）。問い合わせを対応済みにしました。');
-                    setReplyModalOpen(false);
-                    setReplyingInquiry(null);
-                    setReplyText('');
-                  }}>メールで送信</Button>
-                  <Button size="sm" variant="outline" onClick={() => {
-                    if (!replyingInquiry) return;
-                    // 下書きを保存（モック）：draft フィールドに本文を保存、ステータスは変更しない
-                    setInquiries((prev) => prev.map((q) => q.id === replyingInquiry.id ? { ...q, draft: replyText } : q));
-                    toast.success('下書きを保存しました（モック）。');
-                    setReplyModalOpen(false);
-                    setReplyingInquiry(null);
-                    setReplyText('');
-                  }}>下書き</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setReplyModalOpen(false);
+                      setReplyingInquiry(null);
+                      setReplyText('');
+                    }}
+                  >
+                    キャンセル
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (!replyingInquiry) return;
+                      // モック: メール送信として扱い、問い合わせを対応済みにする
+                      setInquiries((prev) =>
+                        prev.map((q) =>
+                          q.id === replyingInquiry.id
+                            ? { ...q, status: 'responded', draft: undefined }
+                            : q
+                        )
+                      );
+                      toast.success(
+                        'メールを送信しました（モック）。問い合わせを対応済みにしました。'
+                      );
+                      setReplyModalOpen(false);
+                      setReplyingInquiry(null);
+                      setReplyText('');
+                    }}
+                  >
+                    メールで送信
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (!replyingInquiry) return;
+                      // 下書きを保存（モック）：draft フィールドに本文を保存、ステータスは変更しない
+                      setInquiries((prev) =>
+                        prev.map((q) =>
+                          q.id === replyingInquiry.id ? { ...q, draft: replyText } : q
+                        )
+                      );
+                      toast.success('下書きを保存しました（モック）。');
+                      setReplyModalOpen(false);
+                      setReplyingInquiry(null);
+                      setReplyText('');
+                    }}
+                  >
+                    下書き
+                  </Button>
                 </div>
               </div>
             </div>

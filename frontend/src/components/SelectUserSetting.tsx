@@ -9,30 +9,29 @@ interface SelectUserSettingProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function SelectUserSetting({ 
-  user, 
-  onUpdateUser, 
-  onNavigateToDeleteAccount 
+export function SelectUserSetting({
+  user,
+  onUpdateUser,
+  onNavigateToDeleteAccount,
 }: SelectUserSettingProps) {
-  
   const handleUnblock = (userId: string) => {
-    const next = (user.blockedUsers || []).filter(id => id !== userId);
+    const next = (user.blockedUsers || []).filter((id) => id !== userId);
     onUpdateUser({ ...user, blockedUsers: next });
   };
 
   return (
     <div className="space-y-4">
       {/* ブロックリスト設定 */}
-      <DisplayUserSetting 
-        title="ブロックリスト" 
-        description="ブロックしたユーザーの管理"
-      >
-        {(!user.blockedUsers || user.blockedUsers.length === 0) ? (
+      <DisplayUserSetting title="ブロックリスト" description="ブロックしたユーザーの管理">
+        {!user.blockedUsers || user.blockedUsers.length === 0 ? (
           <p className="text-gray-500 text-sm">ブロックしたユーザーはいません</p>
         ) : (
           <div className="space-y-2">
             {user.blockedUsers.map((userId) => (
-              <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={userId}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center space-x-2">
                   <UserX className="w-4 h-4 text-gray-500" />
                   <span className="text-sm">ユーザーID: {userId}</span>
@@ -47,8 +46,8 @@ export function SelectUserSetting({
       </DisplayUserSetting>
 
       {/* 退会設定 */}
-      <DisplayUserSetting 
-        title="退会" 
+      <DisplayUserSetting
+        title="退会"
         description="アカウントの削除"
         className="border-red-200"
         titleClassName="text-red-600"

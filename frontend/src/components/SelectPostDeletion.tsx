@@ -18,10 +18,7 @@ export function SelectPostDeletion({ pinId, onDelete, onClose }: SelectPostDelet
   };
 
   return (
-    <Button
-      onClick={handleDelete}
-      variant="destructive"
-    >
+    <Button onClick={handleDelete} variant="destructive">
       <Trash2 className="w-4 h-4 mr-2" />
       削除
     </Button>
