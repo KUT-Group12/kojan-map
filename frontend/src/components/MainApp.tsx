@@ -196,11 +196,12 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     longitude: number;
     title: string;
     text: string;
-    genreId: number; // 名前(string)ではなくID(number)を直接受け取る
-    genreName: string; // 表示用に名前も受け取る
-    genreColor: string; // 表示用に色も受け取る
+    genre: PinGenre; // genreId, genreName, genreColorの代わりにPinGenreオブジェクトを受け取る
     images: string[];
   }) => {
+    // genreオブジェクトから必要な値を取り出す
+    const { id: genreId, name: genreName, color: genreColor } = newPost.genre;
+
     const sharedId = Date.now();
     const existingPlace = places.find(
       (p) => p.latitude === newPost.latitude && p.longitude === newPost.longitude
@@ -213,7 +214,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           placeId,
-          genreId: newPost.genreId, // モックを使わず、受け取ったIDをそのまま送る
+          genreId: genreId, // 分解した値を使用
           userId: user.googleId,
           title: newPost.title,
           text: newPost.text,
@@ -239,9 +240,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         postImage: newPost.images,
         numReaction: 0,
         numView: 0,
-        genreId: newPost.genreId,
-        genreName: newPost.genreName, // DBからきた名前を使用
-        genreColor: newPost.genreColor, // DBからきた色を使用
+        genreId: genreId, // 分解した値を使用
+        genreName: genreName, // 分解した値を使用
+        genreColor: genreColor, // 分解した値を使用
       };
 
       const place: Place = {
