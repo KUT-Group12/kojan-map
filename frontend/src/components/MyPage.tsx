@@ -66,13 +66,13 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
     if (!selectedIcon) return;
 
     setIsUploadingIcon(true);
-    
+
     // アイコンを保存
     const updatedUser = {
       ...user,
       businessIcon: selectedIcon,
     };
-    
+
     onUpdateUser(updatedUser);
     toast.success('アイコンを更新しました');
     setIsUploadingIcon(false);
@@ -200,9 +200,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                   <p className="text-sm text-gray-600 mb-2">現在のアイコン</p>
                   <div className="w-32 h-32 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
                     {user.businessIcon ? (
-                      <img 
-                        src={user.businessIcon} 
-                        alt="事業者アイコン" 
+                      <img
+                        src={user.businessIcon}
+                        alt="事業者アイコン"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -219,9 +219,9 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                   <div className="flex-shrink-0">
                     <p className="text-sm text-gray-600 mb-2">プレビュー</p>
                     <div className="w-32 h-32 rounded-lg border-2 border-blue-500 overflow-hidden">
-                      <img 
-                        src={selectedIcon} 
-                        alt="プレビュー" 
+                      <img
+                        src={selectedIcon}
+                        alt="プレビュー"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -253,14 +253,14 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
 
                     {selectedIcon && (
                       <div className="flex space-x-2">
-                        <Button 
+                        <Button
                           onClick={handleSaveIcon}
                           disabled={isUploadingIcon}
                           className="flex-1"
                         >
                           {isUploadingIcon ? '保存中...' : 'アイコンを保存'}
                         </Button>
-                        <Button 
+                        <Button
                           onClick={handleCancelIconUpload}
                           variant="outline"
                           disabled={isUploadingIcon}
@@ -392,20 +392,20 @@ export function MyPage({ user, pins, reactedPins, onPinClick, onDeletePin, onUpd
                 ) : (
                   <div className="space-y-2">
                     {user.blockedUsers.map((userId) => (
-                          <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center space-x-2">
-                              <UserX className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm">ユーザーID: {userId}</span>
-                            </div>
-                            <Button size="sm" variant="outline" onClick={() => {
-                              const next = (user.blockedUsers || []).filter(id => id !== userId);
-                              const updatedUser = { ...user, blockedUsers: next };
-                              onUpdateUser(updatedUser);
-                            }}>
-                              ブロック解除
-                            </Button>
-                          </div>
-                        ))}
+                      <div key={userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <UserX className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm">ユーザーID: {userId}</span>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => {
+                          const next = (user.blockedUsers || []).filter(id => id !== userId);
+                          const updatedUser = { ...user, blockedUsers: next };
+                          onUpdateUser(updatedUser);
+                        }}>
+                          ブロック解除
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>

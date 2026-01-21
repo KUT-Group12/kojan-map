@@ -5,13 +5,13 @@ import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User } from '../types';
 import { mockPins, mockInquiries, Inquiry } from '../lib/mockData';
-import {BusinessApplicationList} from './AdminDisplayBusinessApplicationList';
-import { 
-  Users, 
-  AlertTriangle, 
-  TrendingUp, 
-  MapPin, 
-  UserCheck, 
+import { BusinessApplicationList } from './AdminDisplayBusinessApplicationList';
+import {
+  Users,
+  AlertTriangle,
+  TrendingUp,
+  MapPin,
+  UserCheck,
   Trash2,
   CheckCircle,
   XCircle,
@@ -21,7 +21,7 @@ import {
   Shield,
   Clock,
   Eye
-  ,MessageSquare
+  , MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -134,22 +134,20 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         <nav className="p-4 space-y-2">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'overview' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'overview'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <BarChart3 className="w-5 h-5" />
             <span>概要</span>
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'reports' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'reports'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <AlertTriangle className="w-5 h-5" />
             <span className="flex-1 text-left">通報管理</span>
@@ -159,11 +157,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('business')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'business' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'business'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <UserCheck className="w-5 h-5" />
             <span className="flex-1 text-left">事業者申請</span>
@@ -173,33 +170,30 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           </button>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'posts' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'posts'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <MapPin className="w-5 h-5" />
             <span>投稿管理</span>
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'users' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'users'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <Users className="w-5 h-5" />
             <span>ユーザー管理</span>
           </button>
           <button
             onClick={() => setActiveTab('inquiries')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-              activeTab === 'inquiries' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg' 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'inquiries'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg'
                 : 'hover:bg-slate-700'
-            }`}
+              }`}
           >
             <MessageSquare className="w-5 h-5" />
             <span className="flex-1 text-left">お問い合わせ</span>
@@ -214,8 +208,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
             <p className="text-xs text-slate-400">ログイン中</p>
             <p className="text-sm truncate">{user.name}</p>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full bg-transparent border-slate-600 hover:bg-slate-700 text-white"
             onClick={onLogout}
           >
@@ -405,7 +399,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-3">
-                          <Badge 
+                          <Badge
                             className={report.status === 'pending' ? 'bg-red-500' : 'bg-slate-400'}
                           >
                             {report.status === 'pending' ? '未処理' : '処理済み'}
@@ -429,8 +423,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       </div>
                       {report.status === 'pending' && (
                         <div className="flex space-x-2 ml-4">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="destructive"
                             onClick={() => handleDeletePost(report.pinId)}
                             className="shadow-md"
@@ -438,8 +432,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                             <Trash2 className="w-4 h-4 mr-1" />
                             投稿削除
                           </Button>
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => handleResolveReport(report.id)}
                             className="shadow-md"
@@ -459,10 +453,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           {/* ★事業者申請一覧表示 */}
           {activeTab === 'business' && (
             <div className="max-w-5xl space-y-4">
-              <BusinessApplicationList 
-                applications = {businessApplications} 
-                onApprove = {handleApproveBusinessAccount}
-                onReject = {handleRejectBusinessAccount}
+              <BusinessApplicationList
+                applications={businessApplications}
+                onApprove={handleApproveBusinessAccount}
+                onReject={handleRejectBusinessAccount}
               />
             </div>
           )}
@@ -528,7 +522,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
           */}
 
-          
+
 
           {/* 投稿管理タブ */}
           {activeTab === 'posts' && (
@@ -541,8 +535,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                 <CardContent>
                   <div className="space-y-2">
                     {mockPins.slice(0, 10).map((pin) => (
-                      <div 
-                        key={pin.id} 
+                      <div
+                        key={pin.id}
                         className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex-1">
@@ -555,8 +549,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                             <span className="text-xs text-slate-500">リアクション: {pin.reactions}</span>
                           </div>
                         </div>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="destructive"
                           onClick={() => handleDeletePost(pin.id)}
                           className="shadow-md"
@@ -586,14 +580,14 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                       { id: 'u2', name: '山田商店', email: 'yamadashouten@example.com', role: 'business', posts: 12 },
                       { id: 'u3', name: '佐藤花子', email: 'sato@example.com', role: 'general', posts: 3 },
                     ].map((userItem) => (
-                      <div 
-                        key={userItem.id} 
+                      <div
+                        key={userItem.id}
                         className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <p>{userItem.name}</p>
-                            <Badge 
+                            <Badge
                               className={userItem.role === 'business' ? 'bg-blue-600' : 'bg-slate-400'}
                             >
                               {userItem.role === 'business' ? '事業者' : '一般'}
@@ -602,8 +596,8 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                           <p className="text-sm text-slate-600">{userItem.email}</p>
                           <p className="text-xs text-slate-500 mt-1">投稿数: {userItem.posts}</p>
                         </div>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="destructive"
                           onClick={() => handleDeleteAccount(userItem.id)}
                           className="shadow-md"
@@ -707,29 +701,29 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
               </Card>
             </div>
           )}
-            {/* 返信モーダル（簡易実装・モックのメール送信） */}
-            {replyModalOpen && replyingInquiry && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                <div className="bg-white rounded-lg w-[640px] max-w-full p-4 shadow-lg">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
-                      <p className="text-sm text-slate-500">宛先: {replyingInquiry.email} ・ {replyingInquiry.role === 'business' ? '事業者' : '一般'}</p>
-                    </div>
-                    <div>
-                      <button className="text-slate-500 hover:text-slate-700" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>✕</button>
-                    </div>
+          {/* 返信モーダル（簡易実装・モックのメール送信） */}
+          {replyModalOpen && replyingInquiry && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-lg w-[640px] max-w-full p-4 shadow-lg">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium">{`返信: ${replyingInquiry.fromName}`}</h3>
+                    <p className="text-sm text-slate-500">宛先: {replyingInquiry.email} ・ {replyingInquiry.role === 'business' ? '事業者' : '一般'}</p>
                   </div>
-                  <div className="mt-3">
-                    <textarea
-                      className="w-full h-40 p-2 border rounded resize-none"
-                      placeholder="ここに返信内容を入力します（モック）。メール送信すると自動で対応済みに切り替わります。"
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                    />
+                  <div>
+                    <button className="text-slate-500 hover:text-slate-700" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>✕</button>
                   </div>
-                  <div className="flex justify-end space-x-2 mt-3">
-                    <Button variant="outline" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>キャンセル</Button>
+                </div>
+                <div className="mt-3">
+                  <textarea
+                    className="w-full h-40 p-2 border rounded resize-none"
+                    placeholder="ここに返信内容を入力します（モック）。メール送信すると自動で対応済みに切り替わります。"
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2 mt-3">
+                  <Button variant="outline" onClick={() => { setReplyModalOpen(false); setReplyingInquiry(null); setReplyText(''); }}>キャンセル</Button>
                   <Button size="sm" onClick={() => {
                     if (!replyingInquiry) return;
                     // モック: メール送信として扱い、問い合わせを対応済みにする
@@ -748,10 +742,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
                     setReplyingInquiry(null);
                     setReplyText('');
                   }}>下書き</Button>
-                  </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
     </div>

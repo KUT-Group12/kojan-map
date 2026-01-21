@@ -18,8 +18,8 @@ interface BusinessDisplayMyPageProps {
   onNavigateToDeleteAccount: () => void;
 }
 
-export function BusinessDisplayMyPage({ 
-  user, pins, onPinClick, onDeletePin, onUpdateUser, onNavigateToDeleteAccount 
+export function BusinessDisplayMyPage({
+  user, pins, onPinClick, onDeletePin, onUpdateUser, onNavigateToDeleteAccount
 }: BusinessDisplayMyPageProps) {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [isUploadingIcon, setIsUploadingIcon] = useState(false);
@@ -70,7 +70,7 @@ export function BusinessDisplayMyPage({
                   {isEditingName ? (
                     <>
                       <input className="px-2 py-1 border rounded" value={editingNameValue} onChange={(e) => setEditingNameValue(e.target.value)} />
-                      <Button size="sm" onClick={() => { onUpdateUser({...user, name: editingNameValue}); setIsEditingName(false); }}>保存</Button>
+                      <Button size="sm" onClick={() => { onUpdateUser({ ...user, name: editingNameValue }); setIsEditingName(false); }}>保存</Button>
                     </>
                   ) : (
                     <>
@@ -139,18 +139,18 @@ export function BusinessDisplayMyPage({
           </TabsList>
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-            <SelectPostHistory 
-                pins={pins} 
-                onPinClick={onPinClick} 
-                onDeletePin={onDeletePin} 
+            <SelectPostHistory
+              pins={pins}
+              onPinClick={onPinClick}
+              onDeletePin={onDeletePin}
             />
           </TabsContent>
           {/* 設定 */}
           <TabsContent value="settings" className="space-y-4">
-            <SelectUserSetting 
-                user={user}
-                onUpdateUser={onUpdateUser}
-                onNavigateToDeleteAccount={onNavigateToDeleteAccount}
+            <SelectUserSetting
+              user={user}
+              onUpdateUser={onUpdateUser}
+              onNavigateToDeleteAccount={onNavigateToDeleteAccount}
             />
           </TabsContent>
         </Tabs>

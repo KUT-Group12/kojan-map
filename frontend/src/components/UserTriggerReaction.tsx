@@ -19,12 +19,12 @@ export function UserTriggerReaction({ pinId, isReacted, userRole, isDisabled, on
         onReaction(pinId);
       }}
       variant={isReacted ? 'default' : 'outline'}
-      className="flex-1" 
+      className="flex-1"
       disabled={isDisabled || isBusiness}
     >
       <Heart className={`w-4 h-4 mr-2 ${isReacted ? 'fill-white' : ''}`} />
-      {isBusiness 
-        ? '事業者はリアクション不可' 
+      {isBusiness
+        ? '事業者はリアクション不可'
         : (isReacted ? 'リアクション済み' : 'リアクション')}
     </Button>
   );

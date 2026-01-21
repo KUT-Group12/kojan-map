@@ -39,10 +39,10 @@ export function SelectPostHistory({ pins, onPinClick, onDeletePin }: SelectPostH
           formatDate={formatDate}
           /* 投稿削除 */
           deleteButton={
-            <SelectPostDeletion 
-              pinId={pin.id} 
-              onDelete={(id) => onDeletePin(id)} 
-              onClose={() => {}} 
+            <SelectPostDeletion
+              pinId={pin.id}
+              onDelete={(id) => onDeletePin(id)}
+              onClose={() => { }}
             />
           }
         />

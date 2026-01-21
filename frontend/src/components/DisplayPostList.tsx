@@ -22,8 +22,8 @@ interface PinDetailModalProps {
   pinsAtLocation?: Pin[];
   // open create modal prefilled with given coordinates
   onOpenCreateAtLocation?: (lat: number, lng: number) => void;
-    // 追加：別のピンを選択するための関数
-    onSelectPin?: (pin: Pin) => void;
+  // 追加：別のピンを選択するための関数
+  onSelectPin?: (pin: Pin) => void;
 }
 
 export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReaction, onDelete, onBlockUser, pinsAtLocation, onOpenCreateAtLocation, onSelectPin }: PinDetailModalProps) {
@@ -149,20 +149,20 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
 
                 {isOwnPost ? (
                   /* 2. 削除ボタン */
-                  <SelectPostDeletion 
-                    pinId={pin.id} 
-                    onDelete={onDelete} 
-                    onClose={onClose} 
+                  <SelectPostDeletion
+                    pinId={pin.id}
+                    onDelete={onDelete}
+                    onClose={onClose}
                   />
                 ) : (
                   /* 3. 通報 & ブロック */
                   <>
                     <ReportScreen isReporting={isReporting} setIsReporting={setIsReporting} onReportComplete={onClose} />
                     {typeof onBlockUser === 'function' && (
-                      <SelectBlock 
-                        userId={pin.userId} 
-                        onBlockUser={onBlockUser} 
-                        onClose={onClose} 
+                      <SelectBlock
+                        userId={pin.userId}
+                        onBlockUser={onBlockUser}
+                        onClose={onClose}
                       />
                     )}
                   </>
@@ -174,19 +174,18 @@ export function DisplayPostList({ pin, currentUser, isReacted, onClose, onReacti
           {/* 同一場所の投稿リスト（スクロール可能） */}
           {pinsAtLocation && pinsAtLocation.length > 0 && (
             <div className="mt-6 pt-6 border-t">
-            <h3 className="text-sm font-bold mb-3">この場所の他の投稿</h3>
-            <div className="space-y-2">
+              <h3 className="text-sm font-bold mb-3">この場所の他の投稿</h3>
+              <div className="space-y-2">
                 {pinsAtLocation.map((p) => (
                   <div
                     key={p.id}
                     onClick={() => {
                       if (p.id !== pin.id && onSelectPin) onSelectPin(p);
                     }}
-                    className={`cursor-pointer p-3 rounded-lg border transition-colors ${
-                      p.id === pin.id 
-                        ? 'border-blue-500 bg-blue-50' 
+                    className={`cursor-pointer p-3 rounded-lg border transition-colors ${p.id === pin.id
+                        ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">{p.title}</span>
