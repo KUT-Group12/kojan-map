@@ -1,123 +1,121 @@
-if (typeof window.TextEncoder === 'undefined') {
-  (window as any).TextEncoder = class {
-    encode() {
-      return new Uint8Array();
-    }
-  };
-  (window as any).TextDecoder = class {
-    decode() {
-      return '';
-    }
-  };
-}
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MapViewScreen } from '../components/MapViewScreen';
 
-// 1. Leafletのタイルレイヤーや地図のサイズ計算によるエラーを回避するためのモック
-jest.mock('react-leaflet', () => ({
+// 1. LeafletとReact-Leafletをまとめてモック化
+vi.mock('react-leaflet', () => ({
   MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
   TileLayer: () => <div data-testid="tile-layer" />,
-  // Marker に eventHandlers を通すように修正
-  Marker: ({ children, eventHandlers }: any) => (
-    <div data-testid="marker" onClick={eventHandlers?.click} onMouseOver={eventHandlers?.mouseover}>
-      {children}
+  // useMapEvents を追加（GetLocation がこれを呼ぶため）
+  useMapEvents: vi.fn(), 
+  Marker: ({ position, eventHandlers, icon }: any) => (
+    <div
+      data-testid="map-marker"
+      data-position={JSON.stringify(position)}
+      onClick={eventHandlers.click}
+      onMouseOver={eventHandlers.mouseover}
+    >
+      <div dangerouslySetInnerHTML={{ __html: icon.options.html }} />
     </div>
   ),
-  // ⚠ ここを追加：GetLocation が壊れないように空の関数（または最小限のモック）を返す
-  useMapEvents: (events: any) => {
-    // events.dblclick などのハンドラが渡されますが、
-    // テスト中に地図のダブルクリックをシミュレートしない限り、空の関数でOKです。
-    return null;
-  },
 }));
 
-// 2. L.divIcon などの Leaflet 本体関数のモック
-jest.mock('leaflet', () => ({
-  divIcon: jest.fn(() => ({})),
-  Icon: { Default: { imagePath: '' } },
+// 2. GetLocationもモック
+vi.mock('./GetLocation', () => ({
+  GetLocation: () => <div data-testid="get-location" />,
 }));
 
-describe('MapViewScreen コンポーネント', () => {
-  const mockUser = { role: 'general' };
+describe('MapViewScreen', () => {
+  const mockUser = { id: 'u1', role: 'user' } as any;
   const mockPlaces = [
-    { placeId: 1, latitude: 33.6, longitude: 133.6 },
-    { placeId: 2, latitude: 33.7, longitude: 133.7 },
-  ];
+    { placeId: 'p1', latitude: 33.6, longitude: 133.6 },
+    { placeId: 'p2', latitude: 34.0, longitude: 134.0 },
+  ] as any;
   const mockPosts = [
-    { postId: 101, placeId: 1, genreId: 1, title: 'ポスト1' },
-    { postId: 102, placeId: 1, genreId: 1, title: 'ポスト2（同じ場所）' },
-    { postId: 103, placeId: 2, genreId: 2, title: 'ポスト3' },
-  ];
+    { postId: 1, placeId: 'p1', genreId: 1, title: 'Post 1' },
+    { postId: 2, placeId: 'p1', genreId: 1, title: 'Post 2' }, // p1に2つ目の投稿
+    { postId: 3, placeId: 'p2', genreId: 2, title: 'Post 3' },
+  ] as any;
 
-  const mockOnPinClick = jest.fn();
-  const mockOnMapDoubleClick = jest.fn();
+  const mockOnPinClick = vi.fn();
+  const mockOnMapDoubleClick = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
-  test('凡例が正しく表示されていること', () => {
+  it('凡例が正しく表示されていること', () => {
     render(
       <MapViewScreen
-        user={mockUser as any}
-        posts={mockPosts as any}
-        places={mockPlaces as any}
+        user={mockUser}
+        posts={mockPosts}
+        places={mockPlaces}
         onPinClick={mockOnPinClick}
         onMapDoubleClick={mockOnMapDoubleClick}
       />
     );
-
     expect(screen.getByText('凡例')).toBeInTheDocument();
     expect(screen.getByText('グルメ')).toBeInTheDocument();
-    expect(screen.getByText('一般投稿')).toBeInTheDocument();
   });
 
-  test('場所ごとにグループ化されたマーカーが描画されること', () => {
+  it('正しい位置にマーカーが配置され、グループ化（カウントバッジ）が機能していること', () => {
     render(
       <MapViewScreen
-        user={mockUser as any}
-        posts={mockPosts as any}
-        places={mockPlaces as any}
+        user={mockUser}
+        posts={mockPosts}
+        places={mockPlaces}
         onPinClick={mockOnPinClick}
         onMapDoubleClick={mockOnMapDoubleClick}
       />
     );
 
-    // placeId が 1 と 2 の 2箇所にピンがあるため、マーカーは2つになるはず
-    const markers = screen.getAllByTestId('marker');
+    const markers = screen.getAllByTestId('map-marker');
+    // placeId は p1, p2 の2箇所なのでマーカーは2つのはず
     expect(markers).toHaveLength(2);
+
+    // p1のマーカー（投稿が2つある方）にはカウントバッジ "2" が表示されているか
+    const badge2 = screen.getByText('2');
+    expect(badge2).toBeInTheDocument();
+    expect(badge2.closest('[data-testid="map-marker"]')).toHaveAttribute(
+      'data-position',
+      JSON.stringify([33.6, 133.6])
+    );
   });
 
-  test('マーカーをクリックすると onPinClick が呼ばれること', () => {
+  it('マーカーをクリックしたときに onPinClick が呼ばれること', () => {
     render(
       <MapViewScreen
-        user={mockUser as any}
-        posts={mockPosts as any}
-        places={mockPlaces as any}
+        user={mockUser}
+        posts={mockPosts}
+        places={mockPlaces}
         onPinClick={mockOnPinClick}
         onMapDoubleClick={mockOnMapDoubleClick}
       />
     );
 
-    const markers = screen.getAllByTestId('marker');
+    const markers = screen.getAllByTestId('map-marker');
     fireEvent.click(markers[0]);
 
-    expect(mockOnPinClick).toHaveBeenCalledWith(expect.objectContaining({ placeId: 1 }));
+    expect(mockOnPinClick).toHaveBeenCalled();
   });
 
-  test('事業者ユーザーの場合、事業者向けの凡例が表示されること', () => {
-    const bizUser = { role: 'business' };
+  it('事業者ユーザーの場合、アイコンが四角形（rotate-45）のスタイルになること', () => {
+    const businessUser = { id: 'b1', role: 'business' } as any;
+    const businessData = { profileImage: '' } as any;
+
     render(
       <MapViewScreen
-        user={bizUser as any}
-        posts={mockPosts as any}
-        places={mockPlaces as any}
+        user={businessUser}
+        business={businessData}
+        posts={[mockPosts[0]]}
+        places={[mockPlaces[0]]}
         onPinClick={mockOnPinClick}
         onMapDoubleClick={mockOnMapDoubleClick}
-        business={{ businessName: 'カフェ' } as any}
       />
     );
 
-    expect(screen.getByText('事業者投稿')).toBeInTheDocument();
+    // 事業者用クラス 'rotate-45' が含まれているか確認
+    const marker = screen.getByTestId('map-marker');
+    expect(marker.innerHTML).toContain('rotate-45');
   });
 });

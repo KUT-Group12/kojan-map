@@ -1,5 +1,15 @@
 import '@testing-library/jest-dom';
 
-Object.defineProperty(globalThis, 'import', {
-  value: { meta: { env: { VITE_API_URL: 'http://localhost:8080' } } },
-});
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: async () => ({}),
+  })
+);
+
+// Mock ResizeObserver for Recharts
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

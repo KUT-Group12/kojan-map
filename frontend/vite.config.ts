@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+// import { defineConfig } from 'vite';
+import { defineConfig, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
@@ -48,6 +49,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setupTests.ts'],
+  },
   build: {
     target: 'esnext',
     outDir: 'build',
@@ -96,4 +102,4 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
-});
+} as UserConfig & { test: any });
