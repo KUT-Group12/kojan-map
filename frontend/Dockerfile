@@ -1,4 +1,4 @@
-# 1. ベースイメージ: Node.js 20.18.1 (Alpine版)
+# 1. ベースイメージ: Node.js 25.2.1 (Alpine版)
 FROM node:25.2.1-alpine
 
 # 2. 作業ディレクトリの設定
