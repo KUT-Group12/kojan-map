@@ -8,25 +8,27 @@ import prettier from 'eslint-config-prettier';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default tseslint.config(
-  // 1. 全域での無視設定
+  // 1. 全域での無視設定（ここに files を書かないのが Flat Config のコツ）
   {
     ignores: [
-      'dist/**',
-      'node_modules/**',
-      'build/**',
-      'coverage/**',
+      'dist',
+      'node_modules',
+      'build',
+      'coverage',
       '*.config.js',
-      'src/__tests__/**', // テストディレクトリを完全に除外
+      'src/__tests__/**',
       '**/*.test.tsx',
       '**/*.test.ts',
     ],
   },
 
-  // 2. メインの解析設定
+  // 2. ベースの設定（JS + TS 推奨設定）
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  // 3. React / TypeScript の詳細設定
   {
     files: ['**/*.{ts,tsx}'],
-    // extends の代わりに推奨設定を直接展開
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -35,12 +37,13 @@ export default tseslint.config(
         ...globals.es2021,
         ...globals.node,
       },
-      // TypeScriptパース用のオプションを明示
       parserOptions: {
+        // 型情報が必要なルールを使う場合に必須
         project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    // プラグインの登録
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -54,22 +57,20 @@ export default tseslint.config(
     rules: {
       // 各プラグインの推奨ルールを適用
       ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules, // React 17+ のための設定
       ...reactHooks.configs.recommended.rules,
 
       // カスタムルール
-      'react/prop-types': 'off', // TSなので不要
-      'react/react-in-jsx-scope': 'off', // React 17+
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-
-      // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
 
-  // 3. Prettier 競合解消
+  // 4. Prettier との競合解消（必ず最後に置く）
   prettier
 );
