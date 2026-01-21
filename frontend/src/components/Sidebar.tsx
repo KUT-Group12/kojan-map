@@ -47,7 +47,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
 
       setIsLoading(true);
       try {
-        let url = `${API_BASE_URL}/api/posts`;
+        let url = `${API_BASE_URL}/api/posts`; // デフォルトは全件
 
         // 仕様書のエンドポイントを条件に合わせて使い分け
         if (searchKeyword) {
