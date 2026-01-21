@@ -47,7 +47,7 @@ describe('DisplayPostList', () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        post: { ...mockPost, text: 'APIから取得した詳細な本文' }
+        post: { ...mockPost, text: 'APIから取得した詳細な本文' },
       }),
     });
 
@@ -113,10 +113,7 @@ describe('DisplayPostList', () => {
     });
 
     const onSelectPin = vi.fn();
-    const postsAtLocation = [
-      mockPost,
-      { ...mockPost, postId: 102, title: '隣の投稿' }
-    ];
+    const postsAtLocation = [mockPost, { ...mockPost, postId: 102, title: '隣の投稿' }];
 
     await renderComponent({ postsAtLocation, onSelectPin });
 

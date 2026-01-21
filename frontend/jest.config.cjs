@@ -5,9 +5,8 @@ module.exports = {
 
   // ESMパッケージを ts-jest で変換するための設定
   transform: {
-    '^.+\\.(t|j)sx?$': 
-      'babel-jest',
-      /*
+    '^.+\\.(t|j)sx?$': 'babel-jest',
+    /*
       {
         useESM: true,
       },*/

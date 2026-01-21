@@ -55,7 +55,7 @@ describe('DeleteAccountScreen', () => {
 
     // 3つ目チェック
     fireEvent.click(screen.getByLabelText(/すべてのピンが削除されることを理解しました/));
-    
+
     // 全チェックで有効化
     expect(deleteButton).not.toBeDisabled();
   });
@@ -72,7 +72,7 @@ describe('DeleteAccountScreen', () => {
     fireEvent.click(screen.getByLabelText(/完全に削除されることを理解しました/));
     fireEvent.click(screen.getByLabelText(/取り消すことができないことを理解しました/));
     fireEvent.click(screen.getByLabelText(/すべてのピンが削除されることを理解しました/));
-    
+
     // 退会理由を入力
     const reasonInput = screen.getByPlaceholderText(/退会理由をご記入ください/);
     fireEvent.change(reasonInput, { target: { value: 'サービスが不要になったため' } });

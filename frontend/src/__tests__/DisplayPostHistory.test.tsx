@@ -11,10 +11,10 @@ describe('DisplayPostHistory', () => {
     text: 'これはテストの本文です。',
     genreId: 1, // GENRE_MAPで定義されているIDに合わせる
     numReaction: 10,
-    numView: 0,        // 追加: 型定義で必須となっているため
+    numView: 0, // 追加: 型定義で必須となっているため
     placeId: 1,
     postDate: '2024-01-21T12:00:00Z',
-    userId: 'user-1'
+    userId: 'user-1',
   };
 
   const mockOnPinClick = vi.fn();
@@ -34,10 +34,10 @@ describe('DisplayPostHistory', () => {
     // タイトルと本文の確認
     expect(screen.getByText('テスト投稿')).toBeInTheDocument();
     expect(screen.getByText('これはテストの本文です。')).toBeInTheDocument();
-    
+
     // リアクション数の確認
     expect(screen.getByText('10')).toBeInTheDocument();
-    
+
     // 日付フォーマット関数の呼び出し確認
     expect(mockFormatDate).toHaveBeenCalled();
     expect(screen.getByText('2024/01/21')).toBeInTheDocument();

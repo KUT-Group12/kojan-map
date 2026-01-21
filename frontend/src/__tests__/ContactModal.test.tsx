@@ -3,14 +3,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'sonner';
 
 // 1. コンポーネントのインポートをトップレベルから消す（後で動的インポートするため）
-// import { ContactModal } from './ContactModal'; 
+// import { ContactModal } from './ContactModal';
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 describe('ContactModal', () => {
-  const mockUser = { /* ...既存のデータ... */ } as any;
+  const mockUser = {
+    /* ...既存のデータ... */
+  } as any;
   const mockOnClose = vi.fn();
 
   beforeEach(() => {
@@ -40,7 +42,7 @@ describe('ContactModal', () => {
     await waitFor(() => {
       // これで期待通りのURLになります
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://test-api.com/api/contact/validate', 
+        'http://test-api.com/api/contact/validate',
         expect.objectContaining({
           method: 'POST',
           // headers も実際のコードに合わせて追加

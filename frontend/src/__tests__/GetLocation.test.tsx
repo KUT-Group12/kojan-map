@@ -22,9 +22,7 @@ describe('GetLocation', () => {
       capturedEvents = events;
     });
 
-    render(
-      <GetLocation onLocationSelected={mockOnLocationSelected} enabled={true} />
-    );
+    render(<GetLocation onLocationSelected={mockOnLocationSelected} enabled={true} />);
 
     // 擬似的なダブルクリックイベントを実行
     // 小数点以下が長い座標を渡す
@@ -42,9 +40,7 @@ describe('GetLocation', () => {
       capturedEvents = events;
     });
 
-    render(
-      <GetLocation onLocationSelected={mockOnLocationSelected} enabled={false} />
-    );
+    render(<GetLocation onLocationSelected={mockOnLocationSelected} enabled={false} />);
 
     capturedEvents.dblclick({
       latlng: { lat: 35.0, lng: 135.0 },

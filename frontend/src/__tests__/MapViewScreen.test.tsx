@@ -7,7 +7,7 @@ vi.mock('react-leaflet', () => ({
   MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
   TileLayer: () => <div data-testid="tile-layer" />,
   // useMapEvents を追加（GetLocation がこれを呼ぶため）
-  useMapEvents: vi.fn(), 
+  useMapEvents: vi.fn(),
   Marker: ({ position, eventHandlers, icon }: any) => (
     <div
       data-testid="map-marker"

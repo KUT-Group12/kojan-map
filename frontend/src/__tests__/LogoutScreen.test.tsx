@@ -29,9 +29,7 @@ describe('LogoutScreen', () => {
 
   const renderComponent = async () => {
     const { LogoutScreen } = await import('../components/LogoutScreen');
-    return render(
-      <LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />
-    );
+    return render(<LogoutScreen user={mockUser} onLogout={mockOnLogout} onBack={mockOnBack} />);
   };
 
   it('ユーザー情報と会員区分（一般会員）が正しく表示されること', async () => {
@@ -95,7 +93,7 @@ describe('LogoutScreen', () => {
 
   it('戻るボタンをクリックすると onBack が呼ばれること', async () => {
     await renderComponent();
-    
+
     const backButton = screen.getByRole('button', { name: /戻る/ });
     fireEvent.click(backButton);
 

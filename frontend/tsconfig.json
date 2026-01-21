@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "types": [
-      "node", 
-      "vitest/globals",           // jest から vitest/globals に変更
-      "@testing-library/jest-dom", 
-      "vite/client"               // import.meta.env の型を認識させるために必須
+      "node",
+      "vitest/globals", // jest から vitest/globals に変更
+      "@testing-library/jest-dom",
+      "vite/client" // import.meta.env の型を認識させるために必須
     ],
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -22,7 +22,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./src/*"]          // vite.config.ts の alias と合わせる
+      "@/*": ["./src/*"] // vite.config.ts の alias と合わせる
     }
   },
   "include": ["src"],
