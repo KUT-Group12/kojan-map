@@ -104,7 +104,7 @@ describe('UserReactionViewScreen', () => {
   it('コンポーネントがアンマウントされた際、AbortControllerが呼ばれること', async () => {
     const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
 
-    getFetchMock().mockResolvedValueOnce(new Promise(() => {})); // 完了しないPromise
+    getFetchMock().mockImplementationOnce(() => new Promise(() => {})); // 完了しないPromise
 
     const { unmount } = render(
       <UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />

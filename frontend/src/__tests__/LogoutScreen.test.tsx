@@ -5,7 +5,7 @@ import { User } from '../types';
 import { toast } from 'sonner';
 
 // fetch のグローバルモック
-vi.stubGlobal('fetch', vi.fn());
+vi.stubEnv('VITE_API_URL', 'http://localhost:8080');
 
 // toast のモック
 vi.mock('sonner', () => ({
@@ -19,7 +19,7 @@ describe('LogoutScreen', () => {
   const mockUser: User = {
     googleId: 'test-google-id',
     gmail: 'test@gmail.com',
-    role: 'user',
+    role: 'general',
     registrationDate: new Date().toISOString(),
     fromName: 'テスト太郎',
   };

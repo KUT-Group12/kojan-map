@@ -202,13 +202,18 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     images: string[];
   }) => {
     const sharedId = Date.now();
+    const existingPlace = places.find(
+      (p) => p.latitude === newPost.latitude && p.longitude === newPost.longitude
+    );
+    const placeId = existingPlace?.placeId ?? sharedId;
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          placeId: sharedId,
+          postId,
+          placeId,
           genreId: newPost.genreId, // モックを使わず、受け取ったIDをそのまま送る
           userId: user.googleId,
           title: newPost.title,
@@ -223,8 +228,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
       // クライアント側の表示用オブジェクト
       const post: Post = {
-        postId: sharedId,
-        placeId: sharedId,
+        postId,
+        placeId,
         userId: user.googleId,
         postDate: new Date().toISOString(),
         title: newPost.title,
@@ -238,7 +243,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       };
 
       const place: Place = {
-        placeId: sharedId,
+        placeId,
         latitude: newPost.latitude,
         longitude: newPost.longitude,
         numPost: 1,
@@ -247,12 +252,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       // ステート更新
       setPosts((prev) => [post, ...prev]);
       setPlaces((prev) => {
-        const exists = prev.find(
-          (p) => p.latitude === place.latitude && p.longitude === place.longitude
-        );
-        if (exists) {
+        if (existingPlace) {
           return prev.map((p) =>
-            p.placeId === exists.placeId ? { ...p, numPost: p.numPost + 1 } : p
+            p.placeId === existingPlace.placeId ? { ...p, numPost: p.numPost + 1 } : p
           );
         }
         return [place, ...prev];

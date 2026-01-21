@@ -10,7 +10,7 @@ describe('DisplayPostList', () => {
   const mockUser: User = {
     googleId: 'my-google-id',
     gmail: 'test@gmail.com',
-    role: 'user',
+    role: 'general',
     registrationDate: new Date().toISOString(),
     fromName: '自分自身の名前',
   };
@@ -19,7 +19,7 @@ describe('DisplayPostList', () => {
     placeId: 1,
     latitude: 35.681236,
     longitude: 139.767125,
-    isBusiness: false,
+    numPost: 1,
   };
 
   const mockPost: Post = {

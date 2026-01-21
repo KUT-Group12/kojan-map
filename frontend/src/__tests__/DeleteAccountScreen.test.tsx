@@ -5,9 +5,7 @@ import { User, Business } from '../types';
 import { toast } from 'sonner';
 
 // import.meta.env のモック
-vi.stubGlobal('import', {
-  meta: { env: { VITE_API_URL: 'http://localhost:8080' } },
-});
+vi.stubEnv('VITE_API_URL', 'http://localhost:8080');
 
 // toast のモック
 vi.mock('sonner', () => ({
