@@ -330,10 +330,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         )}
 
         {currentView === 'mypage' &&
-          (user.role === 'business' ? (
+          (user.role === 'business' && business ? (
             <BusinessDisplayMyPage
               user={user}
-              business={business!}
+              business={business}
               posts={posts.filter((p) => p.userId === user.googleId)}
               onPinClick={handlePinClick}
               onDeletePin={handleDeletePin}
