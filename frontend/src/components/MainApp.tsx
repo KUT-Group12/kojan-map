@@ -212,7 +212,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          postId,
           placeId,
           genreId: newPost.genreId, // モックを使わず、受け取ったIDをそのまま送る
           userId: user.googleId,
@@ -225,11 +224,14 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       });
 
       if (!response.ok) throw new Error('投稿の保存に失敗しました');
+      const created = await response.json();
+      const postId = created?.postId ?? sharedId;
+      const resolvedPlaceId = created?.placeId ?? placeId;
 
       // クライアント側の表示用オブジェクト
       const post: Post = {
         postId,
-        placeId,
+        placeId: resolvedPlaceId,
         userId: user.googleId,
         postDate: new Date().toISOString(),
         title: newPost.title,
@@ -243,7 +245,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       };
 
       const place: Place = {
-        placeId,
+        placeId: resolvedPlaceId,
         latitude: newPost.latitude,
         longitude: newPost.longitude,
         numPost: 1,
