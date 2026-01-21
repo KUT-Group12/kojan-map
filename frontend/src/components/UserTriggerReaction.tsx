@@ -5,8 +5,7 @@ import { toast } from 'sonner';
 import { Reaction } from '../types';
 import { getStoredJWT } from '../lib/auth';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+
 
 interface UserTriggerReactionProps {
   postId: Reaction['postId'];
@@ -19,7 +18,7 @@ interface UserTriggerReactionProps {
 
 export function UserTriggerReaction({
   postId,
-  userId,
+  // userId, // Unused
   isReacted,
   userRole,
   isDisabled,

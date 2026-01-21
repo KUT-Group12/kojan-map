@@ -306,8 +306,8 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
             }
             : p
         );
-      setPosts(update(posts as DisplayPost[]));
-      setFilteredPosts(update(filteredPosts as DisplayPost[]));
+      setPosts(updatePins(posts as DisplayPost[]));
+      setFilteredPosts(updatePins(filteredPosts as DisplayPost[]));
     }
   };
 
