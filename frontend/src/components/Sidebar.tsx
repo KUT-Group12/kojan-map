@@ -78,7 +78,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
       clearTimeout(timer);
       controller.abort();
     };
-  }, [searchKeyword, selectedGenre, dateFilter, user.role]);
+  }, [searchKeyword, selectedGenre, dateFilter, user.role, initialPosts]);
 
   useEffect(() => {
     onFilterChange(apiPosts);
