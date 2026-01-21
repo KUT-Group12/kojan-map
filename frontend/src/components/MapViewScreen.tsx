@@ -31,6 +31,7 @@ export function MapViewScreen({
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
 
   // 1. 同じ位置のピンをグループ化するロジックを統合
+<<<<<<< HEAD
   const groupedPosts = (posts || []).reduce(
     (acc, post) => {
       const key = `${post.placeId}`;
@@ -39,6 +40,16 @@ export function MapViewScreen({
       return acc;
     },
     {} as Record<string, Post[]>
+=======
+  const groupedPins = pins.reduce(
+    (acc, pin) => {
+      const key = `${pin.latitude.toFixed(4)}_${pin.longitude.toFixed(4)}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(pin);
+      return acc;
+    },
+    {} as Record<string, Pin[]>
+>>>>>>> origin/main
   );
 
   // 2. ピンのサイズ決定ロジック
@@ -188,6 +199,7 @@ export function MapViewScreen({
         <GetLocation onLocationSelected={onMapDoubleClick} enabled={!isOverlayOpen} />
 
         {/* 5. グループ化したピンをマーカーとして描画 */}
+<<<<<<< HEAD
         {Object.entries(groupedPosts).map(([key, groupPosts]) => {
           const place = places.find((p) => p.placeId === groupPosts[0].placeId);
           if (!place) return null;
@@ -205,6 +217,20 @@ export function MapViewScreen({
             />
           );
         })}
+=======
+        {Object.entries(groupedPins).map(([key, groupPins]) => (
+          <Marker
+            key={key}
+            position={[groupPins[0].latitude, groupPins[0].longitude]}
+            icon={createCustomIcon(groupPins, hoveredPinId === key)}
+            eventHandlers={{
+              click: () => onPinClick(groupPins[0]),
+              mouseover: () => setHoveredPinId(key),
+              mouseout: () => setHoveredPinId(null),
+            }}
+          />
+        ))}
+>>>>>>> origin/main
       </MapContainer>
     </div>
   );

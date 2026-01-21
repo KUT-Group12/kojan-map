@@ -17,7 +17,7 @@ export function SelectUserSetting({
 }: SelectUserSettingProps) {
   /*
   const handleUnblock = (userId: string) => {
-    const next = (user.blockedUsers || []).filter(id => id !== userId);
+    const next = (user.blockedUsers || []).filter((id) => id !== userId);
     onUpdateUser({ ...user, blockedUsers: next });
   }; */
 
