@@ -74,7 +74,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
           <DialogDescription className="sr-only">運営へのお問い合わせフォーム</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-label="contact-form">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
               ご質問や要望は、登録されているメールアドレス（{user.gmail}）に返信されます。

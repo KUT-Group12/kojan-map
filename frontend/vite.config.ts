@@ -1,8 +1,7 @@
-//import { defineConfig } from 'vite';
-// import react from '@vitejs/plugin-react-swc';
+import { defineConfig } from 'vite'; // vite からインポート
+import react from '@vitejs/plugin-react-swc';
 import path from 'path';
-import { defineConfig } from 'vitest/config';
-//import react from '@vitejs/plugin-react';
+// import type { InlineConfig } from 'vitest'; // Vitestの型だけ持ってくる
 
 export default defineConfig({
   plugins: [react()],
@@ -50,6 +49,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  test: {
+    globals: true, // describeやitをグローバルで使用可能にする
+    environment: 'jsdom', // ブラウザ環境のシミュレート
+    setupFiles: ['./src/__tests__/setupTests.ts'], // 後述のセットアップファイルを読み込む
+    include: ['src/**/*.{test,spec}.{ts,tsx}'], // テストファイルの対象
+  },
   build: {
     target: 'esnext',
     outDir: 'build',
@@ -57,10 +62,5 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
-  },
-  test: {
-    globals: true, // describe や expect をグローバルで使う
-    environment: 'jsdom', // ブラウザ環境をシミュレート
-    setupFiles: './src/setupTests.ts', // ここが重要
   },
 });

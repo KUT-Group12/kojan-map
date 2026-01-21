@@ -10,8 +10,7 @@ import { BusinessDashboard } from './BusinessDashboard';
 import { ContactModal } from './ContactModal';
 import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { LogoutScreen } from './LogoutScreen';
-import { Post, Place, User, PinGenre, Business } from '../types';
-import { genreLabels } from '../lib/mockData';
+import { Post, Place, User, Business } from '../types';
 import { Loader2 } from 'lucide-react';
 
 const API_BASE_URL =
@@ -197,40 +196,34 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     longitude: number;
     title: string;
     text: string;
-    genre: PinGenre; // もしDBのIDがすでにあるなら number に変更推奨
+    genreId: number; // 名前(string)ではなくID(number)を直接受け取る
+    genreName: string; // 表示用に名前も受け取る
+    genreColor: string; // 表示用に色も受け取る
     images: string[];
   }) => {
-    // 1. 共通IDを生成（新規地点の場合）
     const sharedId = Date.now();
 
-    // ジャンルIDの取得ロジック（GENRE_MAPが残っている場合）
-    const genreId = GENRE_MAP[newPost.genre] ?? 0;
-
     try {
-      // 2. サーバーへ送信
       const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          placeId: sharedId, // sharedIdを送信
-          genreId: genreId,
+          placeId: sharedId,
+          genreId: newPost.genreId, // モックを使わず、受け取ったIDをそのまま送る
           userId: user.googleId,
           title: newPost.title,
           text: newPost.text,
-          postImage: newPost.images, // 配列のまま送信（サーバー側が対応している場合）
-          latitude: newPost.latitude, // 地点登録のために緯度経度も送る
+          postImage: newPost.images,
+          latitude: newPost.latitude,
           longitude: newPost.longitude,
         }),
       });
 
       if (!response.ok) throw new Error('投稿の保存に失敗しました');
-      const created = await response.json();
-      const postId = created.postId ?? sharedId;
 
-      // 3. クライアント側の状態更新用のオブジェクト作成
-      // DBから色が来るまでの間、一時的に表示するための色/名前をセット
+      // クライアント側の表示用オブジェクト
       const post: Post = {
-        postId,
+        postId: sharedId,
         placeId: sharedId,
         userId: user.googleId,
         postDate: new Date().toISOString(),
@@ -239,10 +232,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         postImage: newPost.images,
         numReaction: 0,
         numView: 0,
-        genreId: genreId,
-        // これまでの修正に合わせて、DB用のプロパティも仮セット
-        genreName: genreLabels[newPost.genre],
-        genreColor: genreColors[newPost.genre],
+        genreId: newPost.genreId,
+        genreName: newPost.genreName, // DBからきた名前を使用
+        genreColor: newPost.genreColor, // DBからきた色を使用
       };
 
       const place: Place = {
@@ -252,10 +244,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         numPost: 1,
       };
 
-      // 4. ステートの更新
+      // ステート更新
       setPosts((prev) => [post, ...prev]);
       setPlaces((prev) => {
-        // すでに同じ座標に場所があるかチェック（簡易判定）
         const exists = prev.find(
           (p) => p.latitude === place.latitude && p.longitude === place.longitude
         );
@@ -271,7 +262,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Create post error:', error);
-      alert('投稿に失敗しました。'); // ユーザーへの通知
+      alert('投稿に失敗しました。');
     }
   };
 
