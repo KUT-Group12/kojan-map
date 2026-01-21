@@ -33,7 +33,7 @@ describe('ReportScreen', () => {
     const [reporting, setReporting] = React.useState(initialReporting);
     // ここで動的インポートではなく、通常のインポートを使うために
     // ReportScreenはファイル上部で普通にインポートしてOKです
-    const { ReportScreen } = require('../components/ReportScreen'); 
+    const { ReportScreen } = require('../components/ReportScreen');
     return (
       <ReportScreen
         postId={mockPostId}
@@ -62,7 +62,7 @@ describe('ReportScreen', () => {
 
   it('理由を入力して送信すると、バックエンドが期待するキー名でAPIが呼ばれること', async () => {
     (global.fetch as any).mockResolvedValueOnce({ ok: true });
-    
+
     // テスト用の簡単なレンダリング
     const { ReportScreen } = await import('../components/ReportScreen');
     render(
