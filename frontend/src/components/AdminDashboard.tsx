@@ -167,6 +167,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
           report.reportId === reportId ? { ...report, reportFlag: true } : report
         )
       );
+      // サイドバーのバッジ件数も即時更新
+      setSystemStats((prev) => ({
+        ...prev,
+        pendingReports: Math.max(0, (prev?.pendingReports ?? 1) - 1),
+      }));
       toast.success('通報を処理済みにしました');
     } catch (error) {
       console.error(error);
