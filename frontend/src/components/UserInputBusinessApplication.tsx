@@ -35,13 +35,8 @@ export function UserInputBusinessApplication({
   // 送信ハンドラ
   const handleSubmit = async () => {
     // バリデーション（任意）
-    const phoneNumber = Number(formData.phone);
-    if (
-      !formData.businessName ||
-      !formData.phone ||
-      !formData.address ||
-      Number.isNaN(phoneNumber)
-    ) {
+    const phone = formData.phone.trim();
+    if (!formData.businessName || !phone || !formData.address || !/^\d{10,11}$/.test(phone)) {
       toast.error('すべての項目を正しく入力してください');
       return;
     }
@@ -56,7 +51,7 @@ export function UserInputBusinessApplication({
         },
         body: JSON.stringify({
           ...formData,
-          phone: phoneNumber,
+          phone: phone,
           userId: user.id, // 申請者のGoogle ID
         }),
       });

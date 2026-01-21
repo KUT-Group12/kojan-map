@@ -47,14 +47,14 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
 
       setIsLoading(true);
       try {
-        let url = '/api/posts'; // デフォルトは全件
+        let url = `${API_BASE_URL}/api/posts`;
 
         // 仕様書のエンドポイントを条件に合わせて使い分け
         if (searchKeyword) {
-          url = `${API_BASE_URL}/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
+          url = `/search?keyword=${encodeURIComponent(searchKeyword)}`;
         } else if (selectedGenre !== 'all') {
           const genreId = GENRE_MAP[selectedGenre];
-          url = `${API_BASE_URL}/api/posts/search/genre?genreId=${genreId}`;
+          url = `/search/genre?genreId=${genreId}`;
         } else if (dateFilter !== 'all') {
           // 期間検索のパラメータ生成 (YYYY-MM-DD)
           const endDate = new Date().toISOString().split('T')[0];
@@ -65,7 +65,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
           if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
           const startDate = start.toISOString().split('T')[0];
 
-          url = `${API_BASE_URL}/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
+          url = `/search/period?startDate=${startDate}&endDate=${endDate}`;
         }
 
         const response = await fetch(url);

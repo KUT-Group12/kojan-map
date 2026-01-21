@@ -53,6 +53,7 @@ export function DisplayPostList({
   // 投稿詳細取得 & 閲覧数アップAPIの呼び出し
   useEffect(() => {
     if (!post?.postId) return;
+    setPostDetail(null);
     const fetchPostDetail = async () => {
       setIsDetailLoading(true);
       try {
@@ -65,6 +66,7 @@ export function DisplayPostList({
         setPostDetail(data.post);
         console.log('data: ', data);
       } catch (error) {
+        setPostDetail(null);
         console.error('詳細取得エラー:', error);
       } finally {
         setIsDetailLoading(false);

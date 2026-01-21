@@ -16,18 +16,15 @@ export default tseslint.config(
       'coverage/**',
       '*.config.js',
       'src/__tests__/**', // ← frontend/src/__tests__ を無視する設定
-      '**/*.test.tsx',    // 個別のテストファイルも対象外にする場合
-      '**/*.test.ts'
+      '**/*.test.tsx', // 個別のテストファイルも対象外にする場合
+      '**/*.test.ts',
     ],
   },
 
   // 2. TypeScript / React 向けメイン設定
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-    ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -39,7 +36,7 @@ export default tseslint.config(
       },
     },
     plugins: {
-      'react': react,
+      react: react,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
@@ -55,16 +52,13 @@ export default tseslint.config(
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off', // React 17+ では不要
       '@typescript-eslint/no-unused-vars': [
-        'warn', 
-        { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      
+
       // Vite / React Refresh 用
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true }
-      ],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
 

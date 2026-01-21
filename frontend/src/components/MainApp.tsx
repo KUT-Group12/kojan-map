@@ -69,11 +69,11 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const fetchUserData = useCallback(async () => {
     setIsLoadingUserData(true);
     try {
-      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.id}`);
+      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history?id=${user.id}`);
       const postsData = await postsRes.json();
       setUserPosts(postsData.posts || []);
 
-      const reactionsRes = await fetch(`${API_BASE_URL}/api/reactions/list?googleId=${user.id}`);
+      const reactionsRes = await fetch(`${API_BASE_URL}/api/reactions/list?id=${user.id}`);
       const reactionsData = await reactionsRes.json();
       setUserReactedPosts(reactionsData.posts || []);
     } catch (error) {
