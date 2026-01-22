@@ -1,10 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NewPostScreen } from '../components/NewPostScreen';
 import { User, Genre } from '../types';
 
 // fetch のモック
 vi.stubGlobal('fetch', vi.fn());
+
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 // UIコンポーネント（shadcn/ui）の中には jsdom で動きにくいものがあるため必要に応じて調整
 // ※ Dialog は radix-ui を使用しているため、Portal 関連のエラーが出る場合はモックが必要な場合があります。
@@ -37,7 +40,8 @@ describe('NewPostScreen', () => {
     vi.clearAllMocks();
   });
 
-  it('フォームの初期項目が正しく表示されること', () => {
+  it('フォームの初期項目が正しく表示されること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     render(
       <NewPostScreen
         user={mockUser}
@@ -56,6 +60,7 @@ describe('NewPostScreen', () => {
   });
 
   it('タイトルが未入力の場合、バリデーションで止まること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     render(
       <NewPostScreen
         user={mockUser}
@@ -73,6 +78,7 @@ describe('NewPostScreen', () => {
   });
 
   it('正しい入力で投稿ボタンを押すと、APIが呼ばれ onCreate が実行されること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     (globalThis.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ postId: 999 }),
@@ -112,7 +118,8 @@ describe('NewPostScreen', () => {
     });
   });
 
-  it('事業者ユーザーの場合、事業者名が表示されること', () => {
+  it('事業者ユーザーの場合、事業者名が表示されること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     const businessUser: User = { ...mockUser, role: 'business' };
     const businessData = { businessId: 1, businessName: 'たっすいコーヒー店' };
 

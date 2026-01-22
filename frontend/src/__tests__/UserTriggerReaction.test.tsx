@@ -116,17 +116,23 @@ describe('UserTriggerReaction', () => {
 
   it('通信中はボタンが「処理中...」になり非活性になること', async () => {
     const user = userEvent.setup();
-    // 意図的に解決を遅らせるプロミス
+    // 意図的に解決を遅らせるプロミス（テストが安定するように手動でresolveする）
+    let resolveFetch: ((value: any) => void) | undefined;
     (global.fetch as any).mockReturnValue(
-      new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 100))
+      new Promise((resolve) => {
+        resolveFetch = resolve;
+      })
     );
 
     render(<UserTriggerReaction {...defaultProps} />);
 
     await user.click(screen.getByRole('button', { name: 'リアクション' }));
 
-    // 通信中の表示確認
-    expect(screen.getByRole('button')).toBeDisabled();
-    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeDisabled();
+      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+
+    resolveFetch?.({ ok: true });
   });
 });
