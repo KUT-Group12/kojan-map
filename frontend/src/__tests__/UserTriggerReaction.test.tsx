@@ -40,7 +40,7 @@ describe('UserTriggerReaction', () => {
 
   it('クリックすると POST リクエストを送り、成功時に onReaction が呼ばれること', async () => {
     const user = userEvent.setup();
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     (global.fetch as any).mockResolvedValueOnce({ ok: true });
 
     render(<UserTriggerReaction {...defaultProps} />);
