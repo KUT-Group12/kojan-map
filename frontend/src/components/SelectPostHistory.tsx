@@ -17,7 +17,11 @@ interface SelectPostHistoryProps {
   // setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 }
 
-export function SelectPostHistory({ user, posts: initialPosts, onPinClick }: SelectPostHistoryProps) {
+export function SelectPostHistory({
+  user,
+  posts: initialPosts,
+  onPinClick,
+}: SelectPostHistoryProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts || []);
   const [isLoading, setIsLoading] = useState(!initialPosts);
 
@@ -50,9 +54,12 @@ export function SelectPostHistory({ user, posts: initialPosts, onPinClick }: Sel
         }
 
         // API仕様: GET /api/posts/history?googleId=...
-        const response = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`, {
-          headers,
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`,
+          {
+            headers,
+          }
+        );
         if (!response.ok) throw new Error('履歴の取得に失敗しました');
 
         const data = await response.json();
@@ -102,7 +109,7 @@ export function SelectPostHistory({ user, posts: initialPosts, onPinClick }: Sel
             <SelectPostDeletion
               postId={post.postId}
               onDelete={handleRemoveFromList}
-              onClose={() => { }}
+              onClose={() => {}}
             />
           }
         />

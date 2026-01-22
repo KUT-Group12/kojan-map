@@ -15,7 +15,11 @@ interface UserReactionViewScreenProps {
   onPinClick: (post: Post) => void;
 }
 
-export function UserReactionViewScreen({ user, posts: initialPosts, onPinClick }: UserReactionViewScreenProps) {
+export function UserReactionViewScreen({
+  user,
+  posts: initialPosts,
+  onPinClick,
+}: UserReactionViewScreenProps) {
   const [reactedPosts, setReactedPosts] = useState<Post[]>(initialPosts || []);
   const [isLoading, setIsLoading] = useState(!initialPosts);
 
