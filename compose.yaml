@@ -5,7 +5,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: "root:root@tcp(db:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: kojanmap
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     depends_on:
       - db
 

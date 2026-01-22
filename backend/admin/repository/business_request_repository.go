@@ -6,17 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// BusinessRequestRepository handles database operations for business requests
+// BusinessRequestRepository は事業者申請のデータベース操作を処理します。
 type BusinessRequestRepository struct {
 	db *gorm.DB
 }
 
-// NewBusinessRequestRepository creates a new BusinessRequestRepository
+// NewBusinessRequestRepository は新しいBusinessRequestRepositoryを作成します。
 func NewBusinessRequestRepository(db *gorm.DB) *BusinessRequestRepository {
 	return &BusinessRequestRepository{db: db}
 }
 
-// FindAll retrieves all business requests
+// FindAll は全ての事業者申請を取得します。
 func (r *BusinessRequestRepository) FindAll() ([]models.BusinessRequest, error) {
 	var requests []models.BusinessRequest
 	result := r.db.Order("createdAt DESC").Find(&requests)
@@ -26,7 +26,7 @@ func (r *BusinessRequestRepository) FindAll() ([]models.BusinessRequest, error) 
 	return requests, nil
 }
 
-// FindAllPaginated retrieves business requests with pagination
+// FindAllPaginated はページネーション付きで事業者申請を取得します。
 func (r *BusinessRequestRepository) FindAllPaginated(page, pageSize int, status *string) ([]models.BusinessRequest, int, error) {
 	var requests []models.BusinessRequest
 	var total int64
@@ -49,7 +49,7 @@ func (r *BusinessRequestRepository) FindAllPaginated(page, pageSize int, status 
 	return requests, int(total), nil
 }
 
-// FindByID finds a business request by ID
+// FindByID はIDで事業者申請を検索します。
 func (r *BusinessRequestRepository) FindByID(id int32) (*models.BusinessRequest, error) {
 	var request models.BusinessRequest
 	result := r.db.Where("requestId = ?", id).First(&request)
@@ -59,19 +59,19 @@ func (r *BusinessRequestRepository) FindByID(id int32) (*models.BusinessRequest,
 	return &request, nil
 }
 
-// UpdateStatus updates the status of a business request
+// UpdateStatus は事業者申請のステータスを更新します。
 func (r *BusinessRequestRepository) UpdateStatus(id int32, status string) error {
 	return r.db.Model(&models.BusinessRequest{}).
 		Where("requestId = ?", id).
 		Update("status", status).Error
 }
 
-// Delete deletes a business request
+// Delete は事業者申請を削除します。
 func (r *BusinessRequestRepository) Delete(id int32) error {
 	return r.db.Where("requestId = ?", id).Delete(&models.BusinessRequest{}).Error
 }
 
-// CountPending counts pending business requests
+// CountPending は保留中の事業者申請の数をカウントします。
 func (r *BusinessRequestRepository) CountPending() (int, error) {
 	var count int64
 	result := r.db.Model(&models.BusinessRequest{}).Where("status = ?", "pending").Count(&count)
