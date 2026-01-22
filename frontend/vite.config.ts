@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'; // vite からインポート
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 // import type { InlineConfig } from 'vitest'; // Vitestの型だけ持ってくる
@@ -54,6 +54,7 @@ export default defineConfig({
     environment: 'jsdom', // ブラウザ環境のシミュレート
     setupFiles: ['./src/__tests__/setupTests.ts'], // 後述のセットアップファイルを読み込む
     include: ['src/**/*.{test,spec}.{ts,tsx}'], // テストファイルの対象
+    exclude: ['e2e/**'],
   },
   build: {
     target: 'esnext',

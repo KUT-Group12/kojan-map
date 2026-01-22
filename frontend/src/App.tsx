@@ -5,11 +5,42 @@ import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
 import { UserRole, User, Business } from './types';
+import { getStoredUser } from './lib/auth';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [business, setBusiness] = useState<Business | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = getStoredUser();
+    if (!storedUser) return null;
+
+    const googleId = storedUser.googleId || storedUser.id;
+    return {
+      googleId,
+      gmail: storedUser.email,
+      role: storedUser.role,
+      registrationDate: storedUser.createdAt,
+    };
+  });
+
+  const [business, setBusiness] = useState<Business | null>(() => {
+    const storedUser = getStoredUser();
+    if (!storedUser) return null;
+    if (storedUser.role !== 'business') return null;
+
+    const googleId = storedUser.googleId || storedUser.id;
+    return {
+      businessId: 0,
+      businessName: storedUser.businessName || '',
+      kanaBusinessName: '',
+      zipCode: '',
+      address: '',
+      phone: '',
+      registDate: storedUser.createdAt,
+      userId: googleId,
+      placeId: 0,
+      profileImage: storedUser.businessIcon,
+    };
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => {
