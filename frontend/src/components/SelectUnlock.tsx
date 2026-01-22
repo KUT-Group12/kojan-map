@@ -3,6 +3,7 @@ import { User } from '../types';
 import { Button } from './ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getStoredJWT } from '../lib/auth';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
@@ -23,12 +24,19 @@ export function SelectUnlock({ userId, user, onUpdateUser }: SelectUnlockProps) 
   const handleUnblock = async () => {
     setIsUnblocking(true);
     try {
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
+
       // 1. API仕様: DELETE /api/users/block
       // リクエストボディ形式で userId(相手) と blockerId(自分) を送信
       const response = await fetch(`${API_BASE_URL}/api/users/block`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: userId, // ブロックされているユーザー

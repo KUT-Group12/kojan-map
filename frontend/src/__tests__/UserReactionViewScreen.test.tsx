@@ -6,6 +6,11 @@ import { User, Post } from '../types';
 // fetch のモック
 vi.stubGlobal('fetch', vi.fn());
 
+// Mock getStoredJWT
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: vi.fn(() => 'mock-token'),
+}));
+
 describe('UserReactionViewScreen', () => {
   const mockUser: User = {
     googleId: 'user-123',
@@ -50,7 +55,11 @@ describe('UserReactionViewScreen', () => {
     await waitFor(() => {
       expect(getFetchMock()).toHaveBeenCalledWith(
         expect.stringContaining(`/api/reactions/list?googleId=${mockUser.googleId}`),
-        expect.any(Object)
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer mock-token',
+          }),
+        })
       );
     });
   });
@@ -104,7 +113,7 @@ describe('UserReactionViewScreen', () => {
   it('コンポーネントがアンマウントされた際、AbortControllerが呼ばれること', async () => {
     const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
 
-    getFetchMock().mockImplementationOnce(() => new Promise(() => {})); // 完了しないPromise
+    getFetchMock().mockImplementationOnce(() => new Promise(() => { })); // 完了しないPromise
 
     const { unmount } = render(
       <UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />

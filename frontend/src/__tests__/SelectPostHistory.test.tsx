@@ -13,6 +13,11 @@ vi.mock('../components/SelectPostDeletion', () => ({
   ),
 }));
 
+// Mock getStoredJWT
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: vi.fn(() => 'mock-token'),
+}));
+
 describe('SelectPostHistory', () => {
   const mockUser: User = {
     googleId: 'test-user-id',
@@ -76,8 +81,14 @@ describe('SelectPostHistory', () => {
     });
 
     // 正しいAPIパスで呼ばれたか確認
+    // 正しいAPIパスで呼ばれたか確認
     expect(getFetchMock()).toHaveBeenCalledWith(
-      expect.stringContaining(`/api/posts/history?googleId=${mockUser.googleId}`)
+      expect.stringContaining(`/api/posts/history?googleId=${mockUser.googleId}`),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer mock-token',
+        }),
+      })
     );
   });
 
@@ -119,7 +130,7 @@ describe('SelectPostHistory', () => {
   });
 
   it('APIエラー時にローディングが終了し、コンソールにエラーが出ること', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     getFetchMock().mockResolvedValueOnce({ ok: false });
 
     render(<SelectPostHistory user={mockUser} onPinClick={vi.fn()} />);

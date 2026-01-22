@@ -28,8 +28,13 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
     setIsDeleting(true);
 
     try {
-      // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
       const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
+
+      // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
       const response = await fetch(`${API_BASE_URL}/api/posts/anonymize`, {
         method: 'PUT',
         headers: {

@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { User, Business } from '../types';
 import { AlertTriangle, ArrowLeft, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getStoredJWT } from '../lib/auth';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
@@ -54,11 +55,18 @@ export function DeleteAccountScreen({
     setIsDeleting(true);
 
     try {
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
+
       // API仕様: PUT /api/auth/withdrawal
       const response = await fetch(`${API_BASE_URL}/api/auth/withdrawal`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           googleId: user.googleId, // 仕様書のリクエストパラメータ

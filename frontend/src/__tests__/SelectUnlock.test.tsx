@@ -10,6 +10,11 @@ vi.mock('sonner', () => ({
   },
 }));
 
+// Mock getStoredJWT
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: vi.fn(() => 'mock-token'),
+}));
+
 describe('SelectUnlock', () => {
   const mockTargetUserId = 'blocked-user-999';
   const mockCurrentUser = {
@@ -57,7 +62,10 @@ describe('SelectUnlock', () => {
         `${TEST_API_URL}/api/users/block`,
         expect.objectContaining({
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer mock-token',
+          },
           body: JSON.stringify({
             userId: mockTargetUserId,
             blockerId: mockCurrentUser.id,
@@ -103,7 +111,7 @@ describe('SelectUnlock', () => {
 
   it('読み込み中はボタンが非活性（disabled）になること', async () => {
     // リクエストを完了させない
-    (global.fetch as any).mockReturnValue(new Promise(() => {}));
+    (global.fetch as any).mockReturnValue(new Promise(() => { }));
 
     await renderComponent();
 

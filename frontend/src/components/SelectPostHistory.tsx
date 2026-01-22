@@ -4,21 +4,22 @@ import { Post, User } from '../types';
 import { DisplayPostHistory } from './DisplayPostHistory';
 import { SelectPostDeletion } from './SelectPostDeletion';
 import { Loader2 } from 'lucide-react';
+import { getStoredJWT } from '../lib/auth';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface SelectPostHistoryProps {
   user: User;
-  // posts: Post[];
+  posts?: Post[];
   onPinClick: (post: Post) => void;
   // onDeletePin: (postId: number) => void;
   // setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
 }
 
-export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function SelectPostHistory({ user, posts: initialPosts, onPinClick }: SelectPostHistoryProps) {
+  const [posts, setPosts] = useState<Post[]>(initialPosts || []);
+  const [isLoading, setIsLoading] = useState(!initialPosts);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -29,14 +30,29 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
   };
 
   useEffect(() => {
+    // initialPostsがあればフェッチしない
+    if (initialPosts) {
+      setPosts(initialPosts);
+      setIsLoading(false);
+      return;
+    }
+
     if (!user?.googleId) {
       setIsLoading(false);
       return;
     }
     const fetchHistory = async () => {
       try {
+        const token = getStoredJWT();
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         // API仕様: GET /api/posts/history?googleId=...
-        const response = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`);
+        const response = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`, {
+          headers,
+        });
         if (!response.ok) throw new Error('履歴の取得に失敗しました');
 
         const data = await response.json();
@@ -50,7 +66,7 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
     };
 
     fetchHistory();
-  }, [user?.googleId]);
+  }, [user?.googleId, initialPosts]);
 
   // 削除成功時にフロントエンドのリストから消去する
   const handleRemoveFromList = (deletedId: number) => {
@@ -86,7 +102,7 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
             <SelectPostDeletion
               postId={post.postId}
               onDelete={handleRemoveFromList}
-              onClose={() => {}}
+              onClose={() => { }}
             />
           }
         />

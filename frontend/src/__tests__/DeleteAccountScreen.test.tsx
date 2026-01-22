@@ -15,6 +15,11 @@ vi.mock('sonner', () => ({
   },
 }));
 
+// Mock getStoredJWT
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: vi.fn(() => 'mock-token'),
+}));
+
 describe('DeleteAccountScreen', () => {
   const mockUser: User = {
     googleId: 'test-user-id',
