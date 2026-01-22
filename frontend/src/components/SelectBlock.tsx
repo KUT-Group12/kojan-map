@@ -32,6 +32,7 @@ export function SelectBlock({ userId, onBlockUser, onClose }: SelectBlockProps) 
       const token = getStoredJWT();
       if (!token) {
         toast.error('認証情報がありません。再度ログインしてください。');
+        setIsSubmitting(false);
         return;
       }
       const response = await fetch(`${API_BASE_URL}/api/users/block`, {
