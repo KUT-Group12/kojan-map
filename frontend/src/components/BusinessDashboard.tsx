@@ -15,7 +15,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { genreLabels } from '../lib/mockData';
+import { genreLabels, genreColors } from '../lib/mockData';
 
 interface BusinessDashboardProps {
   user: User;
@@ -370,11 +370,10 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-        active
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${active
           ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg text-white'
           : 'hover:bg-slate-700 text-slate-300'
-      }`}
+        }`}
     >
       {icon}
       <span className="font-medium">{label}</span>
