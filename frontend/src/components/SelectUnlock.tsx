@@ -27,6 +27,7 @@ export function SelectUnlock({ userId, user, onUpdateUser }: SelectUnlockProps) 
       const token = getStoredJWT();
       if (!token) {
         toast.error('認証情報がありません。再度ログインしてください。');
+        setIsUnblocking(false);
         return;
       }
 

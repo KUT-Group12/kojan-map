@@ -111,7 +111,7 @@ describe('SelectUnlock', () => {
 
   it('読み込み中はボタンが非活性（disabled）になること', async () => {
     // リクエストを完了させない
-    (global.fetch as any).mockReturnValue(new Promise(() => {}));
+    (global.fetch as any).mockReturnValue(new Promise(() => { }));
 
     await renderComponent();
 
