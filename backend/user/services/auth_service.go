@@ -107,14 +107,6 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 		return nil, errors.New("failed to parse Google response")
 	}
 
-	// For Access Token response, Aud might be the Client ID but sometimes it's different depending on scope
-	// We relax the check here if it matches valid email, OR you can strictly check 'aud'
-	if googleResp.Aud != as.googleClientID {
-		// Just log warning or allow if it's access token flow which guarantees origin via CORS/Client
-		// For strict security, check if aud matches.
-		// Note: access_token info response usually contains 'aud' or 'azp' matching client ID.
-	}
-
 	return &googleResp, nil
 }
 
