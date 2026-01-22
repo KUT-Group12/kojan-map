@@ -10,7 +10,7 @@ services:
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: kojanmap
-      JWT_SECRET_KEY: "${JWT_SECRET_KEY:-your-default-secret-key-change-this-in-production}"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     depends_on:
       - db
 

@@ -47,3 +47,5 @@ Thumbs.db
 build/
 tmp/
 bin/
+# Environment variables
+.env
