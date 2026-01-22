@@ -3,16 +3,12 @@ import { createHmac } from 'crypto';
 
 const base64UrlEncode = (input: Buffer | string): string => {
   const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input;
-  return buf
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 };
 
 const createJwt = (params: { userId: string; googleId: string; email: string; role: string }) => {
   const secret = process.env.JWT_SECRET_KEY || 'dev-secret-key-please-change-in-production';
-  
+
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const payload = {
@@ -21,7 +17,7 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
     role: params.role,
     iat: nowSec,
     exp: nowSec + 60 * 60,
-    iss: 'kojan-map-business'
+    iss: 'kojan-map-business',
   };
 
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
@@ -55,7 +51,7 @@ test.describe('Reaction E2E Tests', () => {
     // 投稿作成APIを直接呼び出し
     const createResponse = await request.post('http://localhost:8080/api/posts', {
       headers: {
-        'Authorization': `Bearer ${jwt}`,
+        Authorization: `Bearer ${jwt}`,
         'Content-Type': 'application/json',
       },
       data: {
@@ -124,7 +120,9 @@ test.describe('Reaction E2E Tests', () => {
       return resp.url().includes('/api/posts/reaction') && resp.request().method() === 'POST';
     });
 
-    await page.click('[data-testid="reaction-button"], button:has-text("♡"), button:has-text("いいね")');
+    await page.click(
+      '[data-testid="reaction-button"], button:has-text("♡"), button:has-text("いいね")'
+    );
 
     const reactionResponse = await reactionResponsePromise;
     expect(reactionResponse.status()).toBe(200);
@@ -133,7 +131,9 @@ test.describe('Reaction E2E Tests', () => {
     expect(reactionData.message).toBe('reaction added');
 
     // リアクション数が増加したことを確認
-    await expect(page.getByText('reaction added').or(page.getByText('リアクション追加'))).toBeVisible({ timeout: 3000 });
+    await expect(
+      page.getByText('reaction added').or(page.getByText('リアクション追加'))
+    ).toBeVisible({ timeout: 3000 });
   });
 
   test('REACT-002: リアクションを取り消せる', async ({ page, request }) => {
@@ -154,7 +154,7 @@ test.describe('Reaction E2E Tests', () => {
 
     await request.post('http://localhost:8080/api/posts/reaction', {
       headers: {
-        'Authorization': `Bearer ${jwt}`,
+        Authorization: `Bearer ${jwt}`,
         'Content-Type': 'application/json',
       },
       data: {
@@ -179,7 +179,9 @@ test.describe('Reaction E2E Tests', () => {
       return resp.url().includes('/api/posts/reaction') && resp.request().method() === 'POST';
     });
 
-    await page.click('[data-testid="reaction-button"], button:has-text("❤️"), button:has-text("いいね済み")');
+    await page.click(
+      '[data-testid="reaction-button"], button:has-text("❤️"), button:has-text("いいね済み")'
+    );
 
     const reactionResponse = await reactionResponsePromise;
     expect(reactionResponse.status()).toBe(200);
@@ -206,20 +208,22 @@ test.describe('Reaction E2E Tests', () => {
     await expect(reactionCount).toBeVisible({ timeout: 5000 });
 
     // リアクションを追加して数が変わることを確認
-    const initialCount = await reactionCount.textContent() || '0';
-    
+    const initialCount = (await reactionCount.textContent()) || '0';
+
     const reactionResponsePromise = page.waitForResponse((resp) => {
       return resp.url().includes('/api/posts/reaction') && resp.request().method() === 'POST';
     });
 
-    await page.click('[data-testid="reaction-button"], button:has-text("♡"), button:has-text("いいね")');
+    await page.click(
+      '[data-testid="reaction-button"], button:has-text("♡"), button:has-text("いいね")'
+    );
 
     await reactionResponsePromise;
-    
+
     // 数値が更新されるのを待機
     await page.waitForTimeout(1000);
-    
-    const newCount = await reactionCount.textContent() || '0';
+
+    const newCount = (await reactionCount.textContent()) || '0';
     expect(newCount).not.toBe(initialCount);
   });
 
@@ -241,7 +245,7 @@ test.describe('Reaction E2E Tests', () => {
 
     const createResponse = await request.post('http://localhost:8080/api/posts', {
       headers: {
-        'Authorization': `Bearer ${jwt}`,
+        Authorization: `Bearer ${jwt}`,
         'Content-Type': 'application/json',
       },
       data: {
@@ -261,12 +265,12 @@ test.describe('Reaction E2E Tests', () => {
         localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
         localStorage.setItem('kojanmap_jwt', storedJwt);
       },
-      { 
-        storedUser: { 
-          ...user, 
-          createdAt: new Date().toISOString() 
-        }, 
-        storedJwt: jwt 
+      {
+        storedUser: {
+          ...user,
+          createdAt: new Date().toISOString(),
+        },
+        storedJwt: jwt,
       }
     );
 
@@ -287,7 +291,9 @@ test.describe('Reaction E2E Tests', () => {
       return resp.url().includes('/api/posts/reaction') && resp.request().method() === 'POST';
     });
 
-    await page.click('[data-testid="reaction-button"], button:has-text("♡"), button:has-text("いいね")');
+    await page.click(
+      '[data-testid="reaction-button"], button:has-text("♡"), button:has-text("いいね")'
+    );
 
     const reactionResponse = await reactionResponsePromise;
     expect(reactionResponse.status()).toBe(200);

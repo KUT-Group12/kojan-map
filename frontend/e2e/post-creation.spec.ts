@@ -3,16 +3,12 @@ import { createHmac } from 'crypto';
 
 const base64UrlEncode = (input: Buffer | string): string => {
   const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input;
-  return buf
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 };
 
 const createJwt = (params: { userId: string; googleId: string; email: string; role: string }) => {
   const secret = process.env.JWT_SECRET_KEY || 'dev-secret-key-please-change-in-production';
-  
+
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const payload = {
@@ -21,7 +17,7 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
     role: params.role,
     iat: nowSec,
     exp: nowSec + 60 * 60,
-    iss: 'kojan-map-business'
+    iss: 'kojan-map-business',
   };
 
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
@@ -64,24 +60,36 @@ test.describe('Post Creation E2E Tests', () => {
 
     // 地図タブに移動
     await page.getByRole('button', { name: '地図' }).click();
-    
+
     // 投稿作成ボタンを待機してクリック
-    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="create-post-button"], button:has-text("投稿")');
 
     // フォームが表示されるのを待機
-    await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', {
+      timeout: 5000,
+    });
 
     // フォームに入力
-    await page.fill('[data-testid="post-title"], input[name="title"], input[placeholder*="タイトル"]', 'E2Eテスト投稿');
-    await page.fill('[data-testid="post-description"], textarea[name="description"], textarea[placeholder*="説明"]', 'これはE2Eテストによる投稿です。');
-    
+    await page.fill(
+      '[data-testid="post-title"], input[name="title"], input[placeholder*="タイトル"]',
+      'E2Eテスト投稿'
+    );
+    await page.fill(
+      '[data-testid="post-description"], textarea[name="description"], textarea[placeholder*="説明"]',
+      'これはE2Eテストによる投稿です。'
+    );
+
     // ジャンルを選択（最初のジャンル）
     await page.click('[data-testid="genre-select"], select[name="genre"]');
     await page.click('[data-testid="genre-select"] option, select[name="genre"] option');
 
     // 位置情報を設定（地図をクリック）
-    await page.click('[data-testid="map-container"], .leaflet-container', { position: { x: 200, y: 200 } });
+    await page.click('[data-testid="map-container"], .leaflet-container', {
+      position: { x: 200, y: 200 },
+    });
 
     // 投稿ボタンをクリック
     const createResponsePromise = page.waitForResponse((resp) => {
@@ -106,19 +114,28 @@ test.describe('Post Creation E2E Tests', () => {
 
     // 地図タブに移動
     await page.getByRole('button', { name: '地図' }).click();
-    
+
     // 投稿作成ボタンをクリック
-    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="create-post-button"], button:has-text("投稿")');
 
     // フォームが表示されるのを待機
-    await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', {
+      timeout: 5000,
+    });
 
     // タイトルを空のまま投稿ボタンをクリック
     await page.click('[data-testid="submit-post"], button:has-text("投稿"), button[type="submit"]');
 
     // バリデーションエラーが表示されることを確認
-    await expect(page.getByText('タイトルは必須です').or(page.getByText('title is required')).or(page.getByText('invalid request format'))).toBeVisible({ timeout: 5000 });
+    await expect(
+      page
+        .getByText('タイトルは必須です')
+        .or(page.getByText('title is required'))
+        .or(page.getByText('invalid request format'))
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test('POST-004: 位置情報を正しく保存できる', async ({ page }) => {
@@ -126,24 +143,36 @@ test.describe('Post Creation E2E Tests', () => {
 
     // 地図タブに移動
     await page.getByRole('button', { name: '地図' }).click();
-    
+
     // 投稿作成ボタンをクリック
-    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', {
+      timeout: 10000,
+    });
     await page.click('[data-testid="create-post-button"], button:has-text("投稿")');
 
     // フォームが表示されるのを待機
-    await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', {
+      timeout: 5000,
+    });
 
     // フォームに入力
-    await page.fill('[data-testid="post-title"], input[name="title"], input[placeholder*="タイトル"]', '位置情報テスト投稿');
-    await page.fill('[data-testid="post-description"], textarea[name="description"], textarea[placeholder*="説明"]', '位置情報テストです。');
-    
+    await page.fill(
+      '[data-testid="post-title"], input[name="title"], input[placeholder*="タイトル"]',
+      '位置情報テスト投稿'
+    );
+    await page.fill(
+      '[data-testid="post-description"], textarea[name="description"], textarea[placeholder*="説明"]',
+      '位置情報テストです。'
+    );
+
     // ジャンルを選択
     await page.click('[data-testid="genre-select"], select[name="genre"]');
     await page.click('[data-testid="genre-select"] option, select[name="genre"] option');
 
     // 特定の位置をクリック
-    await page.click('[data-testid="map-container"], .leaflet-container', { position: { x: 300, y: 250 } });
+    await page.click('[data-testid="map-container"], .leaflet-container', {
+      position: { x: 300, y: 250 },
+    });
 
     // 投稿ボタンをクリック
     const createResponsePromise = page.waitForResponse((resp) => {
@@ -157,7 +186,7 @@ test.describe('Post Creation E2E Tests', () => {
 
     // 投稿一覧を再読み込みして位置情報が保存されていることを確認
     await page.reload();
-    
+
     // 新しい投稿がマップ上に表示されることを確認
     await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
     const pins = await page.locator('[data-testid="map-pin"], .leaflet-marker-icon').count();

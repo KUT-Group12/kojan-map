@@ -4,11 +4,7 @@ import { createHmac } from 'crypto';
 
 const base64UrlEncode = (input: Buffer | string): string => {
   const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input;
-  return buf
-    .toString('base64')
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
+  return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 };
 
 const createJwt = (params: { userId: string; googleId: string; email: string; role: string }) => {
@@ -36,7 +32,10 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
 };
 
 test('general user can load main app and fetch posts (real HTTP)', async ({ page }) => {
-  test.skip(!process.env.JWT_SECRET_KEY, 'JWT_SECRET_KEY is not set (required to call protected APIs)');
+  test.skip(
+    !process.env.JWT_SECRET_KEY,
+    'JWT_SECRET_KEY is not set (required to call protected APIs)'
+  );
 
   const user = {
     id: 'e2e-user',
