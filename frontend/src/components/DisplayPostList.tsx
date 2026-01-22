@@ -260,11 +260,7 @@ export function DisplayPostList({
                     通報
                   </Button>
                   {onBlockUser && (
-                    <SelectBlock
-                      userId={post.userId}
-                      onBlockUser={onBlockUser}
-                      onClose={onClose}
-                    />
+                    <SelectBlock userId={post.userId} onBlockUser={onBlockUser} onClose={onClose} />
                   )}
                 </>
               )}
@@ -295,10 +291,11 @@ export function DisplayPostList({
                   <button
                     key={p.postId}
                     onClick={() => p.postId !== post.postId && onSelectPin?.(p)}
-                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${p.postId === post.postId
-                      ? 'border-blue-500 bg-blue-50 shadow-inner'
-                      : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                      }`}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
+                      p.postId === post.postId
+                        ? 'border-blue-500 bg-blue-50 shadow-inner'
+                        : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <div

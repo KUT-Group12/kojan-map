@@ -34,7 +34,7 @@ export function SelectBlock({ userId, onBlockUser, onClose }: SelectBlockProps) 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: userId, // API仕様のキー名に合わせる

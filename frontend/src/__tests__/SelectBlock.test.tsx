@@ -41,11 +41,7 @@ describe('SelectBlock', () => {
   const renderComponent = async () => {
     const { SelectBlock } = await import('../components/SelectBlock');
     return render(
-      <SelectBlock
-        userId={mockUserId}
-        onBlockUser={mockOnBlockUser}
-        onClose={mockOnClose}
-      />
+      <SelectBlock userId={mockUserId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />
     );
   };
 

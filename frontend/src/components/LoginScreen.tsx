@@ -32,7 +32,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         // id_token を得るには flow: 'auth-code' または Backend側で UserInfo endpoint を叩く必要がある。
         // ここでは単純化のため、Backendの仕様に合わせて id_token を取得する flow ではなく、
         // access_token を送るか、あるいはここでUserInfoを取得してから自前で組み立てる必要がある。
-        // 
+        //
         // 既存のAuthService.VerifyGoogleTokenは `tokeninfo?id_token=` を叩いているので、
         // フロントエンドからは `id_token` を送る必要がある。
         // @react-oauth/google で id_token を得るには <GoogleLogin /> コンポーネントを使うか、
@@ -40,7 +40,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
         // 修正方針: GoogleLogin コンポーネントはUIカスタマイズがしにくいので、
         // useGoogleLogin を使いつつ、onSuccess で得た token (access_token) を使って
-        // UserInfo を取得し、それを元にログイン処理を進める... 
+        // UserInfo を取得し、それを元にログイン処理を進める...
         // というのは Backend の `VerifyGoogleToken` (id_token検証) と合わない。
 
         // なので、実際には `<GoogleLogin />` (Credential Response) を使うのが一番簡単だが、
@@ -54,7 +54,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         // ID Token を取得したい場合は flow: 'implicit' であっても簡単ではない。
 
         // 解決策: Access Token を取得し、それを使って Google UserInfo を取得。
-        // その後、Backend には「Googleで認証済み」として Email等を送る... 
+        // その後、Backend には「Googleで認証済み」として Email等を送る...
         // だが Backend は "VerifyGoogleToken" で Google の endpoint に問い合わせている。
         // access_token でも `tokeninfo?access_token=` で検証可能である。
 

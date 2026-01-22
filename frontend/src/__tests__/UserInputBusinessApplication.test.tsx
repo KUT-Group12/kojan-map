@@ -109,11 +109,19 @@ describe('UserInputBusinessApplication', () => {
     );
 
     const submitButton = screen.getByRole('button', { name: '申請する' });
-    fireEvent.change(screen.getByPlaceholderText('店舗名'), { target: { value: '美味しいパン屋' } });
-    fireEvent.change(screen.getByPlaceholderText('店舗名（カナ）'), { target: { value: 'オイシイパンヤ' } });
-    fireEvent.change(screen.getByPlaceholderText('郵便番号 (例: 7800000)'), { target: { value: '7800000' } });
+    fireEvent.change(screen.getByPlaceholderText('店舗名'), {
+      target: { value: '美味しいパン屋' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('店舗名（カナ）'), {
+      target: { value: 'オイシイパンヤ' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('郵便番号 (例: 7800000)'), {
+      target: { value: '7800000' },
+    });
     fireEvent.change(screen.getByPlaceholderText('電話番号'), { target: { value: '09012345678' } });
-    fireEvent.change(screen.getByPlaceholderText('住所'), { target: { value: '東京都千代田区1-1' } });
+    fireEvent.change(screen.getByPlaceholderText('住所'), {
+      target: { value: '東京都千代田区1-1' },
+    });
 
     fireEvent.click(submitButton);
 

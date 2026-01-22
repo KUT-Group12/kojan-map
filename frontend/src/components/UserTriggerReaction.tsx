@@ -5,8 +5,6 @@ import { toast } from 'sonner';
 import { Reaction } from '../types';
 import { getStoredJWT } from '../lib/auth';
 
-
-
 interface UserTriggerReactionProps {
   postId: Reaction['postId'];
   userId: Reaction['userId'];
@@ -44,7 +42,7 @@ export function UserTriggerReaction({
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           postId: postId,

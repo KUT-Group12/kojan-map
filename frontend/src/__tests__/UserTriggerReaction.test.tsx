@@ -54,7 +54,7 @@ describe('UserTriggerReaction', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer mock-token',
+          Authorization: 'Bearer mock-token',
         },
         body: JSON.stringify({ postId: 101 }),
       })
@@ -83,7 +83,7 @@ describe('UserTriggerReaction', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer mock-token',
+          Authorization: 'Bearer mock-token',
         },
         body: JSON.stringify({ postId: 101 }),
       })

@@ -6,8 +6,6 @@ import { toast } from 'sonner';
 import { Business, User } from '../types';
 import { getStoredJWT } from '../lib/auth';
 
-
-
 interface UserInputBusinessApplicationProps {
   user: User;
   onUpdateUser: (user: User) => void; //申請処理
@@ -26,7 +24,9 @@ export function UserInputBusinessApplication({
 }: UserInputBusinessApplicationProps) {
   //状態管理の追加
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<BusinessApplicationData & { kanaBusinessName: string; zipCode: string }>({
+  const [formData, setFormData] = useState<
+    BusinessApplicationData & { kanaBusinessName: string; zipCode: string }
+  >({
     businessName: '',
     kanaBusinessName: '',
     zipCode: '',
@@ -60,7 +60,7 @@ export function UserInputBusinessApplication({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           // ...formData, // Expand explicitly to match casing if needed, relying on spread

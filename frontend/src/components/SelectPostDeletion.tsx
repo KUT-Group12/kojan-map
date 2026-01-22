@@ -34,7 +34,7 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           postId: postId,
