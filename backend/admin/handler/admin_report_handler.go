@@ -25,7 +25,8 @@ func NewAdminReportHandler(s *service.AdminReportService) *AdminReportHandler {
 	return &AdminReportHandler{service: s}
 }
 
-// GetReports godoc
+// GetReports はページネーション付きで通報一覧を取得します。
+//
 // @Summary 通報一覧を取得
 // @Description ページネーション付きで通報一覧を取得します
 // @Tags Admin Reports
@@ -57,7 +58,8 @@ func (h *AdminReportHandler) GetReports(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// GetReportDetail godoc
+// GetReportDetail は指定したIDの通報詳細と対象投稿情報を取得します。
+//
 // @Summary 通報詳細を取得
 // @Description 指定したIDの通報詳細と対象投稿情報を取得します
 // @Tags Admin Reports
@@ -85,7 +87,8 @@ func (h *AdminReportHandler) GetReportDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// HandleReport godoc
+// HandleReport は指定したIDの通報を処理済み状態に更新します。
+//
 // @Summary 通報を処理済みにする
 // @Description 指定したIDの通報を処理済み状態に更新します
 // @Tags Admin Reports

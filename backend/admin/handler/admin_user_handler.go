@@ -19,7 +19,8 @@ func NewAdminUserHandler(s *service.AdminUserService) *AdminUserHandler {
 	return &AdminUserHandler{service: s}
 }
 
-// GetUsers godoc
+// GetUsers はページネーション付きで登録ユーザーの一覧を取得します。
+//
 // @Summary ユーザー一覧を取得
 // @Description ページネーション付きで登録ユーザーの一覧を取得します
 // @Tags Admin Users
@@ -44,7 +45,8 @@ func (h *AdminUserHandler) GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// DeleteUser godoc
+// DeleteUser は指定したユーザーIDのユーザーを削除します。
+//
 // @Summary ユーザーを削除
 // @Description 指定したユーザーIDのユーザーを削除します
 // @Tags Admin Users

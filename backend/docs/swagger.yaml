@@ -1,0 +1,1124 @@
+basePath: /
+definitions:
+  kojan-map_shared_models.Report:
+    properties:
+      deleted:
+        type: boolean
+      handled:
+        type: boolean
+      reason:
+        type: string
+      reportId:
+        type: integer
+      reportedAt:
+        type: string
+      reporterGoogleId:
+        type: string
+      targetPostId:
+        type: integer
+    type: object
+  service.DashboardSummary:
+    properties:
+      activeUserCount:
+        type: integer
+      businessAccountCount:
+        type: integer
+      totalPostCount:
+        type: integer
+      totalReactionCount:
+        type: integer
+      totalUserCount:
+        type: integer
+      unprocessedReportCount:
+        type: integer
+    type: object
+  service.PostDetailResponse:
+    properties:
+      genreId:
+        type: integer
+      numReaction:
+        type: integer
+      numView:
+        type: integer
+      placeId:
+        type: integer
+      postDate:
+        type: string
+      postId:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+      userId:
+        type: string
+    type: object
+  service.PostInfo:
+    properties:
+      postDate:
+        type: string
+      postId:
+        type: integer
+      text:
+        type: string
+      title:
+        type: string
+      userId:
+        type: string
+    type: object
+  service.ReportDetailResponse:
+    properties:
+      deleted:
+        type: boolean
+      handled:
+        type: boolean
+      post:
+        allOf:
+        - $ref: '#/definitions/service.PostInfo'
+        description: Target post details
+      reason:
+        type: string
+      reportId:
+        type: integer
+      reportedAt:
+        type: string
+      reporterGoogleId:
+        type: string
+      targetPostId:
+        type: integer
+    type: object
+  service.ReportListResponse:
+    properties:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      reports:
+        items:
+          $ref: '#/definitions/kojan-map_shared_models.Report'
+        type: array
+      total:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@kojan-map.example.com
+    name: API サポート
+  description: |-
+    こじゃんとやまっぷのバックエンドAPIドキュメント
+
+    このAPIは一般ユーザー、ビジネスユーザー、管理者向けの機能を提供します。
+    認証が必要なエンドポイントではBearer JWTトークンを使用します。
+  title: こじゃんとやまっぷ API
+  version: "1.0"
+paths:
+  /api/admin/applications:
+    get:
+      consumes:
+      - application/json
+      description: 未処理の事業者申請一覧を取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 申請一覧
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 事業者申請一覧を取得
+      tags:
+      - Admin Business
+  /api/admin/applications/{id}/approve:
+    put:
+      consumes:
+      - application/json
+      description: 指定したIDの事業者申請を承認し、事業者会員を作成します
+      parameters:
+      - description: 申請ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 承認成功
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 事業者申請を承認
+      tags:
+      - Admin Business
+  /api/admin/applications/{id}/reject:
+    put:
+      consumes:
+      - application/json
+      description: 指定したIDの事業者申請を却下します
+      parameters:
+      - description: 申請ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 却下成功
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 事業者申請を却下
+      tags:
+      - Admin Business
+  /api/admin/inquiries:
+    get:
+      consumes:
+      - application/json
+      description: 全ての問い合わせ情報を取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 問い合わせ一覧
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 問い合わせ一覧を取得
+      tags:
+      - Admin Inquiries
+  /api/admin/inquiries/{id}/approve:
+    put:
+      consumes:
+      - application/json
+      description: 指定したIDの問い合わせを処理済み状態に更新します
+      parameters:
+      - description: 問い合わせID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 処理成功
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 問い合わせを処理済みにする
+      tags:
+      - Admin Inquiries
+  /api/admin/inquiries/{id}/reject:
+    put:
+      consumes:
+      - application/json
+      description: 指定したIDの問い合わせを却下状態に更新します
+      parameters:
+      - description: 問い合わせID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 却下成功
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 問い合わせを却下する
+      tags:
+      - Admin Inquiries
+  /api/admin/posts/{postId}:
+    delete:
+      consumes:
+      - application/json
+      description: 指定したIDの投稿を削除します。関連する通報も同時に削除されます。
+      parameters:
+      - description: 投稿ID
+        in: path
+        name: postId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 削除成功メッセージ
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 投稿が見つからない
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 投稿を削除
+      tags:
+      - Admin Posts
+    get:
+      consumes:
+      - application/json
+      description: 指定したIDの投稿詳細情報を取得します
+      parameters:
+      - description: 投稿ID
+        in: path
+        name: postId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 投稿詳細
+          schema:
+            $ref: '#/definitions/service.PostDetailResponse'
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 投稿が見つからない
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 投稿詳細を取得
+      tags:
+      - Admin Posts
+  /api/admin/reports:
+    get:
+      consumes:
+      - application/json
+      description: ページネーション付きで通報一覧を取得します
+      parameters:
+      - default: 1
+        description: ページ番号
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 1ページあたりの件数
+        in: query
+        name: pageSize
+        type: integer
+      - description: 処理済みフィルター
+        in: query
+        name: handled
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 通報一覧
+          schema:
+            $ref: '#/definitions/service.ReportListResponse'
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 通報一覧を取得
+      tags:
+      - Admin Reports
+  /api/admin/reports/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 指定したIDの通報詳細と対象投稿情報を取得します
+      parameters:
+      - description: 通報ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 通報詳細
+          schema:
+            $ref: '#/definitions/service.ReportDetailResponse'
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 通報が見つからない
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 通報詳細を取得
+      tags:
+      - Admin Reports
+  /api/admin/reports/{id}/handle:
+    put:
+      consumes:
+      - application/json
+      description: 指定したIDの通報を処理済み状態に更新します
+      parameters:
+      - description: 通報ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 処理成功
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 通報を処理済みにする
+      tags:
+      - Admin Reports
+  /api/admin/summary:
+    get:
+      consumes:
+      - application/json
+      description: 管理者ダッシュボード用の統計情報（ユーザー数、投稿数、未処理通報数等）を取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 統計情報
+          schema:
+            $ref: '#/definitions/service.DashboardSummary'
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: ダッシュボード統計を取得
+      tags:
+      - Admin Dashboard
+  /api/admin/users/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: 指定したユーザーIDのユーザーを削除します
+      parameters:
+      - description: ユーザーID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 削除成功
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: ユーザーを削除
+      tags:
+      - Admin Users
+  /api/auth/exchange-token:
+    post:
+      consumes:
+      - application/json
+      description: GoogleトークンをJWTトークンに交換し、ユーザー情報を返します
+      parameters:
+      - description: Googleトークンとロール(general/business)
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            google_token:
+              type: string
+            role:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWTトークンとユーザー情報
+          schema:
+            properties:
+              jwt_token:
+                type: string
+              user:
+                type: object
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: 認証失敗
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: GoogleトークンをJWTトークンに交換
+      tags:
+      - 認証
+  /api/auth/logout:
+    put:
+      consumes:
+      - application/json
+      description: 現在のセッションを無効化します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: セッションID
+          schema:
+            properties:
+              sessionId:
+                type: string
+            type: object
+        "400":
+          description: セッションIDが必要
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: ログアウト
+      tags:
+      - 認証
+  /api/auth/me:
+    get:
+      consumes:
+      - application/json
+      description: AuthorizationヘッダーのJWTトークンから現在のユーザー情報を取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ユーザー情報
+          schema:
+            properties:
+              email:
+                type: string
+              id:
+                type: string
+            type: object
+        "401":
+          description: 認証エラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: ユーザーが見つかりません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 現在のユーザー情報を取得
+      tags:
+      - 認証
+  /api/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 既存のJWTトークンから新しいトークンを生成します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 新しいJWTトークン
+          schema:
+            properties:
+              jwt_token:
+                type: string
+            type: object
+        "401":
+          description: 認証エラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: ユーザーが見つかりません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: JWTトークンのリフレッシュ
+      tags:
+      - 認証
+  /api/auth/verify-token:
+    post:
+      consumes:
+      - application/json
+      description: JWTトークンを検証し、ユーザー情報を返します
+      parameters:
+      - description: JWTトークン
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            token:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ユーザー情報
+          schema:
+            properties:
+              email:
+                type: string
+              role:
+                type: string
+              user_id:
+                type: string
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: 無効なトークン
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: JWTトークンの検証
+      tags:
+      - 認証
+  /api/auth/withdrawal:
+    put:
+      consumes:
+      - application/json
+      description: ユーザーアカウントを削除します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 削除完了メッセージ
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "401":
+          description: 認証されていません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 退会処理
+      tags:
+      - 認証
+  /api/posts:
+    delete:
+      consumes:
+      - application/json
+      description: 投稿を削除します（投稿者のみ）
+      parameters:
+      - description: 投稿ID
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            postId:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 削除成功
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: 認証されていません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: 権限がありません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 投稿を削除
+      tags:
+      - 投稿
+    get:
+      consumes:
+      - application/json
+      description: 全ての投稿を取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 投稿一覧
+          schema:
+            items:
+              type: object
+            type: array
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: 投稿一覧を取得
+      tags:
+      - 投稿
+    post:
+      consumes:
+      - application/json
+      description: 新しい投稿を作成します
+      parameters:
+      - description: 投稿情報
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            description:
+              type: string
+            genre:
+              type: string
+            images:
+              items:
+                type: string
+              type: array
+            latitude:
+              type: number
+            longitude:
+              type: number
+            title:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 投稿作成成功
+          schema:
+            properties:
+              message:
+                type: string
+              postId:
+                type: integer
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: 認証されていません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 投稿を作成
+      tags:
+      - 投稿
+  /api/posts/detail:
+    get:
+      consumes:
+      - application/json
+      description: 投稿IDで投稿の詳細情報を取得します
+      parameters:
+      - description: 投稿ID
+        in: query
+        name: postId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 投稿詳細
+          schema:
+            type: object
+        "400":
+          description: 不正な投稿ID
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: 投稿が見つかりません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: 投稿詳細を取得
+      tags:
+      - 投稿
+  /api/posts/reaction:
+    post:
+      consumes:
+      - application/json
+      description: 投稿にリアクションを追加します
+      parameters:
+      - description: 投稿ID
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            postId:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: リアクション追加成功
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: 認証されていません
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: リアクションを追加
+      tags:
+      - 投稿
+  /api/posts/search:
+    get:
+      consumes:
+      - application/json
+      description: キーワードで投稿を検索します
+      parameters:
+      - description: 検索キーワード
+        in: query
+        name: keyword
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 検索結果
+          schema:
+            properties:
+              keyword:
+                type: string
+              posts:
+                items:
+                  type: object
+                type: array
+              total:
+                type: integer
+            type: object
+        "400":
+          description: キーワードが必要
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: キーワード検索
+      tags:
+      - 投稿
+  /api/users:
+    get:
+      consumes:
+      - application/json
+      description: ページネーション付きで登録ユーザーの一覧を取得します
+      parameters:
+      - default: 1
+        description: ページ番号
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 1ページあたりの件数
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ユーザー一覧とページネーション情報
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: ユーザー一覧を取得
+      tags:
+      - Admin Users
+  /api/users/register:
+    post:
+      consumes:
+      - application/json
+      description: Googleトークンを使用してユーザー登録またはログインを行います
+      parameters:
+      - description: Google認証トークン
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            google_token:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: セッションID
+          schema:
+            properties:
+              sessionId:
+                type: string
+            type: object
+        "400":
+          description: 不正なリクエスト
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: 無効なGoogleトークン
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: サーバーエラー
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: ユーザー登録・ログイン
+      tags:
+      - 認証
+securityDefinitions:
+  BearerAuth:
+    description: JWT認証トークン。ヘッダーに "Bearer {token}" の形式で指定してください。
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
