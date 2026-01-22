@@ -95,7 +95,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     } finally {
       setIsLoadingUserData(false);
     }
-  }, [user.googleId]);
+  }, []);
 
   // 初期データ（投稿と場所）の取得
   useEffect(() => {
