@@ -26,8 +26,8 @@ describe('NewPostScreen', () => {
   };
 
   const mockGenres: Genre[] = [
-    { genreId: 1, genreName: 'グルメ', color: '#ff0000' },
-    { genreId: 2, genreName: '観光', color: '#00ff00' },
+    { genreId: 1, genreName: 'food', color: '#ff0000' },
+    { genreId: 2, genreName: 'scene', color: '#00ff00' },
   ];
 
   const mockOnClose = vi.fn();

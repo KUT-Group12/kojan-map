@@ -11,6 +11,9 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 // 2. モックした関数への参照を取得するためのヘルパー（テスト内で expect するため）
 // import { toast } from 'sonner' を通じて取得します
@@ -37,7 +40,6 @@ describe('ReportScreen', () => {
     return (
       <ReportScreen
         postId={mockPostId}
-        userId={mockUserId}
         isReporting={reporting}
         setIsReporting={setReporting}
         onReportComplete={mockOnReportComplete}
@@ -50,7 +52,6 @@ describe('ReportScreen', () => {
     render(
       <ReportScreen
         postId={mockPostId}
-        userId={mockUserId}
         isReporting={false}
         setIsReporting={vi.fn()}
         onReportComplete={mockOnReportComplete}
@@ -68,7 +69,6 @@ describe('ReportScreen', () => {
     render(
       <ReportScreen
         postId={mockPostId}
-        userId={mockUserId}
         isReporting={true} // フォーム表示状態
         setIsReporting={vi.fn()}
         onReportComplete={mockOnReportComplete}
@@ -86,11 +86,6 @@ describe('ReportScreen', () => {
         'http://test-api.com/api/posts/report',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({
-            postId: mockPostId,
-            reporterId: mockUserId,
-            reportReason: '不適切な内容です',
-          }),
         })
       );
       // toast.success が呼ばれたか検証

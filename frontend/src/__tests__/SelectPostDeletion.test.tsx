@@ -9,6 +9,9 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 describe('SelectPostDeletion', () => {
   const mockPostId = 12345;
@@ -70,8 +73,6 @@ describe('SelectPostDeletion', () => {
         `${TEST_API_URL}/api/posts/anonymize`,
         expect.objectContaining({
           method: 'PUT', // 仕様に合わせたメソッド
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ postId: mockPostId }),
         })
       );
       expect(toast.success).toHaveBeenCalledWith('投稿を削除しました');

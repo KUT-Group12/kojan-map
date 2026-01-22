@@ -10,7 +10,7 @@ describe('UserReactionViewScreen', () => {
   const mockUser: User = {
     googleId: 'user-123',
     gmail: 'test@example.com',
-    role: 'user',
+    role: 'general',
     registrationDate: '2024-01-01',
     fromName: 'テストユーザー',
   };
@@ -104,7 +104,7 @@ describe('UserReactionViewScreen', () => {
   it('コンポーネントがアンマウントされた際、AbortControllerが呼ばれること', async () => {
     const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
 
-    getFetchMock().mockImplementationOnce(() => new Promise(() => {})); // 完了しないPromise
+    getFetchMock().mockImplementationOnce(() => new Promise(() => { })); // 完了しないPromise
 
     const { unmount } = render(
       <UserReactionViewScreen user={mockUser} onPinClick={mockOnPinClick} />

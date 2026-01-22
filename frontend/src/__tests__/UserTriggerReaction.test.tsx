@@ -11,13 +11,16 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 describe('UserTriggerReaction', () => {
   const defaultProps = {
     postId: 101,
     userId: 'user-123',
     isReacted: false,
-    userRole: 'user',
+    userRole: 'general',
     isDisabled: false,
     onReaction: vi.fn(),
   };
@@ -46,10 +49,14 @@ describe('UserTriggerReaction', () => {
 
     // API呼び出しの検証 (POST)
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/reactions'),
+      'http://localhost:8080/api/posts/reaction',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ postId: 101, userId: 'user-123' }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer mock-token',
+        },
+        body: JSON.stringify({ postId: 101 }),
       })
     );
 
@@ -69,11 +76,16 @@ describe('UserTriggerReaction', () => {
     const button = screen.getByRole('button', { name: 'リアクション済み' });
     await user.click(button);
 
-    // API呼び出しの検証 (DELETE)
+    // API呼び出しの検証 (POST - 削除もPOSTでトグル)
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/reactions'),
+      'http://localhost:8080/api/posts/reaction',
       expect.objectContaining({
-        method: 'DELETE',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer mock-token',
+        },
+        body: JSON.stringify({ postId: 101 }),
       })
     );
 
@@ -114,7 +126,7 @@ describe('UserTriggerReaction', () => {
     await user.click(screen.getByRole('button', { name: 'リアクション' }));
 
     // 通信中の表示確認
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeDisabled();
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 });

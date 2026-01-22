@@ -25,12 +25,12 @@ describe('UserBlockViewScreen', () => {
   const mockUser: User = {
     googleId: 'my-google-id',
     gmail: 'test@gmail.com',
-    role: 'user',
+    role: 'general',
     registrationDate: new Date().toISOString(),
     fromName: '自分',
     // 初期状態では空
     blockedUsers: [],
-  };
+  } as unknown as User;
 
   const mockOnUpdateUser = vi.fn();
 

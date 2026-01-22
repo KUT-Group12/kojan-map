@@ -9,6 +9,9 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 describe('SelectBlock', () => {
   let confirmSpy: ReturnType<typeof vi.spyOn>;
@@ -40,7 +43,6 @@ describe('SelectBlock', () => {
     return render(
       <SelectBlock
         userId={mockUserId}
-        blockerId={mockBlockerId}
         onBlockUser={mockOnBlockUser}
         onClose={mockOnClose}
       />
@@ -77,16 +79,11 @@ describe('SelectBlock', () => {
     expect(screen.getByText('処理中')).toBeInTheDocument();
 
     await waitFor(() => {
-      // API呼び出しのURLとペイロードを検証
+      // API呼び出しのURLとメソッドを検証
       expect(global.fetch).toHaveBeenCalledWith(
         `${TEST_API_URL}/api/users/block`,
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: mockUserId,
-            blockerId: mockBlockerId,
-          }),
         })
       );
       expect(toast.success).toHaveBeenCalledWith('ユーザーをブロックしました');

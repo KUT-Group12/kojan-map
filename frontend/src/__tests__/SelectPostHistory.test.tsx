@@ -17,7 +17,7 @@ describe('SelectPostHistory', () => {
   const mockUser: User = {
     googleId: 'test-user-id',
     gmail: 'test@gmail.com',
-    role: 'user',
+    role: 'general',
     registrationDate: new Date().toISOString(),
     fromName: 'テストユーザー',
   };
@@ -119,7 +119,7 @@ describe('SelectPostHistory', () => {
   });
 
   it('APIエラー時にローディングが終了し、コンソールにエラーが出ること', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     getFetchMock().mockResolvedValueOnce({ ok: false });
 
     render(<SelectPostHistory user={mockUser} onPinClick={vi.fn()} />);
