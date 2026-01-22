@@ -28,18 +28,10 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
     setIsDeleting(true);
 
     try {
-<<<<<<< HEAD
-      // 2. バックエンドAPI呼び出し (仕様書: DELETE /api/posts)
-      const token = getStoredJWT();
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
-      const response = await fetch(`${API_BASE_URL}/api/posts`, {
-        method: 'DELETE',
-=======
       // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
+      const token = getStoredJWT();
       const response = await fetch(`${API_BASE_URL}/api/posts/anonymize`, {
         method: 'PUT',
->>>>>>> origin/main
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

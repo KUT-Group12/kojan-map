@@ -11,7 +11,6 @@ const API_BASE_URL =
 
 interface ReportScreenProps {
   postId: Report['postId'];
-  userId: Report['userId'];
   isReporting: boolean;
   setIsReporting: (value: boolean) => void;
   onReportComplete: () => void;
@@ -19,7 +18,6 @@ interface ReportScreenProps {
 
 export function ReportScreen({
   postId,
-  userId,
   isReporting,
   setIsReporting,
   onReportComplete,
@@ -36,16 +34,9 @@ export function ReportScreen({
     setIsSubmitting(true);
 
     try {
-<<<<<<< HEAD
-      // API仕様書(POST /api/report)のキー名に合わせて送信
-      const token = getStoredJWT();
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
-      const response = await fetch(`${API_BASE_URL}/api/report`, {
-=======
       // API仕様書(POST /api/posts/report)のキー名に合わせて送信
+      const token = getStoredJWT();
       const response = await fetch(`${API_BASE_URL}/api/posts/report`, {
->>>>>>> origin/main
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

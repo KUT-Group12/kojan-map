@@ -72,8 +72,9 @@ export function UserDisplayMyPage({
               </Button>
             ) : (
               <UserInputBusinessApplication
+                user={user}
                 onUpdateUser={(data) => {
-                  handleBusinessRegistration(data);
+                  onUpdateUser(data);
                 }}
                 onCancel={() => setShowBusinessRegistration(false)}
               />

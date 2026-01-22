@@ -67,7 +67,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         });
         const userInfo = await userInfoRes.json();
 
-        const gId = userInfo.sub;
         const email = userInfo.email;
 
         // 次のステップへ (役割選択)

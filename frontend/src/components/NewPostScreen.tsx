@@ -116,24 +116,14 @@ export function NewPostScreen({
     }
     try {
       // 1. バックエンドと繋げる
-<<<<<<< HEAD
       const token = getStoredJWT();
-      const response = await fetch('http://localhost:8080/api/posts', {
-=======
       const response = await fetch(`${API_BASE_URL}/api/posts`, {
->>>>>>> origin/main
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-<<<<<<< HEAD
-          placeId: 1, // placeIdの算出 (今は1固定)
-          genreId: GENRE_MAP[genre], // 文字列を数値IDに変換
-          // userId: user.googleId, // Backend extracts from token
-=======
->>>>>>> origin/main
           title: title,
           description: text,
           latitude: lat,

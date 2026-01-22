@@ -10,12 +10,11 @@ const API_BASE_URL =
 
 interface SelectBlockProps {
   userId: Block['blockedId'];
-  blockerId: Block['blockerId'];
   onBlockUser: (userId: string) => void; // 親コンポーネントで定義された処理
   onClose: () => void;
 }
 
-export function SelectBlock({ userId, blockerId, onBlockUser, onClose }: SelectBlockProps) {
+export function SelectBlock({ userId, onBlockUser, onClose }: SelectBlockProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const handleBlock = async () => {
     // ユーザーに確認を促す
@@ -30,12 +29,7 @@ export function SelectBlock({ userId, blockerId, onBlockUser, onClose }: SelectB
     setIsSubmitting(true);
     try {
       // API仕様書(POST /api/users/block)に合わせてリクエスト
-<<<<<<< HEAD
       const token = getStoredJWT();
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-
-=======
->>>>>>> origin/main
       const response = await fetch(`${API_BASE_URL}/api/users/block`, {
         method: 'POST',
         headers: {

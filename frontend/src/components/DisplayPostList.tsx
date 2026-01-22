@@ -262,7 +262,6 @@ export function DisplayPostList({
                   {onBlockUser && (
                     <SelectBlock
                       userId={post.userId}
-                      blockerId={currentUser.googleId}
                       onBlockUser={onBlockUser}
                       onClose={onClose}
                     />
@@ -277,7 +276,6 @@ export function DisplayPostList({
               <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
                 <ReportScreen
                   postId={post.postId}
-                  userId={currentUser.googleId}
                   isReporting={isReporting}
                   setIsReporting={setIsReporting}
                   onReportComplete={onClose}
@@ -297,11 +295,10 @@ export function DisplayPostList({
                   <button
                     key={p.postId}
                     onClick={() => p.postId !== post.postId && onSelectPin?.(p)}
-                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
-                      p.postId === post.postId
-                        ? 'border-blue-500 bg-blue-50 shadow-inner'
-                        : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                    }`}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${p.postId === post.postId
+                      ? 'border-blue-500 bg-blue-50 shadow-inner'
+                      : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div
