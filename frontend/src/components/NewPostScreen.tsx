@@ -117,6 +117,11 @@ export function NewPostScreen({
     try {
       // 1. バックエンドと繋げる
       const token = getStoredJWT();
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
       const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {

@@ -87,7 +87,10 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 	if resp.StatusCode != http.StatusOK {
 		// New Check: Try access_token endpoint
 		urlAccess := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?access_token=%s", idToken)
-		reqAccess, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, urlAccess, nil)
+		reqAccess, err := http.NewRequestWithContext(context.Background(), http.MethodGet, urlAccess, nil)
+		if err != nil {
+			return nil, errors.New("failed to create access_token request")
+		}
 		respAccess, errAccess := client.Do(reqAccess)
 		if errAccess != nil {
 			return nil, errors.New("failed to contact Google tokeninfo (access_token)")

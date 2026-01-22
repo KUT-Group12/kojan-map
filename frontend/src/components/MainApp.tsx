@@ -68,27 +68,35 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [genres] = useState<Genre[]>([]);
 
   // ★追加: ユーザー専用データの取得関数
-  // ★追加: ユーザー専用データの取得関数
   const fetchUserData = useCallback(async () => {
     setIsLoadingUserData(true);
     try {
       const token = getStoredJWT();
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      if (!token) {
+        setUserPosts([]);
+        setUserReactedPosts([]);
+        return;
+      }
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL ??
+        import.meta.env.VITE_API_BASE_URL ??
+        'http://127.0.0.1:8080';
 
       const postsRes = await fetch(`${API_BASE_URL}/api/posts/history`, {
         headers: {
-          Authorization: `Bearer ${token}`,
-        },
+          'Authorization': `Bearer ${token}`
+        }
       });
+      if (!postsRes.ok) throw new Error('posts history fetch failed');
       const postsData = await postsRes.json();
       setUserPosts(postsData.posts || []);
 
-      const reactionsRes = await fetch(`${API_BASE_URL}/api/posts/history/reactions`, {
-        // Backend reuse
+      const reactionsRes = await fetch(`${API_BASE_URL}/api/posts/history/reactions`, { // Backend reuse
         headers: {
-          Authorization: `Bearer ${token}`,
-        },
+          'Authorization': `Bearer ${token}`
+        }
       });
+      if (!reactionsRes.ok) throw new Error('reactions history fetch failed');
       const reactionsData = await reactionsRes.json();
       setUserReactedPosts(reactionsData.posts || []);
     } catch (error) {
@@ -300,11 +308,11 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         pinsArray.map((p) =>
           p.userId === bizUser.userId
             ? {
-                ...p,
-                businessIcon: bizUser.profileImage,
-                businessName: bizUser.businessName,
-                // 事業者の場合は userName ではなく businessName を優先
-              }
+              ...p,
+              businessIcon: bizUser.profileImage,
+              businessName: bizUser.businessName,
+              // 事業者の場合は userName ではなく businessName を優先
+            }
             : p
         );
       setPosts(updatePins(posts as DisplayPost[]));
@@ -375,20 +383,20 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
           ) : // ★変更: ローディング状態を追加し、取得したデータを渡す
-          isLoadingUserData ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <UserDisplayMyPage
-              user={user}
-              posts={userPosts} // ★変更: MainAppで取得したデータ
-              reactedPosts={userReactedPosts} // ★変更: MainAppで取得したデータ
-              onPinClick={handlePinClick}
-              onUpdateUser={handleUpdateUser}
-              onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
-            />
-          ))}
+            isLoadingUserData ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <UserDisplayMyPage
+                user={user}
+                posts={userPosts} // ★変更: MainAppで取得したデータ
+                reactedPosts={userReactedPosts} // ★変更: MainAppで取得したデータ
+                onPinClick={handlePinClick}
+                onUpdateUser={handleUpdateUser}
+                onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
+              />
+            ))}
 
         {currentView === 'dashboard' && user.role === 'business' && (
           <BusinessDashboard

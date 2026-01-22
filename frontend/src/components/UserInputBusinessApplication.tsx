@@ -54,6 +54,10 @@ export function UserInputBusinessApplication({
     try {
       // 1. API仕様: POST /api/business/application
       const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
       const response = await fetch(`${API_BASE_URL}/api/business/application`, {

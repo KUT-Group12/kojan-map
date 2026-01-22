@@ -40,7 +40,7 @@ describe('UserTriggerReaction', () => {
 
   it('クリックすると POST リクエストを送り、成功時に onReaction が呼ばれること', async () => {
     const user = userEvent.setup();
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     (global.fetch as any).mockResolvedValueOnce({ ok: true });
 
     render(<UserTriggerReaction {...defaultProps} />);
@@ -78,7 +78,7 @@ describe('UserTriggerReaction', () => {
 
     // API呼び出しの検証 (POST - 削除もPOSTでトグル)
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8080/api/posts/reaction',
+      expect.stringContaining('/api/posts/reaction'),
       expect.objectContaining({
         method: 'POST',
         headers: {

@@ -35,7 +35,10 @@ export function UserTriggerReaction({
       // Backend toggles reaction on POST
       const method = 'POST';
       const token = getStoredJWT();
-
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
       const response = await fetch(`${API_BASE_URL}/api/posts/reaction`, {

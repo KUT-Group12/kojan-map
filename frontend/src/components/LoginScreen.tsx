@@ -20,7 +20,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // 取得した Google ID と Gmail を一時保存
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [googleId, setGoogleId] = useState<string | null>(null);
+
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const login = useGoogleLogin({
@@ -65,6 +67,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
+        if (!userInfoRes.ok) {
+          throw new Error('Googleユーザー情報の取得に失敗しました');
+        }
         const userInfo = await userInfoRes.json();
 
         const email = userInfo.email;
@@ -85,7 +90,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         // 本来は `id_token` であるべきだが、取得できていないため、一旦 `tokenResponse.access_token` を入れる。
         // そして Backend 側で `tokeninfo?access_token=` に対応させる修正を行うのが最もスムーズ。
 
-        setGoogleId(tokenResponse.access_token); // Hack: Backendを修正して access_token を受け入れるようにする
+        setGoogleToken(tokenResponse.access_token);
+        setGoogleId(userInfo.sub); // userInfo.sub から取得した実際の Google ID
         setUserEmail(email);
         setIsSelectingRole(true);
       } catch (error) {
@@ -121,7 +127,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     try {
       // Googleトークン（開発環境では模擬ID）を使用してバックエンド認証
       // Note: 本番環境ではGoogleから取得したid_tokenを使用する
-      const token = googleId;
+      const token = googleToken;
       const data = await exchangeGoogleTokenForJWT(token, role);
 
       // JWTとユーザー情報を保存
