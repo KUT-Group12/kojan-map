@@ -26,7 +26,7 @@ func (r *ContactRepoImpl) Create(ctx context.Context, googleID string, subject, 
 		UserID:  googleID,
 		Subject: subject,
 		Text:    message,
-		AskFlag: 0,
+		AskFlag: false,
 		Date:    time.Now(),
 	}
 
