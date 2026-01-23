@@ -12,7 +12,7 @@ export default function ProcessBusinessRequestScreen() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await fetch('/api/admin/request');
+        const res = await fetch('/api/admin/applications');
         if (!res.ok) throw new Error('Failed to fetch business requests');
         const data = await res.json();
         setApplications(data.requests || data);

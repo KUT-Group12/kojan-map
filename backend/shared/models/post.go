@@ -20,5 +20,5 @@ type Post struct {
 
 // TableName specifies the table name for Post
 func (Post) TableName() string {
-	return "posts"
+	return "post"
 }

@@ -18,12 +18,12 @@ func NewAskRepository(db *gorm.DB) *AskRepository {
 
 // FindAllは全てのお問い合わせを取得する機能です．
 func (r *AskRepository) FindAll() ([]models.Ask, error) {
-	var asks []models.Ask
-	result := r.db.Order("date DESC").Find(&asks)
+	var ask []models.Ask
+	result := r.db.Order("date DESC").Find(&ask)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return asks, nil
+	return ask, nil
 }
 
 // FindAllPaginatedはページネーション付きでお問い合わせを取得する機能です．
@@ -62,7 +62,7 @@ func (r *AskRepository) MarkAsHandled(id int32) error {
 		Where("askId = ?", id).
 		Updates(map[string]interface{}{
 			"askFlag": true,
-			"status":  models.AskStatusHandled,
+			// "status":  models.AskStatusHandled,
 		}).Error
 }
 
@@ -72,6 +72,6 @@ func (r *AskRepository) MarkAsRejected(id int32) error {
 		Where("askId = ?", id).
 		Updates(map[string]interface{}{
 			"askFlag": false,
-			"status":  models.AskStatusRejected,
+			// "status":  models.AskStatusRejected,
 		}).Error
 }

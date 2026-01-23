@@ -21,10 +21,10 @@ type Ask struct {
 	Text    string    `gorm:"column:text;not null;type:text" json:"text"`
 	UserID  string    `gorm:"column:userId;not null;size:50" json:"userId"`
 	AskFlag bool      `gorm:"column:askFlag;not null;default:false" json:"askFlag"`
-	Status  AskStatus `gorm:"column:status;type:varchar(20);default:'pending'" json:"status"`
+	// Status  AskStatus `gorm:"column:status;type:varchar(20);default:'pending'" json:"status"`
 }
 
 // TableName specifies the table name for Ask
 func (Ask) TableName() string {
-	return "asks"
+	return "ask"
 }

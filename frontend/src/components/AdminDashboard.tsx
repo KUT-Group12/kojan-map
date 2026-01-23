@@ -101,6 +101,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
       const res = await fetch(`${API_BASE}/admin/reports`);
       if (!res.ok) throw new Error('Failed to fetch reports');
       const data = await res.json();
+      console.log(data);
       setReports(data.reports || data);
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -109,7 +110,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/users`);
+      const res = await fetch(`${API_BASE}/admin/users`);
       if (!res.ok) throw new Error('Failed to fetch users');
       const data = await res.json();
       setUsers(data.users || data);

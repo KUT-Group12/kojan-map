@@ -20,5 +20,5 @@ type BusinessMember struct {
 
 // TableName specifies the table name for BusinessMember
 func (BusinessMember) TableName() string {
-	return "business_members"
+	return "business"
 }

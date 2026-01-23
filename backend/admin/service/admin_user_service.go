@@ -53,9 +53,10 @@ func (s *AdminUserService) DeleteUser(googleID string) error {
 		return errors.New("user not found")
 	}
 
-	if user.DeletedAt != nil {
-		return errors.New("user is already deleted")
-	}
+	/*
+		if user.DeletedAt != nil {
+			return errors.New("user is already deleted")
+		} */
 
 	// Prevent deleting admin users
 	if user.Role == models.RoleAdmin {
