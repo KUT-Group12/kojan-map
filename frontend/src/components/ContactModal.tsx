@@ -35,7 +35,7 @@ export function ContactModal({ user, onClose }: ContactModalProps) {
 
     try {
       // バックエンドAPI仕様に基づいたリクエスト
-      const response = await fetch(`${API_BASE_URL}/api/contact/validate`, {
+      const response = await fetch(`/api/contact/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

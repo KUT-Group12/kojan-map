@@ -120,6 +120,7 @@ CREATE TABLE `businessReq` (
   `address` varchar(100) NOT NULL,
   `phone` varchar(15) DEFAULT NULL,
   `userId` varchar(50) NOT NULL,
+  `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`requestId`),
   KEY `userId` (`userId`),
   CONSTRAINT `businessReq_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `user` (`googleId`)

@@ -70,7 +70,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const fetchUserData = useCallback(async () => {
     setIsLoadingUserData(true);
     try {
-      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`);
+      const postsRes = await fetch(
+        `http://localhost:8080/api/posts/history?googleId=${user.googleId}`
+      );
       const postsData = await postsRes.json();
       setUserPosts(postsData.posts || []);
 
@@ -90,7 +92,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const postsRes = await fetch(`${API_BASE_URL}/api/posts`);
+        const postsRes = await fetch(`http://localhost:8080/api/posts`);
         const postsData = await postsRes.json();
         const rawPosts = (postsData.posts ?? []) as (Post & {
           latitude: number;
@@ -100,7 +102,9 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         if (rawPosts.length === 0) return;
 
         const postIds = rawPosts.map((p) => p.postId).join(',');
-        const scaleRes = await fetch(`${API_BASE_URL}/api/posts/pin/scales?postIds=${postIds}`);
+        const scaleRes = await fetch(
+          `http://localhost:8080/api/posts/pin/scales?postIds=${postIds}`
+        );
         const scaleMap: Record<number, number> = scaleRes.ok ? await scaleRes.json() : {};
 
         const displayPosts: PostDetail[] = rawPosts.map((p) => ({
@@ -148,7 +152,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     setSelectedPlace(relatedPlace || null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/posts/detail?postId=${post.postId}`);
+      const response = await fetch(`http://localhost:8080/api/posts/detail?postId=${post.postId}`);
       if (!response.ok) throw new Error('詳細取得に失敗しました');
       if (response.ok) {
         const data = await response.json();

@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function BusinessApplicationList({ applications, onApprove, onReject }: Props) {
-  if (applications.length === 0) {
+  if (!Array.isArray(applications) || applications.length === 0) {
     return <div className="text-center p-8 text-gray-500">現在、未処理の申請はありません。</div>;
   }
 

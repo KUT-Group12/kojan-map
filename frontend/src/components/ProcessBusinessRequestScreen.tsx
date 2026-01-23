@@ -5,6 +5,19 @@ import { AdminDisplayBusinessRequest } from './AdminDisplayBusinessApplicationLi
 
 // Props definition removed as it now manages its own data
 // interface Props {}
+interface ApiBusinessRequest {
+  requestId: number;
+  businessName: string;
+  address: string;
+  phone: string;
+  applicantEmail: string;
+  createdAt: string;
+  applicantName: string;
+}
+
+interface ApiResponse {
+  applications: ApiBusinessRequest[];
+}
 
 export default function ProcessBusinessRequestScreen() {
   const [applications, setApplications] = useState<AdminDisplayBusinessRequest[]>([]);
@@ -14,8 +27,23 @@ export default function ProcessBusinessRequestScreen() {
       try {
         const res = await fetch('/api/admin/applications');
         if (!res.ok) throw new Error('Failed to fetch business requests');
-        const data = await res.json();
-        setApplications(data.requests || data);
+        const data: ApiResponse = await res.json();
+        console.log(data);
+        if (!data.applications || !Array.isArray(data.applications)) {
+          console.error('Unexpected response format:', data);
+          throw new Error('Invalid response format: applications is not an array');
+        }
+        const formattedApplications: AdminDisplayBusinessRequest[] = data.applications.map((app) => ({
+          requestId: app.requestId,
+          name: app.businessName || '未設定', // businessName が空の場合のデフォルト値
+          address: app.address,
+          phone: app.phone,
+          userId: app.applicantEmail, // applicantEmail を userId にマッピング
+          gmail: app.applicantEmail,
+          applicationDate: app.createdAt,
+          fromName: app.applicantName || '不明', // applicantName を fromName にマッピング
+        }));
+        setApplications(formattedApplications ?? []);
       } catch (error) {
         console.error('Error fetching business applications:', error);
       }
@@ -26,7 +54,7 @@ export default function ProcessBusinessRequestScreen() {
   const handleApprove = async (requestId: number) => {
     if (!confirm('この事業者を承認しますか？')) return;
     try {
-      const res = await fetch(`/api/applications/${requestId}/approve`, { method: 'PUT' });
+      const res = await fetch(`/api/admin/applications/${requestId}/approve`, { method: 'PUT' });
       if (!res.ok) throw new Error('Approval failed');
 
       setApplications((prev) => prev.filter((app) => app.requestId !== requestId));
@@ -40,7 +68,7 @@ export default function ProcessBusinessRequestScreen() {
   const handleReject = async (requestId: number) => {
     if (!confirm('この申請を却下しますか？')) return;
     try {
-      const res = await fetch(`/api/applications/${requestId}/reject`, { method: 'PUT' });
+      const res = await fetch(`/api/admin/applications/${requestId}/reject`, { method: 'PUT' });
       if (!res.ok) throw new Error('Rejection failed');
 
       setApplications((prev) => prev.filter((app) => app.requestId !== requestId));

@@ -54,8 +54,9 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 		return nil, err
 	}
 
-	var responses []BusinessApplicationResponse
+	responses := []BusinessApplicationResponse{}
 	for _, req := range requests {
+
 		user, err := s.userRepo.FindByGoogleID(req.UserID)
 		if err != nil {
 			log.Printf("Failed to find user %s: %v", req.UserID, err)
@@ -65,7 +66,6 @@ func (s *AdminBusinessService) GetApplications() ([]BusinessApplicationResponse,
 		applicantEmail := ""
 		if user != nil {
 			applicantEmail = user.Gmail
-			// Gmail prefix as name (簡易的な実装)
 			applicantName = user.Gmail
 		}
 
@@ -92,7 +92,8 @@ func (s *AdminBusinessService) ApproveApplication(id int32) error {
 	}
 
 	if request.Status != "pending" {
-		return errors.New("application is already processed")
+		// return errors.New("application is already processed")
+		return nil
 	}
 
 	// Verify user exists before creating business member
@@ -135,7 +136,8 @@ func (s *AdminBusinessService) RejectApplication(id int32) error {
 	}
 
 	if request.Status != "pending" {
-		return errors.New("application is already processed")
+		// return errors.New("application is already processed")
+		return nil
 	}
 
 	return s.requestRepo.UpdateStatus(id, "rejected")

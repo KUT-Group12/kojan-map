@@ -23,7 +23,7 @@ type Post struct {
 
 // TableName テーブル名を指定
 func (Post) TableName() string {
-	return "posts"
+	return "post"
 }
 
 // UserReaction ユーザーのリアクション記録（表17）

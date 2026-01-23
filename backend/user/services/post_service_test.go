@@ -197,7 +197,7 @@ func TestPostService_IsUserReacted(t *testing.T) {
 	assert.True(t, reacted)
 }
 
-// TestPostService_DeletePost - 投稿削除（所有者確認付き）
+// TestPostService_Post - 投稿削除（所有者確認付き）
 func TestPostService_DeletePost(t *testing.T) {
 	db := setupTestDB(t)
 	postService := &PostService{}
