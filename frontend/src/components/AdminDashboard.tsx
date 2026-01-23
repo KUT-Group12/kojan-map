@@ -81,11 +81,11 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [weeklyActivityData, setWeeklyActivityData] = useState<WeeklyActivity[]>([]);
   const [genreDistribution, setGenreDistribution] = useState<GenreDistribution[]>([]);
 
-  const API_BASE = '/api';
+  const API_BASE = 'http://127.0.0.1:8080';
 
   const fetchOverviewData = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/summary`);
+      const res = await fetch(`${API_BASE}/api/admin/summary`);
       if (!res.ok) throw new Error('Failed to fetch summary');
       const data = await res.json();
       if (data.stats) setSystemStats(data.stats);
@@ -98,7 +98,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const fetchReports = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/reports`);
+      const res = await fetch(`${API_BASE}/api/admin/reports`);
       if (!res.ok) throw new Error('Failed to fetch reports');
       const data = await res.json();
       setReports(data.reports || data);
@@ -109,7 +109,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/users`);
+      const res = await fetch(`${API_BASE}/api/admin/users`);
       if (!res.ok) throw new Error('Failed to fetch users');
       const data = await res.json();
       setUsers(data.users || data);
@@ -120,7 +120,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const fetchInquiries = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/admin/inquiries`);
+      const res = await fetch(`${API_BASE}/api/admin/inquiries`);
       if (!res.ok) throw new Error('Failed to fetch inquiries');
       const data = await res.json();
       const raw = data.inquiries ?? data.asks ?? data;
@@ -163,7 +163,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const handleResolveReport = async (reportId: number) => {
     try {
-      const res = await fetch(`${API_BASE}/admin/reports/${reportId}/handle`, { method: 'PUT' });
+      const res = await fetch(`${API_BASE}/api/admin/reports/${reportId}/handle`, { method: 'PUT' });
       if (!res.ok) throw new Error('Failed to resolve report');
 
       setReports((prev) =>
@@ -186,7 +186,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const handleDeletePost = async (postId: number) => {
     if (!confirm('この投稿を削除しますか？')) return;
     try {
-      const res = await fetch(`${API_BASE}/posts/${postId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/api/posts/${postId}`, { method: 'DELETE' });
       if (!res.ok) {
         console.warn('Backend delete might not be implemented, updating UI only');
       }
@@ -212,7 +212,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const handleDeleteAccount = async (googleId: string) => {
     if (!confirm('このアカウントを完全に削除してもよろしいですか？')) return;
     try {
-      const res = await fetch(`${API_BASE}/admin/users/${googleId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE}/api/admin/users/${googleId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete user');
 
       setUsers((prev) => prev.filter((user) => user.googleId !== googleId));
@@ -226,7 +226,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const handleDeleteInquiry = async (askId: number) => {
     if (!confirm('この問い合わせを削除しますか？')) return;
     try {
-      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/reject`, { method: 'PUT' });
+      const res = await fetch(`${API_BASE}/api/admin/inquiries/${askId}/reject`, { method: 'PUT' });
       if (!res.ok) throw new Error('Failed to delete');
 
       setInquiries((prev) => prev.filter((q) => q.askId !== askId));
@@ -239,7 +239,7 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
 
   const handleApproveInquiry = async (askId: number) => {
     try {
-      const res = await fetch(`${API_BASE}/admin/inquiries/${askId}/approve`, { method: 'PUT' });
+      const res = await fetch(`${API_BASE}/api/admin/inquiries/${askId}/approve`, { method: 'PUT' });
       if (!res.ok) throw new Error('Failed to approve');
 
       setInquiries((prev) => prev.map((q) => (q.askId === askId ? { ...q, askFlag: true } : q)));

@@ -18,23 +18,27 @@ func NewGenreService(db *gorm.DB) *GenreService {
 
 // GetGenreByName は、ジャンル名からジャンルIDを取得します
 func (s *GenreService) GetGenreByName(genreName string) (int32, error) {
-	// ジャンル名のマッピング
-	genreMapping := map[string]string{
-		"food":      "グルメ",
-		"event":     "イベント",
-		"scenery":   "景色",
-		"shop":      "お店",
-		"emergency": "緊急情報",
-		"other":     "その他",
+	// DB側のgenreNameは英語コード（例: food,event,scene,store,emergency,other）で管理している想定
+	// 入力が日本語の場合にも対応するため、和名->英名マップを用意する
+	japaneseToEnglish := map[string]string{
+		"グルメ":    "food",
+		"イベント":  "event",
+		"景色":      "scene",
+		"お店":      "store",
+		"緊急情報":  "emergency",
+		"その他":    "other",
 	}
 
-	japaneseName, ok := genreMapping[genreName]
-	if !ok {
-		return 0, errors.New("無効なジャンル名です")
+	// そのまま英名が渡された場合はそれを使う
+	var lookupName string
+	if _, ok := japaneseToEnglish[genreName]; ok {
+		lookupName = japaneseToEnglish[genreName]
+	} else {
+		lookupName = genreName
 	}
 
 	var genre models.Genre
-	if err := s.DB.Where("genreName = ?", japaneseName).First(&genre).Error; err != nil {
+	if err := s.DB.Where("genreName = ?", lookupName).First(&genre).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, errors.New("ジャンルが見つかりませんでした")
 		}

@@ -7,5 +7,5 @@ type Genre struct {
 }
 
 func (Genre) TableName() string {
-	return "genres"
+	return "genre"
 }

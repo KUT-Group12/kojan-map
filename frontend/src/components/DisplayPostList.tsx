@@ -10,8 +10,8 @@ import { ReportScreen } from './ReportScreen';
 import { SelectBlock } from './SelectBlock';
 import { SelectPostDeletion } from './SelectPostDeletion';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+const API_BASE_URL = 'http://127.0.0.1:8080';
+  //import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface PinDetailModalProps {
   post: Post;

@@ -8,3 +8,6 @@ export const genreLabels: Record<PinGenre, string> = {
   emergency: '緊急情報',
   other: 'その他',
 };
+
+// GENRE_MAP: genreLabelsのエイリアスとしてエクスポート
+export const GENRE_MAP = genreLabels;

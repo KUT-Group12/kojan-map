@@ -4,13 +4,8 @@ services:
     build: ./backend
     ports:
       - "8080:8080"
-    environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      DB_USER: root
-      DB_PASSWORD: root
-      DB_NAME: kojanmap
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    env_file:
+      - ./backend/.env
     depends_on:
       - db
 

@@ -8,8 +8,8 @@ import { Post, User } from '../types';
 // もし検索条件のプルダウンを作るために genreLabels が必要な場合は残しますが、
 // ここでは「投稿に含まれるDBデータ」を優先する形に書き換えます。
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+const API_BASE_URL = 'http://127.0.0.1:8080';
+  // import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface SidebarProps {
   user: User;
@@ -49,7 +49,7 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
           url = `${API_BASE_URL}/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
         } else if (selectedGenre !== 'all') {
           // ジャンル選択時は selectedGenre (ID) をそのまま利用
-          url = `${API_BASE_URL}/api/posts/search/genre?genreId=${selectedGenre}`;
+          url = `${API_BASE_URL}/api/posts/search/genres?genreId=${selectedGenre}`;
         } else if (dateFilter !== 'all') {
           const endDate = new Date().toISOString().split('T')[0];
           const start = new Date();
@@ -63,8 +63,12 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
         const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error('検索に失敗しました');
 
-        const data = (await response.json()) as { posts: Post[] };
-        setApiPosts(data.posts || []);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setApiPosts(data as Post[]);
+        } else {
+          setApiPosts((data && (data.posts as Post[])) || []);
+        }
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
         setApiPosts([]);
