@@ -8,18 +8,20 @@ const base64UrlEncode = (input: Buffer | string): string => {
   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 };
 
-const createJwt = (params: { userId: string; googleId: string; email: string; role: string }) => {
+const createJwt = (params: { googleId: string; email: string; role: string }) => {
   const secret = process.env.JWT_SECRET_KEY || 'dev-secret-key-please-change-in-production';
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const payload = {
-    user_id: params.userId,
+    user_id: params.googleId,
     google_id: params.googleId,
     email: params.email,
     role: params.role,
     iat: nowSec,
     exp: nowSec + 60 * 60,
-    iss: 'kojan-map-business',
+    iss: 'kojanmap-e2e',
+    aud: 'kojanmap',
+    sub: params.googleId,
   };
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
@@ -29,32 +31,21 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
   return `${signingInput}.${encodedSignature}`;
 };
 
-test.beforeAll(async ({ request }) => {
-  await setupTestData(request);
-});
-
 test.describe('通報機能 E2Eテスト', () => {
   let postId: number;
+  let genreName: string;
 
   test.beforeAll(async ({ request }) => {
+    await setupTestData(request);
     // テスト用の投稿を作成
     const user = {
-      id: 'e2e-report-user',
-      googleId: 'e2e-report-user',
-      email: 'test-user@gmail.com',
+      googleId: 'e2e-report-user-token',
+      email: 'e2e-report-user@example.com',
       role: 'user',
     };
-    // ジャンル一覧を取得
-    const genresRes = await request.get('http://localhost:8080/api/genres');
-    const genres = (await genresRes.json()).genres;
-    // 英語名でなければ強制的に'food'を使う
-    const genreValue = ['food', 'event', 'scene', 'store', 'emergency', 'other'].includes(
-      genres[0]?.genreName
-    )
-      ? genres[0].genreName
-      : 'food';
+    // setupTestData.tsでexportしたジャンル名を利用
+    genreName = (global as { E2E_GENRE_NAME?: string }).E2E_GENRE_NAME || 'food';
     const jwt = createJwt({
-      userId: user.id,
       googleId: user.googleId,
       email: user.email,
       role: user.role,
@@ -67,7 +58,7 @@ test.describe('通報機能 E2Eテスト', () => {
         longitude: 139.7671,
         title: '通報テスト用投稿',
         description: '通報機能のテスト用投稿です',
-        genre: genreValue,
+        genre: genreName,
       },
     });
     expect(createResponse.status()).toBe(201);
@@ -78,14 +69,13 @@ test.describe('通報機能 E2Eテスト', () => {
   test.beforeEach(async ({ page }) => {
     const user = {
       id: 'e2e-reporter-user',
-      googleId: 'e2e-reporter-user',
-      email: 'test-user@gmail.com',
+      googleId: 'e2e-reporter-user-token',
+      email: 'e2e-reporter-user@example.com',
       role: 'user',
       createdAt: new Date().toISOString(),
     };
 
     const jwt = createJwt({
-      userId: user.id,
       googleId: user.googleId,
       email: user.email,
       role: user.role,
@@ -194,13 +184,12 @@ test.describe('通報機能 E2Eテスト', () => {
     // まず一度通報する
     const user = {
       id: 'e2e-reporter-user',
-      googleId: 'e2e-reporter-user',
-      email: 'test-user@gmail.com',
-      role: 'general',
+      googleId: 'e2e-reporter-user-token',
+      email: 'e2e-reporter-user@example.com',
+      role: 'user',
     };
 
     const jwt = createJwt({
-      userId: user.id,
       googleId: user.googleId,
       email: user.email,
       role: user.role,
@@ -277,13 +266,12 @@ test.describe('通報機能 E2Eテスト', () => {
     // 自分の投稿を作成
     const user = {
       id: 'e2e-self-report-user',
-      googleId: 'e2e-self-report-user',
-      email: 'test-user@gmail.com',
-      role: 'general',
+      googleId: 'e2e-self-report-user-token',
+      email: 'e2e-self-report-user@example.com',
+      role: 'user',
     };
 
     const jwt = createJwt({
-      userId: user.id,
       googleId: user.googleId,
       email: user.email,
       role: user.role,
@@ -299,7 +287,7 @@ test.describe('通報機能 E2Eテスト', () => {
         longitude: 139.7671,
         title: '自分の投稿テスト',
         description: '自分で通報するテスト',
-        genre: '食事',
+        genre: genreName,
       },
     });
 
