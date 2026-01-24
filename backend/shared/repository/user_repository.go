@@ -58,7 +58,6 @@ func (r *UserRepository) CountByRole(role models.Role) (int, error) {
 
 // SoftDelete marks a user as deleted
 func (r *UserRepository) SoftDelete(googleID string) error {
-	return r.db.Model(&models.User{}).
-		Where("googleId = ?", googleID).
-		Update("deletedAt", gorm.Expr("NOW()")).Error
+	// レコードそのものをDBから削除する
+	return r.db.Where("googleId = ?", googleID).Delete(&models.User{}).Error
 }

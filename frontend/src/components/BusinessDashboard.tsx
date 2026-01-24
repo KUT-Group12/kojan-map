@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { User, Business, Post, PinGenre } from '../types';
-import { GENRE_MAP } from '../lib/mockData';
+import { GENRE_MAP, genreColors } from '../lib/mockData';
 
 import { Eye, Heart, Calendar, CreditCard, BarChart3, Building2, Clock } from 'lucide-react';
 import {

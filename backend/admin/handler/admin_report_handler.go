@@ -99,6 +99,7 @@ func (h *AdminReportHandler) GetReportDetail(c *gin.Context) {
 // @Failure 400 {object} map[string]string "不正なリクエスト"
 // @Router /api/admin/reports/{id}/handle [put]
 // @Security BearerAuth
+
 func (h *AdminReportHandler) HandleReport(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

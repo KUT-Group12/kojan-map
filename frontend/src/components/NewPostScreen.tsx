@@ -6,9 +6,10 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Label } from './ui/label';
 import { Upload } from 'lucide-react';
-import { User, Business, Genre } from '../types';
+import { User, Business, PinGenre, Genre } from '../types';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { genreLabels } from '../lib/mockData';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
@@ -41,7 +42,7 @@ export function NewPostScreen({
 }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<Genre | null>(genres[0] || null);
+  const [genre, setGenre] = useState<PinGenre>('other');
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
   const [latitude, setLatitude] = useState(String(initialLatitude ?? 33.6071));
@@ -113,21 +114,26 @@ export function NewPostScreen({
       toast.error('有効な位置情報を入力してください');
       return;
     }
+
     try {
-      // 1. バックエンドと繋げる
+      // 画像データをBase64からバイナリに変換
+      const postImage = images.length > 0 ? images[0].split(',')[1] : null;
+
+      const payload = {
+        placeId: 1, // API定義に基づき、placeIdを1に設定
+        userId: user.googleId,
+        title: title,
+        text: text,
+        postImage: postImage, // Base64形式の文字列を送信
+        genreId: genres.find((g) => g.genreName === genre)?.genreId || 0, // ジャンルIDを取得
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: title,
-          description: text,
-          latitude: lat,
-          longitude: lng,
-          genre: selectedGenre,
-          images: images,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error('サーバーへの投稿に失敗しました');
@@ -135,13 +141,17 @@ export function NewPostScreen({
       const data = await response.json();
       console.log('Post created with ID:', data.postId);
 
-      // 2. コンポーネントの呼び出し
+      // 親コンポーネントに新しい投稿を通知
       await onCreate({
         latitude: lat,
         longitude: lng,
         title,
         text,
-        genre: selectedGenre,
+        genre: genres.find((g) => g.genreName === genre) || {
+          genreId: 0,
+          genreName: 'other',
+          color: '#000',
+        },
         images,
       });
 
@@ -195,24 +205,14 @@ export function NewPostScreen({
           {/* ジャンル選択 */}
           <div>
             <Label htmlFor="genre">ジャンル *</Label>
-            <Select
-              value={selectedGenre?.genreId.toString()}
-              onValueChange={(id) => {
-                const g = genres.find((item) => item.genreId.toString() === id);
-                if (g) setSelectedGenre(g);
-              }}
-            >
-              <SelectTrigger id="genre">
-                <SelectValue placeholder="ジャンルを選択" />
+            <Select value={genre} onValueChange={(value) => setGenre(value as PinGenre)}>
+              <SelectTrigger>
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {/* 5. DBから取得した genres を回す */}
-                {genres.map((g) => (
-                  <SelectItem key={g.genreId} value={g.genreId.toString()}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.color }} />
-                      {g.genreName}
-                    </div>
+                {Object.entries(genreLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>

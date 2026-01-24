@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"kojan-map/user/config"
@@ -24,11 +25,11 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 
 	// JOINクエリで関連データを一度に取得（N+1問題を解決）
 	err := config.DB.
-		Table("posts").
-		Select("posts.*, genres.genreName as genre_name, places.latitude, places.longitude").
-		Joins("LEFT JOIN genres ON genres.genreId = posts.genreId").
-		Joins("LEFT JOIN places ON places.placeId = posts.placeId").
-		Order("posts.postDate DESC").
+		Table("post").
+		Select("post.*, genre.genreName as genre_name, place.latitude, place.longitude").
+		Joins("LEFT JOIN genre ON genre.genreId = post.genreId").
+		Joins("LEFT JOIN place ON place.placeId = post.placeId").
+		Order("post.postDate DESC").
 		Find(&posts).Error
 
 	if err != nil {
@@ -109,7 +110,10 @@ func (ps *PostService) GetPostDetail(postID int32) (map[string]interface{}, erro
 
 // CreatePost 投稿を作成
 func (ps *PostService) CreatePost(post *models.Post) error {
+	fmt.Println("--- CreatePost 関数が呼び出されました！ ---")
+	fmt.Printf("受信データ: %+v\n", post)
 	if post.Title == "" || post.Text == "" {
+		fmt.Printf("DB保存エラー\n")
 		return errors.New("title and text are required")
 	}
 	return config.DB.Create(post).Error

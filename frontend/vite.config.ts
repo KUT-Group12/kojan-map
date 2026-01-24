@@ -60,6 +60,12 @@ export default defineConfig({
     outDir: 'build',
   },
   server: {
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://backend:8080',
+        changeOrigin: true, // これを入れておくと安全です
+      },
+    },
     port: 5173,
     open: true,
   },
