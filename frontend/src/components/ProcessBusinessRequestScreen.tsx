@@ -33,16 +33,18 @@ export default function ProcessBusinessRequestScreen() {
           console.error('Unexpected response format:', data);
           throw new Error('Invalid response format: applications is not an array');
         }
-        const formattedApplications: AdminDisplayBusinessRequest[] = data.applications.map((app) => ({
-          requestId: app.requestId,
-          name: app.businessName || '未設定', // businessName が空の場合のデフォルト値
-          address: app.address,
-          phone: app.phone,
-          userId: app.applicantEmail, // applicantEmail を userId にマッピング
-          gmail: app.applicantEmail,
-          applicationDate: app.createdAt,
-          fromName: app.applicantName || '不明', // applicantName を fromName にマッピング
-        }));
+        const formattedApplications: AdminDisplayBusinessRequest[] = data.applications.map(
+          (app) => ({
+            requestId: app.requestId,
+            name: app.businessName || '未設定', // businessName が空の場合のデフォルト値
+            address: app.address,
+            phone: app.phone,
+            userId: app.applicantEmail, // applicantEmail を userId にマッピング
+            gmail: app.applicantEmail,
+            applicationDate: app.createdAt,
+            fromName: app.applicantName || '不明', // applicantName を fromName にマッピング
+          })
+        );
         setApplications(formattedApplications ?? []);
       } catch (error) {
         console.error('Error fetching business applications:', error);

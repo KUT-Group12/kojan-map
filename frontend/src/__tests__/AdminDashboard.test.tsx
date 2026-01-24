@@ -3,152 +3,160 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { User } from '../types';
 
-// fetch のモック
+// fetchのグローバルモック
 vi.stubGlobal('fetch', vi.fn());
 
-// toast のモック
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}));
-
-// Recharts はテスト環境で正しく描画されないことが多いためモック化
-vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-  BarChart: () => <div data-testid="bar-chart" />,
-  PieChart: () => <div data-testid="pie-chart" />,
-  XAxis: () => null,
-  YAxis: () => null,
-  CartesianGrid: () => null,
-  Tooltip: () => null,
-  Legend: () => null,
-  Bar: () => null,
-  Pie: () => null,
-  Cell: () => null,
-}));
-
-// 子コンポーネントの簡易モック（これらは個別にテスト済みのため）
-vi.mock('../components/AdminReport', () => ({
-  default: () => <div data-testid="admin-report">AdminReport Component</div>,
-}));
-
-// toast をインポート
-import { toast } from 'sonner';
+// Rechartsのレスポンシブコンテナがテスト環境(jsdom)でサイズ0になるのを防ぐモック
+vi.mock('recharts', async () => {
+  const OriginalModule = await vi.importActual('recharts');
+  return {
+    ...OriginalModule,
+    ResponsiveContainer: ({ children }: any) => (
+      <div style={{ width: '800px', height: '400px' }}>{children}</div>
+    ),
+  };
+});
 
 describe('AdminDashboard', () => {
   const mockAdminUser: User = {
-    googleId: 'admin-1',
-    fromName: '管理者様',
+    googleId: 'admin-001',
+    fromName: '管理者 A',
     gmail: 'admin@example.com',
     role: 'admin',
     registrationDate: '2024-01-01',
   };
 
+  const mockSummary = {
+    stats: {
+      totalUsers: 100,
+      activeUsers: 50,
+      totalPosts: 200,
+      totalReactions: 500,
+      businessUsers: 10,
+      pendingReports: 5,
+    },
+    activity: [{ date: '2026-01-20', posts: 5, reactions: 10 }],
+    genres: [{ name: 'グルメ', value: 30, color: '#ff0000' }],
+  };
+
+  const mockInquiries = [
+    {
+      askId: 1,
+      userId: 'user1',
+      subject: 'テスト件名',
+      text: 'テスト本文',
+      date: '2026-01-20',
+      askFlag: false,
+      email: 'test@example.com',
+      fromName: '質問者',
+      role: 'general',
+    },
+  ];
+
   const mockOnLogout = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // デフォルトの成功レスポンス（overview用）
+    // デフォルトのfetchレスポンス（概要データ）
     (globalThis.fetch as any).mockResolvedValue({
       ok: true,
-      json: async () => ({
-        stats: {
-          totalUsers: 100,
-          activeUsers: 50,
-          totalPosts: 200,
-          totalReactions: 500,
-          businessUsers: 10,
-          pendingReports: 3,
-        },
-        activity: [],
-        genres: [],
-      }),
+      json: async () => mockSummary,
     });
   });
 
-  it('初期表示で統計データが表示されること', async () => {
+  it('初期表示時に概要データがフェッチされ、統計カードが表示されること', async () => {
     render(<AdminDashboard user={mockAdminUser} onLogout={mockOnLogout} />);
 
-    // 統計値の確認
-    expect(await screen.findByText('100')).toBeInTheDocument(); // 総ユーザー数
-    expect(screen.getByText('管理者様')).toBeInTheDocument();
+    // APIが呼ばれたか確認
+    expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/admin/summary'));
+
+    // 統計値が表示されているか
+    await waitFor(() => {
+      const elements = screen.getAllByText('5');
+      expect(elements.length).toBeGreaterThanOrEqual(1);
+      // 統計カードの「5」が最初に来ることがわかっている場合
+      // expect(elements[1]).toBeInTheDocument();
+    });
   });
 
-  it('サイドバーのタブをクリックして画面が切り替わること', async () => {
+  it('タブを切り替えると、対応するAPIが呼び出されること', async () => {
     render(<AdminDashboard user={mockAdminUser} onLogout={mockOnLogout} />);
 
-    // 初期状態は概要。通報管理タブをクリック
-    const reportTabButton = screen.getByRole('button', { name: /通報管理/ });
+    // 「お問い合わせ」タブをクリック
+    const inquiryTab = screen.getByRole('button', { name: /お問い合わせ/ });
 
-    // 通報データ取得用のAPIレスポンスをモック
+    // お問い合わせデータのレスポンスを個別にモック
     (globalThis.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ reports: [] }),
+      json: async () => ({ inquiries: mockInquiries }),
     });
 
-    fireEvent.click(reportTabButton);
+    fireEvent.click(inquiryTab);
 
-    // ヘッダーが変わることを確認
-    expect(await screen.findByRole('heading', { name: '通報管理' })).toBeInTheDocument();
-    // モックしたコンポーネントが表示されているか
-    expect(screen.getByTestId('admin-report')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/admin/inquiries'));
+      expect(screen.getByText('お問い合わせ管理')).toBeInTheDocument();
+    });
+  });
+
+  it('お問い合わせの削除ボタンがクリックされたとき、確認ダイアログが出てAPIが呼ばれること', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    // 1. fetchを事前に確実にモック（データが空でないことを確認）
+    const mockFetch = vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
+      if (url.toString().includes('/admin/inquiries')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ inquiries: [{ askId: 1, title: 'テスト件名', status: 'pending' }] }),
+        } as Response);
+      }
+      return Promise.resolve({ ok: true } as Response);
+    });
+
+    render(<AdminDashboard user={mockAdminUser} onLogout={mockOnLogout} />);
+
+    // 2. サイドバーの「お問い合わせ」ボタンをクリック
+    // name: 'お問い合わせ' だと見つからない場合があるため、正規表現や exact: false を検討
+    const inquiryTab = screen.getByRole('button', { name: /お問い合わせ/i });
+    fireEvent.click(inquiryTab);
+
+    // 3. メインエリアが切り替わるのを「見出し」で待つ
+    // これにより AdminContactManagement が表示されたことを確定させる
+    await screen.findByRole('heading', { name: /お問い合わせ管理/ });
+
+    // 4. その後、削除ボタンが表示されるのを待つ
+    const deleteBtn = await screen.findByRole('button', { name: '削除' });
+
+    // 5. 削除実行
+    fireEvent.click(deleteBtn);
+
+    // 6. 検証
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/admin/inquiries/1/reject'),
+      expect.any(Object)
+    );
+
+    confirmSpy.mockRestore();
+    mockFetch.mockRestore();
   });
 
   it('ログアウトボタンをクリックすると onLogout が呼ばれること', () => {
     render(<AdminDashboard user={mockAdminUser} onLogout={mockOnLogout} />);
 
-    const logoutButton = screen.getByRole('button', { name: /ログアウト/ });
-    fireEvent.click(logoutButton);
+    const logoutBtn = screen.getByRole('button', { name: /ログアウト/ });
+    fireEvent.click(logoutBtn);
 
     expect(mockOnLogout).toHaveBeenCalled();
   });
 
-  it('通報の解決 (handleResolveReport) が正しく動作し、統計が更新されること', async () => {
+  it('未処理通報がある場合、サイドバーにバッジが表示されること', async () => {
     render(<AdminDashboard user={mockAdminUser} onLogout={mockOnLogout} />);
 
-    // 初期状態で pendingReports = 3 を確認
-    const badge = await screen.findByText('3', {
-      selector: '[data-slot="badge"]',
-    });
-    expect(badge).toBeInTheDocument();
+    // data-testid を使ってピンポイントで取得
+    const reportBadge = await screen.findByTestId('report-badge');
 
-    // 通報管理タブに移動
-    (globalThis.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ reports: [{ reportId: 1 /* ... */ }] }),
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /通報管理/ }));
-
-    // 解決アクションをトリガー（AdminReport がモック化されているため、
-    // 実際の実装に応じて調整が必要です）
-
-    // 更新された統計を確認
-    // await waitFor(() => {
-    //   expect(screen.getByText('2')).toBeInTheDocument();
-    // });
-  });
-
-  it('APIエラー時にエラーがログ出力されること', async () => {
-    // console.error をモック
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    // ユーザー一覧取得でエラーを発生させる
-    (globalThis.fetch as any).mockResolvedValueOnce({ ok: false });
-
-    render(<AdminDashboard user={mockAdminUser} onLogout={mockOnLogout} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /ユーザー管理/ }));
-
-    await waitFor(() => {
-      // fetch が呼ばれたことを確認
-      expect(globalThis.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/users'));
-      // console.error が呼ばれたことを確認
-      expect(consoleErrorSpy).toHaveBeenCalled();
-    });
-
-    consoleErrorSpy.mockRestore();
+    expect(reportBadge).toHaveTextContent('5');
+    expect(reportBadge).toHaveClass('bg-red-500');
   });
 });

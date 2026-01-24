@@ -62,7 +62,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://backend:8080',
+        target: process.env.VITE_API_URL || 'http://backend:8080',
         changeOrigin: true, // これを入れておくと安全です
       },
     },

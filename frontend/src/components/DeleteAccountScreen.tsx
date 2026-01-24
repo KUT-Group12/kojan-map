@@ -55,7 +55,7 @@ export function DeleteAccountScreen({
 
     try {
       // API仕様: PUT /api/auth/withdrawal
-      const response = await fetch(`/api/auth/withdrawal`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/withdrawal`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

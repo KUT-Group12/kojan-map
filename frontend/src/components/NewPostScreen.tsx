@@ -128,7 +128,7 @@ export function NewPostScreen({
         genreId: genres.find((g) => g.genreName === genre)?.genreId || 0, // ジャンルIDを取得
       };
 
-      const response = await fetch(`/api/posts`, {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

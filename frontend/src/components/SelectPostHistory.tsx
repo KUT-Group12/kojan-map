@@ -36,7 +36,7 @@ export function SelectPostHistory({ user, onPinClick }: SelectPostHistoryProps) 
     const fetchHistory = async () => {
       try {
         // API仕様: GET /api/posts/history?googleId=...
-        const response = await fetch(`/api/posts/history?googleId=${user.googleId}`);
+        const response = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`);
         if (!response.ok) throw new Error('履歴の取得に失敗しました');
 
         const data = await response.json();
