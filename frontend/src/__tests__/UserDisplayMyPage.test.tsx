@@ -26,7 +26,7 @@ describe('UserDisplayMyPage', () => {
   const mockUser: User = {
     googleId: 'test-user-id',
     gmail: 'test@gmail.com',
-    role: 'general',
+    role: 'user',
     registrationDate: '2024-01-01T00:00:00Z',
     fromName: 'テストユーザー',
   };

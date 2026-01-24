@@ -15,7 +15,7 @@ describe('UserReactionViewScreen', () => {
   const mockUser: User = {
     googleId: 'user-123',
     gmail: 'test@example.com',
-    role: 'general',
+    role: 'user',
     registrationDate: '2024-01-01',
     fromName: 'テストユーザー',
   };

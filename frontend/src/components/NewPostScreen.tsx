@@ -10,9 +10,7 @@ import { User, Business, Genre } from '../types';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { getStoredJWT } from '../lib/auth';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface CreatePinModalProps {
   user: User;
@@ -42,7 +40,10 @@ export function NewPostScreen({
 }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<Genre | null>(genres[0] || null);
+  const [selectedGenreId, setSelectedGenreId] = useState<string>(
+    genres[0]?.genreId?.toString() || ''
+  );
+  const selectedGenre = genres.find((g) => g.genreId.toString() === selectedGenreId) || null;
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
   const [latitude, setLatitude] = useState(String(initialLatitude ?? 33.6071));
@@ -50,6 +51,16 @@ export function NewPostScreen({
   const [images, setImages] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ジャンル名の日本語変換マップ
+  const genreNameMap: Record<string, string> = {
+    food: 'グルメ',
+    event: 'イベント',
+    scene: '景色',
+    store: 'お店',
+    emergency: '緊急情報',
+    other: 'その他',
+  };
 
   // ファイルをBase64に変換するユーティリティ
   const fileToBase64 = (file: File): Promise<string> => {
@@ -96,26 +107,14 @@ export function NewPostScreen({
       toast.error('タイトルを入力してください');
       return;
     }
-
     if (title.length > 50) {
       toast.error('タイトルは50文字以内で入力してください');
       return;
     }
-
-    if (!text.trim()) {
-      toast.error('説明を入力してください');
-      return;
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      toast.error('有効な位置情報を入力してください');
-      return;
-    }
     try {
       // 1. バックエンドと繋げる
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
       const token = getStoredJWT();
       if (!token) {
         toast.error('ログインが必要です');
@@ -129,10 +128,10 @@ export function NewPostScreen({
         },
         body: JSON.stringify({
           title: title,
-          description: text,
+          description: text, // バックエンド仕様に合わせてdescription
           latitude: lat,
           longitude: lng,
-          genre: selectedGenre,
+          genre: selectedGenre ? selectedGenre.genreName : '', // 英語名で送信
           images: images,
         }),
       });
@@ -203,14 +202,14 @@ export function NewPostScreen({
           <div>
             <Label htmlFor="genre">ジャンル *</Label>
             <Select
-              value={selectedGenre?.genreId.toString()}
-              onValueChange={(id) => {
-                const g = genres.find((item) => item.genreId.toString() === id);
-                if (g) setSelectedGenre(g);
-              }}
+              value={selectedGenreId}
+              onValueChange={(id) => setSelectedGenreId(id)}
+              disabled={genres.length === 0}
             >
               <SelectTrigger id="genre">
-                <SelectValue placeholder="ジャンルを選択" />
+                <SelectValue
+                  placeholder={genres.length === 0 ? 'ジャンルがありません' : 'ジャンルを選択'}
+                />
               </SelectTrigger>
               <SelectContent>
                 {/* 5. DBから取得した genres を回す */}
@@ -218,7 +217,7 @@ export function NewPostScreen({
                   <SelectItem key={g.genreId} value={g.genreId.toString()}>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.color }} />
-                      {g.genreName}
+                      {genreNameMap[g.genreName] ?? g.genreName}
                     </div>
                   </SelectItem>
                 ))}

@@ -2,16 +2,13 @@ import { useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Post, Place, User, Business } from '../types';
+import { Post, Place, User } from '../types';
 import { MapPin as MapPinIcon, Building2 } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 import { GetLocation } from './GetLocation';
 
-// mockDataからのgenreColors等のインポートを削除
-
 interface MapViewProps {
   user: User;
-  business?: Business;
   posts: Post[];
   places: Place[];
   onPinClick: (post: Post) => void;
@@ -21,7 +18,6 @@ interface MapViewProps {
 
 export function MapViewScreen({
   user,
-  business,
   posts,
   places,
   onPinClick,
@@ -50,13 +46,14 @@ export function MapViewScreen({
     const post = groupPosts[0];
     const count = groupPosts.length;
 
-    // --- 修正箇所: DBからきた色を直接使用 ---
     const color = post.genreColor || '#94a3b8';
     const sizeClass = getPinSizeClass(count);
 
+    // ★修正箇所: data-testid をここに移動
     const iconHtml = renderToString(
       <div
         className={`relative transition-all duration-300 ${isHovered ? 'scale-110 -translate-y-2' : ''}`}
+        data-testid="map-pin"
       >
         {user.role === 'business' ? (
           <div className="relative">
@@ -65,11 +62,7 @@ export function MapViewScreen({
               style={{ backgroundColor: color, boxShadow: `0 8px 20px -5px ${color}80` }}
             >
               <div className="transform -rotate-45 w-full h-full flex items-center justify-center">
-                {business?.profileImage ? (
-                  <img src={business.profileImage} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Building2 className="w-5 h-5 text-white" />
-                )}
+                <Building2 className="w-5 h-5 text-white" />
               </div>
             </div>
           </div>
@@ -102,16 +95,13 @@ export function MapViewScreen({
 
   return (
     <div className="flex-1 w-full h-full relative" style={{ zIndex: isOverlayOpen ? 0 : 10 }}>
-      {/* 凡例エリア: 本来的にはここもDBから取得したリストでmap回すのが理想です */}
+      {/* 凡例エリア */}
       <div className="absolute bottom-6 left-6 pointer-events-auto" style={{ zIndex: 999 }}>
         <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-slate-200 w-40">
           <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
             ジャンル
           </div>
           <div className="space-y-2.5">
-            {/* TODO: DBからジャンルマスタを取得して、ここを動的に生成するようにすると完璧です。
-              現状は代表的な色をハードコードしていますが、ピン自体はDBの色で表示されます。
-            */}
             {[
               { label: 'グルメ', color: '#EF4444' },
               { label: 'イベント', color: '#F59E0B' },

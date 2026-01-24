@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
+// import { setupTestData } from './setupTestData'; // 使っていない場合は削除可
 import { createHmac } from 'crypto';
 
+// --- ヘルパー関数 ---
 const base64UrlEncode = (input: Buffer | string): string => {
   const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input;
   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -8,39 +10,46 @@ const base64UrlEncode = (input: Buffer | string): string => {
 
 const createJwt = (params: { userId: string; googleId: string; email: string; role: string }) => {
   const secret = process.env.JWT_SECRET_KEY || 'dev-secret-key-please-change-in-production';
-
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const payload = {
-    userId: params.userId,
-    gmail: params.email,
+    user_id: params.userId,
+    google_id: params.googleId,
+    email: params.email,
     role: params.role,
     iat: nowSec,
     exp: nowSec + 60 * 60,
     iss: 'kojan-map-business',
   };
-
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
   const signingInput = `${encodedHeader}.${encodedPayload}`;
-
   const signature = createHmac('sha256', secret).update(signingInput).digest();
   const encodedSignature = base64UrlEncode(signature);
   return `${signingInput}.${encodedSignature}`;
 };
 
-test.describe('Reaction E2E Tests', () => {
-  let postId: number;
+let postId: number;
 
+// ★ここにグループ化の開始を追加
+test.describe('Reaction E2E Tests', () => {
   test.beforeAll(async ({ request }) => {
     // テスト用の投稿を作成
     const user = {
-      id: 'e2e-reaction-user',
-      googleId: 'e2e-reaction-user',
-      email: 'e2e-reaction@example.com',
-      role: 'general',
+      id: 'test-user',
+      googleId: 'test-user',
+      email: 'test-user@gmail.com',
+      role: 'user',
     };
-
+    // ジャンル一覧を取得
+    const genresRes = await request.get('http://localhost:8080/api/genres');
+    const genres = (await genresRes.json()).genres;
+    // 英語名でなければ強制的に'food'を使う
+    const genreValue = ['food', 'event', 'scene', 'store', 'emergency', 'other'].includes(
+      genres[0]?.genreName
+    )
+      ? genres[0].genreName
+      : 'food';
     const jwt = createJwt({
       userId: user.id,
       googleId: user.googleId,
@@ -48,19 +57,16 @@ test.describe('Reaction E2E Tests', () => {
       role: user.role,
     });
 
-    // 投稿作成APIを直接呼び出し
+    // 投稿作成API呼び出し（JWT付与）
     const createResponse = await request.post('http://localhost:8080/api/posts', {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { Authorization: `Bearer ${jwt}` },
       data: {
         latitude: 35.6812,
         longitude: 139.7671,
         title: 'リアクションテスト用投稿',
         description: 'リアクション機能のテスト用投稿です',
-        genre: '食事',
-      },
+        genre: genreValue,
+      }, // ★修正: ここで request.post のオブジェクトと関数を閉じる
     });
 
     expect(createResponse.status()).toBe(201);
@@ -70,10 +76,10 @@ test.describe('Reaction E2E Tests', () => {
 
   test.beforeEach(async ({ page }) => {
     const user = {
-      id: 'e2e-reaction-user',
-      googleId: 'e2e-reaction-user',
-      email: 'e2e-reaction@example.com',
-      role: 'general',
+      id: 'test-user',
+      googleId: 'test-user',
+      email: 'test-user@gmail.com',
+      role: 'user',
       createdAt: new Date().toISOString(),
     };
 
@@ -137,12 +143,12 @@ test.describe('Reaction E2E Tests', () => {
   });
 
   test('REACT-002: リアクションを取り消せる', async ({ page, request }) => {
-    // まずリアクションを追加
+    // まずリアクションを追加しておく
     const user = {
-      id: 'e2e-reaction-user',
-      googleId: 'e2e-reaction-user',
-      email: 'e2e-reaction@example.com',
-      role: 'general',
+      id: 'test-user',
+      googleId: 'test-user',
+      email: 'test-user@gmail.com',
+      role: 'user',
     };
 
     const jwt = createJwt({
@@ -187,7 +193,7 @@ test.describe('Reaction E2E Tests', () => {
     expect(reactionResponse.status()).toBe(200);
 
     const reactionData = await reactionResponse.json();
-    expect(reactionData.message).toBe('reaction added'); // APIは同じレスポンスを返す
+    expect(reactionData.message).toBe('reaction added'); // APIの仕様に合わせて確認メッセージは適宜調整
   });
 
   test('REACT-003: リアクション数が正しく表示される', async ({ page }) => {
@@ -230,10 +236,10 @@ test.describe('Reaction E2E Tests', () => {
   test('REACT-004: 自分の投稿にリアクションできる', async ({ page, request }) => {
     // 自分の投稿を作成
     const user = {
-      id: 'e2e-self-reaction-user',
-      googleId: 'e2e-self-reaction-user',
-      email: 'e2e-self-reaction@example.com',
-      role: 'general',
+      id: 'test-user',
+      googleId: 'test-user',
+      email: 'test-user@gmail.com',
+      role: 'user',
     };
 
     const jwt = createJwt({
@@ -243,6 +249,14 @@ test.describe('Reaction E2E Tests', () => {
       role: user.role,
     });
 
+    // ジャンル一覧を取得
+    const genresRes = await request.get('http://localhost:8080/api/genres');
+    const genres = (await genresRes.json()).genres;
+    const genreValue = ['food', 'event', 'scene', 'store', 'emergency', 'other'].includes(
+      genres[0]?.genreName
+    )
+      ? genres[0].genreName
+      : 'food';
     const createResponse = await request.post('http://localhost:8080/api/posts', {
       headers: {
         Authorization: `Bearer ${jwt}`,
@@ -253,7 +267,7 @@ test.describe('Reaction E2E Tests', () => {
         longitude: 139.7671,
         title: '自分の投稿テスト',
         description: '自分でリアクションするテスト',
-        genre: '食事',
+        genre: genreValue,
       },
     });
 
@@ -301,4 +315,101 @@ test.describe('Reaction E2E Tests', () => {
     const reactionData = await reactionResponse.json();
     expect(reactionData.message).toBe('reaction added');
   });
-});
+
+  test('REACT-005: リアクション状態がセッション跨ぎで保持される', async ({ page, browser }) => {
+    // 別のセッションでログイン
+    const user = {
+      id: 'test-user',
+      googleId: 'test-user',
+      email: 'test-user@gmail.com',
+      role: 'user',
+    };
+
+    const jwt = createJwt({
+      userId: user.id,
+      googleId: user.googleId,
+      email: user.email,
+      role: user.role,
+    });
+
+    await page.addInitScript(
+      ({ storedUser, storedJwt }) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
+        localStorage.setItem('kojanmap_jwt', storedJwt);
+      },
+      { storedUser: user, storedJwt: jwt }
+    );
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    // 地図タブに移動
+    await page.getByRole('button', { name: '地図' }).click();
+
+    // 投稿一覧を読み込み
+    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
+
+    // 最初のピンをクリックして投稿詳細を表示
+    await page.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
+
+    // 投稿詳細が表示されるのを待機
+    await page.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
+
+    // リアクションボタンの状態を確認
+    const reactionButton = page.locator('[data-testid="reaction-button"]');
+    await expect(reactionButton).toHaveText('♡', { timeout: 5000 }); // いいねしていない状態
+
+    // リアクションを追加
+    const reactionResponsePromise = page.waitForResponse((resp) => {
+      return resp.url().includes('/api/posts/reaction') && resp.request().method() === 'POST';
+    });
+
+    await reactionButton.click();
+
+    const reactionResponse = await reactionResponsePromise;
+    expect(reactionResponse.status()).toBe(200);
+
+    const reactionData = await reactionResponse.json();
+    expect(reactionData.message).toBe('reaction added');
+
+    // セッションを跨いで再度ログイン
+    await page.context().storageState({ path: 'state.json' }); // 現在のストレージ状態を保存
+
+    const newContext = await browser.newContext();
+    const newPage = await newContext.newPage();
+    await newPage.goto('/', { waitUntil: 'domcontentloaded' });
+
+    // 地図タブに移動
+    await newPage.getByRole('button', { name: '地図' }).click();
+
+    // 投稿詳細を表示
+    await newPage.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', {
+      timeout: 10000,
+    });
+    await newPage.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
+
+    // 投稿詳細が表示されるのを待機
+    await newPage.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
+
+    // リアクションボタンの状態を確認
+    const newReactionButton = newPage.locator('[data-testid="reaction-button"]');
+    await expect(newReactionButton).toHaveText('❤️', { timeout: 5000 }); // いいねしている状態
+  });
+
+  test('REACT-006: リアクション状態が保持されている', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    // 地図タブに移動
+    await page.getByRole('button', { name: '地図' }).click();
+
+    // 投稿詳細を表示
+    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
+    await page.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
+
+    // 投稿詳細が表示されるのを待機
+    await page.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
+
+    // リアクションボタンの状態を確認
+    const reactionButton = page.locator('[data-testid="reaction-button"]');
+    await expect(reactionButton).toHaveText('❤️', { timeout: 5000 }); // いいねしている状態
+  });
+}); // test.describe の終了

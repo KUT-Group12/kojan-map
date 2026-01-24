@@ -16,8 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 // import { PinGenre } from '../types'
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface MainAppProps {
   user: User;
@@ -65,7 +64,23 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userReactedPosts, setUserReactedPosts] = useState<Post[]>([]);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
-  const [genres] = useState<Genre[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
+
+  // ジャンル一覧をAPIから取得
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/genres`);
+        if (!res.ok) throw new Error('ジャンル取得失敗');
+        const data = await res.json();
+        setGenres(data.genres || []);
+      } catch (e) {
+        setGenres([]);
+        console.error('ジャンル取得エラー:', e);
+      }
+    };
+    fetchGenres();
+  }, []);
 
   // ★追加: ユーザー専用データの取得関数
   const fetchUserData = useCallback(async () => {
@@ -302,15 +317,14 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
   const handleUpdateUser = (updatedUser: User | Business) => {
     onUpdateUser(updatedUser);
-    if ('businessName' in updatedUser) {
-      const bizUser = updatedUser;
+    if ('businessId' in updatedUser) {
+      const bizUser = updatedUser as Business;
 
       const updatePins = (pinsArray: DisplayPost[]) =>
         pinsArray.map((p) =>
           p.userId === bizUser.userId
             ? {
                 ...p,
-                businessIcon: bizUser.profileImage,
                 businessName: bizUser.businessName,
                 // 事業者の場合は userName ではなく businessName を優先
               }

@@ -19,7 +19,7 @@ describe('LogoutScreen', () => {
   const mockUser: User = {
     googleId: 'test-google-id',
     gmail: 'test@gmail.com',
-    role: 'general',
+    role: 'user',
     registrationDate: new Date().toISOString(),
     fromName: 'テスト太郎',
   };

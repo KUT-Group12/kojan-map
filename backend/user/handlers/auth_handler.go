@@ -28,6 +28,7 @@ func NewAuthHandler(userService *services.UserService, authService *services.Aut
 func (ah *AuthHandler) Register(c *gin.Context) {
 	var req struct {
 		GoogleToken string `json:"google_token" binding:"required"`
+		Role        string `json:"role" binding:"omitempty,oneof=user business"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -42,7 +43,7 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	session, err := ah.userService.RegisterOrLogin(googleResp.Sub, googleResp.Email)
+	session, err := ah.userService.RegisterOrLogin(googleResp.Sub, googleResp.Email, req.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -88,12 +89,12 @@ func (ah *AuthHandler) Withdrawal(c *gin.Context) {
 
 // ExchangeToken - Exchange Google token for JWT token
 // POST /api/auth/exchange-token
-// Body: {"google_token": "...", "role": "general"}
+// Body: {"google_token": "...", "role": "user"}
 // Response: {"jwt_token": "...", "user": {...}}
 func (ah *AuthHandler) ExchangeToken(c *gin.Context) {
 	var req struct {
 		GoogleToken string `json:"google_token" binding:"required"`
-		Role        string `json:"role" binding:"required,oneof=general business"`
+		Role        string `json:"role" binding:"required,oneof=user business"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {

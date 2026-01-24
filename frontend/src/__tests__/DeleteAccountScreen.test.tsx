@@ -24,7 +24,7 @@ describe('DeleteAccountScreen', () => {
   const mockUser: User = {
     googleId: 'test-user-id',
     gmail: 'test@gmail.com',
-    role: 'general',
+    role: 'user',
     registrationDate: new Date().toISOString(),
     fromName: 'テストユーザー',
   };

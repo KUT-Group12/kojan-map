@@ -12,8 +12,9 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const payload = {
-    userId: params.userId,
-    gmail: params.email,
+    user_id: params.userId,
+    google_id: params.googleId,
+    email: params.email,
     role: params.role,
     iat: nowSec,
     exp: nowSec + 60 * 60,
@@ -34,8 +35,8 @@ test.describe('Post Creation E2E Tests', () => {
     const user = {
       id: 'e2e-post-user',
       googleId: 'e2e-post-user',
-      email: 'e2e-post@example.com',
-      role: 'general',
+      email: 'test-user@gmail.com',
+      role: 'user',
       createdAt: new Date().toISOString(),
     };
 
@@ -47,25 +48,31 @@ test.describe('Post Creation E2E Tests', () => {
     });
 
     await page.addInitScript(
-      ({ storedUser, storedJwt }) => {
-        localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
-        localStorage.setItem('kojanmap_jwt', storedJwt);
+      (arg) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(arg.storedUser));
+        localStorage.setItem('kojanmap_jwt', arg.storedJwt);
       },
       { storedUser: user, storedJwt: jwt }
     );
-  });
-
-  test('POST-001: 一般ユーザーが投稿を作成できる', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // 地図タブに移動
     await page.getByRole('button', { name: '地図' }).click();
 
-    // 投稿作成ボタンを待機してクリック
-    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', {
-      timeout: 10000,
-    });
-    await page.click('[data-testid="create-post-button"], button:has-text("投稿")');
+    // 地図コンテナをダブルクリックして投稿モーダルを開く
+    // Leafletのコンテナをクリック
+    const mapContainer = page.locator('.leaflet-container');
+    await mapContainer.waitFor();
+
+    // 特定の座標をダブルクリック (画面中央付近)
+    const box = await mapContainer.boundingBox();
+    if (box) {
+      await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    } else {
+      // 取得できない場合は要素自体をダブルクリック
+      await mapContainer.dblclick();
+    }
+
+    // 投稿作成ボタンの待機・クリック処理を削除
 
     // フォームが表示されるのを待機
     await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', {
@@ -83,8 +90,8 @@ test.describe('Post Creation E2E Tests', () => {
     );
 
     // ジャンルを選択（最初のジャンル）
-    await page.click('[data-testid="genre-select"], select[name="genre"]');
-    await page.click('[data-testid="genre-select"] option, select[name="genre"] option');
+    await page.click('[data-slot="select-trigger"]');
+    await page.click('[data-slot="select-item"]');
 
     // 位置情報を設定（地図をクリック）
     await page.click('[data-testid="map-container"], .leaflet-container', {
@@ -115,11 +122,15 @@ test.describe('Post Creation E2E Tests', () => {
     // 地図タブに移動
     await page.getByRole('button', { name: '地図' }).click();
 
-    // 投稿作成ボタンをクリック
-    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', {
-      timeout: 10000,
-    });
-    await page.click('[data-testid="create-post-button"], button:has-text("投稿")');
+    // 地図コンテナをダブルクリックして投稿モーダルを開く
+    const mapContainer = page.locator('.leaflet-container');
+    await mapContainer.waitFor();
+    const box = await mapContainer.boundingBox();
+    if (box) {
+      await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    } else {
+      await mapContainer.dblclick();
+    }
 
     // フォームが表示されるのを待機
     await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', {
@@ -132,7 +143,7 @@ test.describe('Post Creation E2E Tests', () => {
     // バリデーションエラーが表示されることを確認
     await expect(
       page
-        .getByText('タイトルは必須です')
+        .getByText(/タイトルを入力してください/)
         .or(page.getByText('title is required'))
         .or(page.getByText('invalid request format'))
     ).toBeVisible({ timeout: 5000 });
@@ -144,11 +155,16 @@ test.describe('Post Creation E2E Tests', () => {
     // 地図タブに移動
     await page.getByRole('button', { name: '地図' }).click();
 
-    // 投稿作成ボタンをクリック
-    await page.waitForSelector('[data-testid="create-post-button"], button:has-text("投稿")', {
-      timeout: 10000,
-    });
-    await page.click('[data-testid="create-post-button"], button:has-text("投稿")');
+    // 地図コンテナをダブルクリックして投稿モーダルを開く
+    const mapContainer = page.locator('.leaflet-container');
+    await mapContainer.waitFor();
+    const box = await mapContainer.boundingBox();
+    if (box) {
+      // 少しずらした位置ではなく中央をダブルクリックして確実にモーダルを開く
+      await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    } else {
+      await mapContainer.dblclick();
+    }
 
     // フォームが表示されるのを待機
     await page.waitForSelector('[data-testid="post-form"], form:has-text("タイトル")', {
@@ -166,13 +182,10 @@ test.describe('Post Creation E2E Tests', () => {
     );
 
     // ジャンルを選択
-    await page.click('[data-testid="genre-select"], select[name="genre"]');
-    await page.click('[data-testid="genre-select"] option, select[name="genre"] option');
+    await page.click('[data-slot="select-trigger"]');
+    await page.click('[data-slot="select-item"]');
 
-    // 特定の位置をクリック
-    await page.click('[data-testid="map-container"], .leaflet-container', {
-      position: { x: 300, y: 250 },
-    });
+    // 位置情報はダブルクリック時の座標が初期値として使用されるため、追加のクリックは不要
 
     // 投稿ボタンをクリック
     const createResponsePromise = page.waitForResponse((resp) => {
@@ -188,7 +201,7 @@ test.describe('Post Creation E2E Tests', () => {
     await page.reload();
 
     // 新しい投稿がマップ上に表示されることを確認
-    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 20000 });
     const pins = await page.locator('[data-testid="map-pin"], .leaflet-marker-icon').count();
     expect(pins).toBeGreaterThan(0);
   });

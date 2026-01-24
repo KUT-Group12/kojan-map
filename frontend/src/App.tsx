@@ -35,10 +35,10 @@ export default function App() {
       zipCode: '',
       address: '',
       phone: '',
-      registDate: storedUser.createdAt,
+      registDate: '',
+      profileImage: storedUser.businessIcon,
       userId: googleId,
       placeId: 0,
-      profileImage: storedUser.businessIcon,
     };
   });
 
@@ -65,13 +65,13 @@ export default function App() {
     // ビジネスロールの場合は初期状態をセット（必要に応じて）
     if (role === 'business') {
       setBusiness({
-        businessId: 0, // 仮のID
+        businessId: 0,
         businessName: '',
         kanaBusinessName: '',
         zipCode: '',
         address: '',
         phone: '',
-        registDate: new Date().toLocaleDateString(),
+        registDate: '',
         userId: googleId,
         placeId: 0,
       });

@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { setupTestData } from './setupTestData';
+// JWT生成をpost-creation.spec.tsと同じpayload形式に統一
 import { createHmac } from 'crypto';
 
 const base64UrlEncode = (input: Buffer | string): string => {
@@ -8,26 +10,28 @@ const base64UrlEncode = (input: Buffer | string): string => {
 
 const createJwt = (params: { userId: string; googleId: string; email: string; role: string }) => {
   const secret = process.env.JWT_SECRET_KEY || 'dev-secret-key-please-change-in-production';
-
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const payload = {
-    userId: params.userId,
-    gmail: params.email,
+    user_id: params.userId,
+    google_id: params.googleId,
+    email: params.email,
     role: params.role,
     iat: nowSec,
     exp: nowSec + 60 * 60,
     iss: 'kojan-map-business',
   };
-
   const encodedHeader = base64UrlEncode(JSON.stringify(header));
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
   const signingInput = `${encodedHeader}.${encodedPayload}`;
-
   const signature = createHmac('sha256', secret).update(signingInput).digest();
   const encodedSignature = base64UrlEncode(signature);
   return `${signingInput}.${encodedSignature}`;
 };
+
+test.beforeAll(async ({ request }) => {
+  await setupTestData(request);
+});
 
 test.describe('通報機能 E2Eテスト', () => {
   let postId: number;
@@ -37,32 +41,35 @@ test.describe('通報機能 E2Eテスト', () => {
     const user = {
       id: 'e2e-report-user',
       googleId: 'e2e-report-user',
-      email: 'e2e-report@example.com',
-      role: 'general',
+      email: 'test-user@gmail.com',
+      role: 'user',
     };
-
+    // ジャンル一覧を取得
+    const genresRes = await request.get('http://localhost:8080/api/genres');
+    const genres = (await genresRes.json()).genres;
+    // 英語名でなければ強制的に'food'を使う
+    const genreValue = ['food', 'event', 'scene', 'store', 'emergency', 'other'].includes(
+      genres[0]?.genreName
+    )
+      ? genres[0].genreName
+      : 'food';
     const jwt = createJwt({
       userId: user.id,
       googleId: user.googleId,
       email: user.email,
       role: user.role,
     });
-
-    // 投稿作成APIを直接呼び出し
+    // 投稿作成API呼び出し（JWT付与）
     const createResponse = await request.post('http://localhost:8080/api/posts', {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { Authorization: `Bearer ${jwt}` },
       data: {
         latitude: 35.6812,
         longitude: 139.7671,
         title: '通報テスト用投稿',
         description: '通報機能のテスト用投稿です',
-        genre: '食事',
+        genre: genreValue,
       },
     });
-
     expect(createResponse.status()).toBe(201);
     const createData = await createResponse.json();
     postId = createData.postId;
@@ -72,8 +79,8 @@ test.describe('通報機能 E2Eテスト', () => {
     const user = {
       id: 'e2e-reporter-user',
       googleId: 'e2e-reporter-user',
-      email: 'e2e-reporter@example.com',
-      role: 'general',
+      email: 'test-user@gmail.com',
+      role: 'user',
       createdAt: new Date().toISOString(),
     };
 
@@ -188,7 +195,7 @@ test.describe('通報機能 E2Eテスト', () => {
     const user = {
       id: 'e2e-reporter-user',
       googleId: 'e2e-reporter-user',
-      email: 'e2e-reporter@example.com',
+      email: 'test-user@gmail.com',
       role: 'general',
     };
 
@@ -199,7 +206,13 @@ test.describe('通報機能 E2Eテスト', () => {
       role: user.role,
     });
 
-    // 最初の通報
+    await page.addInitScript(
+      ({ storedUser, storedJwt }) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
+        localStorage.setItem('kojanmap_jwt', storedJwt);
+      },
+      { storedUser: user, storedJwt: jwt }
+    );
     const firstReportResponse = await request.post('http://localhost:8080/api/report', {
       headers: {
         Authorization: `Bearer ${jwt}`,
@@ -265,7 +278,7 @@ test.describe('通報機能 E2Eテスト', () => {
     const user = {
       id: 'e2e-self-report-user',
       googleId: 'e2e-self-report-user',
-      email: 'e2e-self-report@example.com',
+      email: 'test-user@gmail.com',
       role: 'general',
     };
 

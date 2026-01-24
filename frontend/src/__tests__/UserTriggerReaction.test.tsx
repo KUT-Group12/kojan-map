@@ -4,6 +4,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserTriggerReaction } from '../components/UserTriggerReaction';
 import { toast } from 'sonner';
 
+// テスト用APIベースURL
+const TEST_API_URL = process.env.VITE_API_URL || 'http://127.0.0.1:8080';
+
 // sonner のモック
 vi.mock('sonner', () => ({
   toast: {
@@ -20,7 +23,7 @@ describe('UserTriggerReaction', () => {
     postId: 101,
     userId: 'user-123',
     isReacted: false,
-    userRole: 'general',
+    userRole: 'user',
     isDisabled: false,
     onReaction: vi.fn(),
   };
@@ -49,7 +52,7 @@ describe('UserTriggerReaction', () => {
 
     // API呼び出しの検証 (POST)
     expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8080/api/posts/reaction',
+      `${TEST_API_URL}/api/posts/reaction`,
       expect.objectContaining({
         method: 'POST',
         headers: {

@@ -10,5 +10,5 @@ type Place struct {
 
 // TableName テーブル名を指定
 func (Place) TableName() string {
-	return "places"
+	return "place"
 }

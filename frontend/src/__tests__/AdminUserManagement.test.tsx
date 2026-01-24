@@ -8,7 +8,7 @@ describe('AdminUserManagement', () => {
       googleId: 'user-1',
       fromName: '一般ユーザー',
       gmail: 'user1@example.com',
-      role: 'general',
+      role: 'user',
       registrationDate: '2024-01-01',
       postCount: 5,
     },

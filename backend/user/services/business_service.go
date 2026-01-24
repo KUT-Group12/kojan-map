@@ -4,14 +4,59 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"net/http"
+	"strings"
 	"time"
 
 	"kojan-map/user/config"
 	"kojan-map/user/models"
+
+	"gorm.io/gorm"
 )
 
+// ... (omitted code)
+
+// UploadBusinessIcon 事業者アイコン画像をアップロード
+func (bs *BusinessService) UploadBusinessIcon(userID string, fileData io.Reader) (string, error) {
+	// Read all bytes
+	data, err := io.ReadAll(fileData)
+	if err != nil {
+		return "", errors.New("failed to read image data")
+	}
+
+	// Detect content type
+	mimeType := http.DetectContentType(data)
+	if !strings.HasPrefix(mimeType, "image/") {
+		// Default fallback or error? Handler checks this too, but for safety.
+		// If detection fails or is generic application/octet-stream, we might trust extension or just proceed.
+	}
+
+	// Encode to Base64
+	encoded := base64.StdEncoding.EncodeToString(data)
+	dataURL := "data:" + mimeType + ";base64," + encoded
+
+	// Update DB
+	var business models.Business
+	if err := config.DB.Where("userId = ?", userID).First(&business).Error; err != nil {
+		return "", errors.New("business profile not found")
+	}
+
+	business.ProfileImage = dataURL
+	if err := config.DB.Save(&business).Error; err != nil {
+		return "", errors.New("failed to save business icon")
+	}
+
+	return dataURL, nil
+}
+
 // BusinessService 事業者ユーザー向けのビジネスロジック
-type BusinessService struct{}
+type BusinessService struct {
+	db *gorm.DB
+}
+
+func NewBusinessService(db *gorm.DB) *BusinessService {
+	return &BusinessService{db: db}
+}
 
 // BusinessStats ダッシュボード統計情報
 type BusinessStats struct {
@@ -28,16 +73,16 @@ type BusinessStats struct {
 
 // BusinessProfileResponse 事業者プロフィール情報のレスポンス
 type BusinessProfileResponse struct {
-	BusinessID       int    `json:"businessId"`
-	BusinessName     string `json:"businessName"`
-	KanaBusinessName string `json:"kanaBusinessName"`
-	ZipCode          string `json:"zipCode"`
-	Address          string `json:"address"`
-	Phone            string `json:"phone"`
-	ProfileImage     string `json:"profileImage,omitempty"`
-	UserID           string `json:"userId"`
-	PlaceID          int    `json:"placeId,omitempty"`
-	RegistDate       string `json:"registDate"`
+	BusinessId       int       `json:"businessId"`
+	BusinessName     string    `json:"businessName"`
+	KanaBusinessName string    `json:"kanaBusinessName"`
+	ZipCode          string    `json:"zipCode"`
+	Address          string    `json:"address"`
+	Phone            string    `json:"phone"`
+	RegistDate       time.Time `json:"registDate"`
+	ProfileImage     string    `json:"profileImage"`
+	UserID           string    `json:"userId"`
+	PlaceId          int       `json:"placeId"`
 }
 
 // GetBusinessStats 事業者のダッシュボード統計を取得
@@ -110,21 +155,22 @@ func (bs *BusinessService) GetBusinessProfile(userID string) (*BusinessProfileRe
 		return nil, errors.New("userID is required")
 	}
 
-	var app models.BusinessApplication
-	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
-		return nil, errors.New("business application not found")
+	var business models.Business
+	if err := config.DB.Where("userId = ?", userID).First(&business).Error; err != nil {
+		return nil, errors.New("business profile not found")
 	}
 
 	return &BusinessProfileResponse{
-		BusinessID:       int(app.ID),
-		BusinessName:     app.BusinessName,
-		KanaBusinessName: app.KanaBusinessName,
-		ZipCode:          app.ZipCode,
-		Address:          app.Address,
-		Phone:            app.Phone,
-		UserID:           app.UserID,
-		PlaceID:          int(app.PlaceID),
-		RegistDate:       app.RegistDate.Format("2006-01-02T15:04:05Z07:00"),
+		BusinessId:       int(business.BusinessID),
+		BusinessName:     business.BusinessName,
+		KanaBusinessName: business.KanaBusinessName,
+		ZipCode:          business.ZipCode,
+		Address:          business.Address,
+		Phone:            business.Phone,
+		RegistDate:       business.RegistDate,
+		ProfileImage:     business.ProfileImage,
+		UserID:           business.UserID,
+		PlaceId:          int(business.PlaceID),
 	}, nil
 }
 
@@ -136,69 +182,43 @@ func (bs *BusinessService) UpdateBusinessProfile(
 		return nil, errors.New("userID is required")
 	}
 
-	var app models.BusinessApplication
-	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
-		return nil, errors.New("business application not found")
+	var business models.Business
+	if err := config.DB.Where("userId = ?", userID).First(&business).Error; err != nil {
+		return nil, errors.New("business profile not found")
 	}
 
 	if businessName != "" {
-		app.BusinessName = businessName
+		business.BusinessName = businessName
 	}
 	if kanaBusinessName != "" {
-		app.KanaBusinessName = kanaBusinessName
+		business.KanaBusinessName = kanaBusinessName
 	}
 	if zipCode != "" {
-		app.ZipCode = zipCode
+		business.ZipCode = zipCode
 	}
 	if address != "" {
-		app.Address = address
+		business.Address = address
 	}
 	if phone != "" {
-		app.Phone = phone
+		business.Phone = phone
 	}
 
-	if err := config.DB.Save(&app).Error; err != nil {
+	if err := config.DB.Save(&business).Error; err != nil {
 		return nil, errors.New("failed to update business profile")
 	}
 
 	return &BusinessProfileResponse{
-		BusinessID:       int(app.ID),
-		BusinessName:     app.BusinessName,
-		KanaBusinessName: app.KanaBusinessName,
-		ZipCode:          app.ZipCode,
-		Address:          app.Address,
-		Phone:            app.Phone,
-		UserID:           app.UserID,
-		PlaceID:          int(app.PlaceID),
-		RegistDate:       app.RegistDate.Format("2006-01-02T15:04:05Z07:00"),
+		BusinessId:       int(business.BusinessID),
+		BusinessName:     business.BusinessName,
+		KanaBusinessName: business.KanaBusinessName,
+		ZipCode:          business.ZipCode,
+		Address:          business.Address,
+		Phone:            business.Phone,
+		RegistDate:       business.RegistDate,
+		ProfileImage:     business.ProfileImage,
+		UserID:           business.UserID,
+		PlaceId:          int(business.PlaceID),
 	}, nil
-}
-
-// UploadBusinessIcon 事業者アイコン画像をアップロード
-func (bs *BusinessService) UploadBusinessIcon(userID string, fileData io.Reader) (string, error) {
-	if userID == "" {
-		return "", errors.New("userID is required")
-	}
-
-	// ファイルをバイト列に変換
-	imageBytes, err := io.ReadAll(fileData)
-	if err != nil {
-		return "", errors.New("failed to read file")
-	}
-
-	var app models.BusinessApplication
-	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
-		return "", errors.New("business application not found")
-	}
-
-	app.ProfileImage = imageBytes
-	if err := config.DB.Save(&app).Error; err != nil {
-		return "", errors.New("failed to save profile image")
-	}
-
-	// Base64エンコードして返す
-	encodedImage := base64.StdEncoding.EncodeToString(imageBytes)
-	return "data:image/jpeg;base64," + encodedImage, nil
 }
 
 // GetBusinessPostCount 事業者の投稿数を取得
@@ -221,24 +241,23 @@ func (bs *BusinessService) GetBusinessRevenue(userID string, year, month int) (f
 		return 0, errors.New("userID is required")
 	}
 
-	// モック実装（実装によっては支払い情報テーブルを参照）
-	// 実際のビジネスロジックに応じて修正必要
+	// モック実装
 	return 10000.0, nil
 }
 
 // UpdateBusinessName 事業者名を更新
-func (bs *BusinessService) UpdateBusinessName(userID, businessName string) error {
-	if userID == "" || businessName == "" {
-		return errors.New("userID and businessName are required")
+func (bs *BusinessService) UpdateBusinessName(userID, name string) error {
+	if userID == "" || name == "" {
+		return errors.New("userID and name are required")
 	}
 
-	var app models.BusinessApplication
-	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
-		return errors.New("business application not found")
+	var business models.Business
+	if err := config.DB.Where("userId = ?", userID).First(&business).Error; err != nil {
+		return errors.New("business profile not found")
 	}
 
-	app.BusinessName = businessName
-	if err := config.DB.Save(&app).Error; err != nil {
+	business.BusinessName = name
+	if err := config.DB.Save(&business).Error; err != nil {
 		return errors.New("failed to update business name")
 	}
 
@@ -251,14 +270,17 @@ func (bs *BusinessService) UpdateBusinessAddress(userID, address, zipCode string
 		return errors.New("userID and address are required")
 	}
 
-	var app models.BusinessApplication
-	if err := config.DB.Where("userId = ?", userID).First(&app).Error; err != nil {
-		return errors.New("business application not found")
+	var business models.Business
+	if err := config.DB.Where("userId = ?", userID).First(&business).Error; err != nil {
+		return errors.New("business profile not found")
 	}
 
-	app.Address = address
-	app.ZipCode = zipCode
-	if err := config.DB.Save(&app).Error; err != nil {
+	business.Address = address
+	if zipCode != "" {
+		business.ZipCode = zipCode
+	}
+
+	if err := config.DB.Save(&business).Error; err != nil {
 		return errors.New("failed to update business address")
 	}
 
@@ -271,8 +293,15 @@ func (bs *BusinessService) UpdateBusinessPhone(userID, phone string) error {
 		return errors.New("userID and phone are required")
 	}
 
-	// 電話番号の保存方法は、BusinessApplication テーブルのスキーマに依存
-	// 実装例：ユーザー情報を更新する、または別テーブルを使用
+	var business models.Business
+	if err := config.DB.Where("userId = ?", userID).First(&business).Error; err != nil {
+		return errors.New("business profile not found")
+	}
+
+	business.Phone = phone
+	if err := config.DB.Save(&business).Error; err != nil {
+		return errors.New("failed to update business phone")
+	}
 
 	return nil
 }

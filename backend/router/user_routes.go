@@ -1,6 +1,7 @@
 package router
 
 import (
+	"kojan-map/shared/config"
 	"kojan-map/user/handlers"
 	"kojan-map/user/middleware"
 	"kojan-map/user/services"
@@ -10,29 +11,30 @@ import (
 )
 
 // SetupUserRoutes configures all user-facing API routes
-func SetupUserRoutes(r *gin.Engine, _ *gorm.DB) {
-	// services
-	authService := &services.AuthService{}
-	userService := &services.UserService{}
-	postService := &services.PostService{}
-	placeService := &services.PlaceService{}
-	genreService := &services.GenreService{}
-	blockService := &services.BlockService{}
-	reportService := &services.ReportService{}
-	contactService := &services.ContactService{}
-	businessAppService := &services.BusinessApplicationService{}
-	businessService := &services.BusinessService{}
+func SetupUserRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
+	// 1. Services Initialization
+	authService := services.NewAuthService(db, cfg.GoogleClientID, cfg.JWTSecret, cfg.AppEnv)
+	userService := services.NewUserService(db)
+	postService := services.NewPostService(db)
+	placeService := services.NewPlaceService(db)
+	genreService := services.NewGenreService(db)
+	blockService := services.NewBlockService(db)
+	reportService := services.NewReportService(db)
+	contactService := services.NewContactService(db)
+	businessAppService := services.NewBusinessApplicationService(db)
+	businessService := services.NewBusinessService(db)
 
-	// handlers
+	// 2. Handlers Initialization
 	authHandler := handlers.NewAuthHandler(userService, authService)
 	postHandler := handlers.NewPostHandler(postService, placeService, genreService)
-	otherHandler := handlers.NewBlockHandler(blockService) // This handler name in code is BlockHandler
+	genreHandler := handlers.NewGenreHandler(genreService)
+	otherHandler := handlers.NewBlockHandler(blockService)
 	reportHandler := handlers.NewReportHandler(reportService)
 	contactHandler := handlers.NewContactHandler(contactService)
 	businessAppHandler := handlers.NewBusinessApplicationHandler(businessAppService)
 	businessHandler := handlers.NewBusinessHandler(businessService, postService)
 
-	// Public routes
+	// 3. Public routes
 	api := r.Group("/api")
 	{
 		// Auth
@@ -45,19 +47,22 @@ func SetupUserRoutes(r *gin.Engine, _ *gorm.DB) {
 		api.GET("/posts/search", postHandler.SearchByKeyword)
 		api.GET("/posts/search/genre", postHandler.SearchByGenre)
 		api.GET("/posts/search/period", postHandler.SearchByPeriod)
+
+		// Genres (Public)
+		api.GET("/genres", genreHandler.GetGenres)
 	}
 
-	// Protected routes
+	// 4. Protected routes
 	protected := r.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{
 		// Posts (Write)
 		protected.POST("/posts", postHandler.CreatePost)
-		protected.DELETE("/posts", postHandler.DeletePost)
-		protected.POST("/posts/reaction", postHandler.AddReaction)
+		protected.DELETE("/posts", postHandler.DeletePost)         // 復活
+		protected.POST("/posts/reaction", postHandler.AddReaction) // 復活
 		protected.GET("/posts/reaction/status", postHandler.CheckReactionStatus)
 		protected.GET("/posts/history", postHandler.GetPostHistory)
-		protected.GET("/posts/history/reactions", postHandler.GetPostHistory) // Reuse for now or update service
+		protected.GET("/posts/history/reactions", postHandler.GetPostHistory)
 
 		// Block/Report/Inquiry
 		protected.POST("/users/block", otherHandler.BlockUser)
@@ -74,7 +79,7 @@ func SetupUserRoutes(r *gin.Engine, _ *gorm.DB) {
 		protected.PUT("/auth/withdrawal", authHandler.Withdrawal)
 	}
 
-	// Business-only routes (requires business role)
+	// 5. Business-only routes
 	business := r.Group("/api/business")
 	business.Use(middleware.AuthMiddleware(), middleware.BusinessOnlyMiddleware())
 	{

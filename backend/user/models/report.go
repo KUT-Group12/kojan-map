@@ -9,7 +9,7 @@ import (
 // Report 通報情報モデル
 type Report struct {
 	ID         int32          `gorm:"column:reportId;primaryKey" json:"reportId"`
-	UserID     string         `gorm:"column:userId;index" json:"userId"`
+	UserID     string         `gorm:"column:userId;type:varchar(50);not null;index" json:"userId"`
 	PostID     int32          `gorm:"column:postId;index" json:"postId"`
 	Reason     string         `gorm:"column:reason;type:text" json:"reason"`
 	Date       time.Time      `gorm:"column:date" json:"date"`

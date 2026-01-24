@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Business, User } from '../types';
+import { User, BusinessRequest } from '../types';
 import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface UserInputBusinessApplicationProps {
   user: User;
@@ -13,9 +14,7 @@ interface UserInputBusinessApplicationProps {
 }
 
 // データ型の定義
-type BusinessApplicationData = Pick<Business, 'businessName' | 'address'> & {
-  phone: string;
-};
+// (未使用のため削除)
 
 export function UserInputBusinessApplication({
   user,
@@ -24,27 +23,23 @@ export function UserInputBusinessApplication({
 }: UserInputBusinessApplicationProps) {
   //状態管理の追加
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<
-    BusinessApplicationData & { kanaBusinessName: string; zipCode: string }
-  >({
-    businessName: '',
-    kanaBusinessName: '',
-    zipCode: '',
-    phone: '',
+  const [formData, setFormData] = useState<BusinessRequest>({
+    requestId: 0,
+    name: '',
     address: '',
+    phone: '',
+    userId: '',
   });
 
   // 送信ハンドラ
   const handleSubmit = async () => {
     // バリデーション（任意）
-    const phoneNumber = Number(formData.phone);
+    const phoneRegex = /^\d{10,11}$/;
     if (
-      !formData.businessName ||
-      !formData.kanaBusinessName || // Check
-      !formData.zipCode || // Check
+      !formData.name ||
       !formData.phone ||
       !formData.address ||
-      Number.isNaN(phoneNumber)
+      !phoneRegex.test(formData.phone)
     ) {
       toast.error('すべての項目を正しく入力してください');
       return;
@@ -58,10 +53,6 @@ export function UserInputBusinessApplication({
         toast.error('認証情報がありません。再度ログインしてください。');
         return;
       }
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL ??
-        import.meta.env.VITE_API_BASE_URL ??
-        'http://localhost:8080';
 
       const response = await fetch(`${API_BASE_URL}/api/business/application`, {
         method: 'POST',
@@ -70,13 +61,10 @@ export function UserInputBusinessApplication({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          // ...formData, // Expand explicitly to match casing if needed, relying on spread
           userId: user.googleId, // Required by handler
-          businessName: formData.businessName,
-          kanaBusinessName: formData.kanaBusinessName,
-          zipCode: formData.zipCode,
+          name: formData.name,
           address: formData.address,
-          phone: String(phoneNumber),
+          phone: formData.phone,
         }),
       });
 
@@ -113,24 +101,8 @@ export function UserInputBusinessApplication({
           type="text"
           placeholder="店舗名"
           className="w-full px-3 py-2 border rounded-lg"
-          value={formData.businessName}
-          onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-          disabled={isLoading}
-        />
-        <input
-          type="text"
-          placeholder="店舗名（カナ）"
-          className="w-full px-3 py-2 border rounded-lg"
-          value={formData.kanaBusinessName}
-          onChange={(e) => setFormData({ ...formData, kanaBusinessName: e.target.value })}
-          disabled={isLoading}
-        />
-        <input
-          type="text"
-          placeholder="郵便番号 (例: 7800000)"
-          className="w-full px-3 py-2 border rounded-lg"
-          value={formData.zipCode}
-          onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           disabled={isLoading}
         />
         <input

@@ -6,7 +6,7 @@ import { MapPin, User, Building2, Loader2 } from 'lucide-react';
 import { exchangeGoogleTokenForJWT, storeJWT, storeUser } from '../lib/auth';
 import { useGoogleLogin } from '@react-oauth/google';
 
-type UserRole = 'general' | 'business' | 'admin';
+type UserRole = 'user' | 'business' | 'admin';
 
 interface LoginScreenProps {
   // ログイン成功時に Google ID と 選択した役割 を親コンポーネントに渡す
@@ -213,7 +213,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 <Button
                   variant="outline"
                   className="h-28 flex flex-col space-y-2 border-2 hover:border-blue-500"
-                  onClick={() => handleRoleSelect('general')}
+                  onClick={() => handleRoleSelect('user')}
                   disabled={isLoading}
                 >
                   {isLoading ? (

@@ -1,21 +1,30 @@
 package services
 
 import (
+	"fmt"
+	"os"
 	"testing"
 	"time"
 
-	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
+	sharedmodels "kojan-map/shared/models"
 	"kojan-map/user/config"
 	"kojan-map/user/models"
 )
 
 // setupTestDB テスト用のインメモリDBを初期化
 func setupTestDB(t *testing.T) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	host := os.Getenv("MYSQL_HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	password := os.Getenv("MYSQL_PASSWORD")
+	dsn := fmt.Sprintf("root:%s@tcp(%s:3306)/kojanmap?charset=utf8mb4&parseTime=True&loc=Local", password, host)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	assert.NoError(t, err)
 
 	// マイグレーション
@@ -29,7 +38,9 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		&models.UserBlock{},
 		&models.Report{},
 		&models.Contact{},
-		&models.BusinessApplication{},
+		&models.Contact{},
+		&models.BusinessRequest{},
+		&models.Business{},
 	)
 	assert.NoError(t, err)
 
@@ -39,10 +50,11 @@ func setupTestDB(t *testing.T) *gorm.DB {
 
 func TestUserService_RegisterOrLogin_NewUser(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	cleanupDB(db)
+	service := NewUserService(db)
 
 	// 新規ユーザー登録
-	session, err := service.RegisterOrLogin("google123", "test@example.com")
+	session, err := service.RegisterOrLogin("google123", "test@example.com", "user")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
@@ -53,25 +65,25 @@ func TestUserService_RegisterOrLogin_NewUser(t *testing.T) {
 	err = db.Where("googleId = ?", session.GoogleID).First(&user).Error
 	assert.NoError(t, err)
 	assert.Equal(t, "test@example.com", user.Gmail)
-	assert.Equal(t, "user", user.Role)
+	assert.Equal(t, sharedmodels.Role("user"), user.Role)
 }
 
 func TestUserService_RegisterOrLogin_ExistingUser(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	cleanupDB(db)
+	service := NewUserService(db)
 
 	// 既存ユーザーを作成
 	existingUser := models.User{
-		ID:               uuid.New().String(),
 		GoogleID:         "google456",
 		Gmail:            "existing@example.com",
-		Role:             "user",
+		Role:             sharedmodels.Role("user"),
 		RegistrationDate: time.Now(),
 	}
 	db.Create(&existingUser)
 
 	// 既存ユーザーでログイン
-	session, err := service.RegisterOrLogin("google456", "existing@example.com")
+	session, err := service.RegisterOrLogin("google456", "existing@example.com", "user")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
@@ -85,14 +97,14 @@ func TestUserService_RegisterOrLogin_ExistingUser(t *testing.T) {
 
 func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	cleanupDB(db)
+	service := NewUserService(db)
 
 	// ユーザーとセッションを作成
 	user := models.User{
-		ID:               uuid.New().String(),
 		GoogleID:         "google789",
 		Gmail:            "session@example.com",
-		Role:             "user",
+		Role:             sharedmodels.Role("user"),
 		RegistrationDate: time.Now(),
 	}
 	db.Create(&user)
@@ -105,7 +117,7 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 	db.Create(&oldSession)
 
 	// 同じユーザーで再ログイン（セッション延長）
-	newSession, err := service.RegisterOrLogin("google789", "session@example.com")
+	newSession, err := service.RegisterOrLogin("google789", "session@example.com", "user")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, newSession)
@@ -118,27 +130,26 @@ func TestUserService_RegisterOrLogin_ExtendSession(t *testing.T) {
 }
 
 func TestUserService_RegisterOrLogin_ValidationError(t *testing.T) {
-	setupTestDB(t)
-	service := &UserService{}
+	db := setupTestDB(t)
+	service := NewUserService(db)
 
 	// GoogleIDが空の場合
-	_, err := service.RegisterOrLogin("", "test@example.com")
+	_, err := service.RegisterOrLogin("", "test@example.com", "user")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "googleID is required")
 
 	// Emailが空の場合
-	_, err = service.RegisterOrLogin("google123", "")
+	_, err = service.RegisterOrLogin("google123", "", "user")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "email is required")
 }
 
 func TestUserService_GetUserInfo(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	service := NewUserService(db)
 
 	// テストユーザーを作成
 	user := models.User{
-		ID:               uuid.New().String(),
 		GoogleID:         "google_info",
 		Gmail:            "info@example.com",
 		Role:             "user",
@@ -151,14 +162,14 @@ func TestUserService_GetUserInfo(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, userInfo)
-	assert.Equal(t, user.ID, userInfo.UserID)
+	assert.Equal(t, user.GoogleID, userInfo.UserID)
 	assert.Equal(t, "info@example.com", userInfo.Gmail)
 	assert.Equal(t, "user", userInfo.Role)
 }
 
 func TestUserService_GetUserInfo_NotFound(t *testing.T) {
-	setupTestDB(t)
-	service := &UserService{}
+	db := setupTestDB(t)
+	service := NewUserService(db)
 
 	// 存在しないユーザー
 	_, err := service.GetUserInfo("nonexistent")
@@ -168,11 +179,10 @@ func TestUserService_GetUserInfo_NotFound(t *testing.T) {
 
 func TestUserService_DeleteUser(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	service := NewUserService(db)
 
 	// テストユーザーと関連データを作成
 	user := models.User{
-		ID:               uuid.New().String(),
 		GoogleID:         "google_delete",
 		Gmail:            "delete@example.com",
 		Role:             "user",
@@ -207,8 +217,8 @@ func TestUserService_DeleteUser(t *testing.T) {
 }
 
 func TestUserService_DeleteUser_NotFound(t *testing.T) {
-	setupTestDB(t)
-	service := &UserService{}
+	db := setupTestDB(t)
+	service := NewUserService(db)
 
 	// 存在しないユーザーの削除
 	err := service.DeleteUser("nonexistent")
@@ -218,11 +228,10 @@ func TestUserService_DeleteUser_NotFound(t *testing.T) {
 
 func TestUserService_GetUserByID(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	service := NewUserService(db)
 
 	// テストユーザーを作成
 	user := models.User{
-		ID:               uuid.New().String(),
 		GoogleID:         "google_id_test",
 		Gmail:            "byid@example.com",
 		Role:             "user",
@@ -231,16 +240,16 @@ func TestUserService_GetUserByID(t *testing.T) {
 	db.Create(&user)
 
 	// ユーザーをIDで取得
-	retrieved, err := service.GetUserByID(user.ID)
+	retrieved, err := service.GetUserByID(user.GoogleID)
 	assert.NoError(t, err)
 	assert.NotNil(t, retrieved)
-	assert.Equal(t, user.ID, retrieved.ID)
+	assert.Equal(t, user.GoogleID, retrieved.GoogleID)
 	assert.Equal(t, "byid@example.com", retrieved.Gmail)
 }
 
 func TestUserService_GetUserByID_NotFound(t *testing.T) {
-	setupTestDB(t)
-	service := &UserService{}
+	db := setupTestDB(t)
+	service := NewUserService(db)
 
 	// 存在しないユーザーID
 	_, err := service.GetUserByID("nonexistent-id")
@@ -249,8 +258,8 @@ func TestUserService_GetUserByID_NotFound(t *testing.T) {
 }
 
 func TestUserService_GetUserByID_ValidationError(t *testing.T) {
-	setupTestDB(t)
-	service := &UserService{}
+	db := setupTestDB(t)
+	service := NewUserService(db)
 
 	// 空のユーザーID
 	_, err := service.GetUserByID("")
@@ -260,7 +269,7 @@ func TestUserService_GetUserByID_ValidationError(t *testing.T) {
 
 func TestUserService_Logout(t *testing.T) {
 	db := setupTestDB(t)
-	service := &UserService{}
+	service := NewUserService(db)
 
 	// セッションを作成
 	sessionID := uuid.New().String()
@@ -284,8 +293,8 @@ func TestUserService_Logout(t *testing.T) {
 }
 
 func TestUserService_Logout_NotFound(t *testing.T) {
-	setupTestDB(t)
-	service := &UserService{}
+	db := setupTestDB(t)
+	service := NewUserService(db)
 
 	// 存在しないセッションID
 	err := service.Logout("nonexistent-session")
@@ -297,16 +306,11 @@ func TestUserService_Logout_NotFound(t *testing.T) {
 // TestUserService_RegisterOrLogin_GetUserInfo - ユーザー登録と情報取得
 func TestUserService_RegisterOrLogin_GetUserInfo(t *testing.T) {
 	db := setupTestDB(t)
-	defer func() {
-		if err := db.Migrator().DropTable(&models.User{}, &models.Session{}, &models.Post{}); err != nil {
-			t.Logf("Failed to drop table: %v", err)
-		}
-	}()
-
-	service := &UserService{}
+	cleanupDB(db)
+	service := NewUserService(db)
 
 	// ユーザーを登録
-	session, err := service.RegisterOrLogin("google456", "mypage@example.com")
+	session, err := service.RegisterOrLogin("google456", "mypage@example.com", "user")
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 
@@ -328,10 +332,10 @@ func TestUserService_GetMyPageDetails_WithPosts(t *testing.T) {
 		}
 	}()
 
-	service := &UserService{}
+	service := NewUserService(db)
 
 	// ユーザーを登録
-	session, err := service.RegisterOrLogin("google789", "mypage2@example.com")
+	session, err := service.RegisterOrLogin("google789", "mypage2@example.com", "user")
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 

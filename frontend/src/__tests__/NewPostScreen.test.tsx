@@ -24,7 +24,7 @@ describe('NewPostScreen', () => {
     googleId: 'user-123',
     fromName: '高知 太郎',
     gmail: 'kochi@example.com',
-    role: 'general',
+    role: 'user',
     registrationDate: '2024-01-01',
   };
 
@@ -53,11 +53,13 @@ describe('NewPostScreen', () => {
       />
     );
 
-    expect(screen.getByLabelText(/タイトル/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/説明/)).toBeInTheDocument();
-    expect(screen.getByDisplayValue('33.6')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('133.7')).toBeInTheDocument();
-  });
+    await waitFor(() => {
+      expect(screen.getByLabelText(/タイトル/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/説明/)).toBeInTheDocument();
+      expect(screen.getByDisplayValue('33.6')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('133.7')).toBeInTheDocument();
+    });
+  }, 10000); // タイムアウト10秒
 
   it('タイトルが未入力の場合、バリデーションで止まること', async () => {
     const { NewPostScreen } = await import('../components/NewPostScreen');

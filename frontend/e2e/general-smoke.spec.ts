@@ -31,7 +31,7 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
   return `${signingInput}.${encodedSignature}`;
 };
 
-test('general user can load main app and fetch posts (real HTTP)', async ({ page }) => {
+test('user can load main app and fetch posts (real HTTP)', async ({ page }) => {
   test.skip(
     !process.env.JWT_SECRET_KEY,
     'JWT_SECRET_KEY is not set (required to call protected APIs)'
@@ -41,7 +41,7 @@ test('general user can load main app and fetch posts (real HTTP)', async ({ page
     id: 'e2e-user',
     googleId: 'e2e-user',
     email: 'e2e-user@example.com',
-    role: 'general',
+    role: 'user',
     createdAt: new Date().toISOString(),
   };
 

@@ -5,29 +5,58 @@ import (
 	"fmt"
 	"time"
 
+	shared "kojan-map/shared/models"
+	"kojan-map/user/models"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-
-	"kojan-map/user/config"
-	"kojan-map/user/models"
 )
 
 // UserService ユーザー関連のビジネスロジック
-type UserService struct{}
+type UserService struct {
+	db *gorm.DB
+}
 
-// RegisterOrLogin Google認証でユーザーを登録またはログイン
-func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session, error) {
+func NewUserService(db *gorm.DB) *UserService {
+	return &UserService{db: db}
+}
+
+// CreateTestUser テスト用ユーザーを直接登録
+func (us *UserService) CreateTestUser(googleID, gmail, role string) error {
+	if googleID == "" || gmail == "" || role == "" {
+		return errors.New("all fields are required")
+	}
+	user := models.User{
+		GoogleID:         googleID,
+		Gmail:            gmail,
+		Role:             shared.Role(role),
+		RegistrationDate: time.Now(),
+	}
+	return us.db.Create(&user).Error
+}
+
+// RegisterOrLogin Google認証でユーザーを登録またはログイン（role指定対応）
+func (us *UserService) RegisterOrLogin(googleID, email, role string) (*models.Session, error) {
 	if googleID == "" {
 		return nil, errors.New("googleID is required")
 	}
 	if email == "" {
 		return nil, errors.New("email is required")
 	}
+	if role == "" {
+		role = string(shared.RoleUser)
+	}
+
+	// Validate Role
+	r := shared.Role(role)
+	if r != shared.RoleUser && r != shared.RoleBusiness && r != shared.RoleAdmin {
+		return nil, errors.New("invalid role: must be user, business, or admin")
+	}
 
 	var user models.User
 
 	// ユーザーが既に存在するか確認
-	result := config.DB.Where("googleId = ?", googleID).First(&user)
+	result := us.db.Where("googleId = ?", googleID).First(&user)
 
 	if result.Error != nil {
 		if result.Error != gorm.ErrRecordNotFound {
@@ -35,23 +64,22 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 		}
 		// 新規ユーザーの登録
 		user = models.User{
-			ID:               uuid.New().String(),
 			GoogleID:         googleID,
 			Gmail:            email,
-			Role:             "user",
+			Role:             r,
 			RegistrationDate: time.Now(),
 		}
-		if err := config.DB.Create(&user).Error; err != nil {
+		if err := us.db.Create(&user).Error; err != nil {
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
 	}
 
 	// 既存の有効なセッションを確認
 	var existingSession models.Session
-	if err := config.DB.Where("googleId = ? AND expiry > ?", user.GoogleID, time.Now()).First(&existingSession).Error; err == nil {
+	if err := us.db.Where("googleId = ? AND expiry > ?", user.GoogleID, time.Now()).First(&existingSession).Error; err == nil {
 		// 有効なセッションが存在する場合は延長
 		existingSession.Expiry = time.Now().Add(24 * time.Hour)
-		if err := config.DB.Save(&existingSession).Error; err != nil {
+		if err := us.db.Save(&existingSession).Error; err != nil {
 			return nil, fmt.Errorf("failed to update session: %w", err)
 		}
 		return &existingSession, nil
@@ -64,7 +92,7 @@ func (us *UserService) RegisterOrLogin(googleID, email string) (*models.Session,
 		Expiry:    time.Now().Add(24 * time.Hour),
 	}
 
-	if err := config.DB.Create(&session).Error; err != nil {
+	if err := us.db.Create(&session).Error; err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
@@ -78,14 +106,14 @@ func (us *UserService) GetUserInfo(googleID string) (*models.UserInfo, error) {
 	}
 
 	var user models.User
-	if err := config.DB.Where("googleId = ?", googleID).First(&user).Error; err != nil {
+	if err := us.db.Where("googleId = ?", googleID).First(&user).Error; err != nil {
 		return nil, us.handleDBError(err)
 	}
 
 	return &models.UserInfo{
-		UserID:           user.ID,
+		UserID:           user.GoogleID,
 		Gmail:            user.Gmail,
-		Role:             user.Role,
+		Role:             string(user.Role),
 		RegistrationDate: user.RegistrationDate,
 	}, nil
 }
@@ -97,7 +125,7 @@ func (us *UserService) GetUserByID(userID string) (*models.User, error) {
 	}
 
 	var user models.User
-	if err := config.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+	if err := us.db.Where("googleId = ?", userID).First(&user).Error; err != nil {
 		return nil, us.handleDBError(err)
 	}
 
@@ -110,9 +138,9 @@ func (us *UserService) Logout(sessionID string) error {
 		return errors.New("sessionID is required")
 	}
 
-	// セッションの有効期限を現在時刻に更新（無効化）。revoked_at は使用しない仕様。
+	// セッションの有効期限を現在時刻に更新（無効化）
 	now := time.Now()
-	result := config.DB.Model(&models.Session{}).
+	result := us.db.Model(&models.Session{}).
 		Where("sessionId = ?", sessionID).
 		Update("expiry", now)
 
@@ -140,13 +168,13 @@ func (us *UserService) DeleteUser(googleID string) error {
 	}
 
 	// トランザクション処理
-	return config.DB.Transaction(func(tx *gorm.DB) error {
+	return us.db.Transaction(func(tx *gorm.DB) error {
 		var user models.User
 		if err := tx.Where("googleId = ?", googleID).First(&user).Error; err != nil {
 			return us.handleDBError(err)
 		}
 
-		// 関連するセッションを無効化（expiry を現在時刻に更新）
+		// 関連するセッションを無効化
 		now := time.Now()
 		if err := tx.Model(&models.Session{}).
 			Where("googleId = ?", googleID).
@@ -154,7 +182,7 @@ func (us *UserService) DeleteUser(googleID string) error {
 			return fmt.Errorf("failed to revoke sessions: %w", err)
 		}
 
-		// ユーザーを削除（ソフトデリート）
+		// ユーザーを削除
 		if err := tx.Delete(&user).Error; err != nil {
 			return fmt.Errorf("failed to delete user: %w", err)
 		}

@@ -1,4 +1,4 @@
-export type UserRole = 'general' | 'business' | 'admin';
+export type UserRole = 'user' | 'business' | 'admin';
 
 export type PinGenre = 'food' | 'event' | 'scene' | 'store' | 'emergency' | 'other';
 
@@ -24,7 +24,7 @@ export interface UserSession {
 export interface Business {
   businessId: number; // 事業者ID
   businessName: string; // 事業者名
-  kanaBusinessName: string; // 事業者名カナ
+  kanaBusinessName: string; // フリガナ
   zipCode: string; // 郵便番号
   address: string; // 住所
   phone: string; // 電話番号

@@ -32,7 +32,7 @@ func NewBusinessHandler(
 // GetBusinessStats 事業者のダッシュボード統計を取得
 // GET /api/business/stats
 func (h *BusinessHandler) GetBusinessStats(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -50,7 +50,7 @@ func (h *BusinessHandler) GetBusinessStats(c *gin.Context) {
 // GetBusinessProfile 事業者プロフィール情報を取得
 // GET /api/business/profile
 func (h *BusinessHandler) GetBusinessProfile(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -68,14 +68,14 @@ func (h *BusinessHandler) GetBusinessProfile(c *gin.Context) {
 // UpdateBusinessProfile 事業者プロフィール情報を更新
 // PUT /api/business/profile
 func (h *BusinessHandler) UpdateBusinessProfile(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	var req struct {
-		BusinessName     string `json:"businessName"`
+		Name             string `json:"name"`
 		KanaBusinessName string `json:"kanaBusinessName"`
 		ZipCode          string `json:"zipCode"`
 		Address          string `json:"address"`
@@ -87,7 +87,9 @@ func (h *BusinessHandler) UpdateBusinessProfile(c *gin.Context) {
 		return
 	}
 
-	profile, err := h.businessService.UpdateBusinessProfile(userID, req.BusinessName, req.KanaBusinessName, req.ZipCode, req.Address, req.Phone)
+	profile, err := h.businessService.UpdateBusinessProfile(
+		userID, req.Name, req.KanaBusinessName, req.ZipCode, req.Address, req.Phone,
+	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -99,7 +101,7 @@ func (h *BusinessHandler) UpdateBusinessProfile(c *gin.Context) {
 // UploadBusinessIcon 事業者アイコン画像をアップロード
 // POST /api/business/icon
 func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -154,7 +156,7 @@ func (h *BusinessHandler) UploadBusinessIcon(c *gin.Context) {
 // GetBusinessPostCount 事業者の投稿数を取得
 // GET /api/business/posts/count
 func (h *BusinessHandler) GetBusinessPostCount(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -172,7 +174,7 @@ func (h *BusinessHandler) GetBusinessPostCount(c *gin.Context) {
 // GetBusinessRevenue 事業者の月間売上を取得
 // GET /api/business/revenue
 func (h *BusinessHandler) GetBusinessRevenue(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -210,14 +212,14 @@ func (h *BusinessHandler) GetBusinessRevenue(c *gin.Context) {
 // UpdateBusinessName 事業者名を更新
 // PUT /api/business/name
 func (h *BusinessHandler) UpdateBusinessName(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	var req struct {
-		BusinessName string `json:"businessName" binding:"required"`
+		Name string `json:"name" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -225,7 +227,7 @@ func (h *BusinessHandler) UpdateBusinessName(c *gin.Context) {
 		return
 	}
 
-	err := h.businessService.UpdateBusinessName(userID, req.BusinessName)
+	err := h.businessService.UpdateBusinessName(userID, req.Name)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -237,7 +239,7 @@ func (h *BusinessHandler) UpdateBusinessName(c *gin.Context) {
 // UpdateBusinessAddress 事業者の住所を更新
 // PUT /api/business/address
 func (h *BusinessHandler) UpdateBusinessAddress(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -245,7 +247,7 @@ func (h *BusinessHandler) UpdateBusinessAddress(c *gin.Context) {
 
 	var req struct {
 		Address string `json:"address" binding:"required"`
-		ZipCode string `json:"zipCode" binding:"required"`
+		ZipCode string `json:"zipCode"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -265,7 +267,7 @@ func (h *BusinessHandler) UpdateBusinessAddress(c *gin.Context) {
 // UpdateBusinessPhone 事業者の電話番号を更新
 // PUT /api/business/phone
 func (h *BusinessHandler) UpdateBusinessPhone(c *gin.Context) {
-	userID := c.GetString("userID")
+	userID := c.GetString("googleId")
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return

@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { User, Post, Business } from '../types';
-import { Upload, ImageIcon } from 'lucide-react';
+import { Upload, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SelectPostHistory } from './SelectPostHistory';
 import { SelectUserSetting } from './SelectUserSetting';
+import { updateBusinessName, uploadBusinessIcon, getStoredJWT } from '../lib/auth';
 
 interface BusinessDisplayMyPageProps {
   user: User;
@@ -27,10 +28,12 @@ export function BusinessDisplayMyPage({
   onUpdateUser,
   onNavigateToDeleteAccount,
 }: BusinessDisplayMyPageProps) {
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingNameValue, setEditingNameValue] = useState(business.businessName || '');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const token = getStoredJWT();
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ja-JP', {
@@ -40,25 +43,40 @@ export function BusinessDisplayMyPage({
     });
   };
 
-  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('5MB以下にしてください');
-      return;
+  const handleNameUpdate = async () => {
+    if (!token) return;
+    try {
+      await updateBusinessName(token, editingNameValue);
+      onUpdateUser({ ...business, businessName: editingNameValue });
+      setIsEditingName(false);
+      toast.success('事業者名を更新しました');
+    } catch {
+      toast.error('更新に失敗しました');
     }
-    const reader = new FileReader();
-    reader.onload = (event) => setSelectedIcon(event.target?.result as string);
-    reader.readAsDataURL(file);
   };
 
-  const handleSaveIcon = () => {
-    if (!selectedIcon) return;
-    setIsUploadingIcon(true);
-    onUpdateUser({ ...business, profileImage: selectedIcon });
-    toast.success('アイコンを更新しました');
-    setIsUploadingIcon(false);
-    setSelectedIcon(null);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !token) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('画像サイズは5MB以下にしてください');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const profileImage = await uploadBusinessIcon(token, file);
+      onUpdateUser({ ...business, profileImage });
+      toast.success('アイコンを更新しました');
+    } catch {
+      toast.error('アイコンの更新に失敗しました');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   return (
@@ -68,7 +86,45 @@ export function BusinessDisplayMyPage({
           <CardHeader>
             <CardTitle>事業者マイページ</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            {/* アイコン設定 */}
+            <div className="flex items-center space-x-4">
+              <div className="relative w-24 h-24">
+                {business.profileImage ? (
+                  <img
+                    src={business.profileImage}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover border"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center border">
+                    <Building2 className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+                <label
+                  htmlFor="icon-upload"
+                  className="absolute bottom-0 right-0 p-1 bg-white rounded-full shadow cursor-pointer hover:bg-gray-100 border"
+                >
+                  <Upload className="w-4 h-4 text-gray-600" />
+                  <input
+                    id="icon-upload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={isUploading}
+                    ref={fileInputRef}
+                  />
+                </label>
+              </div>
+              <div>
+                <p className="font-semibold text-lg">{business.businessName || '事業者名未設定'}</p>
+                <div className="mt-1">
+                  <p className="text-sm text-gray-500">アイコンをクリックして変更</p>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">店舗・事業者名</p>
@@ -80,14 +136,18 @@ export function BusinessDisplayMyPage({
                         value={editingNameValue}
                         onChange={(e) => setEditingNameValue(e.target.value)}
                       />
+                      <Button size="sm" onClick={handleNameUpdate}>
+                        保存
+                      </Button>
                       <Button
                         size="sm"
+                        variant="ghost"
                         onClick={() => {
-                          onUpdateUser({ ...business, businessName: editingNameValue });
+                          setEditingNameValue(business.businessName || '');
                           setIsEditingName(false);
                         }}
                       >
-                        保存
+                        キャンセル
                       </Button>
                     </>
                   ) : (
@@ -118,54 +178,6 @@ export function BusinessDisplayMyPage({
               <div>
                 <p className="text-sm text-gray-600">登録日</p>
                 <p>{formatDate(new Date(user.registrationDate))}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* アイコン設定セクション */}
-        <Card>
-          <CardHeader>
-            <CardTitle>事業者アイコン設定</CardTitle>
-            <CardDescription>地図上のピンに表示されるアイコン</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start space-x-6">
-              <div className="w-32 h-32 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center">
-                {selectedIcon || business.profileImage ? (
-                  <img
-                    src={selectedIcon || business.profileImage}
-                    alt="Icon"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <ImageIcon className="text-gray-400" />
-                )}
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-blue-400">
-                  <label htmlFor="icon-upload" className="cursor-pointer">
-                    <Upload className="mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm">画像を選択 (最大5MB)</p>
-                    <input
-                      id="icon-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleIconUpload}
-                    />
-                  </label>
-                </div>
-                {selectedIcon && (
-                  <div className="flex space-x-2">
-                    <Button onClick={handleSaveIcon} disabled={isUploadingIcon} className="flex-1">
-                      {isUploadingIcon ? '保存中...' : 'アイコンを保存'}
-                    </Button>
-                    <Button onClick={() => setSelectedIcon(null)} variant="outline">
-                      キャンセル
-                    </Button>
-                  </div>
-                )}
               </div>
             </div>
           </CardContent>

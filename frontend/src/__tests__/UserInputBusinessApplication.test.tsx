@@ -21,7 +21,7 @@ describe('UserInputBusinessApplication', () => {
   const mockUser: User = {
     googleId: 'test-google-id',
     gmail: 'test@gmail.com',
-    role: 'general',
+    role: 'user',
     registrationDate: '2024-01-01',
     fromName: 'テストユーザー',
   };
@@ -70,8 +70,6 @@ describe('UserInputBusinessApplication', () => {
 
     // 正しい入力
     await user.type(screen.getByPlaceholderText('店舗名'), '美味しいパン屋');
-    await user.type(screen.getByPlaceholderText('店舗名（カナ）'), 'オイシイパンヤ');
-    await user.type(screen.getByPlaceholderText('郵便番号 (例: 7800000)'), '7800000');
     await user.type(screen.getByPlaceholderText('電話番号'), '09012345678');
     await user.type(screen.getByPlaceholderText('住所'), '東京都千代田区1-1');
 
@@ -83,6 +81,12 @@ describe('UserInputBusinessApplication', () => {
         'http://localhost:8080/api/business/application',
         expect.objectContaining({
           method: 'POST',
+          body: JSON.stringify({
+            userId: mockUser.googleId,
+            name: '美味しいパン屋',
+            address: '東京都千代田区1-1',
+            phone: '09012345678',
+          }),
         })
       );
       expect(getFetchMock()).toHaveBeenCalledTimes(1);
@@ -111,12 +115,6 @@ describe('UserInputBusinessApplication', () => {
     const submitButton = screen.getByRole('button', { name: '申請する' });
     fireEvent.change(screen.getByPlaceholderText('店舗名'), {
       target: { value: '美味しいパン屋' },
-    });
-    fireEvent.change(screen.getByPlaceholderText('店舗名（カナ）'), {
-      target: { value: 'オイシイパンヤ' },
-    });
-    fireEvent.change(screen.getByPlaceholderText('郵便番号 (例: 7800000)'), {
-      target: { value: '7800000' },
     });
     fireEvent.change(screen.getByPlaceholderText('電話番号'), { target: { value: '09012345678' } });
     fireEvent.change(screen.getByPlaceholderText('住所'), {

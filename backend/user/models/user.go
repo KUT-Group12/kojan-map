@@ -3,24 +3,20 @@ package models
 import (
 	"time"
 
-	"gorm.io/gorm"
+	shared "kojan-map/shared/models"
 )
 
 // User 一般会員モデル
 type User struct {
-	ID               string         `gorm:"column:id;primaryKey" json:"id"`
-	GoogleID         string         `gorm:"column:googleId;uniqueIndex" json:"googleId"`
-	Gmail            string         `gorm:"column:gmail;uniqueIndex" json:"gmail"`
-	Role             string         `gorm:"column:role" json:"role"` // "general", "business", "admin"
-	RegistrationDate time.Time      `gorm:"column:registrationDate" json:"registrationDate"`
-	CreatedAt        time.Time      `gorm:"column:createdAt" json:"createdAt"`
-	UpdatedAt        time.Time      `gorm:"column:updatedAt" json:"updatedAt"`
-	DeletedAt        gorm.DeletedAt `gorm:"column:deletedAt;index" json:"-"`
+	GoogleID         string      `gorm:"primaryKey;column:googleId;type:varchar(50)" json:"googleId"`
+	Gmail            string      `gorm:"column:gmail;type:varchar(100);not null;unique" json:"gmail"`
+	Role             shared.Role `gorm:"column:role;type:enum('user','business','admin');not null" json:"role"`
+	RegistrationDate time.Time   `gorm:"column:registrationDate;type:datetime;not null" json:"registrationDate"`
 }
 
 // TableName テーブル名を指定
 func (User) TableName() string {
-	return "users"
+	return "user"
 }
 
 // Session セッション情報モデル

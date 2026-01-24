@@ -181,7 +181,7 @@ frontend/
 cd backend
 gofmt -s -w .           # フォーマット修正
 go vet ./...            # 静的解析
-go test ./...           # テスト実行
+MYSQL_PASSWORD=MYSQL_ROOT_PASSWORDを入れる go test ./...           # テスト実行
 
 # Frontend
 cd frontend

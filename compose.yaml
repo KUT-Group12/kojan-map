@@ -5,7 +5,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: "root:root@tcp(db:3306)/kojanmap?parseTime=true&charset=utf8mb4&loc=Local"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: kojanmap
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    restart: always
     depends_on:
       - db
 
@@ -19,7 +26,9 @@ services:
 
   # データベース (MySQL)
   db:
-    image: mysql:8.0
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     platform: linux/amd64
     environment:
       MYSQL_ROOT_PASSWORD: root
