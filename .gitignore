@@ -1,49 +1,47 @@
-# Go
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-go.work
-main
-*_output.txt
-*.bak
-
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-.pnpm-store/
-dist/
-dist-ssr/
-*.local
-
-# Environment variables
-.env
-.env.local
 .env.*.local
 .env.frontend
 .env.backend
+.env.*
 
 # IDE
 .vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+@@ -40,6 +41,40 @@ dist-ssr/
 .DS_Store
+Thumbs.db
+
+# MySQLデータ
+mysql/
+
+# ログ・一時ファイル
+*.log
+*.txt
+backend_logs.txt
+build_error.log
+build_error_utf8.log
+frontend_build.log
+frontend_build_utf8.log
+full_backend.log
+user_manual_test_error.log
+backend_crash.log
+backend_crash_2.log
+backend_crash_3.log
+backend_error_500.log
+e2e_output.txt
+e2e_post.log
+e2e_post_utf8.log
+failure*.log
+lint.log
+test.log
+test_output.txt
+tsc.log
+tsc_output.txt
+
+# ビルド成果物
+build/
+test-results/
+frontend/build/
+frontend/test-results/
 Thumbs.db
 
 # Docker
 *.log
-
-# Build outputs
-build/
-tmp/
-bin/
