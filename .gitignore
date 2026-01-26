@@ -45,3 +45,6 @@ Thumbs.db
 
 # Docker
 *.log
+
+frontend/node_modules
+*.txt
