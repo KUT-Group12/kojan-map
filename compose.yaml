@@ -11,8 +11,6 @@ services:
       DB_PASSWORD: root
       DB_NAME: kojanmap
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-    restart: always
     depends_on:
       - db
 

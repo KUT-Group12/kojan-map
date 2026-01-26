@@ -25,7 +25,8 @@ func NewAdminBusinessHandler(s *service.AdminBusinessService) *AdminBusinessHand
 	return &AdminBusinessHandler{service: s}
 }
 
-// GetApplications godoc
+// GetApplications は未処理の事業者申請一覧を取得します。
+//
 // @Summary 事業者申請一覧を取得
 // @Description 未処理の事業者申請一覧を取得します
 // @Tags Admin Business
@@ -45,7 +46,8 @@ func (h *AdminBusinessHandler) GetApplications(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"applications": applications})
 }
 
-// ApproveApplication godoc
+// ApproveApplication は指定したIDの事業者申請を承認し、事業者会員を作成します。
+//
 // @Summary 事業者申請を承認
 // @Description 指定したIDの事業者申請を承認し、事業者会員を作成します
 // @Tags Admin Business
@@ -72,7 +74,8 @@ func (h *AdminBusinessHandler) ApproveApplication(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-// RejectApplication godoc
+// RejectApplication は指定したIDの事業者申請を却下します。
+//
 // @Summary 事業者申請を却下
 // @Description 指定したIDの事業者申請を却下します
 // @Tags Admin Business

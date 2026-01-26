@@ -25,7 +25,9 @@ func NewAdminContactHandler(s *service.AdminContactService) *AdminContactHandler
 	return &AdminContactHandler{service: s}
 }
 
-// GetInquiries godoc
+// GetInquiries は全ての問い合わせ情報を取得します。
+// 管理者が問い合わせを一覧表示するために使用します。
+//
 // @Summary 問い合わせ一覧を取得
 // @Description 全ての問い合わせ情報を取得します
 // @Tags Admin Inquiries
@@ -45,7 +47,8 @@ func (h *AdminContactHandler) GetInquiries(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"asks": asks})
 }
 
-// ApproveInquiry godoc
+// ApproveInquiry は指定したIDの問い合わせを処理済み状態に更新します。
+//
 // @Summary 問い合わせを処理済みにする
 // @Description 指定したIDの問い合わせを処理済み状態に更新します
 // @Tags Admin Inquiries
@@ -72,7 +75,8 @@ func (h *AdminContactHandler) ApproveInquiry(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-// RejectInquiry godoc
+// RejectInquiry は指定したIDの問い合わせを却下状態に更新します。
+//
 // @Summary 問い合わせを却下する
 // @Description 指定したIDの問い合わせを却下状態に更新します
 // @Tags Admin Inquiries

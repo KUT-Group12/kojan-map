@@ -30,8 +30,16 @@ func NewPostHandler(postService *services.PostService, placeService *services.Pl
 	}
 }
 
-// GetPosts 投稿一覧を取得
-// GET /api/posts
+// GetPosts は全ての投稿の一覧を取得します。
+//
+// @Summary 投稿一覧を取得
+// @Description 全ての投稿を取得します
+// @Tags 投稿
+// @Accept json
+// @Produce json
+// @Success 200 {array} object "投稿一覧"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/posts [get]
 func (ph *PostHandler) GetPosts(c *gin.Context) {
 	posts, err := ph.postService.GetAllPosts()
 	if err != nil {
@@ -42,8 +50,18 @@ func (ph *PostHandler) GetPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
-// GetPostDetail 投稿詳細を取得
-// GET /api/posts/detail
+// GetPostDetail は投稿IDで投稿の詳細情報を取得します。
+//
+// @Summary 投稿詳細を取得
+// @Description 投稿IDで投稿の詳細情報を取得します
+// @Tags 投稿
+// @Accept json
+// @Produce json
+// @Param postId query string true "投稿ID"
+// @Success 200 {object} object "投稿詳細"
+// @Failure 400 {object} object{error=string} "不正な投稿ID"
+// @Failure 404 {object} object{error=string} "投稿が見つかりません"
+// @Router /api/posts/detail [get]
 func (ph *PostHandler) GetPostDetail(c *gin.Context) {
 	postIDStr := c.Query("postId")
 	if postIDStr == "" {
@@ -64,8 +82,21 @@ func (ph *PostHandler) GetPostDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-// CreatePost 投稿を作成
-// POST /api/posts
+// CreatePost は新しい投稿を作成します。
+// 認証済みユーザーのみ使用できます。
+//
+// @Summary 投稿を作成
+// @Description 新しい投稿を作成します
+// @Tags 投稿
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body object{latitude=number,longitude=number,title=string,description=string,genre=string,images=[]string} true "投稿情報"
+// @Success 201 {object} object{postId=int,message=string} "投稿作成成功"
+// @Failure 400 {object} object{error=string} "不正なリクエスト"
+// @Failure 401 {object} object{error=string} "認証されていません"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/posts [post]
 func (ph *PostHandler) CreatePost(c *gin.Context) {
 	var req struct {
 		Latitude    float64  `json:"latitude" binding:"required"`
@@ -233,8 +264,20 @@ func (ph *PostHandler) GetPinSize(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"pinSize": pinSize})
 }
 
-// AddReaction リアクションを追加
-// POST /api/posts/reaction
+// AddReaction は投稿にリアクションを追加します。
+//
+// @Summary リアクションを追加
+// @Description 投稿にリアクションを追加します
+// @Tags 投稿
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body object{postId=int} true "投稿ID"
+// @Success 200 {object} object{message=string} "リアクション追加成功"
+// @Failure 400 {object} object{error=string} "不正なリクエスト"
+// @Failure 401 {object} object{error=string} "認証されていません"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/posts/reaction [post]
 func (ph *PostHandler) AddReaction(c *gin.Context) {
 	var req struct {
 		PostID int `json:"postId" binding:"required"`
@@ -259,8 +302,18 @@ func (ph *PostHandler) AddReaction(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "reaction added"})
 }
 
-// SearchByKeyword キーワード検索
-// GET /api/posts/search
+// SearchByKeyword はキーワードで投稿を検索します。
+//
+// @Summary キーワード検索
+// @Description キーワードで投稿を検索します
+// @Tags 投稿
+// @Accept json
+// @Produce json
+// @Param keyword query string true "検索キーワード"
+// @Success 200 {object} object{posts=[]object,total=int,keyword=string} "検索結果"
+// @Failure 400 {object} object{error=string} "キーワードが必要"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/posts/search [get]
 func (ph *PostHandler) SearchByKeyword(c *gin.Context) {
 	keyword := c.Query("keyword")
 	if keyword == "" {
@@ -327,8 +380,21 @@ func (ph *PostHandler) SearchByPeriod(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
 }
 
-// DeletePost 投稿を削除
-// DELETE /api/posts
+// DeletePost は投稿を削除します。
+// 投稿者本人のみ削除できます。
+//
+// @Summary 投稿を削除
+// @Description 投稿を削除します（投稿者のみ）
+// @Tags 投稿
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body object{postId=int} true "投稿ID"
+// @Success 200 {object} object{message=string} "削除成功"
+// @Failure 400 {object} object{error=string} "不正なリクエスト"
+// @Failure 401 {object} object{error=string} "認証されていません"
+// @Failure 403 {object} object{error=string} "権限がありません"
+// @Router /api/posts [delete]
 func (ph *PostHandler) DeletePost(c *gin.Context) {
 	var req struct {
 		PostID int `json:"postId" binding:"required"`

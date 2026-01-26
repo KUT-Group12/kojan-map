@@ -55,3 +55,7 @@ frontend/node_modules
 *.txt
 node_modules
 backend/C:Usersukimago/
+tmp/
+bin/
+# Environment variables
+.env

@@ -19,13 +19,29 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "kojan-map/docs" // Swagger docs
 )
 
 // @title こじゃんとやまっぷ API
 // @version 1.0
-// @description 管理者用API
+// @description こじゃんとやまっぷのバックエンドAPIドキュメント
+// @description
+// @description このAPIは一般ユーザー、ビジネスユーザー、管理者向けの機能を提供します。
+// @description 認証が必要なエンドポイントではBearer JWTトークンを使用します。
+
+// @contact.name API サポート
+// @contact.email support@kojan-map.example.com
+
 // @host localhost:8080
 // @BasePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description JWT認証トークン。ヘッダーに "Bearer {token}" の形式で指定してください。
 func main() {
 	// Load configuration
 	cfg := config.Load()
@@ -107,7 +123,10 @@ func main() {
 	router.SetupAdminRoutes(r, db, cfg)
 	router.SetupUserRoutes(r, db, cfg)
 
-	// Start server with Graceful Shutdown support
+	// Swagger UI endpoint
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Start server
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)
 	srv := &http.Server{
 		Addr:    addr,

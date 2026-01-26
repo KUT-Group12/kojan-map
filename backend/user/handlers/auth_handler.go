@@ -24,8 +24,20 @@ func NewAuthHandler(userService *services.UserService, authService *services.Aut
 	}
 }
 
-// Register ユーザー登録・ログイン
-// POST /api/users/register
+// Register はGoogleトークンを使用してユーザー登録またはログインを行います。
+// 新規ユーザーの場合は登録し、既存ユーザーの場合はログインします。
+//
+// @Summary ユーザー登録・ログイン
+// @Description Googleトークンを使用してユーザー登録またはログインを行います
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Param request body object{google_token=string} true "Google認証トークン"
+// @Success 200 {object} object{sessionId=string} "セッションID"
+// @Failure 400 {object} object{error=string} "不正なリクエスト"
+// @Failure 401 {object} object{error=string} "無効なGoogleトークン"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/users/register [post]
 func (ah *AuthHandler) Register(c *gin.Context) {
 	var req struct {
 		GoogleToken string `json:"google_token" binding:"required"`
@@ -53,8 +65,18 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sessionId": session.SessionID})
 }
 
-// Logout ログアウト
-// PUT /api/auth/logout
+// Logout は現在のセッションを無効化してログアウトします。
+//
+// @Summary ログアウト
+// @Description 現在のセッションを無効化します
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} object{sessionId=string} "セッションID"
+// @Failure 400 {object} object{error=string} "セッションIDが必要"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/auth/logout [put]
 func (ah *AuthHandler) Logout(c *gin.Context) {
 		var req struct {
 			SessionID string `json:"sessionId"`
@@ -77,8 +99,18 @@ func (ah *AuthHandler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"sessionId": sessionID})
 }
 
-// Withdrawal 退会処理
-// PUT /api/auth/withdrawal
+// Withdrawal はユーザーアカウントを完全に削除します。
+//
+// @Summary 退会処理
+// @Description ユーザーアカウントを削除します
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} object{message=string} "削除完了メッセージ"
+// @Failure 401 {object} object{error=string} "認証されていません"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/auth/withdrawal [put]
 func (ah *AuthHandler) Withdrawal(c *gin.Context) {
 	// 退会API呼び出し時に必ずログ出力
 	googleID := c.GetString("googleId")
@@ -99,10 +131,18 @@ func (ah *AuthHandler) Withdrawal(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
 }
 
-// ExchangeToken - Exchange Google token for JWT token
-// POST /api/auth/exchange-token
-// Body: {"google_token": "...", "role": "user"}
-// Response: {"jwt_token": "...", "user": {...}}
+// ExchangeToken はGoogleトークンを検証し、JWT トークンとユーザー情報を返します。
+//
+// @Summary GoogleトークンをJWTトークンに交換
+// @Description GoogleトークンをJWTトークンに交換し、ユーザー情報を返します
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Param request body object{google_token=string,role=string} true "Googleトークンとロール(general/business)"
+// @Success 200 {object} object{jwt_token=string,user=object} "JWTトークンとユーザー情報"
+// @Failure 400 {object} object{error=string} "不正なリクエスト"
+// @Failure 401 {object} object{error=string} "認証失敗"
+// @Router /api/auth/exchange-token [post]
 func (ah *AuthHandler) ExchangeToken(c *gin.Context) {
 	var req struct {
 		GoogleToken string `json:"google_token" binding:"required"`
@@ -159,10 +199,18 @@ func (ah *AuthHandler) ExchangeToken(c *gin.Context) {
 	})
 }
 
-// VerifyToken - Verify JWT token
-// POST /api/auth/verify-token
-// Body: {"token": "..."}
-// Response: {"user_id": "...", "email": "..."}
+// VerifyToken はJWTトークンを検証し、ユーザー情報を返します。
+//
+// @Summary JWTトークンの検証
+// @Description JWTトークンを検証し、ユーザー情報を返します
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Param request body object{token=string} true "JWTトークン"
+// @Success 200 {object} object{user_id=string,email=string,role=string} "ユーザー情報"
+// @Failure 400 {object} object{error=string} "不正なリクエスト"
+// @Failure 401 {object} object{error=string} "無効なトークン"
+// @Router /api/auth/verify-token [post]
 func (ah *AuthHandler) VerifyToken(c *gin.Context) {
 	var req struct {
 		Token string `json:"token" binding:"required"`
@@ -186,10 +234,18 @@ func (ah *AuthHandler) VerifyToken(c *gin.Context) {
 	})
 }
 
-// GetCurrentUser - Get current user info from JWT token in Authorization header
-// GET /api/auth/me
-// Header: Authorization: Bearer <jwt_token>
-// Response: {"id": "...", "email": "...", ...}
+// GetCurrentUser はAuthorizationヘッダーのJWTトークンから現在のユーザー情報を取得します。
+//
+// @Summary 現在のユーザー情報を取得
+// @Description AuthorizationヘッダーのJWTトークンから現在のユーザー情報を取得します
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} object{id=string,email=string} "ユーザー情報"
+// @Failure 401 {object} object{error=string} "認証エラー"
+// @Failure 404 {object} object{error=string} "ユーザーが見つかりません"
+// @Router /api/auth/me [get]
 func (ah *AuthHandler) GetCurrentUser(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -220,10 +276,19 @@ func (ah *AuthHandler) GetCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Refresh - Refresh JWT token (optional)
-// POST /api/auth/refresh
-// Header: Authorization: Bearer <jwt_token>
-// Response: {"jwt_token": "..."}
+// Refresh は既存のJWTトークンから新しいトークンを生成します。
+//
+// @Summary JWTトークンのリフレッシュ
+// @Description 既存のJWTトークンから新しいトークンを生成します
+// @Tags 認証
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} object{jwt_token=string} "新しいJWTトークン"
+// @Failure 401 {object} object{error=string} "認証エラー"
+// @Failure 404 {object} object{error=string} "ユーザーが見つかりません"
+// @Failure 500 {object} object{error=string} "サーバーエラー"
+// @Router /api/auth/refresh [post]
 func (ah *AuthHandler) Refresh(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {

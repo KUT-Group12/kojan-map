@@ -26,7 +26,8 @@ func NewAdminPostHandler(postService *service.AdminPostService) *AdminPostHandle
 	return &AdminPostHandler{postService: postService}
 }
 
-// GetPostByID godoc
+// GetPostByID は指定したIDの投稿詳細情報を取得します。
+//
 // @Summary 投稿詳細を取得
 // @Description 指定したIDの投稿詳細情報を取得します
 // @Tags Admin Posts
@@ -62,7 +63,9 @@ func (h *AdminPostHandler) GetPostByID(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-// DeletePost godoc
+// DeletePost は指定したIDの投稿を削除します。
+// 関連する通報も同時に削除されます。
+//
 // @Summary 投稿を削除
 // @Description 指定したIDの投稿を削除します。関連する通報も同時に削除されます。
 // @Tags Admin Posts
