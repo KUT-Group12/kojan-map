@@ -26,7 +26,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
         body: JSON.stringify({ sessionId: user.googleId }),
       });
 
-      if (!response.ok) {
+      if (!response.ok && response.status !== 401) {
         throw new Error('サーバー側でのログアウトに失敗しました');
       }
 
@@ -105,14 +105,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
               </div>
             </div>
 
-            {/* Googleログインのヒント */}
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
-              <p className="text-xs text-gray-600 leading-relaxed">
-                💡 ヒント: 次回ログイン時には、
-                <br />
-                Google アカウントで再度ログインしてください。
-              </p>
-            </div>
+            {/* Googleログインのヒント (削除) */}
 
             <div className="flex flex-col gap-3">
               <Button

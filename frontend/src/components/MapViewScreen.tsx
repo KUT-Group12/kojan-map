@@ -46,7 +46,10 @@ export function MapViewScreen({
     const post = groupPosts[0];
     const count = groupPosts.length;
 
-    const color = post.genreColor || '#94a3b8';
+    let color = post.genreColor || '#94a3b8';
+    if (color && !color.startsWith('#')) {
+      color = `#${color}`;
+    }
     const sizeClass = getPinSizeClass(count);
 
     // ★修正箇所: data-testid をここに移動

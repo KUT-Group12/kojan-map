@@ -33,52 +33,58 @@ export function Sidebar({ user, posts: initialPosts, onFilterChange, onPinClick 
   }, [initialPosts]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    // クライアントサイドフィルタリング
+    let result = [...initialPosts];
 
-    const fetchFilteredPosts = async (): Promise<void> => {
-      if (user.role === 'business') {
-        setApiPosts(initialPostsRef.current);
-        return;
-      }
+    // 1. Keyword Filter (Title, Text, GenreName, BusinessName)
+    if (searchKeyword.trim()) {
+      const lowerKeyword = searchKeyword.toLowerCase();
+      result = result.filter((post) => {
+        const titleMatch = post.title?.toLowerCase().includes(lowerKeyword);
+        const textMatch = post.text?.toLowerCase().includes(lowerKeyword);
+        const genreMatch = post.genreName?.toLowerCase().includes(lowerKeyword); // ジャンル名も検索対象に
+        // const businessMatch = post.businessName?.toLowerCase().includes(lowerKeyword);
+        return titleMatch || textMatch || genreMatch;
+      });
+    }
 
-      setIsLoading(true);
-      try {
-        let url = `${API_BASE_URL}/api/posts`;
+    // 2. Genre Filter
+    if (selectedGenre !== 'all') {
+      result = result.filter((post) => String(post.genreId) === selectedGenre);
+    }
 
-        if (searchKeyword) {
-          url = `${API_BASE_URL}/api/posts/search?keyword=${encodeURIComponent(searchKeyword)}`;
-        } else if (selectedGenre !== 'all') {
-          // ジャンル選択時は selectedGenre (ID) をそのまま利用
-          url = `${API_BASE_URL}/api/posts/search/genre?genreId=${selectedGenre}`;
-        } else if (dateFilter !== 'all') {
-          const endDate = new Date().toISOString().split('T')[0];
-          const start = new Date();
-          if (dateFilter === 'today') start.setDate(start.getDate());
-          else if (dateFilter === 'week') start.setDate(start.getDate() - 7);
-          else if (dateFilter === 'month') start.setMonth(start.getMonth() - 1);
-          const startDate = start.toISOString().split('T')[0];
-          url = `${API_BASE_URL}/api/posts/search/period?startDate=${startDate}&endDate=${endDate}`;
-        }
+    // 3. Date Filter
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      const postDate = (dateStr: string) => new Date(dateStr);
 
-        const response = await fetch(url, { signal: controller.signal });
-        if (!response.ok) throw new Error('検索に失敗しました');
+      result = result.filter((post) => {
+        if (!post.postDate) return false;
 
-        const data = (await response.json()) as { posts: Post[] };
-        setApiPosts(data.posts || []);
-      } catch (error: unknown) {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-        setApiPosts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        const d = new Date(post.postDate);
+        if (isNaN(d.getTime())) return false; // Invalid 
 
-    const timer = setTimeout(fetchFilteredPosts, searchKeyword === '' ? 0 : 500);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [searchKeyword, selectedGenre, dateFilter, user.role, initialPosts]);
+        // リセットした日付比較 (時刻を無視)
+        const checkDate = new Date(d);
+        checkDate.setHours(0, 0, 0, 0);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const diffTime = today.getTime() - checkDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        // console.log(`PostDate: ${post.postDate}, DiffDays: ${diffDays}, Filter: ${dateFilter}`);
+
+        if (dateFilter === 'today') return diffDays === 0; // 同じ日付
+        if (dateFilter === 'week') return diffDays <= 7 && diffDays >= -1; // 未来日付(時差)も許容
+        if (dateFilter === 'month') return diffDays <= 30 && diffDays >= -1;
+        return true;
+      });
+    }
+
+    setApiPosts(result);
+  }, [searchKeyword, selectedGenre, dateFilter, initialPosts]);
 
   useEffect(() => {
     onFilterChange(apiPosts);

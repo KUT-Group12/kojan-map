@@ -137,7 +137,6 @@ func NewContactHandler(contactService *services.ContactService) *ContactHandler 
 // POST /api/contact/validate
 func (ch *ContactHandler) CreateContact(c *gin.Context) {
 	var req struct {
-		UserID  string `json:"userId"`
 		Subject string `json:"subject" binding:"required"`
 		Text    string `json:"text" binding:"required"`
 	}
@@ -147,7 +146,13 @@ func (ch *ContactHandler) CreateContact(c *gin.Context) {
 		return
 	}
 
-	if err := ch.contactService.CreateContact(req.UserID, req.Subject, req.Text); err != nil {
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := ch.contactService.CreateContact(userID, req.Subject, req.Text); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

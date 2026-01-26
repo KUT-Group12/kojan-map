@@ -5,7 +5,7 @@ import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
 import { UserRole, User, Business } from './types';
-import { getStoredUser } from './lib/auth';
+import { getStoredUser, getStoredJWT, logout } from './lib/auth';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +21,7 @@ export default function App() {
       registrationDate: storedUser.createdAt,
     };
   });
+  console.log('App user state:', user);
 
   const [business, setBusiness] = useState<Business | null>(() => {
     const storedUser = getStoredUser();
@@ -43,18 +44,56 @@ export default function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    const checkUser = async () => {
+      try {
+        const token = getStoredJWT();
+        if (token) {
+          // 1. クライアント側で有効期限チェック
+          const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+          if (payload.exp * 1000 < Date.now()) {
+            logout();
+            setUser(null);
+            setBusiness(null);
+            return;
+          }
+
+          // 2. サーバー側でユーザー存在チェック (DBリセット対策)
+          const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+          const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!res.ok) {
+            console.warn('User not found on server or token invalid. Logging out.');
+            logout();
+            setUser(null);
+            setBusiness(null);
+          }
+        }
+      } catch (error) {
+        console.error('Token validation failed, logging out:', error);
+        logout();
+        setUser(null);
+        setBusiness(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUser();
+    // const timer = setTimeout(() => {
+    //   setIsLoading(false);
+    // }, 1500);
+    // return () => clearTimeout(timer);
   }, []);
 
   // 引数として受け取ったデータをそのままステートにセットする
-  const handleLogin = (role: UserRole, googleId: string) => {
+  const handleLogin = (role: UserRole, googleId: string, email: string) => {
     // 1. Userオブジェクトを組み立てる
     const userData: User = {
       googleId: googleId,
-      gmail: `${googleId}@example.com`, // 便宜上のメールアドレス
+      gmail: email, // 実際のメールアドレスを使用
       role: role,
       registrationDate: new Date().toLocaleDateString(),
     };

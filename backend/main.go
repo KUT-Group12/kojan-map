@@ -13,6 +13,7 @@ import (
 	"kojan-map/shared/config"
 	userconfig "kojan-map/user/config"
 	usermiddleware "kojan-map/user/middleware"
+
 	// "kojan-map/user/migrations"
 	"kojan-map/user/models"
 
@@ -49,6 +50,26 @@ func main() {
 		); err != nil {
 			log.Fatalf("DB migration failed: %v", err)
 		}
+
+		// Seed default genres if they don't exist
+		var count int64
+		db.Model(&models.Genre{}).Count(&count)
+		if count == 0 {
+			genres := []models.Genre{
+				{GenreName: "food", Color: "#FF6384"},
+				{GenreName: "event", Color: "#36A2EB"},
+				{GenreName: "scene", Color: "#FFCE56"},
+				{GenreName: "store", Color: "#4BC0C0"},
+				{GenreName: "emergency", Color: "#9966FF"},
+				{GenreName: "other", Color: "#FF9F40"},
+			}
+			for _, genre := range genres {
+				if err := db.Create(&genre).Error; err != nil {
+					log.Fatalf("Failed to seed genre: %v", err)
+				}
+			}
+			log.Println("Default genres seeded.")
+		}
 	} else {
 		log.Printf("Current Environment: %s - Skipping AutoMigrate for safety.", cfg.AppEnv)
 	}
@@ -83,7 +104,7 @@ func main() {
 	})
 
 	// Setup routes
-	router.SetupAdminRoutes(r, db)
+	router.SetupAdminRoutes(r, db, cfg)
 	router.SetupUserRoutes(r, db, cfg)
 
 	// Start server with Graceful Shutdown support

@@ -4,8 +4,9 @@ import (
 	"errors"
 	"time"
 
-	"gorm.io/gorm"
 	"kojan-map/user/models"
+
+	"gorm.io/gorm"
 )
 
 // "kojan-map/user/config" // ★削除: 不要になりました
@@ -23,15 +24,16 @@ func NewPostService(db *gorm.DB) *PostService {
 func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 	var posts []struct {
 		models.Post
-		GenreName string  `gorm:"column:genre_name"`
-		Latitude  float64 `gorm:"column:latitude"`
-		Longitude float64 `gorm:"column:longitude"`
+		GenreName  string  `gorm:"column:genre_name"`
+		GenreColor string  `gorm:"column:genre_color"`
+		Latitude   float64 `gorm:"column:latitude"`
+		Longitude  float64 `gorm:"column:longitude"`
 	}
 
 	// JOINクエリで関連データを一度に取得（N+1問題を解決）
 	err := ps.db.
 		Table("post").
-		Select("post.*, genre.genreName as genre_name, place.latitude, place.longitude").
+		Select("post.*, genre.genreName as genre_name, genre.color as genre_color, place.latitude, place.longitude").
 		Joins("LEFT JOIN genre ON genre.genreId = post.genreId").
 		Joins("LEFT JOIN place ON place.placeId = post.placeId").
 		Order("post.postDate DESC").
@@ -58,6 +60,7 @@ func (ps *PostService) GetAllPosts() ([]map[string]interface{}, error) {
 			"latitude":    post.Latitude,
 			"longitude":   post.Longitude,
 			"genreName":   post.GenreName,
+			"genreColor":  post.GenreColor,
 		}
 	}
 	return result, nil
@@ -108,6 +111,7 @@ func (ps *PostService) GetPostDetail(postID int32) (map[string]interface{}, erro
 		"latitude":    place.Latitude,
 		"longitude":   place.Longitude,
 		"genreName":   genre.GenreName,
+		"genreColor":  genre.Color,
 	}
 
 	return result, nil
@@ -241,6 +245,53 @@ func (ps *PostService) DeletePost(postID int32, userID string) error {
 	}
 
 	return nil
+}
+
+// GetUserReactionHistory ユーザーがリアクションした投稿を取得
+func (ps *PostService) GetUserReactionHistory(userID string) ([]map[string]interface{}, error) {
+	var results []struct {
+		models.Post
+		GenreName  string  `gorm:"column:genre_name"`
+		GenreColor string  `gorm:"column:genre_color"`
+		Latitude   float64 `gorm:"column:latitude"`
+		Longitude  float64 `gorm:"column:longitude"`
+	}
+
+	// reactionテーブルを起点にpost, genre, placeを結合
+	err := ps.db.Table("reaction").
+		Select("post.*, genre.genreName as genre_name, genre.color as genre_color, place.latitude, place.longitude").
+		Joins("INNER JOIN post ON post.postId = reaction.postId").
+		Joins("LEFT JOIN genre ON genre.genreId = post.genreId").
+		Joins("LEFT JOIN place ON place.placeId = post.placeId").
+		Where("reaction.userId = ?", userID).
+		Order("reaction.createdAt DESC").
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	// フロントエンド用にデータを変換
+	response := make([]map[string]interface{}, len(results))
+	for i, r := range results {
+		response[i] = map[string]interface{}{
+			"postId":      r.ID,
+			"placeId":     r.PlaceID,
+			"genreId":     r.GenreID,
+			"userId":      r.UserID,
+			"title":       r.Title,
+			"text":        r.Text,
+			"postImage":   r.PostImage,
+			"numView":     r.NumView,
+			"numReaction": r.NumReaction,
+			"postDate":    r.PostDate,
+			"latitude":    r.Latitude,
+			"longitude":   r.Longitude,
+			"genreName":   r.GenreName,
+			"genreColor":  r.GenreColor,
+		}
+	}
+	return response, nil
 }
 
 // IsUserReacted ユーザーがリアクション済みかチェック

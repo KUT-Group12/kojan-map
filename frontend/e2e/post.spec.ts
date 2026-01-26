@@ -1,38 +1,45 @@
 import { test, expect } from '@playwright/test';
-import { setupTestData } from './setupTestData';
-import { generateJWT } from './jwtUtil';
+import { setupTestData, createUser } from './setupTestData';
 
 test.describe('投稿機能E2E', () => {
-  test.beforeAll(async ({ request }) => {
-    await setupTestData(request);
-  });
-
   // 投稿機能テスト雛形
 
-  test('POST-001: 投稿を作成できる', async ({ page }) => {
-    const jwt = generateJWT('test-user', 'test-user@gmail.com', 'user');
-    await page.addInitScript((token) => localStorage.setItem('kojanmap_jwt', token), jwt);
-    await page.goto('http://localhost:5173/');
+  test('POST-001: 投稿を作成できる', async ({ page, request }) => {
+    const { jwt, user } = await createUser(request, 'test-user-post-1', 'user');
 
-    // 投稿作成ダイアログを開く（サイドバーの「新規投稿」ボタンを想定。なければ適宜修正）
-    // 例: data-testid="open-new-post-dialog" のボタンがあればそれを使う
-    // await page.getByTestId('open-new-post-dialog').click();
-    // ここでは仮に最初の「新規投稿」ボタンをクリックする例
-    await page
-      .getByRole('button', { name: /新規投稿|投稿作成|新しい投稿/ })
-      .first()
-      .click();
+    await page.addInitScript(
+      (arg) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(arg.storedUser));
+        localStorage.setItem('kojanmap_jwt', arg.storedJwt);
+      },
+      { storedUser: user, storedJwt: jwt }
+    );
+    await page.goto('/');
+
+    // ローディング画面が消えるまで待機
+    await expect(page.getByTestId('loading-screen')).not.toBeVisible({ timeout: 5000 });
+
+    // 投稿作成ダイアログを開く（マップをダブルクリック）
+    const mapContainer = page.locator('.leaflet-container');
+    await mapContainer.waitFor();
+    // マップの中心付近をダブルクリック
+    const box = await mapContainer.boundingBox();
+    if (box) {
+      await page.mouse.dblclick(box.x + box.width / 2, box.y + box.height / 2);
+    } else {
+      await mapContainer.dblclick();
+    }
 
     // 投稿フォームに入力
-    const form = await page.getByTestId('new-post-form');
-    await form.getByLabel('タイトル').fill('E2Eテスト投稿');
-    await form.getByLabel('説明').fill('E2Eテスト用の投稿本文です');
+    await page.waitForSelector('[data-testid="new-post-form"]');
+    await page.fill('[data-testid="post-title"]', 'E2Eテスト投稿');
+    await page.fill('[data-testid="post-description"]', 'E2Eテスト用の投稿本文です');
     // ジャンル選択（最初の選択肢を選ぶ）
-    await form.getByLabel('ジャンル').selectOption({ index: 0 });
-    // 緯度・経度はデフォルト値を利用
+    await page.click('[data-testid="genre-select"]');
+    await page.getByRole('option').first().click();
 
     // 投稿ボタン押下
-    await form.getByRole('button', { name: '投稿する' }).click();
+    await page.click('[data-testid="submit-post"]');
 
     // 成功メッセージを待機（UIのトースト内容に合わせて修正）
     await expect(page.getByText(/投稿しました|投稿が作成されました/)).toBeVisible({
@@ -56,10 +63,20 @@ test.describe('投稿機能E2E', () => {
     // ...
   });
 
-  test('POST-006: ピンをクリックで詳細表示', async ({ page }) => {
-    const jwt = generateJWT('test-user', 'test-user@gmail.com', 'user');
-    await page.addInitScript((token) => localStorage.setItem('kojanmap_jwt', token), jwt);
-    await page.goto('http://localhost:5173/');
+  test('POST-006: ピンをクリックで詳細表示', async ({ page, request }) => {
+    const { jwt, user } = await createUser(request, 'test-user-post-6', 'user');
+
+    await page.addInitScript(
+      (arg) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(arg.storedUser));
+        localStorage.setItem('kojanmap_jwt', arg.storedJwt);
+      },
+      { storedUser: user, storedJwt: jwt }
+    );
+    await page.goto('/');
+
+    // ローディング画面が消えるまで待機
+    await expect(page.getByTestId('loading-screen')).not.toBeVisible({ timeout: 5000 });
 
     // マップ上のピンを取得しクリック
     const mapPin = await page.getByTestId('map-pin').first();

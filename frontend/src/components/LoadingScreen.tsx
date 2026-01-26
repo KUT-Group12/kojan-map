@@ -1,6 +1,9 @@
 export function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
+    <div
+      data-testid="loading-screen"
+      className="min-h-screen bg-white flex items-center justify-center"
+    >
       <div className="text-center">
         <h1 className="text-gray-800 text-xl font-semibold mb-8">
           それまっこと？再発見！やまだの地

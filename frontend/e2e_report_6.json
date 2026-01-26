@@ -1,0 +1,2366 @@
+﻿
+> 地域特化SNS「こじゃんとやまっぷ」@0.1.0 e2e
+> playwright test --reporter=json
+
+Loading env from: C:\Users\ukima\Documents\sofukou\kojan-map\.env
+{
+  "config": {
+    "configFile": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\playwright.config.ts",
+    "rootDir": "C:/Users/ukima/Documents/sofukou/kojan-map/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/ukima/Documents/sofukou/kojan-map/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/ukima/Documents/sofukou/kojan-map/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.0",
+    "workers": 6,
+    "webServer": {
+      "command": "npm run preview -- --port 5173",
+      "url": "http://localhost:5173",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "AUTH-001: 未ログイン状態でログイン画面が表示される",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2935,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.720Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-436c257478824db9830c",
+          "file": "auth.spec.ts",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "title": "AUTH-002: Google認証でログインできる (モック版)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2488,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:32.440Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-ec01ba24c2c08e5f55aa",
+          "file": "auth.spec.ts",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "title": "AUTH-003: ログアウトできる",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2417,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:34.955Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-a97b085ce46ef9999618",
+          "file": "auth.spec.ts",
+          "line": 36,
+          "column": 1
+        },
+        {
+          "title": "AUTH-004: 一般ユーザーは管理者画面にアクセスできない",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2369,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:37.391Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-598ca990f5f0ac091982",
+          "file": "auth.spec.ts",
+          "line": 56,
+          "column": 1
+        },
+        {
+          "title": "AUTH-008: 認証切れ時にログイン画面にリダイレクトされる",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2365,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:39.783Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-3d133e819d3bf04d95bd",
+          "file": "auth.spec.ts",
+          "line": 75,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "e2e-integration.spec.ts",
+      "file": "e2e-integration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "E2E-001: ログインからマップ表示までの流れ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 12,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.540Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-4c4d6c0ede74cf224387",
+          "file": "e2e-integration.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "E2E-002: 投稿作成から表示までの流れ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 10,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.802Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-0d32796c6780211af881",
+          "file": "e2e-integration.spec.ts",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "title": "E2E-003: リアクションの即時反映",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.855Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-0cc73a67f859f5f3f82b",
+          "file": "e2e-integration.spec.ts",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "title": "E2E-004: 通報送信から管理画面での確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 8,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.909Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-3b203b48d1b01370b371",
+          "file": "e2e-integration.spec.ts",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "title": "E2E-005: 事業者申請から承認までの流れ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 6,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.998Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-36b07ab55f20b8660316",
+          "file": "e2e-integration.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "E2E-006: APIエラー時のエラー表示",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 4,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:29.167Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-290e37fe62dd2e38f108",
+          "file": "e2e-integration.spec.ts",
+          "line": 30,
+          "column": 1
+        },
+        {
+          "title": "E2E-007: ネットワーク遅延時のローディング表示",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 7,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:29.228Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-b5a0fea6b400717d49f6",
+          "file": "e2e-integration.spec.ts",
+          "line": 34,
+          "column": 1
+        },
+        {
+          "title": "E2E-008: 大量データ時のパフォーマンス",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 3,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:29.290Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-71d12ee309f756b737ce",
+          "file": "e2e-integration.spec.ts",
+          "line": 38,
+          "column": 1
+        },
+        {
+          "title": "E2E-009: 同時アクセス時のデータ整合性",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 8,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:29.319Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-bb006597e1d90af95c81",
+          "file": "e2e-integration.spec.ts",
+          "line": 42,
+          "column": 1
+        },
+        {
+          "title": "E2E-010: CSRFトークン検証",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 57,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:29.432Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-55453f0cd4f74d236e75",
+          "file": "e2e-integration.spec.ts",
+          "line": 46,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "general-smoke.spec.ts",
+      "file": "general-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can load main app and fetch posts (real HTTP)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 3123,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/@vite/client\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/main.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/@react-refresh\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/main.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/@vite/client\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=a7c0b620\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=b33b3d2a\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@react-oauth_google.js?v=59b174af\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/App.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/index.css\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/vite/dist/client/env.mjs\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/@react-refresh\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=b33b3d2a\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-K23GC2QC.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-DRWLMN53.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-G3PMV62Z.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=a7c0b620\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/vite/dist/client/env.mjs\n"
+                    },
+                    {
+                      "text": "PAGE LOG: [vite] connecting...\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@react-oauth_google.js?v=59b174af\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/App.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/react.js?v=918c0bc4\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/LoadingScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/LoginScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/MainApp.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/AdminDashboard.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/sonner.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/lib/auth.ts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/index.css\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-G3PMV62Z.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-DRWLMN53.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-K23GC2QC.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/react.js?v=918c0bc4\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/LoadingScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/LoginScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/button.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/card.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/checkbox.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/lucide-react.js?v=5ccf0e69\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/sonner.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/AdminDashboard.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=adccb8d6\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/sonner.js?v=923f0426\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/badge.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ProcessBusinessRequestScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/AdminReport.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/AdminUserManagement.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/AdminContactManagement.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/recharts.js?v=838c1ed7\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/checkbox.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/button.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-checkbox.js?v=3bdfaf19\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/utils.ts\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-slot.js?v=500409ad\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/class-variance-authority.js?v=058af5fd\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/MainApp.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/Header.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/MapViewScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/Sidebar.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/DisplayPostList.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/NewPostScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/UserDisplayMyPage.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/BusinessDisplayMyPage.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/BusinessDashboard.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ContactModal.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/DeleteAccountScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/LogoutScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/lib/apiBaseUrl.ts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/lib/auth.ts\n"
+                    },
+                    {
+                      "text": "PAGE LOG: [vite] connected.\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/card.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/badge.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/sonner.js?v=923f0426\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/next-themes.js?v=adccb8d6\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/AdminContactManagement.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ProcessBusinessRequestScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/AdminDisplayBusinessApplicationList.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-checkbox.js?v=3bdfaf19\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-AHHYD6NX.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-YH7B6A5Y.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-ANV3LWOK.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-ZWGTOOHC.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-6PXSGDAH.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/AdminUserManagement.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/AdminReport.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/utils.ts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/class-variance-authority.js?v=058af5fd\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/clsx.js?v=590b57bf\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/tailwind-merge.js?v=46a0cd7d\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-slot.js?v=500409ad\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-U7P2NEEE.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-B6RNDEKH.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/Header.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/MapViewScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/react-leaflet.js?v=2a8fb14d\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/leaflet.js?v=5321e7d3\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/leaflet/dist/leaflet.css\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/react-dom_server.js?v=10cd9ead\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/GetLocation.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/DisplayPostList.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/dialog.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/UserTriggerReaction.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ReportScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/SelectBlock.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/SelectPostDeletion.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/lucide-react.js?v=5ccf0e69\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/NewPostScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/UserDisplayMyPage.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/input.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/textarea.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/select.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/label.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/figma/ImageWithFallback.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/ui/tabs.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/SelectPostHistory.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/UserReactionViewScreen.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/SelectUserSetting.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/UserInputBusinessApplication.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ContactModal.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/DeleteAccountScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/LogoutScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/BusinessDisplayMyPage.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/BusinessDashboard.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/lib/mockData.ts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-AHHYD6NX.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/AdminDisplayBusinessApplicationList.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-YH7B6A5Y.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/Sidebar.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/recharts.js?v=838c1ed7\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-ANV3LWOK.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/lib/apiBaseUrl.ts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/clsx.js?v=590b57bf\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-U7P2NEEE.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-B6RNDEKH.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/tailwind-merge.js?v=46a0cd7d\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-6PXSGDAH.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-ZWGTOOHC.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/GetLocation.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/react-leaflet.js?v=2a8fb14d\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-C3P3YZLA.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/leaflet.js?v=5321e7d3\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/leaflet/dist/leaflet.css\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/dialog.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=b0d4cc53\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/UserTriggerReaction.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ReportScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/SelectBlock.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/SelectPostDeletion.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/textarea.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/input.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/select.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/label.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/ui/tabs.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/SelectPostHistory.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-select.js?v=5b812fdc\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-label.js?v=e19907ff\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=d2c7f6c8\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/DisplayPostHistory.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/figma/ImageWithFallback.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/react-dom_server.js?v=10cd9ead\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/UserInputBusinessApplication.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/UserReactionViewScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/SelectUserSetting.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-label.js?v=e19907ff\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=b0d4cc53\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/DisplayUserSetting.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/UserBlockViewScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/lib/mockData.ts\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-45G7ZH2G.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-C6G63YWZ.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-C3P3YZLA.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/DisplayUserSetting.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=d2c7f6c8\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/DisplayPostHistory.tsx\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/node_modules/.vite/deps/chunk-JSPCEF3M.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/UserBlockViewScreen.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-45G7ZH2G.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/src/components/SelectUnlock.tsx\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/@radix-ui_react-select.js?v=5b812fdc\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-C6G63YWZ.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/node_modules/.vite/deps/chunk-JSPCEF3M.js?v=c7399580\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/src/components/SelectUnlock.tsx\n"
+                    },
+                    {
+                      "text": "PAGE LOG: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\n"
+                    },
+                    {
+                      "text": "PAGE LOG: App user state: {googleId: e2e-user, gmail: e2e-user@example.com, role: user, registrationDate: 2026-01-25T17:10:29.060Z}\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://accounts.google.com/gsi/client\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://accounts.google.com/gsi/client\n"
+                    },
+                    {
+                      "text": "PAGE LOG: App user state: {googleId: e2e-user, gmail: e2e-user@example.com, role: user, registrationDate: 2026-01-25T17:10:29.060Z}\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/genres\n"
+                    },
+                    {
+                      "text": "PAGE LOG: MainApp mounted. API_BASE_URL: \n"
+                    },
+                    {
+                      "text": "PAGE LOG: Fetching posts...\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114207/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114208/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114207/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114208/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114207/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114208/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114206/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114209/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114206/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114209/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114206/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114209/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/api/genres\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "PAGE LOG: Posts fetch response: 200\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114207/52531.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114208/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114206/52531.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114209/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114208/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114206/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114209/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114207/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114206/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114208/52531.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114207/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114209/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/posts/history\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/api/posts/history\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/posts/history/reactions\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/api/posts/history/reactions\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T17:10:28.601Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "5e9b7662106df01a632f-7f5ccce497c3b37c04b1",
+          "file": "general-smoke.spec.ts",
+          "line": 34,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "post-creation.spec.ts",
+      "file": "post-creation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Post Creation E2E Tests",
+          "file": "post-creation.spec.ts",
+          "line": 33,
+          "column": 6,
+          "specs": [
+            {
+              "title": "POST-003: 必須項目未入力で投稿できない",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 13753,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\u001b[22m\n\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:94:84",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                          "column": 84,
+                          "line": 94
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 92 |\u001b[39m\n \u001b[90m 93 |\u001b[39m     \u001b[90m// バリデーションエラーのトーストメッセージが表示されることを確認 (sonnerのコンテナ内)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 94 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-sonner-toaster]'\u001b[39m)\u001b[33m.\u001b[39mgetByText(\u001b[35m/タイトルを入力してください/\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 95 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 96 |\u001b[39m\n \u001b[90m 97 |\u001b[39m   test(\u001b[32m'POST-004: 位置情報を正しく保存できる'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                            "column": 84,
+                            "line": 94
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\u001b[22m\n\n\n  92 |\n  93 |     // バリデーションエラーのトーストメッセージが表示されることを確認 (sonnerのコンテナ内)\n> 94 |     await expect(page.locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)).toBeVisible({ timeout: 10000 });\n     |                                                                                    ^\n  95 |   });\n  96 |\n  97 |   test('POST-004: 位置情報を正しく保存できる', async ({ page }) => {\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:94:84"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.653Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\post-creation-Post-Creatio-f7f3b-sts-POST-003-必須項目未入力で投稿できない\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                        "column": 84,
+                        "line": 94
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "306082a93151ad965269-183e263f400af653e853",
+              "file": "post-creation.spec.ts",
+              "line": 87,
+              "column": 3
+            },
+            {
+              "title": "POST-004: 位置情報を正しく保存できる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 30026,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                            "column": 40,
+                            "line": 116
+                          },
+                          "message": "Error: page.waitForResponse: Test timeout of 30000ms exceeded.\n\n  114 |\n  115 |     // 投稿ボタンをクリック\n> 116 |     const createResponsePromise = page.waitForResponse((resp) => {\n      |                                        ^\n  117 |       return resp.url().includes('/api/posts') && resp.request().method() === 'POST';\n  118 |     });\n  119 |\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:116:40"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                            "column": 16,
+                            "line": 120
+                          },
+                          "message": "Error: page.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-testid=\"submit-post\"], button:has-text(\"投稿\"), button[type=\"submit\"]')\u001b[22m\n\n\n  118 |     });\n  119 |\n> 120 |     await page.click('[data-testid=\"submit-post\"], button:has-text(\"投稿\"), button[type=\"submit\"]');\n      |                ^\n  121 |\n  122 |     const createResponse = await createResponsePromise;\n  123 |     expect(createResponse.status()).toBe(201);\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:120:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:44.388Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\post-creation-Post-Creation-E2E-Tests-POST-004-位置情報を正しく保存できる\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "306082a93151ad965269-4c647be0e3af5a943faf",
+              "file": "post-creation.spec.ts",
+              "line": 97,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "post.spec.ts",
+      "file": "post.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "投稿機能E2E",
+          "file": "post.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "POST-001: 投稿を作成できる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 13644,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/投稿しました|投稿が作成されました/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/投稿しました|投稿が作成されました/)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/投稿しました|投稿が作成されました/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/投稿しました|投稿が作成されました/)\u001b[22m\n\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts:59:55",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts",
+                          "column": 55,
+                          "line": 59
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 57 |\u001b[39m\n \u001b[90m 58 |\u001b[39m     \u001b[90m// 成功メッセージを待機（UIのトースト内容に合わせて修正）\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 59 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[35m/投稿しました|投稿が作成されました/\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({\n \u001b[90m    |\u001b[39m                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 60 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 61 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 62 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts",
+                            "column": 55,
+                            "line": 59
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText(/投稿しました|投稿が作成されました/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText(/投稿しました|投稿が作成されました/)\u001b[22m\n\n\n  57 |\n  58 |     // 成功メッセージを待機（UIのトースト内容に合わせて修正）\n> 59 |     await expect(page.getByText(/投稿しました|投稿が作成されました/)).toBeVisible({\n     |                                                       ^\n  60 |       timeout: 10000,\n  61 |     });\n  62 |   });\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts:59:55"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.727Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\post-投稿機能E2E-POST-001-投稿を作成できる\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts",
+                        "column": 55,
+                        "line": 59
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-f9843945395153004569",
+              "file": "post.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "POST-002: 画像付き投稿を作成できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 6,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:45.095Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-ff6227f5b6b41204de3c",
+              "file": "post.spec.ts",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "POST-003: 必須項目未入力で投稿できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:45.210Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-7e2c0f1db5d2985be205",
+              "file": "post.spec.ts",
+              "line": 68,
+              "column": 3
+            },
+            {
+              "title": "POST-004: 位置情報を正しく保存できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:45.223Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-972671750362b4206998",
+              "file": "post.spec.ts",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "POST-005: 投稿一覧が表示される",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:45.241Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-7eb5689f4e3ff0914d56",
+              "file": "post.spec.ts",
+              "line": 76,
+              "column": 3
+            },
+            {
+              "title": "POST-006: ピンをクリックで詳細表示",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 30031,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts",
+                            "column": 18,
+                            "line": 105
+                          },
+                          "message": "Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('map-pin').first()\u001b[22m\n\n\n  103 |     // マップ上のピンを取得しクリック\n  104 |     const mapPin = await page.getByTestId('map-pin').first();\n> 105 |     await mapPin.click();\n      |                  ^\n  106 |     // 詳細表示の内容を検証（例: タイトルや説明が表示されること）\n  107 |     await expect(page.getByText(/E2Eテスト投稿/)).toBeVisible();\n  108 |   });\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts:105:18"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:45.252Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\post-投稿機能E2E-POST-006-ピンをクリックで詳細表示\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-6298062aed5819ebc267",
+              "file": "post.spec.ts",
+              "line": 80,
+              "column": 3
+            },
+            {
+              "title": "POST-007: ジャンル別フィルタリングができる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:11:17.160Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-2aaf454af54ca53586cc",
+              "file": "post.spec.ts",
+              "line": 110,
+              "column": 3
+            },
+            {
+              "title": "POST-008: 自分の投稿を削除できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:11:17.275Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-90aecc7569aba1acddd7",
+              "file": "post.spec.ts",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "POST-009: 他人の投稿を削除できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:11:17.287Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-f2319db3b11ea5099628",
+              "file": "post.spec.ts",
+              "line": 118,
+              "column": 3
+            },
+            {
+              "title": "POST-010: 事業者投稿が識別できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:11:17.305Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-42570ca9adeaa70394b9",
+              "file": "post.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "POST-011: 投稿履歴を確認できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:11:17.316Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-29ad44180d7a6ad21e09",
+              "file": "post.spec.ts",
+              "line": 126,
+              "column": 3
+            },
+            {
+              "title": "POST-012: 人気投稿が識別できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:11:17.331Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-df880a2562d6c55d5659",
+              "file": "post.spec.ts",
+              "line": 130,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "reaction.spec.ts",
+      "file": "reaction.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Reaction E2E Tests",
+          "file": "reaction.spec.ts",
+          "line": 35,
+          "column": 6,
+          "specs": [
+            {
+              "title": "REACT-001: 投稿にリアクションできる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 1,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts:74:37",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts",
+                          "column": 37,
+                          "line": 74
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 72 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 73 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 74 |\u001b[39m     expect(createResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m201\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mconst\u001b[39m createData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m createResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 76 |\u001b[39m     postId \u001b[33m=\u001b[39m createData\u001b[33m.\u001b[39mpostId\u001b[33m;\u001b[39m\n \u001b[90m 77 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts",
+                            "column": 37,
+                            "line": 74
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n\n  72 |     });\n  73 |\n> 74 |     expect(createResponse.status()).toBe(201);\n     |                                     ^\n  75 |     const createData = await createResponse.json();\n  76 |     postId = createData.postId;\n  77 |   });\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts:74:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.555Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts",
+                        "column": 37,
+                        "line": 74
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-4fa1d323c63293ed6337",
+              "file": "reaction.spec.ts",
+              "line": 104,
+              "column": 3
+            },
+            {
+              "title": "REACT-002: リアクションを取り消せる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.789Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-c3f684bf0973d1b3c743",
+              "file": "reaction.spec.ts",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "REACT-003: リアクション数が正しく表示される",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.789Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-7b11b4f23c5e2dfa72e6",
+              "file": "reaction.spec.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "REACT-004: 自分の投稿にリアクションできる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.789Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-df15ae4539fa42fa7f49",
+              "file": "reaction.spec.ts",
+              "line": 238,
+              "column": 3
+            },
+            {
+              "title": "REACT-005: リアクション状態がセッション跨ぎで保持される",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.789Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-df20cc2db451784905ab",
+              "file": "reaction.spec.ts",
+              "line": 321,
+              "column": 3
+            },
+            {
+              "title": "REACT-006: リアクション状態が保持されている",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:28.789Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-1c63d8ac9e65faabe1bb",
+              "file": "reaction.spec.ts",
+              "line": 400,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "report.spec.ts",
+      "file": "report.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "通報機能 E2Eテスト",
+          "file": "report.spec.ts",
+          "line": 34,
+          "column": 6,
+          "specs": [
+            {
+              "title": "REPORT-001: 投稿を通報できる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts:66:37",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts",
+                          "column": 37,
+                          "line": 66
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 64 |\u001b[39m       }\u001b[33m,\u001b[39m\n \u001b[90m 65 |\u001b[39m     })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 66 |\u001b[39m     expect(createResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m201\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 67 |\u001b[39m     \u001b[36mconst\u001b[39m createData \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m createResponse\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m     postId \u001b[33m=\u001b[39m createData\u001b[33m.\u001b[39mpostId\u001b[33m;\u001b[39m\n \u001b[90m 69 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts",
+                            "column": 37,
+                            "line": 66
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n\n  64 |       },\n  65 |     });\n> 66 |     expect(createResponse.status()).toBe(201);\n     |                                     ^\n  67 |     const createData = await createResponse.json();\n  68 |     postId = createData.postId;\n  69 |   });\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts:66:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:31.766Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts",
+                        "column": 37,
+                        "line": 66
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-52bfd07aa9e32701cb74",
+              "file": "report.spec.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "REPORT-002: 通報理由は必須",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:32.095Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-05cc4ecab348471d5a2f",
+              "file": "report.spec.ts",
+              "line": 150,
+              "column": 3
+            },
+            {
+              "title": "REPORT-003: 同じ投稿を重複通報できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:32.095Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-30b071ad0ab069514d84",
+              "file": "report.spec.ts",
+              "line": 185,
+              "column": 3
+            },
+            {
+              "title": "REPORT-004: 自分の投稿を通報できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T17:10:32.095Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-adf9f5f4d1e6fcb3c4ae",
+              "file": "report.spec.ts",
+              "line": 267,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-01-25T17:10:25.641Z",
+    "duration": 51728.806000000004,
+    "expected": 26,
+    "skipped": 8,
+    "unexpected": 6,
+    "flaky": 0
+  }
+}

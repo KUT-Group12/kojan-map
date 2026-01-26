@@ -62,7 +62,7 @@ func SetupUserRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		protected.POST("/posts/reaction", postHandler.AddReaction) // 復活
 		protected.GET("/posts/reaction/status", postHandler.CheckReactionStatus)
 		protected.GET("/posts/history", postHandler.GetPostHistory)
-		protected.GET("/posts/history/reactions", postHandler.GetPostHistory)
+		protected.GET("/posts/history/reactions", postHandler.GetReactionHistory)
 
 		// Block/Report/Inquiry
 		protected.POST("/users/block", otherHandler.BlockUser)
@@ -75,6 +75,7 @@ func SetupUserRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		protected.POST("/business/application", businessAppHandler.CreateBusinessApplication)
 
 		// Auth (Logout/Withdrawal)
+		protected.GET("/auth/me", authHandler.GetCurrentUser) // 追加
 		protected.PUT("/auth/logout", authHandler.Logout)
 		protected.PUT("/auth/withdrawal", authHandler.Withdrawal)
 	}

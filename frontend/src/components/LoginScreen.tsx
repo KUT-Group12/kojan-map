@@ -10,60 +10,24 @@ type UserRole = 'user' | 'business' | 'admin';
 
 interface LoginScreenProps {
   // ログイン成功時に Google ID と 選択した役割 を親コンポーネントに渡す
-  onLogin: (role: UserRole, googleId: string) => void;
+  onLogin: (role: UserRole, googleId: string, email: string) => void;
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [isSelectingRole, setIsSelectingRole] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // 取得した Google ID と Gmail を一時保存
-  const [googleToken, setGoogleToken] = useState<string | null>(null);
-  const [googleId, setGoogleId] = useState<string | null>(null);
-
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  /* State cleanup */
+  // const [isSelectingRole, setIsSelectingRole] = useState(false); // Removed
+  const [isLoading, setIsLoading] = useState(false); // Restored
+  // const [googleToken, setGoogleToken] = useState<string | null>(null); // Removed
+  // const [googleId, setGoogleId] = useState<string | null>(null); // Removed
+  // const [userEmail, setUserEmail] = useState<string | null>(null); // Removed
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      // 成功時: アクセストークンを使ってGoogleのユーザー情報を取得し、次のステップへ
       setIsLoading(true);
       try {
-        // 注: Backendは id_token を期待しているが、useGoogleLogin(默认)は access_token を返す。
-        // id_token を得るには flow: 'auth-code' または Backend側で UserInfo endpoint を叩く必要がある。
-        // ここでは単純化のため、Backendの仕様に合わせて id_token を取得する flow ではなく、
-        // access_token を送るか、あるいはここでUserInfoを取得してから自前で組み立てる必要がある。
-        //
-        // 既存のAuthService.VerifyGoogleTokenは `tokeninfo?id_token=` を叩いているので、
-        // フロントエンドからは `id_token` を送る必要がある。
-        // @react-oauth/google で id_token を得るには <GoogleLogin /> コンポーネントを使うか、
-        // useGoogleLogin で flow: 'implicit' (デフォルト) だが、id_token は返らないことがある。
-
-        // 修正方針: GoogleLogin コンポーネントはUIカスタマイズがしにくいので、
-        // useGoogleLogin を使いつつ、onSuccess で得た token (access_token) を使って
-        // UserInfo を取得し、それを元にログイン処理を進める...
-        // というのは Backend の `VerifyGoogleToken` (id_token検証) と合わない。
-
-        // なので、実際には `<GoogleLogin />` (Credential Response) を使うのが一番簡単だが、
-        // デザインを維持したいのであれば、ここでは簡略化して
-        // 「access_token を使って Google UserInfo API を叩き、そのメアドを使用する」
-        // というフローに Backend を修正するか、
-        // フロント側で id_token を取得できるように構成する必要がある。
-
-        // 今回は「本番環境」という要望なので、もっとも標準的な Credential (ID Token) を取得する形にするのが適切。
-        // しかし useGoogleLogin フックは Custom UI 用で、Access Token を返すのが基本。
-        // ID Token を取得したい場合は flow: 'implicit' であっても簡単ではない。
-
-        // 解決策: Access Token を取得し、それを使って Google UserInfo を取得。
-        // その後、Backend には「Googleで認証済み」として Email等を送る...
-        // だが Backend は "VerifyGoogleToken" で Google の endpoint に問い合わせている。
-        // access_token でも `tokeninfo?access_token=` で検証可能である。
-
-        // なので、Backend 側が `id_token` でも `access_token` でも検証できれば良いが、
-        // 現状は `id_token` 前提 (`tokeninfo?id_token=`).
-
-        // 試しに UserInfo を取得して表示する:
+        // 1. Googleユーザー情報を取得
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
@@ -72,31 +36,21 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         }
         const userInfo = await userInfoRes.json();
 
-        const email = userInfo.email;
+        // 2. バックエンド認証 (初期ロールは 'user' 固定。既存ユーザーならDBのロールが返る)
+        // Access Token を送る (Backendがtokeninfo?access_token=に対応している前提、またはid_tokenが必要ならBFF対応が必要だが、
+        // 現状のPlanで進めるため access_token を送る)
+        const data = await exchangeGoogleTokenForJWT(tokenResponse.access_token, 'user');
 
-        // 次のステップへ (役割選択)
-        // ここで "token" として何を保存するか？
-        // Backend `VerifyGoogleToken` は `id_token` を検証する。
-        // `access_token` では `tokeninfo?id_token=` はエラーになる。
-        // -> Backend のバリデーションロジックが `id_token` 必須なら、ここで行き詰まる。
+        // 3. 保存 & 遷移
+        storeJWT(data.jwt_token);
+        storeUser(data.user);
 
-        // よって、今回は `id_token` を取得するために、
-        // useGoogleLogin ではなく、GoogleLogin コンポーネントを使うか、
-        // あるいは `access_token` で検証できるように Backend を修正するか。
-        // ユーザー要望「本番環境に」＝「正しいGoogle認証」。
+        // バックエンドから返却されたロール（既存なら business の可能性あり）を使用
+        onLogin(data.user.role as UserRole, userInfo.sub, userInfo.email);
 
-        // ここでは、一旦 `googleId` と `email` を state に保存し、
-        // 役割選択後に Backend に送る `token` としては、
-        // 本来は `id_token` であるべきだが、取得できていないため、一旦 `tokenResponse.access_token` を入れる。
-        // そして Backend 側で `tokeninfo?access_token=` に対応させる修正を行うのが最もスムーズ。
-
-        setGoogleToken(tokenResponse.access_token);
-        setGoogleId(userInfo.sub); // userInfo.sub から取得した実際の Google ID
-        setUserEmail(email);
-        setIsSelectingRole(true);
       } catch (error) {
-        console.error('Google User Info Error:', error);
-        alert('Googleユーザー情報の取得に失敗しました');
+        console.error('Login Error:', error);
+        alert('ログイン処理に失敗しました。');
       } finally {
         setIsLoading(false);
       }
@@ -116,35 +70,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     login();
   };
 
-  const handleRoleSelect = async (role: UserRole) => {
-    if (!googleId || !userEmail) {
-      alert('認証情報が不足しています');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Googleトークン（開発環境では模擬ID）を使用してバックエンド認証
-      // Note: 本番環境ではGoogleから取得したid_tokenを使用する
-      const token = googleToken;
-      const data = await exchangeGoogleTokenForJWT(token, role);
-
-      // JWTとユーザー情報を保存
-      storeJWT(data.jwt_token);
-      storeUser(data.user);
-
-      // 親コンポーネントにログイン情報を渡す
-      onLogin(role, googleId);
-      console.log('Login successful:', { role, googleId, email: userEmail });
-    } catch (error) {
-      console.error('Login Error:', error);
-      alert('ログイン処理に失敗しました。サーバーが起動しているか確認してください。');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -159,106 +84,47 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {!isSelectingRole ? (
-            /* ステップ1: 利用規約同意 & Google認証 */
-            <div className="space-y-4">
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={agreedToTerms}
-                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
-                />
-                <label htmlFor="terms" className="text-sm leading-none cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => setShowTerms(!showTerms)}
-                    className="text-blue-600 hover:underline font-medium"
-                  >
-                    利用規約
-                  </button>
-                  に同意する
-                </label>
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="terms"
+                checked={agreedToTerms}
+                onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+              />
+              <label htmlFor="terms" className="text-sm leading-none cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() => setShowTerms(!showTerms)}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  利用規約
+                </button>
+                に同意する
+              </label>
+            </div>
 
-              {showTerms && (
-                <div className="border rounded-lg p-4 bg-gray-50 max-h-40 overflow-y-auto text-xs text-gray-600 animate-in fade-in">
-                  <p className="font-bold">【利用規約】</p>
-                  <p>本サービスはGoogle IDを利用した認証を行います...</p>
-                </div>
+            {showTerms && (
+              <div className="border rounded-lg p-4 bg-gray-50 max-h-40 overflow-y-auto text-xs text-gray-600 animate-in fade-in">
+                <p className="font-bold">【利用規約】</p>
+                <p>本サービスはGoogle IDを利用した認証を行います...</p>
+              </div>
+            )}
+
+            <Button
+              onClick={handleGoogleLoginClick}
+              className="w-full"
+              disabled={!agreedToTerms || isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="flex items-center">
+                  <GoogleIcon />
+                  Googleでログイン
+                </span>
               )}
-
-              <Button
-                onClick={handleGoogleLoginClick}
-                className="w-full"
-                disabled={!agreedToTerms || isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <span className="flex items-center">
-                    <GoogleIcon />
-                    Googleでログイン
-                  </span>
-                )}
-              </Button>
-            </div>
-          ) : (
-            /* ステップ2: 認証済みユーザーの役割選択 */
-            <div className="space-y-4 text-center animate-in slide-in-from-bottom-4 duration-500">
-              <p className="text-sm font-bold text-gray-700">認証が完了しました</p>
-              {userEmail && <p className="text-xs text-gray-500 mb-2">アカウント: {userEmail}</p>}
-              <p className="text-xs text-gray-500 mb-4">登録するアカウント種別を選択してください</p>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-28 flex flex-col space-y-2 border-2 hover:border-blue-500"
-                  onClick={() => handleRoleSelect('user')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <User className="w-8 h-8 text-blue-500" />
-                      <span>一般会員</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-28 flex flex-col space-y-2 border-2 hover:border-purple-500"
-                  onClick={() => handleRoleSelect('business')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Building2 className="w-8 h-8 text-purple-500" />
-                      <span>事業者会員</span>
-                    </>
-                  )}
-                </Button>
-
-                {/* 管理者ロールは原則としてDB/バックエンド側で付与するため、フロントエンドでの選択は開発時のみに制限 */}
-                {import.meta.env.DEV && (
-                  <Button
-                    variant="outline"
-                    className="h-28 w-1/2 justify-self-center col-span-2 flex flex-col items-center justify-center space-y-2 border-2 hover:border-amber-500"
-                    onClick={() => handleRoleSelect('admin')}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <span className="font-bold">管理者 (Dev Only)</span>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

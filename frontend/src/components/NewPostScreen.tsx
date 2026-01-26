@@ -24,9 +24,12 @@ interface CreatePinModalProps {
     text: string;
     genre: Genre;
     images: string[];
+    postId?: number;
+    placeId?: number;
   }) => void;
   initialLatitude?: number;
   initialLongitude?: number;
+  targetPlaceId?: number; // ★追加
 }
 
 export function NewPostScreen({
@@ -37,12 +40,21 @@ export function NewPostScreen({
   onCreate,
   initialLatitude,
   initialLongitude,
+  targetPlaceId, // ★追加
 }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  const [selectedGenreId, setSelectedGenreId] = useState<string>(
-    genres[0]?.genreId?.toString() || ''
-  );
+  /* デフォルトジャンルを「その他」に設定 */
+  const [selectedGenreId, setSelectedGenreId] = useState<string>(() => {
+    // genresの中から "other" または "その他" を探す
+    const other = genres.find(
+      (g) => (g.genreName as string) === 'other' || (g.genreName as string) === 'Others' || (g.genreName as string) === 'その他'
+    );
+    return other ? other.genreId.toString() : genres[0]?.genreId?.toString() || '';
+  });
+  // const [selectedGenreId, setSelectedGenreId] = useState<string>(
+  //   genres[0]?.genreId?.toString() || ''
+  // ); 
   const selectedGenre = genres.find((g) => g.genreId.toString() === selectedGenreId) || null;
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
@@ -133,6 +145,7 @@ export function NewPostScreen({
           longitude: lng,
           genre: selectedGenre ? selectedGenre.genreName : '', // 英語名で送信
           images: images,
+          placeId: targetPlaceId, // ★追加: 既存の場所IDがあれば送信
         }),
       });
 
@@ -149,6 +162,8 @@ export function NewPostScreen({
         text,
         genre: selectedGenre,
         images,
+        postId: data.postId,
+        placeId: data.placeId,
       });
 
       toast.success('投稿しました！');
@@ -178,6 +193,7 @@ export function NewPostScreen({
             </span>
             <Input
               id="title"
+              data-testid="post-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="投稿のタイトルを入力"
@@ -190,6 +206,7 @@ export function NewPostScreen({
             <Label htmlFor="text">説明 *</Label>
             <Textarea
               id="text"
+              data-testid="post-description"
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="詳しい説明を入力してください"
@@ -206,7 +223,7 @@ export function NewPostScreen({
               onValueChange={(id) => setSelectedGenreId(id)}
               disabled={genres.length === 0}
             >
-              <SelectTrigger id="genre">
+              <SelectTrigger id="genre" data-testid="genre-select">
                 <SelectValue
                   placeholder={genres.length === 0 ? 'ジャンルがありません' : 'ジャンルを選択'}
                 />
@@ -311,7 +328,7 @@ export function NewPostScreen({
           )}
 
           <div className="flex space-x-2 pt-4">
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1" data-testid="submit-post">
               投稿する
             </Button>
           </div>

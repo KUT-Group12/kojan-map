@@ -1,0 +1,1882 @@
+﻿
+> 地域特化SNS「こじゃんとやまっぷ」@0.1.0 e2e
+> playwright test --reporter=json
+
+Loading env from: C:\Users\ukima\Documents\sofukou\kojan-map\.env
+{
+  "config": {
+    "configFile": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\playwright.config.ts",
+    "rootDir": "C:/Users/ukima/Documents/sofukou/kojan-map/frontend/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 6
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/ukima/Documents/sofukou/kojan-map/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/ukima/Documents/sofukou/kojan-map/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.0",
+    "workers": 6,
+    "webServer": {
+      "command": "npm run preview -- --port 5173",
+      "url": "http://localhost:5173",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "AUTH-001: 未ログイン状態でログイン画面が表示される",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n",
+                    "stack": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\auth.spec.ts:8:9",
+                    "location": {
+                      "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                      "column": 17,
+                      "line": 7
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msetupTestData.ts:7\n\n\u001b[0m \u001b[90m  5 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m setupTestData(request\u001b[33m:\u001b[39m \u001b[33mAPIRequestContext\u001b[39m) {\n \u001b[90m  6 |\u001b[39m   \u001b[90m// 管理者ユーザー作成\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m   \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39mpost(\u001b[32m'http://backend:8080/api/users/register'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m     data\u001b[33m:\u001b[39m { googleId\u001b[33m:\u001b[39m \u001b[32m'admin-001-token'\u001b[39m\u001b[33m,\u001b[39m gmail\u001b[33m:\u001b[39m \u001b[32m'admin-001@example.com'\u001b[39m\u001b[33m,\u001b[39m role\u001b[33m:\u001b[39m \u001b[32m'admin'\u001b[39m }\u001b[33m,\u001b[39m\n \u001b[90m  9 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 10 |\u001b[39m   \u001b[90m// 一般ユーザー作成\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                        "column": 17,
+                        "line": 7
+                      },
+                      "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n\n   at setupTestData.ts:7\n\n   5 | export async function setupTestData(request: APIRequestContext) {\n   6 |   // 管理者ユーザー作成\n>  7 |   await request.post('http://backend:8080/api/users/register', {\n     |                 ^\n   8 |     data: { googleId: 'admin-001-token', gmail: 'admin-001@example.com', role: 'admin' },\n   9 |   });\n  10 |   // 一般ユーザー作成\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\auth.spec.ts:8:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:21.106Z",
+                  "annotations": [],
+                  "attachments": [],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                    "column": 17,
+                    "line": 7
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-436c257478824db9830c",
+          "file": "auth.spec.ts",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "title": "AUTH-002: Google認証でログインできる (モック版)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.910Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-ec01ba24c2c08e5f55aa",
+          "file": "auth.spec.ts",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "title": "AUTH-003: ログアウトできる",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.910Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-a97b085ce46ef9999618",
+          "file": "auth.spec.ts",
+          "line": 36,
+          "column": 1
+        },
+        {
+          "title": "AUTH-004: 一般ユーザーは管理者画面にアクセスできない",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.910Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-598ca990f5f0ac091982",
+          "file": "auth.spec.ts",
+          "line": 56,
+          "column": 1
+        },
+        {
+          "title": "AUTH-008: 認証切れ時にログイン画面にリダイレクトされる",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.910Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "d748ac400d08b85935ef-3d133e819d3bf04d95bd",
+          "file": "auth.spec.ts",
+          "line": 75,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "e2e-integration.spec.ts",
+      "file": "e2e-integration.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "E2E-001: ログインからマップ表示までの流れ",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "failed",
+                  "duration": 0,
+                  "error": {
+                    "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n",
+                    "stack": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\e2e-integration.spec.ts:5:9",
+                    "location": {
+                      "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                      "column": 17,
+                      "line": 7
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msetupTestData.ts:7\n\n\u001b[0m \u001b[90m  5 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m setupTestData(request\u001b[33m:\u001b[39m \u001b[33mAPIRequestContext\u001b[39m) {\n \u001b[90m  6 |\u001b[39m   \u001b[90m// 管理者ユーザー作成\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m   \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39mpost(\u001b[32m'http://backend:8080/api/users/register'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m     data\u001b[33m:\u001b[39m { googleId\u001b[33m:\u001b[39m \u001b[32m'admin-001-token'\u001b[39m\u001b[33m,\u001b[39m gmail\u001b[33m:\u001b[39m \u001b[32m'admin-001@example.com'\u001b[39m\u001b[33m,\u001b[39m role\u001b[33m:\u001b[39m \u001b[32m'admin'\u001b[39m }\u001b[33m,\u001b[39m\n \u001b[90m  9 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 10 |\u001b[39m   \u001b[90m// 一般ユーザー作成\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                        "column": 17,
+                        "line": 7
+                      },
+                      "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n\n   at setupTestData.ts:7\n\n   5 | export async function setupTestData(request: APIRequestContext) {\n   6 |   // 管理者ユーザー作成\n>  7 |   await request.post('http://backend:8080/api/users/register', {\n     |                 ^\n   8 |     data: { googleId: 'admin-001-token', gmail: 'admin-001@example.com', role: 'admin' },\n   9 |   });\n  10 |   // 一般ユーザー作成\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\e2e-integration.spec.ts:5:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:21.121Z",
+                  "annotations": [],
+                  "attachments": [],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                    "column": 17,
+                    "line": 7
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-4c4d6c0ede74cf224387",
+          "file": "e2e-integration.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "E2E-002: 投稿作成から表示までの流れ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-0d32796c6780211af881",
+          "file": "e2e-integration.spec.ts",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "title": "E2E-003: リアクションの即時反映",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-0cc73a67f859f5f3f82b",
+          "file": "e2e-integration.spec.ts",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "title": "E2E-004: 通報送信から管理画面での確認",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-3b203b48d1b01370b371",
+          "file": "e2e-integration.spec.ts",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "title": "E2E-005: 事業者申請から承認までの流れ",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-36b07ab55f20b8660316",
+          "file": "e2e-integration.spec.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "E2E-006: APIエラー時のエラー表示",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-290e37fe62dd2e38f108",
+          "file": "e2e-integration.spec.ts",
+          "line": 30,
+          "column": 1
+        },
+        {
+          "title": "E2E-007: ネットワーク遅延時のローディング表示",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-b5a0fea6b400717d49f6",
+          "file": "e2e-integration.spec.ts",
+          "line": 34,
+          "column": 1
+        },
+        {
+          "title": "E2E-008: 大量データ時のパフォーマンス",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-71d12ee309f756b737ce",
+          "file": "e2e-integration.spec.ts",
+          "line": 38,
+          "column": 1
+        },
+        {
+          "title": "E2E-009: 同時アクセス時のデータ整合性",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-bb006597e1d90af95c81",
+          "file": "e2e-integration.spec.ts",
+          "line": 42,
+          "column": 1
+        },
+        {
+          "title": "E2E-010: CSRFトークン検証",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:23.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "da3ebbf2a82a2011bad1-55453f0cd4f74d236e75",
+          "file": "e2e-integration.spec.ts",
+          "line": 46,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "general-smoke.spec.ts",
+      "file": "general-smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "user can load main app and fetch posts (real HTTP)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "failed",
+                  "duration": 2017,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\general-smoke.spec.ts:76:34",
+                    "location": {
+                      "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\general-smoke.spec.ts",
+                      "column": 34,
+                      "line": 76
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 74 |\u001b[39m\n \u001b[90m 75 |\u001b[39m   \u001b[36mconst\u001b[39m postsResponse \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m postsResponsePromise\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 76 |\u001b[39m   expect(postsResponse\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 77 |\u001b[39m\n \u001b[90m 78 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[32m'一般アカウント'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 79 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'地図'\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\general-smoke.spec.ts",
+                        "column": 34,
+                        "line": 76
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n\n  74 |\n  75 |   const postsResponse = await postsResponsePromise;\n> 76 |   expect(postsResponse.status()).toBe(200);\n     |                                  ^\n  77 |\n  78 |   await expect(page.getByText('一般アカウント')).toBeVisible();\n  79 |   await expect(page.getByRole('button', { name: '地図' })).toBeVisible();\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\general-smoke.spec.ts:76:34"
+                    }
+                  ],
+                  "stdout": [
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/assets/index-CgPiX-mG.js\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/assets/index-DnIBUn-e.css\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/assets/index-DnIBUn-e.css\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 http://localhost:5173/assets/index-CgPiX-mG.js\n"
+                    },
+                    {
+                      "text": "PAGE LOG: App user state: {googleId: e2e-user, gmail: e2e-user@example.com, role: user, registrationDate: 2026-01-25T16:01:21.349Z}\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://accounts.google.com/gsi/client\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://accounts.google.com/gsi/client\n"
+                    },
+                    {
+                      "text": "PAGE LOG: App user state: {googleId: e2e-user, gmail: e2e-user@example.com, role: user, registrationDate: 2026-01-25T16:01:21.349Z}\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/genres\n"
+                    },
+                    {
+                      "text": "PAGE LOG: MainApp mounted. API_BASE_URL: \n"
+                    },
+                    {
+                      "text": "PAGE LOG: Fetching posts...\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114207/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114208/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114207/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114208/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114207/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114208/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114206/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://a.tile.openstreetmap.org/17/114209/52531.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114206/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://c.tile.openstreetmap.org/17/114209/52530.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114206/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET https://b.tile.openstreetmap.org/17/114209/52532.png\n"
+                    },
+                    {
+                      "text": "REQUEST: GET http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "RESPONSE: 500 http://localhost:5173/api/genres\n"
+                    },
+                    {
+                      "text": "PAGE LOG: Failed to load resource: the server responded with a status of 500 (Internal Server Error)\n"
+                    },
+                    {
+                      "text": "PAGE LOG: ジャンル取得エラー: Error: ジャンル取得失敗\n    at http://localhost:5173/assets/index-CgPiX-mG.js:366:49760\n"
+                    },
+                    {
+                      "text": "RESPONSE: 500 http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "Test failed: user can load main app and fetch posts (real HTTP)\n"
+                    },
+                    {
+                      "text": "Error: Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n"
+                    },
+                    {
+                      "text": "Stack: Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m500\u001b[39m\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\general-smoke.spec.ts:76:34\n"
+                    },
+                    {
+                      "text": "PAGE LOG: Failed to load resource: the server responded with a status of 500 (Internal Server Error)\n"
+                    },
+                    {
+                      "text": "PAGE LOG: Posts fetch response: 500\n"
+                    },
+                    {
+                      "text": "PAGE LOG: データ取得失敗: SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input\n    at http://localhost:5173/assets/index-CgPiX-mG.js:366:50647\n"
+                    },
+                    {
+                      "text": "RESPONSE: 500 http://localhost:5173/api/posts\n"
+                    },
+                    {
+                      "text": "PAGE LOG: Failed to load resource: the server responded with a status of 500 (Internal Server Error)\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114208/52531.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114207/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114206/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114208/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114207/52531.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114209/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://b.tile.openstreetmap.org/17/114206/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114207/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114208/52532.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114209/52531.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://c.tile.openstreetmap.org/17/114209/52530.png\n"
+                    },
+                    {
+                      "text": "RESPONSE: 200 https://a.tile.openstreetmap.org/17/114206/52531.png\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-25T16:01:21.018Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\general-smoke-user-can-loa-d3eb7--and-fetch-posts-real-HTTP-\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\general-smoke.spec.ts",
+                    "column": 34,
+                    "line": 76
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5e9b7662106df01a632f-7f5ccce497c3b37c04b1",
+          "file": "general-smoke.spec.ts",
+          "line": 34,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "post-creation.spec.ts",
+      "file": "post-creation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Post Creation E2E Tests",
+          "file": "post-creation.spec.ts",
+          "line": 33,
+          "column": 6,
+          "specs": [
+            {
+              "title": "POST-003: 必須項目未入力で投稿できない",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 12560,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\u001b[22m\n\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:94:84",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                          "column": 84,
+                          "line": 94
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 92 |\u001b[39m\n \u001b[90m 93 |\u001b[39m     \u001b[90m// バリデーションエラーのトーストメッセージが表示されることを確認 (sonnerのコンテナ内)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 94 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'[data-sonner-toaster]'\u001b[39m)\u001b[33m.\u001b[39mgetByText(\u001b[35m/タイトルを入力してください/\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m10000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 95 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 96 |\u001b[39m\n \u001b[90m 97 |\u001b[39m   test(\u001b[32m'POST-004: 位置情報を正しく保存できる'\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                            "column": 84,
+                            "line": 94
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)\u001b[22m\n\n\n  92 |\n  93 |     // バリデーションエラーのトーストメッセージが表示されることを確認 (sonnerのコンテナ内)\n> 94 |     await expect(page.locator('[data-sonner-toaster]').getByText(/タイトルを入力してください/)).toBeVisible({ timeout: 10000 });\n     |                                                                                    ^\n  95 |   });\n  96 |\n  97 |   test('POST-004: 位置情報を正しく保存できる', async ({ page }) => {\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:94:84"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.117Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\post-creation-Post-Creatio-f7f3b-sts-POST-003-必須項目未入力で投稿できない\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                        "column": 84,
+                        "line": 94
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "306082a93151ad965269-183e263f400af653e853",
+              "file": "post-creation.spec.ts",
+              "line": 87,
+              "column": 3
+            },
+            {
+              "title": "POST-004: 位置情報を正しく保存できる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 30026,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts",
+                            "column": 16,
+                            "line": 113
+                          },
+                          "message": "Error: page.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-slot=\"select-item\"]')\u001b[22m\n\n\n  111 |     await page.click('[data-slot=\"select-trigger\"]', { force: true });\n  112 |     await expect(page.getByText('グルメ')).toBeVisible({ timeout: 10000 }); // Wait for first genre item to appear\n> 113 |     await page.click('[data-slot=\"select-item\"]', { force: true });\n      |                ^\n  114 |\n  115 |     // 投稿ボタンをクリック\n  116 |     const createResponsePromise = page.waitForResponse((resp) => {\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post-creation.spec.ts:113:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:35.669Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\test-results\\post-creation-Post-Creation-E2E-Tests-POST-004-位置情報を正しく保存できる\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "306082a93151ad965269-4c647be0e3af5a943faf",
+              "file": "post-creation.spec.ts",
+              "line": 97,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "post.spec.ts",
+      "file": "post.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "投稿機能E2E",
+          "file": "post.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "POST-001: 投稿を作成できる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 1,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts:7:11",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                          "column": 17,
+                          "line": 7
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39msetupTestData.ts:7\n\n\u001b[0m \u001b[90m  5 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m setupTestData(request\u001b[33m:\u001b[39m \u001b[33mAPIRequestContext\u001b[39m) {\n \u001b[90m  6 |\u001b[39m   \u001b[90m// 管理者ユーザー作成\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m   \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39mpost(\u001b[32m'http://backend:8080/api/users/register'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m     data\u001b[33m:\u001b[39m { googleId\u001b[33m:\u001b[39m \u001b[32m'admin-001-token'\u001b[39m\u001b[33m,\u001b[39m gmail\u001b[33m:\u001b[39m \u001b[32m'admin-001@example.com'\u001b[39m\u001b[33m,\u001b[39m role\u001b[33m:\u001b[39m \u001b[32m'admin'\u001b[39m }\u001b[33m,\u001b[39m\n \u001b[90m  9 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 10 |\u001b[39m   \u001b[90m// 一般ユーザー作成\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                            "column": 17,
+                            "line": 7
+                          },
+                          "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n\n   at setupTestData.ts:7\n\n   5 | export async function setupTestData(request: APIRequestContext) {\n   6 |   // 管理者ユーザー作成\n>  7 |   await request.post('http://backend:8080/api/users/register', {\n     |                 ^\n   8 |     data: { googleId: 'admin-001-token', gmail: 'admin-001@example.com', role: 'admin' },\n   9 |   });\n  10 |   // 一般ユーザー作成\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\post.spec.ts:7:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.309Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                        "column": 17,
+                        "line": 7
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-f9843945395153004569",
+              "file": "post.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "POST-002: 画像付き投稿を作成できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-ff6227f5b6b41204de3c",
+              "file": "post.spec.ts",
+              "line": 61,
+              "column": 3
+            },
+            {
+              "title": "POST-003: 必須項目未入力で投稿できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-7e2c0f1db5d2985be205",
+              "file": "post.spec.ts",
+              "line": 65,
+              "column": 3
+            },
+            {
+              "title": "POST-004: 位置情報を正しく保存できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-972671750362b4206998",
+              "file": "post.spec.ts",
+              "line": 69,
+              "column": 3
+            },
+            {
+              "title": "POST-005: 投稿一覧が表示される",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-7eb5689f4e3ff0914d56",
+              "file": "post.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "POST-006: ピンをクリックで詳細表示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-6298062aed5819ebc267",
+              "file": "post.spec.ts",
+              "line": 77,
+              "column": 3
+            },
+            {
+              "title": "POST-007: ジャンル別フィルタリングができる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-2aaf454af54ca53586cc",
+              "file": "post.spec.ts",
+              "line": 107,
+              "column": 3
+            },
+            {
+              "title": "POST-008: 自分の投稿を削除できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-90aecc7569aba1acddd7",
+              "file": "post.spec.ts",
+              "line": 111,
+              "column": 3
+            },
+            {
+              "title": "POST-009: 他人の投稿を削除できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-f2319db3b11ea5099628",
+              "file": "post.spec.ts",
+              "line": 115,
+              "column": 3
+            },
+            {
+              "title": "POST-010: 事業者投稿が識別できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-42570ca9adeaa70394b9",
+              "file": "post.spec.ts",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "POST-011: 投稿履歴を確認できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-29ad44180d7a6ad21e09",
+              "file": "post.spec.ts",
+              "line": 123,
+              "column": 3
+            },
+            {
+              "title": "POST-012: 人気投稿が識別できる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:24.137Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "852d2ff9c4320f80b981-df880a2562d6c55d5659",
+              "file": "post.spec.ts",
+              "line": 127,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "reaction.spec.ts",
+      "file": "reaction.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Reaction E2E Tests",
+          "file": "reaction.spec.ts",
+          "line": 35,
+          "column": 6,
+          "specs": [
+            {
+              "title": "REACT-001: 投稿にリアクションできる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: apiRequestContext.get: connect ECONNREFUSED ::1:8080\nCall log:\n\u001b[2m  - → GET http://localhost:8080/api/genres\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.get: connect ECONNREFUSED ::1:8080\nCall log:\n\u001b[2m  - → GET http://localhost:8080/api/genres\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\n    at apiRequestContext.get: connect ECONNREFUSED ::1:8080\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts:45:37",
+                        "location": {
+                          "file": "apiRequestContext.get: connect ECONNREFUSED :",
+                          "column": 8080,
+                          "line": 1
+                        }
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "apiRequestContext.get: connect ECONNREFUSED :",
+                            "column": 8080,
+                            "line": 1
+                          },
+                          "message": "Error: apiRequestContext.get: connect ECONNREFUSED ::1:8080\nCall log:\n\u001b[2m  - → GET http://localhost:8080/api/genres\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\n    at apiRequestContext.get: connect ECONNREFUSED ::1:8080\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\reaction.spec.ts:45:37"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.075Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "apiRequestContext.get: connect ECONNREFUSED :",
+                        "column": 8080,
+                        "line": 1
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-4fa1d323c63293ed6337",
+              "file": "reaction.spec.ts",
+              "line": 102,
+              "column": 3
+            },
+            {
+              "title": "REACT-002: リアクションを取り消せる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.486Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-c3f684bf0973d1b3c743",
+              "file": "reaction.spec.ts",
+              "line": 145,
+              "column": 3
+            },
+            {
+              "title": "REACT-003: リアクション数が正しく表示される",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.486Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-7b11b4f23c5e2dfa72e6",
+              "file": "reaction.spec.ts",
+              "line": 199,
+              "column": 3
+            },
+            {
+              "title": "REACT-004: 自分の投稿にリアクションできる",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.486Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-df15ae4539fa42fa7f49",
+              "file": "reaction.spec.ts",
+              "line": 236,
+              "column": 3
+            },
+            {
+              "title": "REACT-005: リアクション状態がセッション跨ぎで保持される",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.486Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-df20cc2db451784905ab",
+              "file": "reaction.spec.ts",
+              "line": 319,
+              "column": 3
+            },
+            {
+              "title": "REACT-006: リアクション状態が保持されている",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:21.486Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "285a636995dc36ba3c39-1c63d8ac9e65faabe1bb",
+              "file": "reaction.spec.ts",
+              "line": 398,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "report.spec.ts",
+      "file": "report.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "通報機能 E2Eテスト",
+          "file": "report.spec.ts",
+          "line": 34,
+          "column": 6,
+          "specs": [
+            {
+              "title": "REPORT-001: 投稿を通報できる",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n",
+                        "stack": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts:39:11",
+                        "location": {
+                          "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                          "column": 17,
+                          "line": 7
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39msetupTestData.ts:7\n\n\u001b[0m \u001b[90m  5 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m setupTestData(request\u001b[33m:\u001b[39m \u001b[33mAPIRequestContext\u001b[39m) {\n \u001b[90m  6 |\u001b[39m   \u001b[90m// 管理者ユーザー作成\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  7 |\u001b[39m   \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39mpost(\u001b[32m'http://backend:8080/api/users/register'\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  8 |\u001b[39m     data\u001b[33m:\u001b[39m { googleId\u001b[33m:\u001b[39m \u001b[32m'admin-001-token'\u001b[39m\u001b[33m,\u001b[39m gmail\u001b[33m:\u001b[39m \u001b[32m'admin-001@example.com'\u001b[39m\u001b[33m,\u001b[39m role\u001b[33m:\u001b[39m \u001b[32m'admin'\u001b[39m }\u001b[33m,\u001b[39m\n \u001b[90m  9 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 10 |\u001b[39m   \u001b[90m// 一般ユーザー作成\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                            "column": 17,
+                            "line": 7
+                          },
+                          "message": "Error: apiRequestContext.post: getaddrinfo ENOTFOUND backend\nCall log:\n\u001b[2m  - → POST http://backend:8080/api/users/register\u001b[22m\n\u001b[2m    - user-agent: Playwright/1.58.0 (x64; windows 10.0) node/22.19\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - content-type: application/json\u001b[22m\n\u001b[2m    - content-length: 77\u001b[22m\n\n\n   at setupTestData.ts:7\n\n   5 | export async function setupTestData(request: APIRequestContext) {\n   6 |   // 管理者ユーザー作成\n>  7 |   await request.post('http://backend:8080/api/users/register', {\n     |                 ^\n   8 |     data: { googleId: 'admin-001-token', gmail: 'admin-001@example.com', role: 'admin' },\n   9 |   });\n  10 |   // 一般ユーザー作成\n    at setupTestData (C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts:7:17)\n    at C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\report.spec.ts:39:11"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:22.867Z",
+                      "annotations": [],
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "C:\\Users\\ukima\\Documents\\sofukou\\kojan-map\\frontend\\e2e\\setupTestData.ts",
+                        "column": 17,
+                        "line": 7
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-52bfd07aa9e32701cb74",
+              "file": "report.spec.ts",
+              "line": 93,
+              "column": 3
+            },
+            {
+              "title": "REPORT-002: 通報理由は必須",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:25.602Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-05cc4ecab348471d5a2f",
+              "file": "report.spec.ts",
+              "line": 148,
+              "column": 3
+            },
+            {
+              "title": "REPORT-003: 同じ投稿を重複通報できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:25.602Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-30b071ad0ab069514d84",
+              "file": "report.spec.ts",
+              "line": 183,
+              "column": 3
+            },
+            {
+              "title": "REPORT-004: 自分の投稿を通報できない",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-25T16:01:25.602Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "de0b0b91aa0163f47401-adf9f5f4d1e6fcb3c4ae",
+              "file": "report.spec.ts",
+              "line": 265,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-01-25T16:01:18.720Z",
+    "duration": 47215.082,
+    "expected": 0,
+    "skipped": 32,
+    "unexpected": 8,
+    "flaky": 0
+  }
+}

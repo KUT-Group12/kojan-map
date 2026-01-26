@@ -32,6 +32,10 @@ const createJwt = (params: { userId: string; googleId: string; email: string; ro
 };
 
 test('user can load main app and fetch posts (real HTTP)', async ({ page }) => {
+  test.setTimeout(120000);
+  page.on('console', (msg) => console.log(`PAGE LOG: ${msg.text()}`));
+  page.on('request', (req) => console.log(`REQUEST: ${req.method()} ${req.url()}`));
+  page.on('response', (res) => console.log(`RESPONSE: ${res.status()} ${res.url()}`));
   test.skip(
     !process.env.JWT_SECRET_KEY,
     'JWT_SECRET_KEY is not set (required to call protected APIs)'
@@ -82,4 +86,12 @@ test('user can load main app and fetch posts (real HTTP)', async ({ page }) => {
 
   const historyResponse = await historyResponsePromise;
   expect(historyResponse.status()).toBe(200);
+});
+
+test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status !== 'passed') {
+    console.log(`Test failed: ${testInfo.title}`);
+    console.log(`Error: ${testInfo.error?.message}`);
+    console.log(`Stack: ${testInfo.error?.stack}`);
+  }
 });

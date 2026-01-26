@@ -53,6 +53,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(
     undefined
   );
+  const [createTargetPlaceId, setCreateTargetPlaceId] = useState<number | undefined>(undefined); // ★追加
   const [currentView, setCurrentView] = useState<
     'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'
   >('map');
@@ -124,9 +125,12 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
   // 初期データ（投稿と場所）の取得
   useEffect(() => {
+    console.log('MainApp mounted. API_BASE_URL:', API_BASE_URL);
     const fetchInitialData = async () => {
       try {
+        console.log('Fetching posts...');
         const postsRes = await fetch(`${API_BASE_URL}/api/posts`);
+        console.log('Posts fetch response:', postsRes.status);
         const postsData = await postsRes.json();
         const rawPosts = (postsData.posts ?? []) as (Post & {
           latitude: number;
@@ -191,7 +195,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         setSelectedPost(data.post || data);
         setDetailData({
           isReacted: data.isReacted || false,
-          postsAtLocation: data.postsAtLocation || [],
+          // Backend doesn't return postsAtLocation, so compute it client-side
+          postsAtLocation: posts.filter(
+            (p) => p.placeId === post.placeId && p.postId !== post.postId
+          ),
         });
       }
     } catch (error) {
@@ -235,41 +242,23 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     longitude: number;
     title: string;
     text: string;
-    genre: Genre; // genreId, genreName, genreColorの代わりにPinGenreオブジェクトを受け取る
+    genre: Genre;
     images: string[];
+    postId?: number; // Backend ID
+    placeId?: number; // Backend Place ID
   }) => {
     const { genreId, genreName, color } = newPost.genre;
 
+    // もし引数にpostIdやplaceIdがない場合（既存コード互換など）、temporary IDを使う
     const sharedId = Date.now();
-    const existingPlace = places.find(
-      (p) => p.latitude === newPost.latitude && p.longitude === newPost.longitude
-    );
-    const placeId = existingPlace?.placeId ?? sharedId;
+    // ★変更: createTargetPlaceId があればそれを優先 (既存ピンからの追加)
+    const resolvedPlaceId = newPost.placeId ?? createTargetPlaceId ?? sharedId;
+    const resolvedPostId = newPost.postId ?? sharedId;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          placeId,
-          genreId: genreId, // 分解した値を使用
-          userId: user.googleId,
-          title: newPost.title,
-          text: newPost.text,
-          postImage: newPost.images,
-          latitude: newPost.latitude,
-          longitude: newPost.longitude,
-        }),
-      });
-
-      if (!response.ok) throw new Error('投稿の保存に失敗しました');
-      const created = await response.json();
-      const postId = created?.postId ?? sharedId;
-      const resolvedPlaceId = created?.placeId ?? placeId;
-
       // クライアント側の表示用オブジェクト
       const post: Post = {
-        postId,
+        postId: resolvedPostId,
         placeId: resolvedPlaceId,
         userId: user.googleId,
         postDate: new Date().toISOString(),
@@ -278,25 +267,30 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         postImage: newPost.images,
         numReaction: 0,
         numView: 0,
-        genreId: genreId, // 分解した値を使用
-        genreName: genreName, // 分解した値を使用
-        genreColor: color, // 分解した値を使用
+        genreId: genreId,
+        genreName: genreName,
+        genreColor: color,
       };
 
       const place: Place = {
         placeId: resolvedPlaceId,
         latitude: newPost.latitude,
         longitude: newPost.longitude,
-        numPost: 1,
+        numPost: 1, // 既存ならインクリメント処理が必要だが、ここでは簡易的に1 or 更新
       };
 
       // ステート更新
       setPosts((prev) => [post, ...prev]);
       setPlaces((prev) => {
-        if (existingPlace) {
-          return prev.map((p) =>
-            p.placeId === existingPlace.placeId ? { ...p, numPost: p.numPost + 1 } : p
-          );
+        // 既存の場所があるかIDで検索
+        const existingIdx = prev.findIndex((p) => p.placeId === resolvedPlaceId);
+        if (existingIdx >= 0) {
+          const newPlaces = [...prev];
+          newPlaces[existingIdx] = {
+            ...newPlaces[existingIdx],
+            numPost: newPlaces[existingIdx].numPost + 1,
+          };
+          return newPlaces;
         }
         return [place, ...prev];
       });
@@ -305,7 +299,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Create post error:', error);
-      alert('投稿に失敗しました。');
+      alert('投稿の表示更新に失敗しました。');
     }
   };
 
@@ -324,10 +318,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         pinsArray.map((p) =>
           p.userId === bizUser.userId
             ? {
-                ...p,
-                businessName: bizUser.businessName,
-                // 事業者の場合は userName ではなく businessName を優先
-              }
+              ...p,
+              businessName: bizUser.businessName,
+              // 事業者の場合は userName ではなく businessName を優先
+            }
             : p
         );
       setPosts(updatePins(posts as DisplayPost[]));
@@ -380,6 +374,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
               onMapDoubleClick={(lat, lng) => {
                 setCreateInitialLatitude(lat);
                 setCreateInitialLongitude(lng);
+                setCreateTargetPlaceId(undefined); // ★追加: 新規場所なのでIDなし
                 setIsCreateModalOpen(true);
               }}
             />
@@ -398,20 +393,20 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
           ) : // ★変更: ローディング状態を追加し、取得したデータを渡す
-          isLoadingUserData ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <UserDisplayMyPage
-              user={user}
-              posts={userPosts} // ★変更: MainAppで取得したデータ
-              reactedPosts={userReactedPosts} // ★変更: MainAppで取得したデータ
-              onPinClick={handlePinClick}
-              onUpdateUser={handleUpdateUser}
-              onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
-            />
-          ))}
+            isLoadingUserData ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <UserDisplayMyPage
+                user={user}
+                posts={userPosts} // ★変更: MainAppで取得したデータ
+                reactedPosts={userReactedPosts} // ★変更: MainAppで取得したデータ
+                onPinClick={handlePinClick}
+                onUpdateUser={handleUpdateUser}
+                onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
+              />
+            ))}
 
         {currentView === 'dashboard' && user.role === 'business' && (
           <BusinessDashboard
@@ -452,9 +447,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           onDelete={handleDeletePin}
           onBlockUser={handleBlockUser}
           postsAtLocation={detailData?.postsAtLocation || []}
-          onOpenCreateAtLocation={(lat, lng) => {
+          onOpenCreateAtLocation={(lat, lng, placeId) => {
             setCreateInitialLatitude(lat);
             setCreateInitialLongitude(lng);
+            setCreateTargetPlaceId(placeId); // ★追加
             setIsCreateModalOpen(true);
           }}
           onSelectPin={handlePinClick}
@@ -470,6 +466,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           onCreate={handleCreatePin}
           initialLatitude={createInitialLatitude}
           initialLongitude={createInitialLongitude}
+          targetPlaceId={createTargetPlaceId} // ★追加
         />
       )}
       {isContactModalOpen && (

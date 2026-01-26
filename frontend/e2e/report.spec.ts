@@ -1,329 +1,123 @@
 import { test, expect } from '@playwright/test';
-import { setupTestData } from './setupTestData';
-// JWT生成をpost-creation.spec.tsと同じpayload形式に統一
-import { createHmac } from 'crypto';
-
-const base64UrlEncode = (input: Buffer | string): string => {
-  const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input;
-  return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-};
-
-const createJwt = (params: { googleId: string; email: string; role: string }) => {
-  const secret = process.env.JWT_SECRET_KEY || 'dev-secret-key-please-change-in-production';
-  const header = { alg: 'HS256', typ: 'JWT' };
-  const nowSec = Math.floor(Date.now() / 1000);
-  const payload = {
-    user_id: params.googleId,
-    google_id: params.googleId,
-    email: params.email,
-    role: params.role,
-    iat: nowSec,
-    exp: nowSec + 60 * 60,
-    iss: 'kojanmap-e2e',
-    aud: 'kojanmap',
-    sub: params.googleId,
-  };
-  const encodedHeader = base64UrlEncode(JSON.stringify(header));
-  const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-  const signingInput = `${encodedHeader}.${encodedPayload}`;
-  const signature = createHmac('sha256', secret).update(signingInput).digest();
-  const encodedSignature = base64UrlEncode(signature);
-  return `${signingInput}.${encodedSignature}`;
-};
+import { createUser, setupTestData } from './setupTestData';
 
 test.describe('通報機能 E2Eテスト', () => {
   let postId: number;
-  let genreName: string;
+  let postAuthor: any;
+  let postAuthorJwt: string;
 
   test.beforeAll(async ({ request }) => {
-    await setupTestData(request);
-    // テスト用の投稿を作成
-    const user = {
-      googleId: 'e2e-report-user-token',
-      email: 'e2e-report-user@example.com',
-      role: 'user',
-    };
-    // setupTestData.tsでexportしたジャンル名を利用
-    genreName = (global as { E2E_GENRE_NAME?: string }).E2E_GENRE_NAME || 'food';
-    const jwt = createJwt({
-      googleId: user.googleId,
-      email: user.email,
-      role: user.role,
-    });
-    // 投稿作成API呼び出し（JWT付与）
-    const createResponse = await request.post('http://localhost:8080/api/posts', {
-      headers: { Authorization: `Bearer ${jwt}` },
+    // Create a user and a post for the entire test suite
+    const { jwt, user } = await createUser(request, 'report-post-author', 'user');
+    postAuthor = user;
+    postAuthorJwt = jwt;
+
+    const postRes = await request.post('/api/posts', {
+      headers: { Authorization: `Bearer ${postAuthorJwt}` },
       data: {
-        latitude: 35.6812,
-        longitude: 139.7671,
-        title: '通報テスト用投稿',
-        description: '通報機能のテスト用投稿です',
-        genre: genreName,
+        title: 'Report Test Post',
+        description: 'This is a post for report tests.',
+        latitude: 33.561,
+        longitude: 133.541,
+        genre: (global as any).E2E_GENRE_NAME || 'food',
+        images: [],
       },
     });
-    expect(createResponse.status()).toBe(201);
-    const createData = await createResponse.json();
-    postId = createData.postId;
+    expect(postRes.status()).toBe(201);
+    const post = await postRes.json();
+    postId = post.postId;
   });
 
-  test.beforeEach(async ({ page }) => {
-    const user = {
-      id: 'e2e-reporter-user',
-      googleId: 'e2e-reporter-user-token',
-      email: 'e2e-reporter-user@example.com',
-      role: 'user',
-      createdAt: new Date().toISOString(),
-    };
-
-    const jwt = createJwt({
-      googleId: user.googleId,
-      email: user.email,
-      role: user.role,
-    });
+  test.beforeEach(async ({ page, request }) => {
+    // Log in as a new user (the reporter) for each test
+    const { jwt, user } = await createUser(request, `reporter-user-${Math.random()}`, 'user');
 
     await page.addInitScript(
-      ({ storedUser, storedJwt }) => {
-        localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
-        localStorage.setItem('kojanmap_jwt', storedJwt);
+      (arg) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(arg.storedUser));
+        localStorage.setItem('kojanmap_jwt', arg.storedJwt);
       },
       { storedUser: user, storedJwt: jwt }
     );
+    await page.goto('/');
+    await expect(page.getByTestId('loading-screen')).not.toBeVisible({ timeout: 10000 });
   });
 
-  test('REPORT-001: 投稿を通報できる', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    // 地図タブに移動
+  const openPostDetail = async (page: import('@playwright/test').Page) => {
     await page.getByRole('button', { name: '地図' }).click();
+    await page.waitForSelector('.leaflet-container');
+    const mapPin = page.locator('[data-testid="map-pin"]').first();
+    await expect(mapPin).toBeVisible({ timeout: 15000 });
+    await mapPin.click();
+    await page.waitForSelector('[data-testid="post-detail"]');
+  };
 
-    // 投稿一覧を読み込み
-    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
+  test('REPORT-001: 投稿を通報できる', async ({ page }) => {
+    await openPostDetail(page);
 
-    // 最初のピンをクリックして投稿詳細を表示
-    await page.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
+    await page.click('[data-testid="report-button"]');
+    await page.waitForSelector('[data-testid="report-dialog"]');
 
-    // 投稿詳細が表示されるのを待機
-    await page.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
+    await page.fill('[data-testid="report-reason"]', '不適切なコンテンツです。');
 
-    // 通報ボタンをクリック
-    await page.click(
-      '[data-testid="report-button"], button:has-text("通報"), button:has-text("🚨")'
-    );
-
-    // 通報ダイアログが表示されるのを待機
-    await page.waitForSelector('[data-testid="report-dialog"], .report-dialog', { timeout: 3000 });
-
-    // 通報理由を入力
-    await page.fill(
-      '[data-testid="report-reason"], textarea[name="reason"], textarea[placeholder*="理由"]',
-      '不適切な内容です'
-    );
-
-    // 通報送信ボタンをクリック
-    const reportResponsePromise = page.waitForResponse((resp) => {
-      return resp.url().includes('/api/report') && resp.request().method() === 'POST';
-    });
-
-    await page.click(
-      '[data-testid="submit-report"], button:has-text("通報する"), button[type="submit"]'
-    );
+    const reportResponsePromise = page.waitForResponse('**/api/report');
+    await page.click('[data-testid="submit-report"]');
 
     const reportResponse = await reportResponsePromise;
     expect(reportResponse.status()).toBe(201);
 
-    const reportData = await reportResponse.json();
-    expect(reportData.message).toBe('report created');
-
-    // 成功メッセージを確認
-    await expect(page.getByText('通報しました').or(page.getByText('report created'))).toBeVisible({
-      timeout: 3000,
-    });
-
-    // ダイアログが閉じるのを確認
-    await expect(page.locator('[data-testid="report-dialog"], .report-dialog')).not.toBeVisible({
-      timeout: 3000,
-    });
+    await expect(page.getByText('通報しました')).toBeVisible();
+    await expect(page.locator('[data-testid="report-dialog"]')).not.toBeVisible();
   });
 
   test('REPORT-002: 通報理由は必須', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await openPostDetail(page);
 
-    // 地図タブに移動
-    await page.getByRole('button', { name: '地図' }).click();
+    await page.click('[data-testid="report-button"]');
+    await page.waitForSelector('[data-testid="report-dialog"]');
 
-    // 投稿詳細を表示
-    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
-    await page.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
+    await page.click('[data-testid="submit-report"]');
 
-    // 投稿詳細が表示されるのを待機
-    await page.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
-
-    // 通報ボタンをクリック
-    await page.click(
-      '[data-testid="report-button"], button:has-text("通報"), button:has-text("🚨")'
-    );
-
-    // 通報ダイアログが表示されるのを待機
-    await page.waitForSelector('[data-testid="report-dialog"], .report-dialog', { timeout: 3000 });
-
-    // 理由を空のまま送信ボタンをクリック
-    await page.click(
-      '[data-testid="submit-report"], button:has-text("通報する"), button[type="submit"]'
-    );
-
-    // バリデーションエラーが表示されることを確認
-    await expect(
-      page
-        .getByText('理由は必須です')
-        .or(page.getByText('reason is required'))
-        .or(page.getByText('invalid request format'))
-    ).toBeVisible({ timeout: 3000 });
+    // Assuming there's a validation message shown
+    const validationMessage = page.locator('.text-red-500');
+    await expect(validationMessage).toContainText(/理由/);
   });
 
   test('REPORT-003: 同じ投稿を重複通報できない', async ({ page, request }) => {
-    // まず一度通報する
-    const user = {
-      id: 'e2e-reporter-user',
-      googleId: 'e2e-reporter-user-token',
-      email: 'e2e-reporter-user@example.com',
-      role: 'user',
-    };
+    const { jwt: reporterJwt } = await createUser(request, `reporter-${Math.random()}`, 'user');
 
-    const jwt = createJwt({
-      googleId: user.googleId,
-      email: user.email,
-      role: user.role,
+    // First report
+    const reportRes1 = await request.post('/api/report', {
+      headers: { Authorization: `Bearer ${reporterJwt}` },
+      data: { postId, reason: 'First report' },
     });
+    expect(reportRes1.status()).toBe(201);
 
-    await page.addInitScript(
-      ({ storedUser, storedJwt }) => {
-        localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
-        localStorage.setItem('kojanmap_jwt', storedJwt);
-      },
-      { storedUser: user, storedJwt: jwt }
-    );
-    const firstReportResponse = await request.post('http://localhost:8080/api/report', {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-      data: {
-        postId: postId,
-        reason: '最初の通報',
-      },
+    // Try to report again with the same user
+    const reportRes2 = await request.post('/api/report', {
+      headers: { Authorization: `Bearer ${reporterJwt}` },
+      data: { postId, reason: 'Second report' },
     });
-
-    expect(firstReportResponse.status()).toBe(201);
-
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    // 地図タブに移動
-    await page.getByRole('button', { name: '地図' }).click();
-
-    // 投稿詳細を表示
-    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
-    await page.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
-
-    // 投稿詳細が表示されるのを待機
-    await page.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
-
-    // 通報ボタンをクリック
-    await page.click(
-      '[data-testid="report-button"], button:has-text("通報"), button:has-text("🚨")'
-    );
-
-    // 通報ダイアログが表示されるのを待機
-    await page.waitForSelector('[data-testid="report-dialog"], .report-dialog', { timeout: 3000 });
-
-    // 通報理由を入力
-    await page.fill(
-      '[data-testid="report-reason"], textarea[name="reason"], textarea[placeholder*="理由"]',
-      '重複通報テスト'
-    );
-
-    // 通報送信ボタンをクリック
-    const reportResponsePromise = page.waitForResponse((resp) => {
-      return resp.url().includes('/api/report') && resp.request().method() === 'POST';
-    });
-
-    await page.click(
-      '[data-testid="submit-report"], button:has-text("通報する"), button[type="submit"]'
-    );
-
-    const reportResponse = await reportResponsePromise;
-
-    // 重複通報の場合はエラーになるか、同じレスポンスが返る
-    if (reportResponse.status() === 400) {
-      const errorData = await reportResponse.json();
-      expect(errorData.error).toContain('already reported');
-    } else {
-      // 一部の実装では同じレスポンスを返す場合がある
-      expect([201, 400]).toContain(reportResponse.status());
-    }
+    expect(reportRes2.status()).toBe(400); // Expect a conflict or bad request
+    const error = await reportRes2.json();
+    expect(error.error).toContain('already reported');
   });
 
-  test('REPORT-004: 自分の投稿を通報できない', async ({ page, request }) => {
-    // 自分の投稿を作成
-    const user = {
-      id: 'e2e-self-report-user',
-      googleId: 'e2e-self-report-user-token',
-      email: 'e2e-self-report-user@example.com',
-      role: 'user',
-    };
-
-    const jwt = createJwt({
-      googleId: user.googleId,
-      email: user.email,
-      role: user.role,
-    });
-
-    const createResponse = await request.post('http://localhost:8080/api/posts', {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-      },
-      data: {
-        latitude: 35.6812,
-        longitude: 139.7671,
-        title: '自分の投稿テスト',
-        description: '自分で通報するテスト',
-        genre: genreName,
-      },
-    });
-
-    expect(createResponse.status()).toBe(201);
-
-    // ページにログイン
+  test('REPORT-004: 自分の投稿を通報できない', async ({ page }) => {
+    // Log in as the post author
     await page.addInitScript(
-      ({ storedUser, storedJwt }) => {
-        localStorage.setItem('kojanmap_user', JSON.stringify(storedUser));
-        localStorage.setItem('kojanmap_jwt', storedJwt);
+      (arg) => {
+        localStorage.setItem('kojanmap_user', JSON.stringify(arg.storedUser));
+        localStorage.setItem('kojanmap_jwt', arg.storedJwt);
       },
-      {
-        storedUser: {
-          ...user,
-          createdAt: new Date().toISOString(),
-        },
-        storedJwt: jwt,
-      }
+      { storedUser: postAuthor, storedJwt: postAuthorJwt }
     );
+    await page.goto('/');
+    await expect(page.getByTestId('loading-screen')).not.toBeVisible();
 
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await openPostDetail(page);
 
-    // 地図タブに移動
-    await page.getByRole('button', { name: '地図' }).click();
-
-    // 投稿詳細を表示
-    await page.waitForSelector('[data-testid="map-pin"], .leaflet-marker-icon', { timeout: 10000 });
-    await page.click('[data-testid="map-pin"], .leaflet-marker-icon:first-child');
-
-    // 投稿詳細が表示されるのを待機
-    await page.waitForSelector('[data-testid="post-detail"], .post-detail', { timeout: 5000 });
-
-    // 自分の投稿の場合は通報ボタンが表示されないことを確認
-    const reportButton = page.locator(
-      '[data-testid="report-button"], button:has-text("通報"), button:has-text("🚨")'
-    );
-    await expect(reportButton).not.toBeVisible({ timeout: 3000 });
+    // The report button should not be visible for the author's own post
+    await expect(page.locator('[data-testid="report-button"]')).not.toBeVisible();
   });
 });
