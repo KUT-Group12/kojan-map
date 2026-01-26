@@ -132,16 +132,30 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         const postsRes = await fetch(`${API_BASE_URL}/api/posts`);
         console.log('Posts fetch response:', postsRes.status);
         const postsData = await postsRes.json();
-        const rawPosts = (postsData.posts ?? []) as (Post & {
+        console.log('[DEBUG] postsData from API:', postsData);
+        const rawPosts = (postsData.posts ?? postsData ?? []) as (Post & {
           latitude: number;
           longitude: number;
         })[];
+        console.log('[DEBUG] rawPosts:', rawPosts);
 
         if (rawPosts.length === 0) return;
 
-        const postIds = rawPosts.map((p) => p.postId).join(',');
-        const scaleRes = await fetch(`${API_BASE_URL}/api/posts/pin/scales?postIds=${postIds}`);
-        const scaleMap: Record<number, number> = scaleRes.ok ? await scaleRes.json() : {};
+        const placeIds = rawPosts.map((p) => p.placeId);
+        let scaleMap: Record<number, number> = {};
+        try {
+          const scaleRes = await fetch(`${API_BASE_URL}/api/posts/pin/scales`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ placeIds }),
+          });
+          if (scaleRes.ok) {
+            const scaleData = await scaleRes.json();
+            scaleMap = scaleData.pinSizes || {};
+          }
+        } catch (e) {
+          console.error('ピンサイズ取得失敗', e);
+        }
 
         const displayPosts: PostDetail[] = rawPosts.map((p) => ({
           ...p,
@@ -150,22 +164,34 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
         setPosts(displayPosts);
         setFilteredPosts(displayPosts);
-
+        // デバッグ: posts/placesの中身を出力
+        console.log('[DEBUG] posts after fetch:', displayPosts);
+        // postsの全placeId/緯度経度を必ずplacesに反映
         const placeMap = new Map<number, Place>();
         for (const dp of displayPosts) {
-          const existing = placeMap.get(dp.placeId);
-          if (existing) {
-            placeMap.set(dp.placeId, { ...existing, numPost: existing.numPost + 1 });
-          } else {
-            placeMap.set(dp.placeId, {
-              placeId: dp.placeId,
-              latitude: dp.latitude,
-              longitude: dp.longitude,
-              numPost: 1,
-            });
+          if (
+            typeof dp.placeId === 'number' &&
+            typeof dp.latitude === 'number' &&
+            typeof dp.longitude === 'number'
+          ) {
+            if (placeMap.has(dp.placeId)) {
+              // 既存placeの投稿数をインクリメント
+              const prev = placeMap.get(dp.placeId)!;
+              placeMap.set(dp.placeId, { ...prev, numPost: prev.numPost + 1 });
+            } else {
+              // 新規place
+              placeMap.set(dp.placeId, {
+                placeId: dp.placeId,
+                latitude: dp.latitude,
+                longitude: dp.longitude,
+                numPost: 1,
+              });
+            }
           }
         }
-        setPlaces(Array.from(placeMap.values()));
+        const placesArr = Array.from(placeMap.values());
+        console.log('[DEBUG] places after fetch:', placesArr);
+        setPlaces(placesArr);
       } catch (error) {
         console.error('データ取得失敗:', error);
       }
@@ -280,22 +306,35 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       };
 
       // ステート更新
-      setPosts((prev) => [post, ...prev]);
+      setPosts((prev) => {
+        const next = [post, ...prev];
+        console.log('[DEBUG] posts after create:', next);
+        return next;
+      });
       setPlaces((prev) => {
         // 既存の場所があるかIDで検索
         const existingIdx = prev.findIndex((p) => p.placeId === resolvedPlaceId);
+        let next;
         if (existingIdx >= 0) {
           const newPlaces = [...prev];
           newPlaces[existingIdx] = {
             ...newPlaces[existingIdx],
+            latitude: place.latitude, // 必ず最新値で上書き
+            longitude: place.longitude, // 必ず最新値で上書き
             numPost: newPlaces[existingIdx].numPost + 1,
           };
-          return newPlaces;
+          next = newPlaces;
+        } else {
+          next = [place, ...prev];
         }
-        return [place, ...prev];
+        console.log('[DEBUG] places after create:', next);
+        return next;
       });
-
-      setFilteredPosts((prev) => [post, ...prev]);
+      setFilteredPosts((prev) => {
+        const next = [post, ...prev];
+        console.log('[DEBUG] filteredPosts after create:', next);
+        return next;
+      });
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Create post error:', error);

@@ -82,7 +82,6 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	// ... (validation logic omitted for brevity, keeping existing code logic) ...
 	// タイトルと説明文の長さを検証
 	if utf8.RuneCountInString(req.Title) > 50 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title too long (max 50 characters)"})
@@ -162,10 +161,18 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
+	// 場所情報も返す
+	place, err := ph.placeService.GetPlaceByID(post.PlaceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch place info", "details": err.Error()})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{
-		"postId":  post.ID,
-		"placeId": post.PlaceID,
-		"message": "post created successfully",
+		"postId":    post.ID,
+		"placeId":   post.PlaceID,
+		"latitude":  place.Latitude,
+		"longitude": place.Longitude,
+		"message":   "post created successfully",
 	})
 }
 
@@ -379,4 +386,22 @@ func (ph *PostHandler) CheckReactionStatus(c *gin.Context) {
 		"postId":    postID,
 		"userId":    userID,
 	})
+}
+
+// GetPinSizes バッチでピンサイズを判定
+// POST /api/posts/pin/scales
+func (ph *PostHandler) GetPinSizes(c *gin.Context) {
+	var req struct {
+		PlaceIDs []int32 `json:"placeIds" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "invalid request", "details": err.Error()})
+		return
+	}
+	pinSizes, err := ph.postService.GetPinSizes(req.PlaceIDs)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"pinSizes": pinSizes})
 }

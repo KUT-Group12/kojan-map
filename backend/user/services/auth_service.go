@@ -88,11 +88,13 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 	client := &http.Client{Timeout: 5 * time.Second}
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
+		log.Printf("[VerifyGoogleToken] failed to create request: %v", err)
 		return nil, errors.New("failed to create request")
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("[VerifyGoogleToken] failed to contact Google tokeninfo: %v", err)
 		return nil, errors.New("failed to contact Google tokeninfo")
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -103,16 +105,19 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 		urlAccess := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?access_token=%s", idToken)
 		reqAccess, err := http.NewRequestWithContext(context.Background(), http.MethodGet, urlAccess, nil)
 		if err != nil {
+			log.Printf("[VerifyGoogleToken] failed to create access_token request: %v", err)
 			return nil, errors.New("failed to create access_token request")
 		}
 		respAccess, errAccess := client.Do(reqAccess)
 		if errAccess != nil {
+			log.Printf("[VerifyGoogleToken] failed to contact Google tokeninfo (access_token): %v", errAccess)
 			return nil, errors.New("failed to contact Google tokeninfo (access_token)")
 		}
 		defer func() { _ = respAccess.Body.Close() }()
 
 		if respAccess.StatusCode != http.StatusOK {
 			body, _ := io.ReadAll(respAccess.Body)
+			log.Printf("[VerifyGoogleToken] google token verification failed (both id_token and access_token): %s", string(body))
 			return nil, fmt.Errorf("google token verification failed (both id_token and access_token): %s", string(body))
 		}
 		// Use the access token response
@@ -121,6 +126,7 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 
 	var googleResp GoogleTokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&googleResp); err != nil {
+		log.Printf("[VerifyGoogleToken] failed to parse Google response: %v", err)
 		return nil, errors.New("failed to parse Google response")
 	}
 

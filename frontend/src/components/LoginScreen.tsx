@@ -36,14 +36,31 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         }
         const userInfo = await userInfoRes.json();
 
-        // 2. バックエンド認証 (初期ロールは 'user' 固定。既存ユーザーならDBのロールが返る)
-        // Access Token を送る (Backendがtokeninfo?access_token=に対応している前提、またはid_tokenが必要ならBFF対応が必要だが、
-        // 現状のPlanで進めるため access_token を送る)
-        const data = await exchangeGoogleTokenForJWT(tokenResponse.access_token, 'user');
+            // 2. バックエンド認証 (初期ロールは 'user' 固定)
+            console.log('[DEBUG] exchangeGoogleTokenForJWT google_token:', tokenResponse.access_token, 'role:', 'user');
+            const data = await exchangeGoogleTokenForJWT(tokenResponse.access_token, 'user');
 
         // 3. 保存 & 遷移
         storeJWT(data.jwt_token);
         storeUser(data.user);
+        // 追加: セッションID保存
+        let sessionIdToStore = null;
+        if (data.sessionId) {
+          sessionIdToStore = data.sessionId;
+        } else if (data.session_id) {
+          sessionIdToStore = data.session_id;
+        } else if (data.session && data.session.sessionId) {
+          sessionIdToStore = data.session.sessionId;
+        } else if (data.session && data.session.id) {
+          sessionIdToStore = data.session.id;
+        }
+        console.log('[Login] 保存するsessionId:', sessionIdToStore);
+        if (sessionIdToStore) {
+          localStorage.setItem('kojanmap_sessionId', sessionIdToStore);
+          console.log('[Login] sessionIdをlocalStorageに保存しました:', sessionIdToStore);
+        } else {
+          console.warn('[Login] sessionIdが取得できませんでした。APIレスポンス:', data);
+        }
 
         // バックエンドから返却されたロール（既存なら business の可能性あり）を使用
         onLogin(data.user.role as UserRole, userInfo.sub, userInfo.email);

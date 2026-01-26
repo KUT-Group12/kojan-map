@@ -18,25 +18,42 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
   const handleLogout = async () => {
     setIsPending(true);
     try {
-      // 1. API仕様: PUT /api/auth/logout
-      // ボディに sessionId (通常は googleId 等) を含めて送信
+      // JWTトークンとセッションIDを取得
+      const token = localStorage.getItem('kojanmap_jwt');
+      const sessionId = localStorage.getItem('kojanmap_sessionId');
+      console.log('送信するsessionId:', sessionId);
+      if (!sessionId) {
+        toast.error('セッション情報がありません。再度ログインしてください。');
+        setIsPending(false);
+        return;
+      }
       const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: user.googleId }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ sessionId }),
       });
 
       if (!response.ok && response.status !== 401) {
+        const errorText = await response.text();
+        console.error('Logout API error:', errorText);
         throw new Error('サーバー側でのログアウトに失敗しました');
       }
 
+      // JWT・ユーザー・セッションID削除
+      localStorage.removeItem('kojanmap_jwt');
+      localStorage.removeItem('kojanmap_user');
+      localStorage.removeItem('kojanmap_sessionId');
       toast.success('ログアウトしました');
-
-      // 2. フロントエンド側のクリーンアップ（localStorageの消去など）
       onLogout();
     } catch (error) {
       console.error('Logout error:', error);
-      // 通信失敗しても、ユーザーの利便性のために強制的にフロント側はログアウトさせるのが一般的
+      // 通信失敗してもJWT・ユーザー・セッションID削除
+      localStorage.removeItem('kojanmap_jwt');
+      localStorage.removeItem('kojanmap_user');
+      localStorage.removeItem('kojanmap_sessionId');
       onLogout();
     } finally {
       setIsPending(false);

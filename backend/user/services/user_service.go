@@ -163,6 +163,17 @@ func (us *UserService) handleDBError(err error) error {
 
 // DeleteUser ユーザーを削除（退会）
 func (us *UserService) DeleteUser(googleID string) error {
+		// 退会前にANONYMOUSユーザーが存在しなければ作成
+		anonymous := models.User{
+			GoogleID:         "ANONYMOUS",
+			Gmail:            "anonymous@kojanmap.local",
+			Role:             shared.RoleUser,
+			RegistrationDate: time.Now(),
+		}
+		var count int64
+		if err := us.db.Model(&models.User{}).Where("googleId = ?", "ANONYMOUS").Count(&count).Error; err == nil && count == 0 {
+			_ = us.db.Create(&anonymous) // 失敗しても続行（既存ならOK）
+		}
 	if googleID == "" {
 		return errors.New("googleID is required")
 	}
@@ -171,7 +182,41 @@ func (us *UserService) DeleteUser(googleID string) error {
 	return us.db.Transaction(func(tx *gorm.DB) error {
 		var user models.User
 		if err := tx.Where("googleId = ?", googleID).First(&user).Error; err != nil {
+			fmt.Printf("[退会エラー] ユーザー取得失敗: %v\n", err)
 			return us.handleDBError(err)
+		}
+
+		// 投稿のuserIdを匿名化（ANONYMOUS）
+		if err := tx.Model(&models.Post{}).
+			Where("userId = ?", googleID).
+			Updates(map[string]interface{}{
+				"userId": "ANONYMOUS",
+				"deletedAt": time.Now(),
+			}).Error; err != nil {
+			fmt.Printf("[退会エラー] 投稿匿名化失敗: %v\n", err)
+			return fmt.Errorf("failed to anonymize posts: %w", err)
+		}
+
+		// askテーブルのuserIdを匿名化
+		if err := tx.Table("ask").Where("userId = ?", googleID).Update("userId", "ANONYMOUS").Error; err != nil {
+			fmt.Printf("[退会エラー] ask匿名化失敗: %v\n", err)
+			return fmt.Errorf("failed to anonymize ask: %w", err)
+		}
+
+		// リアクションのuserIdを匿名化
+		if err := tx.Model(&models.UserReaction{}).
+			Where("userId = ?", googleID).
+			Update("userId", "ANONYMOUS").Error; err != nil {
+			fmt.Printf("[退会エラー] リアクション匿名化失敗: %v\n", err)
+			return fmt.Errorf("failed to anonymize reactions: %w", err)
+		}
+
+		// 通報のuserIdを匿名化
+		if err := tx.Model(&models.Report{}).
+			Where("userId = ?", googleID).
+			Update("userId", "ANONYMOUS").Error; err != nil {
+			fmt.Printf("[退会エラー] 通報匿名化失敗: %v\n", err)
+			return fmt.Errorf("failed to anonymize reports: %w", err)
 		}
 
 		// 関連するセッションを無効化
@@ -179,11 +224,13 @@ func (us *UserService) DeleteUser(googleID string) error {
 		if err := tx.Model(&models.Session{}).
 			Where("googleId = ?", googleID).
 			Update("expiry", now).Error; err != nil {
+			fmt.Printf("[退会エラー] セッション無効化失敗: %v\n", err)
 			return fmt.Errorf("failed to revoke sessions: %w", err)
 		}
 
-		// ユーザーを削除
+		// ユーザーを物理削除（userIdは変更しない）
 		if err := tx.Delete(&user).Error; err != nil {
+			fmt.Printf("[退会エラー] ユーザー削除失敗: %v\n", err)
 			return fmt.Errorf("failed to delete user: %w", err)
 		}
 

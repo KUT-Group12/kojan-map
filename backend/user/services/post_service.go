@@ -9,8 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// "kojan-map/user/config" // ★削除: 不要になりました
-
 // PostService 投稿関連のビジネスロジック
 type PostService struct {
 	db *gorm.DB
@@ -303,4 +301,38 @@ func (ps *PostService) IsUserReacted(userID string, postID int32) (bool, error) 
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// GetPinSizes 複数のplaceIdに対してピンサイズを返す
+func (ps *PostService) GetPinSizes(placeIDs []int32) (map[int32]float64, error) {
+	result := make(map[int32]float64, len(placeIDs))
+	if len(placeIDs) == 0 {
+		return result, nil
+	}
+	// placeIdごとに投稿数をまとめて取得
+	type CountResult struct {
+		PlaceID int32
+		Count   int64
+	}
+	var counts []CountResult
+	if err := ps.db.Model(&models.Post{}).
+		Select("placeId, COUNT(*) as count").
+		Where("placeId IN ?", placeIDs).
+		Group("placeId").
+		Scan(&counts).Error; err != nil {
+		return nil, err
+	}
+	countMap := make(map[int32]int64, len(counts))
+	for _, c := range counts {
+		countMap[c.PlaceID] = c.Count
+	}
+	for _, pid := range placeIDs {
+		cnt := countMap[pid]
+		if cnt >= 50 {
+			result[pid] = 1.3
+		} else {
+			result[pid] = 1.0
+		}
+	}
+	return result, nil
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,6 +6,7 @@ import { Post, Place, User } from '../types';
 import { MapPin as MapPinIcon, Building2 } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 import { GetLocation } from './GetLocation';
+import axios from 'axios';
 
 interface MapViewProps {
   user: User;
@@ -16,15 +17,18 @@ interface MapViewProps {
   isOverlayOpen?: boolean;
 }
 
-export function MapViewScreen({
-  user,
-  posts,
-  places,
-  onPinClick,
-  onMapDoubleClick,
-  isOverlayOpen,
-}: MapViewProps) {
+// ピンサイズ取得APIの型
+interface PinSizesResponse {
+  pinSizes: Record<number, number>;
+}
+
+export function MapViewScreen(props: MapViewProps) {
+  const { user, posts, places, onPinClick, onMapDoubleClick, isOverlayOpen } = props;
+  // デバッグ: posts/placesのprops受け渡しを確認
+  console.log('[DEBUG] MapViewScreen posts:', posts);
+  console.log('[DEBUG] MapViewScreen places:', places);
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
+  const [pinSizes, setPinSizes] = useState<Record<number, number>>({});
 
   const groupedPosts = (posts || []).reduce(
     (acc, post) => {
@@ -95,6 +99,33 @@ export function MapViewScreen({
       iconAnchor: [22, 44],
     });
   };
+
+  const fetchPinSizes = async (placeIds: number[]): Promise<Record<number, number>> => {
+    if (placeIds.length === 0) return {};
+    try {
+      const res = await axios.post<PinSizesResponse>(
+        '/api/posts/pin/scales',
+        { placeIds }
+      );
+      return res.data.pinSizes || {};
+    } catch (e) {
+      console.error('ピンサイズ取得失敗', e);
+      return {};
+    }
+  };
+
+  useEffect(() => {
+    // ...既存の投稿・場所取得処理...
+    const updatePinSizes = async () => {
+      // 場所ID一覧を取得
+      const placeIds = places.map((p) => p.placeId);
+      const sizes = await fetchPinSizes(placeIds);
+      setPinSizes(sizes);
+    };
+    if (places.length > 0) {
+      updatePinSizes();
+    }
+  }, [places]);
 
   return (
     <div className="flex-1 w-full h-full relative" style={{ zIndex: isOverlayOpen ? 0 : 10 }}>
@@ -169,3 +200,5 @@ export function MapViewScreen({
     </div>
   );
 }
+
+export default MapViewScreen;

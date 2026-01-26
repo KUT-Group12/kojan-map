@@ -46,7 +46,10 @@ func SetupUserRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		api.GET("/posts/detail", postHandler.GetPostDetail)
 		api.GET("/posts/search", postHandler.SearchByKeyword)
 		api.GET("/posts/search/genre", postHandler.SearchByGenre)
+
 		api.GET("/posts/search/period", postHandler.SearchByPeriod)
+		// バッチピンサイズ取得（公開）
+		api.POST("/posts/pin/scales", postHandler.GetPinSizes)
 
 		// Genres (Public)
 		api.GET("/genres", genreHandler.GetGenres)
