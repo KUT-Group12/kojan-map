@@ -37,6 +37,9 @@ test_output.txt
 tsc.log
 tsc_output.txt
 parsing_debug.txt
+combined_errors.txt
+e2e_console_final.txt
+e2e_console.txt
 
 # ビルド成果物
 build/
