@@ -2,6 +2,7 @@
 .env.frontend
 .env.backend
 .env.*
+.env
 
 # IDE
 .vscode/
@@ -35,6 +36,7 @@ test.log
 test_output.txt
 tsc.log
 tsc_output.txt
+parsing_debug.txt
 
 # ビルド成果物
 build/
@@ -48,3 +50,5 @@ Thumbs.db
 
 frontend/node_modules
 *.txt
+node_modules
+backend/C:Usersukimago/
