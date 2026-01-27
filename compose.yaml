@@ -11,6 +11,7 @@ services:
       DB_PASSWORD: root
       DB_NAME: kojanmap
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     depends_on:
       - db
 
@@ -56,7 +57,7 @@ services:
       API_URL: http://backend:8080
     depends_on:
       - frontend
-    command: ["wait-for-it.sh", "backend", "8080", "frontend", "5173", "--", "npm", "run", "e2e", "--", "--workers=1", "--reporter=list"]
+    command: [ "wait-for-it.sh", "backend", "8080", "frontend", "5173", "--", "npm", "run", "e2e", "--", "--workers=1", "--reporter=list" ]
 
 volumes:
   db-data:
