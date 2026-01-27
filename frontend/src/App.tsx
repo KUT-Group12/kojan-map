@@ -5,25 +5,95 @@ import { MainApp } from './components/MainApp';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
 import { UserRole, User, Business } from './types';
+import { getStoredUser, getStoredJWT, logout } from './lib/auth';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [business, setBusiness] = useState<Business | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = getStoredUser();
+    if (!storedUser) return null;
+
+    const googleId = storedUser.googleId || storedUser.id;
+    return {
+      googleId,
+      gmail: storedUser.email,
+      role: storedUser.role,
+      registrationDate: storedUser.createdAt,
+    };
+  });
+  console.log('App user state:', user);
+
+  const [business, setBusiness] = useState<Business | null>(() => {
+    const storedUser = getStoredUser();
+    if (!storedUser) return null;
+    if (storedUser.role !== 'business') return null;
+
+    const googleId = storedUser.googleId || storedUser.id;
+    return {
+      businessId: 0,
+      businessName: storedUser.businessName || '',
+      kanaBusinessName: '',
+      zipCode: '',
+      address: '',
+      phone: '',
+      registDate: '',
+      profileImage: storedUser.businessIcon,
+      userId: googleId,
+      placeId: 0,
+    };
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    const checkUser = async () => {
+      try {
+        const token = getStoredJWT();
+        if (token) {
+          // 1. クライアント側で有効期限チェック
+          const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(atob(base64));
+          if (payload.exp * 1000 < Date.now()) {
+            logout();
+            setUser(null);
+            setBusiness(null);
+            return;
+          }
+
+          // 2. サーバー側でユーザー存在チェック (DBリセット対策)
+          const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+          const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!res.ok) {
+            console.warn('User not found on server or token invalid. Logging out.');
+            logout();
+            setUser(null);
+            setBusiness(null);
+          }
+        }
+      } catch (error) {
+        console.error('Token validation failed, logging out:', error);
+        logout();
+        setUser(null);
+        setBusiness(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUser();
+    // const timer = setTimeout(() => {
+    //   setIsLoading(false);
+    // }, 1500);
+    // return () => clearTimeout(timer);
   }, []);
 
   // 引数として受け取ったデータをそのままステートにセットする
-  const handleLogin = (role: UserRole, googleId: string) => {
+  const handleLogin = (role: UserRole, googleId: string, email: string) => {
     // 1. Userオブジェクトを組み立てる
     const userData: User = {
       googleId: googleId,
-      gmail: `${googleId}@example.com`, // 便宜上のメールアドレス
+      gmail: email, // 実際のメールアドレスを使用
       role: role,
       registrationDate: new Date().toLocaleDateString(),
     };
@@ -34,13 +104,13 @@ export default function App() {
     // ビジネスロールの場合は初期状態をセット（必要に応じて）
     if (role === 'business') {
       setBusiness({
-        businessId: 0, // 仮のID
+        businessId: 0,
         businessName: '',
         kanaBusinessName: '',
         zipCode: '',
         address: '',
         phone: '',
-        registDate: new Date().toLocaleDateString(),
+        registDate: '',
         userId: googleId,
         placeId: 0,
       });

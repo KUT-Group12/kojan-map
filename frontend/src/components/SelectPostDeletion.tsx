@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getStoredJWT } from '../lib/auth';
 import { Trash2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
@@ -27,11 +28,18 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
     setIsDeleting(true);
 
     try {
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
+
       // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
       const response = await fetch(`${API_BASE_URL}/api/posts/anonymize`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           postId: postId,

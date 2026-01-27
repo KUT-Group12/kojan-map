@@ -3,6 +3,7 @@ import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Heart, Loader2 } from 'lucide-react';
 import { Post, User } from '../types';
+import { getStoredJWT } from '../lib/auth';
 // 固定の色定数 (genreColors) のインポートを削除
 
 const API_BASE_URL =
@@ -10,14 +11,25 @@ const API_BASE_URL =
 
 interface UserReactionViewScreenProps {
   user: User;
+  posts?: Post[];
   onPinClick: (post: Post) => void;
 }
 
-export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScreenProps) {
-  const [reactedPosts, setReactedPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function UserReactionViewScreen({
+  user,
+  posts: initialPosts,
+  onPinClick,
+}: UserReactionViewScreenProps) {
+  const [reactedPosts, setReactedPosts] = useState<Post[]>(initialPosts || []);
+  const [isLoading, setIsLoading] = useState(!initialPosts);
 
   useEffect(() => {
+    if (initialPosts) {
+      setReactedPosts(initialPosts);
+      setIsLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
     let active = true;
 
@@ -29,9 +41,15 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       }
       setIsLoading(true);
       try {
+        const token = getStoredJWT();
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(
           `${API_BASE_URL}/api/reactions/list?googleId=${encodeURIComponent(user.googleId)}`,
-          { signal: controller.signal }
+          { signal: controller.signal, headers }
         );
         if (!response.ok) throw new Error('リアクション履歴の取得に失敗しました');
 
@@ -51,7 +69,7 @@ export function UserReactionViewScreen({ user, onPinClick }: UserReactionViewScr
       active = false;
       controller.abort();
     };
-  }, [user?.googleId]);
+  }, [user?.googleId, initialPosts]);
 
   // DBからデータが来るため、IDからキーへ変換するロジック (genreIdToKey) は削除
 

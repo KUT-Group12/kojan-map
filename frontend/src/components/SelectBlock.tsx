@@ -3,18 +3,17 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { Block } from '../types';
+import { getStoredJWT } from '../lib/auth';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface SelectBlockProps {
   userId: Block['blockedId'];
-  blockerId: Block['blockerId'];
   onBlockUser: (userId: string) => void; // 親コンポーネントで定義された処理
   onClose: () => void;
 }
 
-export function SelectBlock({ userId, blockerId, onBlockUser, onClose }: SelectBlockProps) {
+export function SelectBlock({ userId, onBlockUser, onClose }: SelectBlockProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const handleBlock = async () => {
     // ユーザーに確認を促す
@@ -29,14 +28,21 @@ export function SelectBlock({ userId, blockerId, onBlockUser, onClose }: SelectB
     setIsSubmitting(true);
     try {
       // API仕様書(POST /api/users/block)に合わせてリクエスト
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        setIsSubmitting(false);
+        return;
+      }
       const response = await fetch(`${API_BASE_URL}/api/users/block`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userId: userId, // API仕様のキー名に合わせる
-          blockerId: blockerId, // API仕様のキー名に合わせる
+          // blockerId: blockerId, // Backend extracts from token
         }),
       });
 

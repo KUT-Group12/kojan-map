@@ -9,9 +9,8 @@ import { Upload } from 'lucide-react';
 import { User, Business, Genre } from '../types';
 import { toast } from 'sonner';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface CreatePinModalProps {
   user: User;
@@ -25,9 +24,12 @@ interface CreatePinModalProps {
     text: string;
     genre: Genre;
     images: string[];
+    postId?: number;
+    placeId?: number;
   }) => void;
   initialLatitude?: number;
   initialLongitude?: number;
+  targetPlaceId?: number; // ★追加
 }
 
 export function NewPostScreen({
@@ -38,10 +40,22 @@ export function NewPostScreen({
   onCreate,
   initialLatitude,
   initialLongitude,
+  targetPlaceId, // ★追加
 }: CreatePinModalProps) {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<Genre | null>(genres[0] || null);
+  /* デフォルトジャンルを「その他」に設定 */
+  const [selectedGenreId, setSelectedGenreId] = useState<string>(() => {
+    // genresの中から "other" または "その他" を探す
+    const other = genres.find(
+      (g) => (g.genreName as string) === 'other' || (g.genreName as string) === 'Others' || (g.genreName as string) === 'その他'
+    );
+    return other ? other.genreId.toString() : genres[0]?.genreId?.toString() || '';
+  });
+  // const [selectedGenreId, setSelectedGenreId] = useState<string>(
+  //   genres[0]?.genreId?.toString() || ''
+  // ); 
+  const selectedGenre = genres.find((g) => g.genreId.toString() === selectedGenreId) || null;
 
   // 初期値の優先順位を設定（引数があればそれを使い、なければデフォルト値を設定）
   const [latitude, setLatitude] = useState(String(initialLatitude ?? 33.6071));
@@ -49,6 +63,16 @@ export function NewPostScreen({
   const [images, setImages] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ジャンル名の日本語変換マップ
+  const genreNameMap: Record<string, string> = {
+    food: 'グルメ',
+    event: 'イベント',
+    scene: '景色',
+    store: 'お店',
+    emergency: '緊急情報',
+    other: 'その他',
+  };
 
   // ファイルをBase64に変換するユーティリティ
   const fileToBase64 = (file: File): Promise<string> => {
@@ -95,38 +119,33 @@ export function NewPostScreen({
       toast.error('タイトルを入力してください');
       return;
     }
-
     if (title.length > 50) {
       toast.error('タイトルは50文字以内で入力してください');
       return;
     }
-
-    if (!text.trim()) {
-      toast.error('説明を入力してください');
-      return;
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      toast.error('有効な位置情報を入力してください');
-      return;
-    }
     try {
       // 1. バックエンドと繋げる
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
       const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title: title,
-          description: text,
+          description: text, // バックエンド仕様に合わせてdescription
           latitude: lat,
           longitude: lng,
-          genre: selectedGenre,
+          genre: selectedGenre ? selectedGenre.genreName : '', // 英語名で送信
           images: images,
+          placeId: targetPlaceId, // ★追加: 既存の場所IDがあれば送信
         }),
       });
 
@@ -143,6 +162,8 @@ export function NewPostScreen({
         text,
         genre: selectedGenre,
         images,
+        postId: data.postId,
+        placeId: data.placeId,
       });
 
       toast.success('投稿しました！');
@@ -172,6 +193,7 @@ export function NewPostScreen({
             </span>
             <Input
               id="title"
+              data-testid="post-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="投稿のタイトルを入力"
@@ -184,6 +206,7 @@ export function NewPostScreen({
             <Label htmlFor="text">説明 *</Label>
             <Textarea
               id="text"
+              data-testid="post-description"
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="詳しい説明を入力してください"
@@ -196,14 +219,14 @@ export function NewPostScreen({
           <div>
             <Label htmlFor="genre">ジャンル *</Label>
             <Select
-              value={selectedGenre?.genreId.toString()}
-              onValueChange={(id) => {
-                const g = genres.find((item) => item.genreId.toString() === id);
-                if (g) setSelectedGenre(g);
-              }}
+              value={selectedGenreId}
+              onValueChange={(id) => setSelectedGenreId(id)}
+              disabled={genres.length === 0}
             >
-              <SelectTrigger id="genre">
-                <SelectValue placeholder="ジャンルを選択" />
+              <SelectTrigger id="genre" data-testid="genre-select">
+                <SelectValue
+                  placeholder={genres.length === 0 ? 'ジャンルがありません' : 'ジャンルを選択'}
+                />
               </SelectTrigger>
               <SelectContent>
                 {/* 5. DBから取得した genres を回す */}
@@ -211,7 +234,7 @@ export function NewPostScreen({
                   <SelectItem key={g.genreId} value={g.genreId.toString()}>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.color }} />
-                      {g.genreName}
+                      {genreNameMap[g.genreName] ?? g.genreName}
                     </div>
                   </SelectItem>
                 ))}
@@ -305,7 +328,7 @@ export function NewPostScreen({
           )}
 
           <div className="flex space-x-2 pt-4">
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1" data-testid="submit-post">
               投稿する
             </Button>
           </div>

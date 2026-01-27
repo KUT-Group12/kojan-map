@@ -72,8 +72,9 @@ export function UserDisplayMyPage({
               </Button>
             ) : (
               <UserInputBusinessApplication
+                user={user}
                 onUpdateUser={(data) => {
-                  handleBusinessRegistration(data);
+                  onUpdateUser(data);
                 }}
                 onCancel={() => setShowBusinessRegistration(false)}
               />
@@ -90,12 +91,12 @@ export function UserDisplayMyPage({
 
           {/* 投稿一覧 */}
           <TabsContent value="posts" className="space-y-4">
-            <SelectPostHistory user={user} onPinClick={onPinClick} />
+            <SelectPostHistory user={user} posts={posts} onPinClick={onPinClick} />
           </TabsContent>
 
           {/* リアクション履歴 */}
           <TabsContent value="reactions" className="space-y-4">
-            <UserReactionViewScreen user={user} onPinClick={onPinClick} />
+            <UserReactionViewScreen user={user} posts={reactedPosts} onPinClick={onPinClick} />
           </TabsContent>
 
           {/* 設定 */}

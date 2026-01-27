@@ -3,9 +3,7 @@ import { Heart, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { Reaction } from '../types';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { getStoredJWT } from '../lib/auth';
 
 interface UserTriggerReactionProps {
   postId: Reaction['postId'];
@@ -18,7 +16,7 @@ interface UserTriggerReactionProps {
 
 export function UserTriggerReaction({
   postId,
-  userId,
+  // userId, // Unused
   isReacted,
   userRole,
   isDisabled,
@@ -34,16 +32,27 @@ export function UserTriggerReaction({
     try {
       // API仕様: POST(追加) または DELETE(削除)
       // ボディのキー名は仕様書の postId, userId に合わせる
-      const method = isReacted ? 'DELETE' : 'POST';
-      const response = await fetch(`${API_BASE_URL}/api/reactions`, {
+      // Backend toggles reaction on POST
+      const method = 'POST';
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('認証情報がありません。再度ログインしてください。');
+        return;
+      }
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL ||
+        import.meta.env.VITE_API_BASE_URL ||
+        'http://localhost:8080';
+
+      const response = await fetch(`${API_BASE_URL}/api/posts/reaction`, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           postId: postId,
-          userId: userId,
-        }),
+        }), // Backend expects only postId, userId is extracted from token
       });
 
       if (!response.ok) {

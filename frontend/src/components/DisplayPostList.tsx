@@ -10,8 +10,7 @@ import { ReportScreen } from './ReportScreen';
 import { SelectBlock } from './SelectBlock';
 import { SelectPostDeletion } from './SelectPostDeletion';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface PinDetailModalProps {
   post: Post;
@@ -23,7 +22,7 @@ interface PinDetailModalProps {
   onDelete: (postId: number) => void;
   onBlockUser?: (userId: string) => void;
   postsAtLocation?: Post[];
-  onOpenCreateAtLocation?: (lat: number, lng: number) => void;
+  onOpenCreateAtLocation?: (lat: number, lng: number, placeId?: number) => void;
   onSelectPin?: (post: Post) => void;
 }
 
@@ -206,7 +205,7 @@ export function DisplayPostList({
                   className="aspect-video overflow-hidden rounded-xl shadow-inner bg-slate-100"
                 >
                   <img
-                    src={image}
+                    src={image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`}
                     alt={`投稿画像 ${index + 1}`}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   />
@@ -223,7 +222,7 @@ export function DisplayPostList({
               variant="ghost"
               size="sm"
               className="text-blue-600 hover:text-blue-700 font-bold"
-              onClick={() => onOpenCreateAtLocation?.(place.latitude, place.longitude)}
+              onClick={() => onOpenCreateAtLocation?.(place.latitude, place.longitude, place.placeId)}
             >
               ここに投稿を追加
             </Button>
@@ -260,12 +259,7 @@ export function DisplayPostList({
                     通報
                   </Button>
                   {onBlockUser && (
-                    <SelectBlock
-                      userId={post.userId}
-                      blockerId={currentUser.googleId}
-                      onBlockUser={onBlockUser}
-                      onClose={onClose}
-                    />
+                    <SelectBlock userId={post.userId} onBlockUser={onBlockUser} onClose={onClose} />
                   )}
                 </>
               )}
@@ -277,7 +271,6 @@ export function DisplayPostList({
               <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
                 <ReportScreen
                   postId={post.postId}
-                  userId={currentUser.googleId}
                   isReporting={isReporting}
                   setIsReporting={setIsReporting}
                   onReportComplete={onClose}
@@ -286,7 +279,7 @@ export function DisplayPostList({
             </div>
           )}
 
-          {postsAtLocation && postsAtLocation.length > 1 && (
+          {postsAtLocation && postsAtLocation.length > 0 && (
             <div className="mt-8 pt-8 border-t border-slate-100">
               <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
                 <span className="w-1 h-4 bg-blue-500 rounded-full mr-2" />
@@ -297,11 +290,10 @@ export function DisplayPostList({
                   <button
                     key={p.postId}
                     onClick={() => p.postId !== post.postId && onSelectPin?.(p)}
-                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
-                      p.postId === post.postId
-                        ? 'border-blue-500 bg-blue-50 shadow-inner'
-                        : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
-                    }`}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all text-left ${p.postId === post.postId
+                      ? 'border-blue-500 bg-blue-50 shadow-inner'
+                      : 'border-slate-100 hover:border-slate-300 hover:bg-slate-50'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div

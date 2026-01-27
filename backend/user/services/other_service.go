@@ -4,14 +4,19 @@ import (
 	"errors"
 	"time"
 
-	"kojan-map/user/config"
 	"kojan-map/user/models"
 
 	"gorm.io/gorm"
 )
 
 // BlockService ブロック関連のビジネスロジック
-type BlockService struct{}
+type BlockService struct {
+	db *gorm.DB
+}
+
+func NewBlockService(db *gorm.DB) *BlockService {
+	return &BlockService{db: db}
+}
 
 // BlockUser ユーザーをブロック
 func (bs *BlockService) BlockUser(userID, blockerID string) error {
@@ -25,7 +30,7 @@ func (bs *BlockService) BlockUser(userID, blockerID string) error {
 
 	// 既にブロック済みか確認
 	var existingBlock models.UserBlock
-	result := config.DB.Where("blockerId = ? AND blockedId = ?", blockerID, userID).First(&existingBlock)
+	result := bs.db.Where("blockerId = ? AND blockedId = ?", blockerID, userID).First(&existingBlock)
 	if result.Error == nil {
 		return errors.New("user already blocked")
 	}
@@ -37,7 +42,7 @@ func (bs *BlockService) BlockUser(userID, blockerID string) error {
 		BlockerId: blockerID,
 		BlockedId: userID,
 	}
-	if err := config.DB.Create(&block).Error; err != nil {
+	if err := bs.db.Create(&block).Error; err != nil {
 		return errors.New("failed to block user")
 	}
 	return nil
@@ -49,7 +54,7 @@ func (bs *BlockService) UnblockUser(userID, blockerID string) error {
 		return errors.New("userID and blockerID are required")
 	}
 
-	result := config.DB.Where("blockerId = ? AND blockedId = ?", blockerID, userID).
+	result := bs.db.Where("blockerId = ? AND blockedId = ?", blockerID, userID).
 		Delete(&models.UserBlock{})
 
 	if result.Error != nil {
@@ -69,7 +74,7 @@ func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) 
 	}
 
 	var blocks []models.UserBlock
-	if err := config.DB.Where("blockerId = ?", userID).
+	if err := bs.db.Where("blockerId = ?", userID).
 		Find(&blocks).Error; err != nil {
 		return nil, errors.New("failed to fetch block list")
 	}
@@ -77,7 +82,13 @@ func (bs *BlockService) GetBlockList(userID string) ([]models.UserBlock, error) 
 }
 
 // ReportService 通報関連のビジネスロジック
-type ReportService struct{}
+type ReportService struct {
+	db *gorm.DB
+}
+
+func NewReportService(db *gorm.DB) *ReportService {
+	return &ReportService{db: db}
+}
 
 // CreateReport 通報を作成
 func (rs *ReportService) CreateReport(userID string, postID int32, reason string) error {
@@ -93,11 +104,17 @@ func (rs *ReportService) CreateReport(userID string, postID int32, reason string
 		ReportFlag: false,
 		RemoveFlag: false,
 	}
-	return config.DB.Create(&report).Error
+	return rs.db.Create(&report).Error
 }
 
 // ContactService 問い合わせ関連のビジネスロジック
-type ContactService struct{}
+type ContactService struct {
+	db *gorm.DB
+}
+
+func NewContactService(db *gorm.DB) *ContactService {
+	return &ContactService{db: db}
+}
 
 // CreateContact 問い合わせを作成
 func (cs *ContactService) CreateContact(userID, subject, text string) error {
@@ -112,26 +129,29 @@ func (cs *ContactService) CreateContact(userID, subject, text string) error {
 		Text:      text,
 		AskFlag:   false,
 	}
-	return config.DB.Create(&contact).Error
+	return cs.db.Create(&contact).Error
 }
 
 // BusinessApplicationService 事業者申請関連のビジネスロジック
-type BusinessApplicationService struct{}
+type BusinessApplicationService struct {
+	db *gorm.DB
+}
+
+func NewBusinessApplicationService(db *gorm.DB) *BusinessApplicationService {
+	return &BusinessApplicationService{db: db}
+}
 
 // CreateBusinessApplication 事業者申請を作成
-func (bas *BusinessApplicationService) CreateBusinessApplication(userID, businessName, kanaBusinessName, zipCode, address, phone string) error {
-	if userID == "" || businessName == "" || kanaBusinessName == "" || address == "" || zipCode == "" || phone == "" {
-		return errors.New("all fields are required")
+func (bas *BusinessApplicationService) CreateBusinessApplication(userID, name, address, phone string) error {
+	if userID == "" || name == "" || address == "" {
+		return errors.New("userID, name, and address are required")
 	}
 
-	app := models.BusinessApplication{
-		UserID:           userID,
-		BusinessName:     businessName,
-		KanaBusinessName: kanaBusinessName,
-		ZipCode:          zipCode,
-		Address:          address,
-		Phone:            phone,
-		RegistDate:       time.Now(),
+	app := models.BusinessRequest{
+		UserID:  userID,
+		Name:    name,
+		Address: address,
+		Phone:   phone,
 	}
-	return config.DB.Create(&app).Error
+	return bas.db.Create(&app).Error
 }

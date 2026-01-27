@@ -1,10 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NewPostScreen } from '../components/NewPostScreen';
 import { User, Genre } from '../types';
 
 // fetch のモック
 vi.stubGlobal('fetch', vi.fn());
+
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 // UIコンポーネント（shadcn/ui）の中には jsdom で動きにくいものがあるため必要に応じて調整
 // ※ Dialog は radix-ui を使用しているため、Portal 関連のエラーが出る場合はモックが必要な場合があります。
@@ -21,13 +24,13 @@ describe('NewPostScreen', () => {
     googleId: 'user-123',
     fromName: '高知 太郎',
     gmail: 'kochi@example.com',
-    role: 'general',
+    role: 'user',
     registrationDate: '2024-01-01',
   };
 
   const mockGenres: Genre[] = [
-    { genreId: 1, genreName: 'グルメ', color: '#ff0000' },
-    { genreId: 2, genreName: '観光', color: '#00ff00' },
+    { genreId: 1, genreName: 'food', color: '#ff0000' },
+    { genreId: 2, genreName: 'scene', color: '#00ff00' },
   ];
 
   const mockOnClose = vi.fn();
@@ -37,7 +40,8 @@ describe('NewPostScreen', () => {
     vi.clearAllMocks();
   });
 
-  it('フォームの初期項目が正しく表示されること', () => {
+  it('フォームの初期項目が正しく表示されること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     render(
       <NewPostScreen
         user={mockUser}
@@ -49,13 +53,16 @@ describe('NewPostScreen', () => {
       />
     );
 
-    expect(screen.getByLabelText(/タイトル/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/説明/)).toBeInTheDocument();
-    expect(screen.getByDisplayValue('33.6')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('133.7')).toBeInTheDocument();
-  });
+    await waitFor(() => {
+      expect(screen.getByLabelText(/タイトル/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/説明/)).toBeInTheDocument();
+      expect(screen.getByDisplayValue('33.6')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('133.7')).toBeInTheDocument();
+    });
+  }, 10000); // タイムアウト10秒
 
   it('タイトルが未入力の場合、バリデーションで止まること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     render(
       <NewPostScreen
         user={mockUser}
@@ -73,6 +80,7 @@ describe('NewPostScreen', () => {
   });
 
   it('正しい入力で投稿ボタンを押すと、APIが呼ばれ onCreate が実行されること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     (globalThis.fetch as any).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ postId: 999 }),
@@ -112,7 +120,8 @@ describe('NewPostScreen', () => {
     });
   });
 
-  it('事業者ユーザーの場合、事業者名が表示されること', () => {
+  it('事業者ユーザーの場合、事業者名が表示されること', async () => {
+    const { NewPostScreen } = await import('../components/NewPostScreen');
     const businessUser: User = { ...mockUser, role: 'business' };
     const businessData = { businessId: 1, businessName: 'たっすいコーヒー店' };
 

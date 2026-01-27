@@ -9,7 +9,7 @@ import { Inquiry as BaseInquiry } from '../types';
 export interface Inquiry extends BaseInquiry {
   email: string; // 表示用
   fromName: string; // 表示用
-  role: 'general' | 'business'; // 表示用バッジ分岐用
+  role: 'user' | 'business'; // 表示用バッジ分岐用
   draft?: string; // UI管理用（下書き）
 }
 

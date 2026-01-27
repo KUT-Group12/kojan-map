@@ -6,7 +6,7 @@ import { Post, User } from '../types';
 describe('Sidebar', () => {
   const mockUser: User = {
     googleId: 'u1',
-    role: 'general',
+    role: 'user',
     fromName: 'Test User',
     gmail: 'test@example.com',
     registrationDate: new Date().toISOString(),

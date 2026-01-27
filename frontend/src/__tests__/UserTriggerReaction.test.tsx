@@ -4,12 +4,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserTriggerReaction } from '../components/UserTriggerReaction';
 import { toast } from 'sonner';
 
+// テスト用APIベースURL
+const TEST_API_URL = process.env.VITE_API_URL || 'http://127.0.0.1:8080';
+
 // sonner のモック
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
 }));
 
 describe('UserTriggerReaction', () => {
@@ -46,10 +52,14 @@ describe('UserTriggerReaction', () => {
 
     // API呼び出しの検証 (POST)
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/reactions'),
+      `${TEST_API_URL}/api/posts/reaction`,
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ postId: 101, userId: 'user-123' }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer mock-token',
+        },
+        body: JSON.stringify({ postId: 101 }),
       })
     );
 
@@ -69,11 +79,16 @@ describe('UserTriggerReaction', () => {
     const button = screen.getByRole('button', { name: 'リアクション済み' });
     await user.click(button);
 
-    // API呼び出しの検証 (DELETE)
+    // API呼び出しの検証 (POST - 削除もPOSTでトグル)
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/reactions'),
+      expect.stringContaining('/api/posts/reaction'),
       expect.objectContaining({
-        method: 'DELETE',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer mock-token',
+        },
+        body: JSON.stringify({ postId: 101 }),
       })
     );
 
@@ -104,17 +119,23 @@ describe('UserTriggerReaction', () => {
 
   it('通信中はボタンが「処理中...」になり非活性になること', async () => {
     const user = userEvent.setup();
-    // 意図的に解決を遅らせるプロミス
+    // 意図的に解決を遅らせるプロミス（テストが安定するように手動でresolveする）
+    let resolveFetch: ((value: any) => void) | undefined;
     (global.fetch as any).mockReturnValue(
-      new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 100))
+      new Promise((resolve) => {
+        resolveFetch = resolve;
+      })
     );
 
     render(<UserTriggerReaction {...defaultProps} />);
 
     await user.click(screen.getByRole('button', { name: 'リアクション' }));
 
-    // 通信中の表示確認
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeDisabled();
+      expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+
+    resolveFetch?.({ ok: true });
   });
 });

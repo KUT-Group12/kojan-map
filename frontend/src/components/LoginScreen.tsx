@@ -3,93 +3,88 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Checkbox } from './ui/checkbox';
 import { useState } from 'react';
 import { MapPin, User, Building2, Loader2 } from 'lucide-react';
+import { exchangeGoogleTokenForJWT, storeJWT, storeUser } from '../lib/auth';
+import { useGoogleLogin } from '@react-oauth/google';
 
-type UserRole = 'general' | 'business' | 'admin';
+type UserRole = 'user' | 'business' | 'admin';
 
 interface LoginScreenProps {
   // ログイン成功時に Google ID と 選択した役割 を親コンポーネントに渡す
-  onLogin: (role: UserRole, googleId: string) => void;
+  onLogin: (role: UserRole, googleId: string, email: string) => void;
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [isSelectingRole, setIsSelectingRole] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  /* State cleanup */
+  // const [isSelectingRole, setIsSelectingRole] = useState(false); // Removed
+  const [isLoading, setIsLoading] = useState(false); // Restored
+  // const [googleToken, setGoogleToken] = useState<string | null>(null); // Removed
+  // const [googleId, setGoogleId] = useState<string | null>(null); // Removed
+  // const [userEmail, setUserEmail] = useState<string | null>(null); // Removed
 
-  // 取得した Google ID と Gmail を一時保存
-  const [googleId, setGoogleId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsLoading(true);
+      try {
+        // 1. Googleユーザー情報を取得
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        if (!userInfoRes.ok) {
+          throw new Error('Googleユーザー情報の取得に失敗しました');
+        }
+        const userInfo = await userInfoRes.json();
 
-  const handleGoogleLoginClick = async () => {
+            // 2. バックエンド認証 (初期ロールは 'user' 固定)
+            console.log('[DEBUG] exchangeGoogleTokenForJWT google_token:', tokenResponse.access_token, 'role:', 'user');
+            const data = await exchangeGoogleTokenForJWT(tokenResponse.access_token, 'user');
+
+        // 3. 保存 & 遷移
+        storeJWT(data.jwt_token);
+        storeUser(data.user);
+        // 追加: セッションID保存
+        let sessionIdToStore = null;
+        if (data.sessionId) {
+          sessionIdToStore = data.sessionId;
+        } else if (data.session_id) {
+          sessionIdToStore = data.session_id;
+        } else if (data.session && data.session.sessionId) {
+          sessionIdToStore = data.session.sessionId;
+        } else if (data.session && data.session.id) {
+          sessionIdToStore = data.session.id;
+        }
+        console.log('[Login] 保存するsessionId:', sessionIdToStore);
+        if (sessionIdToStore) {
+          localStorage.setItem('kojanmap_sessionId', sessionIdToStore);
+          console.log('[Login] sessionIdをlocalStorageに保存しました:', sessionIdToStore);
+        } else {
+          console.warn('[Login] sessionIdが取得できませんでした。APIレスポンス:', data);
+        }
+
+        // バックエンドから返却されたロール（既存なら business の可能性あり）を使用
+        onLogin(data.user.role as UserRole, userInfo.sub, userInfo.email);
+
+      } catch (error) {
+        console.error('Login Error:', error);
+        alert('ログイン処理に失敗しました。');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      console.error('Login Failed');
+      alert('Googleログインに失敗しました');
+      setIsLoading(false);
+    },
+  });
+
+  const handleGoogleLoginClick = () => {
     if (!agreedToTerms) {
       alert('利用規約に同意してください');
       return;
     }
-
-    setIsLoading(true);
-
-    try {
-      if (import.meta.env.DEV) {
-        // 開発環境用のモック処理
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        const mockGoogleId = 'user_google_123456789';
-        const mockEmail = 'example@gmail.com';
-
-        setGoogleId(mockGoogleId);
-        setUserEmail(mockEmail);
-        setIsSelectingRole(true); // ID取得成功後に役割選択へ
-      } else {
-        // TODO: 本番環境用の実認証フロー（Google OAuth 等）をここに実装する
-        console.warn('Production auth not implemented yet');
-        alert('本番環境でのログインは未実装です。');
-      }
-    } catch (error) {
-      console.error('Auth Error:', error);
-      alert('Google認証に失敗しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRoleSelect = async (role: UserRole) => {
-    if (!googleId || !userEmail) {
-      alert('認証情報が不足しています');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // バックエンドへの登録処理（必要に応じて有効化）
-      /*
-      const response = await fetch('http://localhost:8080/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          googleId: googleId,
-          gmail: userEmail,
-          role: role,
-        }),
-      });
-
-      if (!response.ok) throw new Error('登録に失敗しました');
-
-      const data = await response.json();
-      console.log('Backend Response (SessionId):', data.sessionId);
-      */
-
-      // 親コンポーネントにログイン情報を渡す
-      onLogin(role, googleId);
-      console.log('Login successful:', { role, googleId, email: userEmail });
-    } catch (error) {
-      console.error('登録エラー:', error);
-      alert('登録処理に失敗しました。もう一度お試しください。');
-    } finally {
-      setIsLoading(false);
-    }
+    login();
   };
 
   return (
@@ -106,106 +101,47 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {!isSelectingRole ? (
-            /* ステップ1: 利用規約同意 & Google認証 */
-            <div className="space-y-4">
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={agreedToTerms}
-                  onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
-                />
-                <label htmlFor="terms" className="text-sm leading-none cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={() => setShowTerms(!showTerms)}
-                    className="text-blue-600 hover:underline font-medium"
-                  >
-                    利用規約
-                  </button>
-                  に同意する
-                </label>
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="terms"
+                checked={agreedToTerms}
+                onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+              />
+              <label htmlFor="terms" className="text-sm leading-none cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() => setShowTerms(!showTerms)}
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  利用規約
+                </button>
+                に同意する
+              </label>
+            </div>
 
-              {showTerms && (
-                <div className="border rounded-lg p-4 bg-gray-50 max-h-40 overflow-y-auto text-xs text-gray-600 animate-in fade-in">
-                  <p className="font-bold">【利用規約】</p>
-                  <p>本サービスはGoogle IDを利用した認証を行います...</p>
-                </div>
+            {showTerms && (
+              <div className="border rounded-lg p-4 bg-gray-50 max-h-40 overflow-y-auto text-xs text-gray-600 animate-in fade-in">
+                <p className="font-bold">【利用規約】</p>
+                <p>本サービスはGoogle IDを利用した認証を行います...</p>
+              </div>
+            )}
+
+            <Button
+              onClick={handleGoogleLoginClick}
+              className="w-full"
+              disabled={!agreedToTerms || isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <span className="flex items-center">
+                  <GoogleIcon />
+                  Googleでログイン
+                </span>
               )}
-
-              <Button
-                onClick={handleGoogleLoginClick}
-                className="w-full"
-                disabled={!agreedToTerms || isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <span className="flex items-center">
-                    <GoogleIcon />
-                    Googleでログイン
-                  </span>
-                )}
-              </Button>
-            </div>
-          ) : (
-            /* ステップ2: 認証済みユーザーの役割選択 */
-            <div className="space-y-4 text-center animate-in slide-in-from-bottom-4 duration-500">
-              <p className="text-sm font-bold text-gray-700">認証が完了しました</p>
-              {userEmail && <p className="text-xs text-gray-500 mb-2">アカウント: {userEmail}</p>}
-              <p className="text-xs text-gray-500 mb-4">登録するアカウント種別を選択してください</p>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-28 flex flex-col space-y-2 border-2 hover:border-blue-500"
-                  onClick={() => handleRoleSelect('general')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <User className="w-8 h-8 text-blue-500" />
-                      <span>一般会員</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-28 flex flex-col space-y-2 border-2 hover:border-purple-500"
-                  onClick={() => handleRoleSelect('business')}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Building2 className="w-8 h-8 text-purple-500" />
-                      <span>事業者会員</span>
-                    </>
-                  )}
-                </Button>
-
-                {/* 管理者ロールは原則としてDB/バックエンド側で付与するため、フロントエンドでの選択は開発時のみに制限 */}
-                {import.meta.env.DEV && (
-                  <Button
-                    variant="outline"
-                    className="h-28 w-1/2 justify-self-center col-span-2 flex flex-col items-center justify-center space-y-2 border-2 hover:border-amber-500"
-                    onClick={() => handleRoleSelect('admin')}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <span className="font-bold">管理者 (Dev Only)</span>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

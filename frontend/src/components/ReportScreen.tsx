@@ -5,12 +5,11 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { Report } from '../types';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface ReportScreenProps {
   postId: Report['postId'];
-  userId: Report['userId'];
   isReporting: boolean;
   setIsReporting: (value: boolean) => void;
   onReportComplete: () => void;
@@ -18,7 +17,6 @@ interface ReportScreenProps {
 
 export function ReportScreen({
   postId,
-  userId,
   isReporting,
   setIsReporting,
   onReportComplete,
@@ -32,19 +30,22 @@ export function ReportScreen({
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
       // API仕様書(POST /api/posts/report)のキー名に合わせて送信
+      const token = getStoredJWT();
+      if (!token) {
+        toast.error('ログインが必要です');
+        return;
+      }
       const response = await fetch(`${API_BASE_URL}/api/posts/report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           postId: postId,
-          reporterId: userId, // バックエンドのキー名: reporterId
-          reportReason: reason, // バックエンドのキー名: reportReason
+          reason: reason, // バックエンドのキー名: reason
         }),
       });
 

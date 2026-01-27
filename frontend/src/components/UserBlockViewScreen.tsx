@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { getStoredJWT } from '../lib/auth';
 import { User, Block } from '../types';
 import { UserX, Loader2 } from 'lucide-react';
 import { DisplayUserSetting } from './DisplayUserSetting';
@@ -30,9 +31,16 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
   useEffect(() => {
     const fetchBlockedUsers = async () => {
       try {
+        const token = getStoredJWT && getStoredJWT();
         // 1. API仕様: GET /api/users/block/list?googleId=...
         const response = await fetch(
-          `${API_BASE_URL}/api/users/block/list?googleId=${user.googleId}`
+          `${API_BASE_URL}/api/users/block/list?googleId=${user.googleId}`,
+          {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json',
+            },
+          }
         );
 
         if (!response.ok) {
@@ -44,13 +52,17 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
 
         // 2. レスポンス形式: { "blocks": [{ "id": 1, "userId": "...", "blockerId": "..." }, ...] }
         // APIから返ってきたデータの中から、自分がブロックしている相手(userId)のIDだけを抽出
-        const blockedIds = data.blocks.map((block: Block) => block.blockedId);
+        const blockedIds = data.blocks.map((block: Block) => block.blockedId).sort();
+        const currentBlockedIds = [...(currentUser.blockedUsers || [])].sort();
 
-        // 3. 親コンポーネントのユーザー情報を更新して、ブロックリストを画面に反映
-        onUpdateUser({
-          ...userRef.current,
-          blockedUsers: blockedIds,
-        } as User);
+        // 変更がある場合のみ更新（無限ループ防止）
+        if (JSON.stringify(blockedIds) !== JSON.stringify(currentBlockedIds)) {
+          // 3. 親コンポーネントのユーザー情報を更新して、ブロックリストを画面に反映
+          onUpdateUser({
+            ...userRef.current,
+            blockedUsers: blockedIds,
+          } as User);
+        }
       } catch (error) {
         console.error('Error fetching blocked users:', error);
       } finally {

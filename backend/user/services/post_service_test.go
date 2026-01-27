@@ -1,19 +1,31 @@
 package services
 
 import (
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
-
 	"kojan-map/user/models"
+	"testing"
+	"time"
 )
+
+// テスト用DB初期化（全テーブルTRUNCATE）
+func cleanupDB(db *gorm.DB) {
+	db.Exec("SET FOREIGN_KEY_CHECKS = 0;")
+	db.Exec("TRUNCATE TABLE report;")
+	db.Exec("TRUNCATE TABLE block;")
+	db.Exec("TRUNCATE TABLE reaction;")
+	db.Exec("TRUNCATE TABLE post;")
+	db.Exec("TRUNCATE TABLE place;")
+	db.Exec("TRUNCATE TABLE genre;")
+	db.Exec("TRUNCATE TABLE user;")
+	db.Exec("SET FOREIGN_KEY_CHECKS = 1;")
+}
 
 // TestPostService_CreatePost - 投稿の新規作成
 func TestPostService_CreatePost(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	cleanupDB(db)
+	postService := NewPostService(db)
 
 	// テスト用ジャンル・場所をセットアップ
 	genre := models.Genre{GenreName: "グルメ"}
@@ -43,7 +55,8 @@ func TestPostService_CreatePost(t *testing.T) {
 // TestPostService_GetAllPosts - 全投稿の取得（map形式）
 func TestPostService_GetAllPosts(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	cleanupDB(db)
+	postService := NewPostService(db)
 
 	// テストデータ準備
 	setupTestPostData(db)
@@ -77,7 +90,8 @@ func TestPostService_GetAllPosts(t *testing.T) {
 // TestPostService_GetPostDetail - 投稿詳細取得と閲覧数インクリメント
 func TestPostService_GetPostDetail(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	cleanupDB(db)
+	postService := NewPostService(db)
 
 	// テストデータ準備
 	setupTestPostData(db)
@@ -111,7 +125,8 @@ func TestPostService_GetPostDetail(t *testing.T) {
 // TestPostService_GetPostDetail_NotFound - 存在しない投稿エラーハンドリング
 func TestPostService_GetPostDetail_NotFound(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	cleanupDB(db)
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -123,7 +138,7 @@ func TestPostService_GetPostDetail_NotFound(t *testing.T) {
 // TestPostService_SearchPostsByGenre - ジャンル別検索
 func TestPostService_SearchPostsByGenre(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -141,7 +156,7 @@ func TestPostService_SearchPostsByGenre(t *testing.T) {
 // TestPostService_SearchPostsByKeyword - キーワード検索
 func TestPostService_SearchPostsByKeyword(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -155,7 +170,7 @@ func TestPostService_SearchPostsByKeyword(t *testing.T) {
 // TestPostService_AddReaction - リアクション追加
 func TestPostService_AddReaction(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -175,7 +190,7 @@ func TestPostService_AddReaction(t *testing.T) {
 // TestPostService_IsUserReacted - ユーザーのリアクション状態確認
 func TestPostService_IsUserReacted(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -200,7 +215,7 @@ func TestPostService_IsUserReacted(t *testing.T) {
 // TestPostService_DeletePost - 投稿削除（所有者確認付き）
 func TestPostService_DeletePost(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -222,7 +237,7 @@ func TestPostService_DeletePost(t *testing.T) {
 // TestPostService_DeletePost_Unauthorized - 非所有者による削除拒否
 func TestPostService_DeletePost_Unauthorized(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -242,7 +257,7 @@ func TestPostService_DeletePost_Unauthorized(t *testing.T) {
 // TestPostService_GetUserPostHistory - ユーザーの投稿履歴取得
 func TestPostService_GetUserPostHistory(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -259,7 +274,7 @@ func TestPostService_GetUserPostHistory(t *testing.T) {
 // TestPostService_ResponseFieldMapping - レスポンスフィールドマッピング確認
 func TestPostService_ResponseFieldMapping(t *testing.T) {
 	db := setupTestDB(t)
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	setupTestPostData(db)
 
@@ -311,8 +326,8 @@ func setupTestPostData(db *gorm.DB) {
 
 	// ユーザー作成（関連データ参照用）
 	users := []models.User{
-		{ID: "user123", GoogleID: "google123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "user456", GoogleID: "google456", Gmail: "user456@example.com", Role: "user", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{GoogleID: "user123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now()},
+		{GoogleID: "user456", Gmail: "user456@example.com", Role: "user", RegistrationDate: time.Now()},
 	}
 	for _, user := range users {
 		db.Create(&user)
@@ -360,16 +375,17 @@ func setupTestPostData(db *gorm.DB) {
 // TestPostService_GetPostTimestamp - 投稿日時を取得
 func TestPostService_GetPostTimestamp(t *testing.T) {
 	db := setupTestDB(t)
+	cleanupDB(db)
 	defer func() {
 		if err := db.Migrator().DropTable(&models.Post{}); err != nil {
 			t.Logf("Failed to drop table: %v", err)
 		}
 	}()
 
-	postService := &PostService{}
+	postService := NewPostService(db)
 
 	// 関連データ作成
-	user := models.User{ID: "user123", GoogleID: "google123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now(), CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	user := models.User{GoogleID: "user123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now()}
 	if err := db.Create(&user).Error; err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
@@ -408,21 +424,24 @@ func TestPostService_GetPostTimestamp(t *testing.T) {
 // TestPostService_GetReactionList - ユーザーのリアクション履歴を取得
 func TestPostService_GetReactionList(t *testing.T) {
 	db := setupTestDB(t)
-	defer func() {
-		if err := db.Migrator().DropTable(&models.Post{}, &models.UserReaction{}); err != nil {
-			t.Logf("Failed to drop table: %v", err)
-		}
-	}()
+	cleanupDB(db)
+	postService := NewPostService(db)
 
-	postService := &PostService{}
+	// 必要なユーザー・ジャンル・場所を作成
+	user := models.User{GoogleID: "user123", Gmail: "user123@example.com", Role: "user", RegistrationDate: time.Now()}
+	db.Create(&user)
+	genre := models.Genre{GenreName: "テストジャンル"}
+	db.Create(&genre)
+	place := models.Place{Latitude: 35.0, Longitude: 135.0, NumPost: 0}
+	db.Create(&place)
 
 	// テスト投稿を作成
 	testPost := models.Post{
-		UserID:   "owner1",
+		UserID:   "user123",
 		Title:    "Test Post",
 		Text:     "Test Content",
-		PlaceID:  1,
-		GenreID:  1,
+		PlaceID:  place.ID,
+		GenreID:  genre.GenreID,
 		PostDate: time.Now(),
 	}
 	if err := db.Create(&testPost).Error; err != nil {

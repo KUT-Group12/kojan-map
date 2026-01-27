@@ -4,18 +4,22 @@ import (
 	"kojan-map/admin/handler"
 	adminrepo "kojan-map/admin/repository"
 	"kojan-map/admin/service"
+	"kojan-map/shared/config"
 	"kojan-map/shared/middleware"
 	sharedrepo "kojan-map/shared/repository"
+	"kojan-map/user/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 // SetupAdminRoutes configures all admin API routes
-func SetupAdminRoutes(r *gin.Engine, db *gorm.DB) {
+func SetupAdminRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	// Initialize shared repositories
 	userRepo := sharedrepo.NewUserRepository(db)
 	postRepo := sharedrepo.NewPostRepository(db)
+
+	authService := services.NewAuthService(db, cfg.GoogleClientID, cfg.JWTSecret, cfg.AppEnv)
 
 	// Initialize admin repositories
 	reportRepo := adminrepo.NewReportRepository(db)
@@ -41,7 +45,7 @@ func SetupAdminRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Apply middleware
 	admin := r.Group("/api/admin")
-	admin.Use(middleware.AuthMiddleware())
+	admin.Use(middleware.AuthMiddleware(authService))
 	admin.Use(middleware.AdminOnlyMiddleware())
 
 	// Admin API routes - 統一されたパス構造

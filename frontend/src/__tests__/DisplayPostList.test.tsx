@@ -10,7 +10,7 @@ describe('DisplayPostList', () => {
   const mockUser: User = {
     googleId: 'my-google-id',
     gmail: 'test@gmail.com',
-    role: 'general',
+    role: 'user',
     registrationDate: new Date().toISOString(),
     fromName: '自分自身の名前',
   };

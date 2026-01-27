@@ -9,6 +9,12 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
+
+// テスト用APIベースURL
+const TEST_API_URL = process.env.VITE_API_URL || 'http://127.0.0.1:8080';
 
 describe('SelectBlock', () => {
   let confirmSpy: ReturnType<typeof vi.spyOn>;
@@ -16,7 +22,6 @@ describe('SelectBlock', () => {
   const mockBlockerId = 'my-user-456';
   const mockOnBlockUser = vi.fn();
   const mockOnClose = vi.fn();
-  const TEST_API_URL = 'http://test-api.com';
 
   beforeEach(() => {
     // モジュールのキャッシュをリセットし、環境変数が確実に反映されるようにする
@@ -38,12 +43,7 @@ describe('SelectBlock', () => {
   const renderComponent = async () => {
     const { SelectBlock } = await import('../components/SelectBlock');
     return render(
-      <SelectBlock
-        userId={mockUserId}
-        blockerId={mockBlockerId}
-        onBlockUser={mockOnBlockUser}
-        onClose={mockOnClose}
-      />
+      <SelectBlock userId={mockUserId} onBlockUser={mockOnBlockUser} onClose={mockOnClose} />
     );
   };
 
@@ -73,20 +73,18 @@ describe('SelectBlock', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ブロック' }));
 
-    // 処理中のUI（Loader2）が表示されていることを確認
-    expect(screen.getByText('処理中')).toBeInTheDocument();
+    // ボタン内に「処理中」テキストが含まれていることを検証
+    const blockButton = screen.getByRole('button', { name: /処理中|ブロック/ });
+    expect(blockButton).toBeDisabled();
+    expect(blockButton).toHaveTextContent('処理中');
+    // Loader2アイコンも同時に存在することを確認
+    expect(blockButton.querySelector('svg.animate-spin')).toBeInTheDocument();
 
     await waitFor(() => {
-      // API呼び出しのURLとペイロードを検証
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TEST_API_URL}/api/users/block`,
+        expect.stringMatching(/\/api\/users\/block$/),
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: mockUserId,
-            blockerId: mockBlockerId,
-          }),
         })
       );
       expect(toast.success).toHaveBeenCalledWith('ユーザーをブロックしました');

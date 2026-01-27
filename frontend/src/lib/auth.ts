@@ -1,10 +1,9 @@
 const JWT_STORAGE_KEY = 'kojanmap_jwt';
 const USER_STORAGE_KEY = 'kojanmap_user';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from './apiBaseUrl';
 
-type UserRole = 'general' | 'business' | 'admin';
+type UserRole = 'user' | 'business' | 'admin';
 
 type BackendUser = {
   id: string;
@@ -42,7 +41,7 @@ const toStoredUser = (user: BackendUser): StoredUser => {
     id: user.id,
     googleId: user.googleId,
     email,
-    role: (user.role as UserRole) || 'general',
+    role: (user.role as UserRole) || 'user',
     businessName: user.businessName,
     businessIcon: user.businessIcon,
     createdAt,
@@ -129,13 +128,13 @@ export interface BusinessProfile {
   businessId: number;
   businessName: string;
   kanaBusinessName: string;
-  zipCode: number;
+  zipCode: string;
   address: string;
   phone: string;
+  registDate: string;
   profileImage?: string;
   userId: string;
-  placeId?: number;
-  registDate: string;
+  placeId: number;
 }
 
 // 事業者ダッシュボード統計情報を取得
@@ -194,10 +193,7 @@ export async function updateBusinessProfile(
 }
 
 // 事業者アイコン画像をアップロード
-export async function uploadBusinessIcon(
-  token: string,
-  file: File
-): Promise<{ success: boolean; profileImage: string }> {
+export async function uploadBusinessIcon(token: string, file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
@@ -210,10 +206,20 @@ export async function uploadBusinessIcon(
   });
 
   if (!response.ok) {
-    throw new Error('アイコンのアップロードに失敗しました');
+    let errorMessage = 'アイコン画像のアップロードに失敗しました';
+    try {
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      console.error('Error parsing error response:', e);
+    }
+    throw new Error(errorMessage);
   }
 
-  return response.json() as Promise<{ success: boolean; profileImage: string }>;
+  const data = await response.json();
+  return data.profileImage;
 }
 
 // 事業者の投稿数を取得
@@ -256,14 +262,14 @@ export async function getBusinessRevenue(
 }
 
 // 事業者の名前を更新
-export async function updateBusinessName(token: string, businessName: string): Promise<void> {
+export async function updateBusinessName(token: string, name: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/business/name`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ businessName }),
+    body: JSON.stringify({ name }),
   });
 
   if (!response.ok) {
@@ -275,7 +281,7 @@ export async function updateBusinessName(token: string, businessName: string): P
 export async function updateBusinessAddress(
   token: string,
   address: string,
-  zipCode: number
+  zipCode?: string
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/api/business/address`, {
     method: 'PUT',

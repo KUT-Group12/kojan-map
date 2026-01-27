@@ -6,6 +6,9 @@ import { User } from '../types';
 // fetch のモック
 vi.stubGlobal('fetch', vi.fn());
 
+// テスト用APIベースURL
+const TEST_API_URL = process.env.VITE_API_URL || 'http://127.0.0.1:8080';
+
 // 子コンポーネント SelectUnlock のモック
 vi.mock('../components/SelectUnlock', () => ({
   SelectUnlock: ({ userId }: { userId: string }) => <button>解除ボタン:{userId}</button>,
@@ -30,7 +33,7 @@ describe('UserBlockViewScreen', () => {
     fromName: '自分',
     // 初期状態では空
     blockedUsers: [],
-  };
+  } as unknown as User;
 
   const mockOnUpdateUser = vi.fn();
 
@@ -53,7 +56,8 @@ describe('UserBlockViewScreen', () => {
 
     await waitFor(() => {
       expect(getFetchMock()).toHaveBeenCalledWith(
-        expect.stringContaining(`/api/users/block/list?googleId=${mockUser.googleId}`)
+        `${TEST_API_URL}/api/users/block/list?googleId=${mockUser.googleId}`,
+        expect.anything()
       );
     });
   });

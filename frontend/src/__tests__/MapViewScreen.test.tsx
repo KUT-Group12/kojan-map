@@ -35,7 +35,7 @@ describe('MapViewScreen', () => {
   const mockUser: User = {
     googleId: 'u1',
     gmail: 'test@example.com',
-    role: 'general',
+    role: 'user',
     registrationDate: new Date().toISOString(),
     fromName: 'Test User',
   };

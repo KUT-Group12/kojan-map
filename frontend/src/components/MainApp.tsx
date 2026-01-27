@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getStoredJWT } from '../lib/auth';
 import { Header } from './Header';
 import { MapViewScreen } from './MapViewScreen';
 import { Sidebar } from './Sidebar';
@@ -15,8 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 // import { PinGenre } from '../types'
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface MainAppProps {
   user: User;
@@ -53,6 +53,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [createInitialLongitude, setCreateInitialLongitude] = useState<number | undefined>(
     undefined
   );
+  const [createTargetPlaceId, setCreateTargetPlaceId] = useState<number | undefined>(undefined); // ★追加
   const [currentView, setCurrentView] = useState<
     'map' | 'mypage' | 'dashboard' | 'logout' | 'deleteAccount'
   >('map');
@@ -64,19 +65,55 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userReactedPosts, setUserReactedPosts] = useState<Post[]>([]);
   const [isLoadingUserData, setIsLoadingUserData] = useState(false);
-  const [genres] = useState<Genre[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
 
-  // ユーザー専用データの取得
+  // ジャンル一覧をAPIから取得
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/genres`);
+        if (!res.ok) throw new Error('ジャンル取得失敗');
+        const data = await res.json();
+        setGenres(data.genres || []);
+      } catch (e) {
+        setGenres([]);
+        console.error('ジャンル取得エラー:', e);
+      }
+    };
+    fetchGenres();
+  }, []);
+
+  // ★追加: ユーザー専用データの取得関数
   const fetchUserData = useCallback(async () => {
     setIsLoadingUserData(true);
     try {
-      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history?googleId=${user.googleId}`);
+      const token = getStoredJWT();
+      if (!token) {
+        setUserPosts([]);
+        setUserReactedPosts([]);
+        return;
+      }
+      const API_BASE_URL =
+        import.meta.env.VITE_API_URL ??
+        import.meta.env.VITE_API_BASE_URL ??
+        'http://127.0.0.1:8080';
+
+      const postsRes = await fetch(`${API_BASE_URL}/api/posts/history`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!postsRes.ok) throw new Error('posts history fetch failed');
       const postsData = await postsRes.json();
       setUserPosts(postsData.posts || []);
 
-      const reactionsRes = await fetch(
-        `${API_BASE_URL}/api/reactions/list?googleId=${user.googleId}`
-      );
+      const reactionsRes = await fetch(`${API_BASE_URL}/api/posts/history/reactions`, {
+        // Backend reuse
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!reactionsRes.ok) throw new Error('reactions history fetch failed');
       const reactionsData = await reactionsRes.json();
       setUserReactedPosts(reactionsData.posts || []);
     } catch (error) {
@@ -84,24 +121,41 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     } finally {
       setIsLoadingUserData(false);
     }
-  }, [user.googleId]);
+  }, []);
 
   // 初期データ（投稿と場所）の取得
   useEffect(() => {
+    console.log('MainApp mounted. API_BASE_URL:', API_BASE_URL);
     const fetchInitialData = async () => {
       try {
+        console.log('Fetching posts...');
         const postsRes = await fetch(`${API_BASE_URL}/api/posts`);
+        console.log('Posts fetch response:', postsRes.status);
         const postsData = await postsRes.json();
-        const rawPosts = (postsData.posts ?? []) as (Post & {
+        console.log('[DEBUG] postsData from API:', postsData);
+        const rawPosts = (postsData.posts ?? postsData ?? []) as (Post & {
           latitude: number;
           longitude: number;
         })[];
+        console.log('[DEBUG] rawPosts:', rawPosts);
 
         if (rawPosts.length === 0) return;
 
-        const postIds = rawPosts.map((p) => p.postId).join(',');
-        const scaleRes = await fetch(`${API_BASE_URL}/api/posts/pin/scales?postIds=${postIds}`);
-        const scaleMap: Record<number, number> = scaleRes.ok ? await scaleRes.json() : {};
+        const placeIds = rawPosts.map((p) => p.placeId);
+        let scaleMap: Record<number, number> = {};
+        try {
+          const scaleRes = await fetch(`${API_BASE_URL}/api/posts/pin/scales`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ placeIds }),
+          });
+          if (scaleRes.ok) {
+            const scaleData = await scaleRes.json();
+            scaleMap = scaleData.pinSizes || {};
+          }
+        } catch (e) {
+          console.error('ピンサイズ取得失敗', e);
+        }
 
         const displayPosts: PostDetail[] = rawPosts.map((p) => ({
           ...p,
@@ -110,22 +164,34 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
         setPosts(displayPosts);
         setFilteredPosts(displayPosts);
-
+        // デバッグ: posts/placesの中身を出力
+        console.log('[DEBUG] posts after fetch:', displayPosts);
+        // postsの全placeId/緯度経度を必ずplacesに反映
         const placeMap = new Map<number, Place>();
         for (const dp of displayPosts) {
-          const existing = placeMap.get(dp.placeId);
-          if (existing) {
-            placeMap.set(dp.placeId, { ...existing, numPost: existing.numPost + 1 });
-          } else {
-            placeMap.set(dp.placeId, {
-              placeId: dp.placeId,
-              latitude: dp.latitude,
-              longitude: dp.longitude,
-              numPost: 1,
-            });
+          if (
+            typeof dp.placeId === 'number' &&
+            typeof dp.latitude === 'number' &&
+            typeof dp.longitude === 'number'
+          ) {
+            if (placeMap.has(dp.placeId)) {
+              // 既存placeの投稿数をインクリメント
+              const prev = placeMap.get(dp.placeId)!;
+              placeMap.set(dp.placeId, { ...prev, numPost: prev.numPost + 1 });
+            } else {
+              // 新規place
+              placeMap.set(dp.placeId, {
+                placeId: dp.placeId,
+                latitude: dp.latitude,
+                longitude: dp.longitude,
+                numPost: 1,
+              });
+            }
           }
         }
-        setPlaces(Array.from(placeMap.values()));
+        const placesArr = Array.from(placeMap.values());
+        console.log('[DEBUG] places after fetch:', placesArr);
+        setPlaces(placesArr);
       } catch (error) {
         console.error('データ取得失敗:', error);
       }
@@ -155,7 +221,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         setSelectedPost(data.post || data);
         setDetailData({
           isReacted: data.isReacted || false,
-          postsAtLocation: data.postsAtLocation || [],
+          // Backend doesn't return postsAtLocation, so compute it client-side
+          postsAtLocation: posts.filter(
+            (p) => p.placeId === post.placeId && p.postId !== post.postId
+          ),
         });
       }
     } catch (error) {
@@ -199,41 +268,23 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
     longitude: number;
     title: string;
     text: string;
-    genre: Genre; // genreId, genreName, genreColorの代わりにPinGenreオブジェクトを受け取る
+    genre: Genre;
     images: string[];
+    postId?: number; // Backend ID
+    placeId?: number; // Backend Place ID
   }) => {
     const { genreId, genreName, color } = newPost.genre;
 
+    // もし引数にpostIdやplaceIdがない場合（既存コード互換など）、temporary IDを使う
     const sharedId = Date.now();
-    const existingPlace = places.find(
-      (p) => p.latitude === newPost.latitude && p.longitude === newPost.longitude
-    );
-    const placeId = existingPlace?.placeId ?? sharedId;
+    // ★変更: createTargetPlaceId があればそれを優先 (既存ピンからの追加)
+    const resolvedPlaceId = newPost.placeId ?? createTargetPlaceId ?? sharedId;
+    const resolvedPostId = newPost.postId ?? sharedId;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          placeId,
-          genreId: genreId, // 分解した値を使用
-          userId: user.googleId,
-          title: newPost.title,
-          text: newPost.text,
-          postImage: newPost.images,
-          latitude: newPost.latitude,
-          longitude: newPost.longitude,
-        }),
-      });
-
-      if (!response.ok) throw new Error('投稿の保存に失敗しました');
-      const created = await response.json();
-      const postId = created?.postId ?? sharedId;
-      const resolvedPlaceId = created?.placeId ?? placeId;
-
       // クライアント側の表示用オブジェクト
       const post: Post = {
-        postId,
+        postId: resolvedPostId,
         placeId: resolvedPlaceId,
         userId: user.googleId,
         postDate: new Date().toISOString(),
@@ -242,34 +293,52 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         postImage: newPost.images,
         numReaction: 0,
         numView: 0,
-        genreId: genreId, // 分解した値を使用
-        genreName: genreName, // 分解した値を使用
-        genreColor: color, // 分解した値を使用
+        genreId: genreId,
+        genreName: genreName,
+        genreColor: color,
       };
 
       const place: Place = {
         placeId: resolvedPlaceId,
         latitude: newPost.latitude,
         longitude: newPost.longitude,
-        numPost: 1,
+        numPost: 1, // 既存ならインクリメント処理が必要だが、ここでは簡易的に1 or 更新
       };
 
       // ステート更新
-      setPosts((prev) => [post, ...prev]);
-      setPlaces((prev) => {
-        if (existingPlace) {
-          return prev.map((p) =>
-            p.placeId === existingPlace.placeId ? { ...p, numPost: p.numPost + 1 } : p
-          );
-        }
-        return [place, ...prev];
+      setPosts((prev) => {
+        const next = [post, ...prev];
+        console.log('[DEBUG] posts after create:', next);
+        return next;
       });
-
-      setFilteredPosts((prev) => [post, ...prev]);
+      setPlaces((prev) => {
+        // 既存の場所があるかIDで検索
+        const existingIdx = prev.findIndex((p) => p.placeId === resolvedPlaceId);
+        let next;
+        if (existingIdx >= 0) {
+          const newPlaces = [...prev];
+          newPlaces[existingIdx] = {
+            ...newPlaces[existingIdx],
+            latitude: place.latitude, // 必ず最新値で上書き
+            longitude: place.longitude, // 必ず最新値で上書き
+            numPost: newPlaces[existingIdx].numPost + 1,
+          };
+          next = newPlaces;
+        } else {
+          next = [place, ...prev];
+        }
+        console.log('[DEBUG] places after create:', next);
+        return next;
+      });
+      setFilteredPosts((prev) => {
+        const next = [post, ...prev];
+        console.log('[DEBUG] filteredPosts after create:', next);
+        return next;
+      });
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Create post error:', error);
-      alert('投稿に失敗しました。');
+      alert('投稿の表示更新に失敗しました。');
     }
   };
 
@@ -281,16 +350,21 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
   const handleUpdateUser = (updatedUser: User | Business) => {
     onUpdateUser(updatedUser);
-    if ('businessName' in updatedUser) {
-      const biz = updatedUser as Business;
-      const update = (list: Post[]) =>
-        list.map((p) =>
-          p.userId === biz.userId
-            ? { ...p, businessIcon: biz.profileImage, businessName: biz.businessName }
+    if ('businessId' in updatedUser) {
+      const bizUser = updatedUser as Business;
+
+      const updatePins = (pinsArray: DisplayPost[]) =>
+        pinsArray.map((p) =>
+          p.userId === bizUser.userId
+            ? {
+              ...p,
+              businessName: bizUser.businessName,
+              // 事業者の場合は userName ではなく businessName を優先
+            }
             : p
         );
-      setPosts(update(posts as DisplayPost[]));
-      setFilteredPosts(update(filteredPosts as DisplayPost[]));
+      setPosts(updatePins(posts as DisplayPost[]));
+      setFilteredPosts(updatePins(filteredPosts as DisplayPost[]));
     }
   };
 
@@ -339,6 +413,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
               onMapDoubleClick={(lat, lng) => {
                 setCreateInitialLatitude(lat);
                 setCreateInitialLongitude(lng);
+                setCreateTargetPlaceId(undefined); // ★追加: 新規場所なのでIDなし
                 setIsCreateModalOpen(true);
               }}
             />
@@ -356,20 +431,21 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
               onUpdateUser={handleUpdateUser}
               onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
             />
-          ) : isLoadingUserData ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <UserDisplayMyPage
-              user={user}
-              posts={userPosts}
-              reactedPosts={userReactedPosts}
-              onPinClick={handlePinClick}
-              onUpdateUser={handleUpdateUser}
-              onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
-            />
-          ))}
+          ) : // ★変更: ローディング状態を追加し、取得したデータを渡す
+            isLoadingUserData ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <UserDisplayMyPage
+                user={user}
+                posts={userPosts} // ★変更: MainAppで取得したデータ
+                reactedPosts={userReactedPosts} // ★変更: MainAppで取得したデータ
+                onPinClick={handlePinClick}
+                onUpdateUser={handleUpdateUser}
+                onNavigateToDeleteAccount={() => setCurrentView('deleteAccount')}
+              />
+            ))}
 
         {currentView === 'dashboard' && user.role === 'business' && (
           <BusinessDashboard
@@ -410,9 +486,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           onDelete={handleDeletePin}
           onBlockUser={handleBlockUser}
           postsAtLocation={detailData?.postsAtLocation || []}
-          onOpenCreateAtLocation={(lat, lng) => {
+          onOpenCreateAtLocation={(lat, lng, placeId) => {
             setCreateInitialLatitude(lat);
             setCreateInitialLongitude(lng);
+            setCreateTargetPlaceId(placeId); // ★追加
             setIsCreateModalOpen(true);
           }}
           onSelectPin={handlePinClick}
@@ -428,6 +505,7 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           onCreate={handleCreatePin}
           initialLatitude={createInitialLatitude}
           initialLongitude={createInitialLongitude}
+          targetPlaceId={createTargetPlaceId} // ★追加
         />
       )}
       {isContactModalOpen && (

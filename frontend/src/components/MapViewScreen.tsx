@@ -1,17 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Post, Place, User, Business } from '../types';
+import { Post, Place, User } from '../types';
 import { MapPin as MapPinIcon, Building2 } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 import { GetLocation } from './GetLocation';
-
-// mockDataからのgenreColors等のインポートを削除
+import axios from 'axios';
 
 interface MapViewProps {
   user: User;
-  business?: Business;
   posts: Post[];
   places: Place[];
   onPinClick: (post: Post) => void;
@@ -19,16 +17,18 @@ interface MapViewProps {
   isOverlayOpen?: boolean;
 }
 
-export function MapViewScreen({
-  user,
-  business,
-  posts,
-  places,
-  onPinClick,
-  onMapDoubleClick,
-  isOverlayOpen,
-}: MapViewProps) {
+// ピンサイズ取得APIの型
+interface PinSizesResponse {
+  pinSizes: Record<number, number>;
+}
+
+export function MapViewScreen(props: MapViewProps) {
+  const { user, posts, places, onPinClick, onMapDoubleClick, isOverlayOpen } = props;
+  // デバッグ: posts/placesのprops受け渡しを確認
+  console.log('[DEBUG] MapViewScreen posts:', posts);
+  console.log('[DEBUG] MapViewScreen places:', places);
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
+  const [pinSizes, setPinSizes] = useState<Record<number, number>>({});
 
   const groupedPosts = (posts || []).reduce(
     (acc, post) => {
@@ -50,13 +50,17 @@ export function MapViewScreen({
     const post = groupPosts[0];
     const count = groupPosts.length;
 
-    // --- 修正箇所: DBからきた色を直接使用 ---
-    const color = post.genreColor || '#94a3b8';
+    let color = post.genreColor || '#94a3b8';
+    if (color && !color.startsWith('#')) {
+      color = `#${color}`;
+    }
     const sizeClass = getPinSizeClass(count);
 
+    // ★修正箇所: data-testid をここに移動
     const iconHtml = renderToString(
       <div
         className={`relative transition-all duration-300 ${isHovered ? 'scale-110 -translate-y-2' : ''}`}
+        data-testid="map-pin"
       >
         {user.role === 'business' ? (
           <div className="relative">
@@ -65,11 +69,7 @@ export function MapViewScreen({
               style={{ backgroundColor: color, boxShadow: `0 8px 20px -5px ${color}80` }}
             >
               <div className="transform -rotate-45 w-full h-full flex items-center justify-center">
-                {business?.profileImage ? (
-                  <img src={business.profileImage} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Building2 className="w-5 h-5 text-white" />
-                )}
+                <Building2 className="w-5 h-5 text-white" />
               </div>
             </div>
           </div>
@@ -100,18 +100,42 @@ export function MapViewScreen({
     });
   };
 
+  const fetchPinSizes = async (placeIds: number[]): Promise<Record<number, number>> => {
+    if (placeIds.length === 0) return {};
+    try {
+      const res = await axios.post<PinSizesResponse>(
+        '/api/posts/pin/scales',
+        { placeIds }
+      );
+      return res.data.pinSizes || {};
+    } catch (e) {
+      console.error('ピンサイズ取得失敗', e);
+      return {};
+    }
+  };
+
+  useEffect(() => {
+    // ...既存の投稿・場所取得処理...
+    const updatePinSizes = async () => {
+      // 場所ID一覧を取得
+      const placeIds = places.map((p) => p.placeId);
+      const sizes = await fetchPinSizes(placeIds);
+      setPinSizes(sizes);
+    };
+    if (places.length > 0) {
+      updatePinSizes();
+    }
+  }, [places]);
+
   return (
     <div className="flex-1 w-full h-full relative" style={{ zIndex: isOverlayOpen ? 0 : 10 }}>
-      {/* 凡例エリア: 本来的にはここもDBから取得したリストでmap回すのが理想です */}
+      {/* 凡例エリア */}
       <div className="absolute bottom-6 left-6 pointer-events-auto" style={{ zIndex: 999 }}>
         <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-slate-200 w-40">
           <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
             ジャンル
           </div>
           <div className="space-y-2.5">
-            {/* TODO: DBからジャンルマスタを取得して、ここを動的に生成するようにすると完璧です。
-              現状は代表的な色をハードコードしていますが、ピン自体はDBの色で表示されます。
-            */}
             {[
               { label: 'グルメ', color: '#EF4444' },
               { label: 'イベント', color: '#F59E0B' },
@@ -176,3 +200,5 @@ export function MapViewScreen({
     </div>
   );
 }
+
+export default MapViewScreen;

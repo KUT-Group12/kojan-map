@@ -17,5 +17,5 @@ type BusinessRequest struct {
 
 // TableName specifies the table name for BusinessRequest
 func (BusinessRequest) TableName() string {
-	return "business_requests"
+	return "businessReq"
 }

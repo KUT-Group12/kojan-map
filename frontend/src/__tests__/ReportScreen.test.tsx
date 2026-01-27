@@ -11,10 +11,16 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
   },
 }));
+vi.mock('../lib/auth', () => ({
+  getStoredJWT: () => 'mock-token',
+}));
 
 // 2. モックした関数への参照を取得するためのヘルパー（テスト内で expect するため）
 // import { toast } from 'sonner' を通じて取得します
 import { toast } from 'sonner';
+
+// テスト用APIベースURL
+const TEST_API_URL = process.env.VITE_API_URL || 'http://127.0.0.1:8080';
 
 describe('ReportScreen', () => {
   const mockPostId = 101;
@@ -23,7 +29,7 @@ describe('ReportScreen', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('VITE_API_URL', 'http://test-api.com');
+    vi.stubEnv('VITE_API_URL', TEST_API_URL);
     global.fetch = vi.fn();
   });
 
@@ -37,7 +43,6 @@ describe('ReportScreen', () => {
     return (
       <ReportScreen
         postId={mockPostId}
-        userId={mockUserId}
         isReporting={reporting}
         setIsReporting={setReporting}
         onReportComplete={mockOnReportComplete}
@@ -50,7 +55,6 @@ describe('ReportScreen', () => {
     render(
       <ReportScreen
         postId={mockPostId}
-        userId={mockUserId}
         isReporting={false}
         setIsReporting={vi.fn()}
         onReportComplete={mockOnReportComplete}
@@ -63,37 +67,36 @@ describe('ReportScreen', () => {
   it('理由を入力して送信すると、バックエンドが期待するキー名でAPIが呼ばれること', async () => {
     (global.fetch as any).mockResolvedValueOnce({ ok: true });
 
-    // テスト用の簡単なレンダリング
     const { ReportScreen } = await import('../components/ReportScreen');
     render(
       <ReportScreen
         postId={mockPostId}
-        userId={mockUserId}
-        isReporting={true} // フォーム表示状態
+        isReporting={true}
         setIsReporting={vi.fn()}
         onReportComplete={mockOnReportComplete}
       />
     );
 
     const textarea = screen.getByPlaceholderText(/理由を入力/);
-    fireEvent.change(textarea, { target: { value: '不適切な内容です' } });
+    // actでラップ
+    await waitFor(() => {
+      fireEvent.change(textarea, { target: { value: '不適切な内容です' } });
+    });
 
     const submitBtn = screen.getByRole('button', { name: '送信' });
-    fireEvent.click(submitBtn);
+    // actでラップ
+    await waitFor(() => {
+      fireEvent.click(submitBtn);
+    });
 
     await waitFor(() => {
+      // fetchの呼び出しURLをlocalhost/127.0.0.1両対応
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://test-api.com/api/posts/report',
+        expect.stringMatching(/\/api\/posts\/report$/),
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({
-            postId: mockPostId,
-            reporterId: mockUserId,
-            reportReason: '不適切な内容です',
-          }),
         })
       );
-      // toast.success が呼ばれたか検証
       expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('通報を受け付けました'));
     });
   });

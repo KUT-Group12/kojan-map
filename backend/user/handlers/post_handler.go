@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -103,6 +105,7 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 		Description string   `json:"description" binding:"required"`
 		Genre       string   `json:"genre" binding:"required"`
 		Images      []string `json:"images"`
+		PlaceID     int      `json:"placeId"` // Optional
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -128,9 +131,26 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	// 画像がある場合は最初の画像を使用
-	// TODO: base64文字列のデコード処理と画像保存の実装
 	var postImage []byte
-	_ = req.Images // 将来使用予定
+	if len(req.Images) > 0 {
+		imgStr := req.Images[0]
+		// Base64文字列からプレフィックス（data:image/jpeg;base64,など）を除去
+		if idx := strings.Index(imgStr, ","); idx != -1 {
+			if idx+1 < len(imgStr) {
+				imgStr = imgStr[idx+1:]
+			} else {
+				// カンマが末尾にある場合、本体は空
+				imgStr = ""
+			}
+		}
+
+		if imgStr != "" {
+			decoded, err := base64.StdEncoding.DecodeString(imgStr)
+			if err == nil {
+				postImage = decoded
+			}
+		}
+	}
 
 	// 認証ミドルウェアで設定されたユーザーIDをコンテキストから取得（googleId を統一利用）
 	userID := c.GetString("googleId")
@@ -139,15 +159,24 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	// 場所を登録または取得
-	placeID, err := ph.placeService.FindOrCreatePlace(req.Latitude, req.Longitude)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register place"})
-		return
+	var placeID int32
+	if req.PlaceID != 0 {
+		// 指定されたPlaceIDを使用
+		placeID = int32(req.PlaceID)
+		// 存在確認などは簡略化（存在しない場合はFKエラーになるか、下記ロジックで安全に）
+		// ここでは実在確認まではしないが、必要なら placeService.GetPlaceByID を呼ぶ
+	} else {
+		// 場所を登録または取得
+		id, err := ph.placeService.FindOrCreatePlace(req.Latitude, req.Longitude)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register place", "details": err.Error()})
+			return
+		}
+		placeID = id
 	}
 
 	post := models.Post{
-		PlaceID:     int32(placeID),
+		PlaceID:     placeID,
 		GenreID:     int32(genreID),
 		UserID:      userID,
 		Title:       req.Title,
@@ -159,13 +188,22 @@ func (ph *PostHandler) CreatePost(c *gin.Context) {
 	}
 
 	if err := ph.postService.CreatePost(&post); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create post", "details": err.Error()})
 		return
 	}
 
+	// 場所情報も返す
+	place, err := ph.placeService.GetPlaceByID(post.PlaceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch place info", "details": err.Error()})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{
-		"postId":  post.ID,
-		"message": "post created successfully",
+		"postId":    post.ID,
+		"placeId":   post.PlaceID,
+		"latitude":  place.Latitude,
+		"longitude": place.Longitude,
+		"message":   "post created successfully",
 	})
 }
 
@@ -181,6 +219,24 @@ func (ph *PostHandler) GetPostHistory(c *gin.Context) {
 	}
 
 	posts, err := ph.postService.GetUserPostHistory(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
+
+// GetReactionHistory ユーザーがリアクションした投稿履歴を取得
+// GET /api/posts/history/reactions
+func (ph *PostHandler) GetReactionHistory(c *gin.Context) {
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	posts, err := ph.postService.GetUserReactionHistory(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -396,4 +452,22 @@ func (ph *PostHandler) CheckReactionStatus(c *gin.Context) {
 		"postId":    postID,
 		"userId":    userID,
 	})
+}
+
+// GetPinSizes バッチでピンサイズを判定
+// POST /api/posts/pin/scales
+func (ph *PostHandler) GetPinSizes(c *gin.Context) {
+	var req struct {
+		PlaceIDs []int32 `json:"placeIds" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": "invalid request", "details": err.Error()})
+		return
+	}
+	pinSizes, err := ph.postService.GetPinSizes(req.PlaceIDs)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"pinSizes": pinSizes})
 }

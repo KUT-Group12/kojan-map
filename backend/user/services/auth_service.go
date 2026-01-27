@@ -13,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 
+	shared "kojan-map/shared/models"
 	"kojan-map/user/models"
 )
 
@@ -20,9 +21,10 @@ type AuthService struct {
 	db             *gorm.DB
 	googleClientID string
 	jwtSecret      []byte
+	appEnv         string
 }
 
-func NewAuthService(db *gorm.DB, googleClientID string, jwtSecretKey string) *AuthService {
+func NewAuthService(db *gorm.DB, googleClientID string, jwtSecretKey string, appEnv string) *AuthService {
 	if jwtSecretKey == "" {
 		log.Fatal("JWT_SECRET_KEY is not set")
 	}
@@ -30,6 +32,7 @@ func NewAuthService(db *gorm.DB, googleClientID string, jwtSecretKey string) *Au
 		db:             db,
 		googleClientID: googleClientID,
 		jwtSecret:      []byte(jwtSecretKey),
+		appEnv:         appEnv,
 	}
 }
 
@@ -50,7 +53,7 @@ type GoogleTokenResponse struct {
 // Request body for token exchange
 type TokenExchangeRequest struct {
 	GoogleToken string `json:"google_token"`
-	Role        string `json:"role"` // 'general' or 'business'
+	Role        string `json:"role"` // 'user' or 'business'
 }
 
 // Response for successful authentication
@@ -61,6 +64,17 @@ type AuthResponse struct {
 
 // VerifyGoogleToken - Verify Google ID token via tokeninfo endpoint
 func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, error) {
+	// ★追加: テスト用トークンの特例対応（dev/test環境のみ許可）
+	if (as.appEnv == "dev" || as.appEnv == "test") && len(idToken) > 6 && idToken[len(idToken)-6:] == "-token" {
+		dummyID := idToken[:len(idToken)-6]
+		return &GoogleTokenResponse{
+			Sub:           dummyID,
+			Email:         dummyID + "@example.com",
+			EmailVerified: "true",
+			Name:          "Test User " + dummyID,
+			Picture:       "",
+		}, nil
+	}
 	if idToken == "" {
 		return nil, errors.New("empty id token")
 	}
@@ -69,31 +83,51 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 		return nil, errors.New("google client id is not configured")
 	}
 
+	// Try checking as ID Token
 	url := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?id_token=%s", idToken)
 	client := &http.Client{Timeout: 5 * time.Second}
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
+		log.Printf("[VerifyGoogleToken] failed to create request: %v", err)
 		return nil, errors.New("failed to create request")
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("[VerifyGoogleToken] failed to contact Google tokeninfo: %v", err)
 		return nil, errors.New("failed to contact Google tokeninfo")
 	}
 	defer func() { _ = resp.Body.Close() }()
 
+	// If ID token check failed (likely 400), try checking as Access Token
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("google token verification failed: %s", string(body))
+		// New Check: Try access_token endpoint
+		urlAccess := fmt.Sprintf("https://oauth2.googleapis.com/tokeninfo?access_token=%s", idToken)
+		reqAccess, err := http.NewRequestWithContext(context.Background(), http.MethodGet, urlAccess, nil)
+		if err != nil {
+			log.Printf("[VerifyGoogleToken] failed to create access_token request: %v", err)
+			return nil, errors.New("failed to create access_token request")
+		}
+		respAccess, errAccess := client.Do(reqAccess)
+		if errAccess != nil {
+			log.Printf("[VerifyGoogleToken] failed to contact Google tokeninfo (access_token): %v", errAccess)
+			return nil, errors.New("failed to contact Google tokeninfo (access_token)")
+		}
+		defer func() { _ = respAccess.Body.Close() }()
+
+		if respAccess.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(respAccess.Body)
+			log.Printf("[VerifyGoogleToken] google token verification failed (both id_token and access_token): %s", string(body))
+			return nil, fmt.Errorf("google token verification failed (both id_token and access_token): %s", string(body))
+		}
+		// Use the access token response
+		resp = respAccess
 	}
 
 	var googleResp GoogleTokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&googleResp); err != nil {
+		log.Printf("[VerifyGoogleToken] failed to parse Google response: %v", err)
 		return nil, errors.New("failed to parse Google response")
-	}
-
-	if googleResp.Aud != as.googleClientID {
-		return nil, errors.New("invalid audience")
 	}
 
 	return &googleResp, nil
@@ -103,7 +137,7 @@ func (as *AuthService) VerifyGoogleToken(idToken string) (*GoogleTokenResponse, 
 func (as *AuthService) ExchangeTokenForUser(googleToken, role string) (*AuthResponse, error) {
 	// Validate role
 	switch role {
-	case "general", "business":
+	case "user", "business":
 		// ok
 	default:
 		return nil, errors.New("invalid role")
@@ -141,9 +175,6 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 	result := as.db.Where("googleId = ?", googleResp.Sub).First(&user)
 
 	if result.Error == nil {
-		// User exists, update last login
-		user.UpdatedAt = time.Now()
-		as.db.Save(&user)
 		return &user, nil
 	}
 
@@ -153,13 +184,10 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 
 	// Create new user
 	newUser := models.User{
-		ID:               fmt.Sprintf("user_%d", time.Now().UnixNano()),
 		GoogleID:         googleResp.Sub,
 		Gmail:            googleResp.Email,
-		Role:             role,
+		Role:             shared.Role(role),
 		RegistrationDate: time.Now(),
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
 	}
 
 	if err := as.db.Create(&newUser).Error; err != nil {
@@ -172,10 +200,10 @@ func (as *AuthService) findOrCreateUser(googleResp *GoogleTokenResponse, role st
 // GenerateJWT - Generate JWT token for user
 func (as *AuthService) GenerateJWT(user *models.User) (string, error) {
 	claims := models.JWTClaims{
-		UserID:   user.ID,
+		UserID:   user.GoogleID,
 		GoogleID: user.GoogleID,
 		Email:    user.Gmail,
-		Role:     user.Role,
+		Role:     string(user.Role),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // 24時間有効
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -211,7 +239,7 @@ func (as *AuthService) VerifyJWT(tokenString string) (*models.JWTClaims, error) 
 // GetUserByID - Get user by ID
 func (as *AuthService) GetUserByID(userID string) (*models.User, error) {
 	var user models.User
-	if err := as.db.Where("id = ?", userID).First(&user).Error; err != nil {
+	if err := as.db.Where("googleId = ?", userID).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

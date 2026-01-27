@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"math"
 
 	"gorm.io/gorm"
@@ -21,41 +20,53 @@ func NewPlaceService(db *gorm.DB) *PlaceService {
 
 // FindOrCreatePlace 緯度経度から場所を検索または作成
 // 同じ場所（近距離）が存在する場合はそのIDを返し、なければ新規作成
+// FindOrCreatePlace 緯度経度から場所を検索または作成
+// 同じ場所（近距離）が存在する場合はそのIDを返し、なければ新規作成
 func (ps *PlaceService) FindOrCreatePlace(latitude, longitude float64) (int32, error) {
 	const threshold = 0.0001 // 約11m以内を同じ場所と判定
 
-	var place models.Place
+	var placeID int32
 
-	// 近くの場所を検索（緯度経度の差が threshold 以内）
-	err := ps.db.Where(
-		"ABS(latitude - ?) < ? AND ABS(longitude - ?) < ?",
-		latitude, threshold, longitude, threshold,
-	).First(&place).Error
+	// トランザクションを開始して整合性を保つ
+	err := ps.db.Transaction(func(tx *gorm.DB) error {
+		var place models.Place
 
-	if err == nil {
-		// 既存の場所が見つかった場合、投稿数をインクリメント
-		if updateErr := ps.db.Model(&place).Update("numPost", gorm.Expr("numPost + 1")).Error; updateErr != nil {
-			return 0, fmt.Errorf("failed to update place post count: %w", updateErr)
+		// 近くの場所を検索（排他ロックを取得して競合を防ぐ）
+		// Note: MySQLの場合、FOR UPDATEはインデックスが効かないとテーブルロックになる可能性があるため注意が必要だが、
+		// ここではデータ整合性を優先する。
+		if err := tx.Set("gorm:query_option", "FOR UPDATE").Where(
+			"ABS(latitude - ?) < ? AND ABS(longitude - ?) < ?",
+			latitude, threshold, longitude, threshold,
+		).First(&place).Error; err == nil {
+			// 既存の場所が見つかった場合、投稿数をインクリメント
+			if updateErr := tx.Model(&place).Update("numPost", place.NumPost+1).Error; updateErr != nil {
+				return updateErr
+			}
+			placeID = place.ID
+			return nil
+		} else if err != gorm.ErrRecordNotFound {
+			return err
 		}
-		return place.ID, nil
-	}
 
-	if err != gorm.ErrRecordNotFound {
+		// 新規場所を作成
+		newPlace := models.Place{
+			Latitude:  latitude,
+			Longitude: longitude,
+			NumPost:   1,
+		}
+
+		if err := tx.Create(&newPlace).Error; err != nil {
+			return err
+		}
+		placeID = newPlace.ID
+		return nil
+	})
+
+	if err != nil {
 		return 0, err
 	}
 
-	// 新規場所を作成
-	newPlace := models.Place{
-		Latitude:  latitude,
-		Longitude: longitude,
-		NumPost:   1,
-	}
-
-	if err := ps.db.Create(&newPlace).Error; err != nil {
-		return 0, err
-	}
-
-	return newPlace.ID, nil
+	return placeID, nil
 }
 
 // GetPlaceByID IDから場所情報を取得

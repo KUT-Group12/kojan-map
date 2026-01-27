@@ -137,7 +137,6 @@ func NewContactHandler(contactService *services.ContactService) *ContactHandler 
 // POST /api/contact/validate
 func (ch *ContactHandler) CreateContact(c *gin.Context) {
 	var req struct {
-		UserID  string `json:"userId"`
 		Subject string `json:"subject" binding:"required"`
 		Text    string `json:"text" binding:"required"`
 	}
@@ -147,7 +146,13 @@ func (ch *ContactHandler) CreateContact(c *gin.Context) {
 		return
 	}
 
-	if err := ch.contactService.CreateContact(req.UserID, req.Subject, req.Text); err != nil {
+	userID := c.GetString("googleId")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := ch.contactService.CreateContact(userID, req.Subject, req.Text); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -169,12 +174,10 @@ func NewBusinessApplicationHandler(businessApplicationService *services.Business
 // POST /api/business/application
 func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context) {
 	var req struct {
-		UserID           string `json:"userId" binding:"required"`
-		BusinessName     string `json:"businessName" binding:"required"`
-		KanaBusinessName string `json:"kanaBusinessName" binding:"required"`
-		ZipCode          string `json:"zipCode" binding:"required"`
-		Address          string `json:"address" binding:"required"`
-		Phone            string `json:"phone" binding:"required"`
+		UserID  string `json:"userId" binding:"required"`
+		Name    string `json:"name" binding:"required"`
+		Address string `json:"address" binding:"required"`
+		Phone   string `json:"phone" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -184,9 +187,7 @@ func (bah *BusinessApplicationHandler) CreateBusinessApplication(c *gin.Context)
 
 	if err := bah.businessApplicationService.CreateBusinessApplication(
 		req.UserID,
-		req.BusinessName,
-		req.KanaBusinessName,
-		req.ZipCode,
+		req.Name,
 		req.Address,
 		req.Phone,
 	); err != nil {

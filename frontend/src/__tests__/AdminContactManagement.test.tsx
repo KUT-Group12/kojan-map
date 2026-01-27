@@ -13,7 +13,7 @@ describe('AdminContactManagement', () => {
       askFlag: false,
       email: 'user1@example.com',
       fromName: '利用者A',
-      role: 'general',
+      role: 'user',
     },
     {
       askId: 2,

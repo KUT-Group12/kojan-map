@@ -15,7 +15,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { genreLabels } from '../lib/mockData';
+import { genreLabels, genreColors } from '../lib/mockData';
 
 interface BusinessDashboardProps {
   user: User;
