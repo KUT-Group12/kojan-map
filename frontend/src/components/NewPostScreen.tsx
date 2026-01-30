@@ -152,7 +152,6 @@ export function NewPostScreen({
       if (!response.ok) throw new Error('サーバーへの投稿に失敗しました');
 
       const data = await response.json();
-      console.log('Post created with ID:', data.postId);
 
       // 2. コンポーネントの呼び出し
       await onCreate({

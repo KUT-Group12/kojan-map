@@ -21,7 +21,6 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
       // JWTトークンとセッションIDを取得
       const token = localStorage.getItem('kojanmap_jwt');
       const sessionId = localStorage.getItem('kojanmap_sessionId');
-      console.log('送信するsessionId:', sessionId);
       if (!sessionId) {
         toast.error('セッション情報がありません。再度ログインしてください。');
         setIsPending(false);
