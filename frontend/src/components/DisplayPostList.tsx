@@ -62,7 +62,6 @@ export function DisplayPostList({
         const data = await response.json(); // Post オブジェクトが返る
 
         setPostDetail(data.post);
-        console.log('data: ', data);
       } catch (error) {
         if ((error as Error).name === 'AbortError') return;
         console.error('詳細取得エラー:', error);

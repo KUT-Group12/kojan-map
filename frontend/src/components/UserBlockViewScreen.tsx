@@ -48,7 +48,6 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
         }
 
         const data = await response.json();
-        console.log(data);
 
         // 2. レスポンス形式: { "blocks": [{ "id": 1, "userId": "...", "blockerId": "..." }, ...] }
         // APIから返ってきたデータの中から、自分がブロックしている相手(userId)のIDだけを抽出

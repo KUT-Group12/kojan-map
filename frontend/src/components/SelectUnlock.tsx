@@ -50,7 +50,6 @@ export function SelectUnlock({ userId, user, onUpdateUser }: SelectUnlockProps) 
       }
 
       const data = await response.json();
-      console.log(data);
 
       // 2. フロントエンド側の状態を更新
       // 現在のブロックリストから削除したユーザーを除外する

@@ -21,7 +21,6 @@ export default function App() {
       registrationDate: storedUser.createdAt,
     };
   });
-  console.log('App user state:', user);
 
   const [business, setBusiness] = useState<Business | null>(() => {
     const storedUser = getStoredUser();
@@ -65,7 +64,6 @@ export default function App() {
           });
 
           if (!res.ok) {
-            console.warn('User not found on server or token invalid. Logging out.');
             logout();
             setUser(null);
             setBusiness(null);

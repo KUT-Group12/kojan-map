@@ -34,9 +34,9 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
         return;
       }
 
-      // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
-      const response = await fetch(`${API_BASE_URL}/api/posts/anonymize`, {
-        method: 'PUT',
+      // 2. バックエンドAPI呼び出し
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -50,9 +50,8 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
         throw new Error('削除処理に失敗しました');
       }
 
-      // レスポンス: { "message": "post anonymized" }
+      // レスポンス: { "message": "post deleted" }
       const data = await response.json();
-      console.log(data);
 
       // 3. 成功時の処理
       toast.success('投稿を削除しました');
