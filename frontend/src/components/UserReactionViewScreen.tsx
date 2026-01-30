@@ -4,10 +4,8 @@ import { Badge } from './ui/badge';
 import { Heart, Loader2 } from 'lucide-react';
 import { Post, User } from '../types';
 import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 // 固定の色定数 (genreColors) のインポートを削除
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface UserReactionViewScreenProps {
   user: User;

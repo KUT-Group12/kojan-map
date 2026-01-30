@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 import { Header } from './Header';
 import { MapViewScreen } from './MapViewScreen';
 import { Sidebar } from './Sidebar';
@@ -16,7 +17,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 // import { PinGenre } from '../types'
 
-import { API_BASE_URL } from '../lib/apiBaseUrl';
+
 
 interface MainAppProps {
   user: User;
@@ -93,10 +94,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         setUserReactedPosts([]);
         return;
       }
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL ??
-        import.meta.env.VITE_API_BASE_URL ??
-        'http://127.0.0.1:8080';
 
       const postsRes = await fetch(`${API_BASE_URL}/api/posts/history`, {
         headers: {

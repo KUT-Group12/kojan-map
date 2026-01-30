@@ -101,9 +101,9 @@ func main() {
 	r := gin.Default()
 
 	// CORS configuration
-	// Configから取得したURLを使用するように統一
+	// Configから取得したURL（複数可）を使用するように統一
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{cfg.FrontendURL},
+		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

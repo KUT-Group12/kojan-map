@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { LogOut, Check, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { User } from '../types';
+import { getStoredJWT, removeStoredJWT, removeStoredUser } from '../lib/auth';
 
 import { API_BASE_URL } from '../lib/apiBaseUrl';
 
@@ -19,7 +20,7 @@ export function LogoutScreen({ user, onLogout, onBack }: LogoutScreenProps) {
     setIsPending(true);
     try {
       // JWTトークンとセッションIDを取得
-      const token = localStorage.getItem('kojanmap_jwt');
+      const token = getStoredJWT();
       const sessionId = localStorage.getItem('kojanmap_sessionId');
       if (!sessionId) {
         toast.error('セッション情報がありません。再度ログインしてください。');

@@ -6,6 +6,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
 import { UserRole, User, Business } from './types';
 import { getStoredUser, getStoredJWT, logout } from './lib/auth';
+import { API_BASE_URL } from './lib/apiBaseUrl';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +59,6 @@ export default function App() {
           }
 
           // 2. サーバー側でユーザー存在チェック (DBリセット対策)
-          const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
           const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
