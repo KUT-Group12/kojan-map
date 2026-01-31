@@ -39,14 +39,9 @@ jobs:
           echo "🔄 Pulling latest code from main branch..."
           git pull origin main
           
-          echo "🐳 Restarting Docker containers..."
-          docker compose down
-          docker compose up -d --build
-          
-          echo "✅ Deployment completed!"
-          
-          # コンテナの状態を確認
-          docker compose ps
+          echo "🚀 Running deployment script..."
+          chmod +x scripts/deploy.sh
+          ./scripts/deploy.sh
         EOF
 
     - name: Cleanup SSH

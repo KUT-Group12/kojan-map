@@ -49,10 +49,13 @@ docker compose ps
 echo -e "${BLUE}🔍 Checking backend health...${NC}"
 if curl -f http://localhost:8080/health > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Backend is healthy!${NC}"
+    echo -e "${GREEN}================================================${NC}"
+    echo -e "${GREEN}✅ Deployment completed successfully!${NC}"
+    echo -e "${GREEN}================================================${NC}"
 else
-    echo -e "${RED}⚠️  Warning: Backend health check failed${NC}"
+    echo -e "${RED}================================================${NC}"
+    echo -e "${RED}❌ Error: Backend health check failed!${NC}"
+    echo -e "${RED}Deployment failed.${NC}"
+    echo -e "${RED}================================================${NC}"
+    exit 1
 fi
-
-echo -e "${GREEN}================================================${NC}"
-echo -e "${GREEN}✅ Deployment completed successfully!${NC}"
-echo -e "${GREEN}================================================${NC}"
