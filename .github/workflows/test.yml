@@ -5,6 +5,7 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_call:  # 再利用可能なワークフローとして呼び出し可能にする
 
 jobs:
   # バックエンド（Go）のテスト

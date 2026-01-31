@@ -1,0 +1,70 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  # CI: Lint & Test (既存のワークフローを実行)
+  lint:
+    name: Run Lint
+    uses: ./.github/workflows/lint.yml
+
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test.yml
+
+  # CD: Deploy to EC2
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: [lint, test]  # Lint/Testが成功したらデプロイ
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SATOKEN_SECRET }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 3.92.98.19 >> ~/.ssh/known_hosts
+
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ubuntu@3.92.98.19 << 'EOF'
+          cd /home/kojan-map
+          
+          echo "🔄 Pulling latest code from main branch..."
+          git pull origin main
+          
+          echo "🚀 Running deployment script..."
+          chmod +x scripts/deploy.sh
+          ./scripts/deploy.sh
+        EOF
+
+    - name: Cleanup SSH
+      if: always()
+      run: |
+        rm -f ~/.ssh/id_rsa
+
+  # Slack通知（オプション - 既存のslack-notify.ymlがある場合）
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: always()
+    
+    steps:
+    - name: Notify Success
+      if: needs.deploy.result == 'success'
+      run: |
+        echo "✅ Deployment succeeded!"
+        # Slack通知を追加する場合はここに実装
+
+    - name: Notify Failure
+      if: needs.deploy.result == 'failure'
+      run: |
+        echo "❌ Deployment failed!"
+        # Slack通知を追加する場合はここに実装

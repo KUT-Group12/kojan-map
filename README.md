@@ -121,6 +121,30 @@ docker compose down -v
 | **Lint** | Frontend (TS) | ESLint, Prettier |
 | **Test** | Backend (Go) | go test + カバレッジ |
 | **Test** | Frontend (TS) | npm test |
+| **Deploy** | EC2 | SSH経由で自動デプロイ（`main`ブランチのみ） |
+
+### 自動デプロイ（Continuous Deployment）
+
+`main`ブランチへのプッシュ時、Lint/Testが成功すると自動的にEC2環境へデプロイされます。
+
+**デプロイフロー:**
+
+```mermaid
+graph LR
+    A[Push to main] --> B[Run Lint]
+    B --> C[Run Test]
+    C -->|Success| D[SSH to EC2]
+    C -->|Failed| E[Deploy Canceled]
+    D --> F[git pull]
+    F --> G[docker compose up --build]
+    G --> H[Deploy Complete]
+```
+
+**必要な設定:**
+- GitHub Secrets: `SATOKEN_SECRET` (EC2へのSSH秘密鍵)
+- デプロイ先: EC2インスタンス (3.92.98.19)
+- デプロイスクリプト: `scripts/deploy.sh`
+
 
 ### Backend（Go）が準拠すべき要件
 
