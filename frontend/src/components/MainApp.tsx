@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 import { Header } from './Header';
 import { MapViewScreen } from './MapViewScreen';
 import { Sidebar } from './Sidebar';
@@ -16,7 +17,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 // import { PinGenre } from '../types'
 
-import { API_BASE_URL } from '../lib/apiBaseUrl';
+
 
 interface MainAppProps {
   user: User;
@@ -93,10 +94,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         setUserReactedPosts([]);
         return;
       }
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL ??
-        import.meta.env.VITE_API_BASE_URL ??
-        'http://127.0.0.1:8080';
 
       const postsRes = await fetch(`${API_BASE_URL}/api/posts/history`, {
         headers: {
@@ -125,19 +122,14 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
   // 初期データ（投稿と場所）の取得
   useEffect(() => {
-    console.log('MainApp mounted. API_BASE_URL:', API_BASE_URL);
     const fetchInitialData = async () => {
       try {
-        console.log('Fetching posts...');
         const postsRes = await fetch(`${API_BASE_URL}/api/posts`);
-        console.log('Posts fetch response:', postsRes.status);
         const postsData = await postsRes.json();
-        console.log('[DEBUG] postsData from API:', postsData);
         const rawPosts = (postsData.posts ?? postsData ?? []) as (Post & {
           latitude: number;
           longitude: number;
         })[];
-        console.log('[DEBUG] rawPosts:', rawPosts);
 
         if (rawPosts.length === 0) return;
 
@@ -164,8 +156,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
 
         setPosts(displayPosts);
         setFilteredPosts(displayPosts);
-        // デバッグ: posts/placesの中身を出力
-        console.log('[DEBUG] posts after fetch:', displayPosts);
         // postsの全placeId/緯度経度を必ずplacesに反映
         const placeMap = new Map<number, Place>();
         for (const dp of displayPosts) {
@@ -190,7 +180,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
           }
         }
         const placesArr = Array.from(placeMap.values());
-        console.log('[DEBUG] places after fetch:', placesArr);
         setPlaces(placesArr);
       } catch (error) {
         console.error('データ取得失敗:', error);
@@ -308,7 +297,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
       // ステート更新
       setPosts((prev) => {
         const next = [post, ...prev];
-        console.log('[DEBUG] posts after create:', next);
         return next;
       });
       setPlaces((prev) => {
@@ -327,12 +315,10 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
         } else {
           next = [place, ...prev];
         }
-        console.log('[DEBUG] places after create:', next);
         return next;
       });
       setFilteredPosts((prev) => {
         const next = [post, ...prev];
-        console.log('[DEBUG] filteredPosts after create:', next);
         return next;
       });
       setIsCreateModalOpen(false);
@@ -406,7 +392,6 @@ export function MainApp({ user, business, onLogout, onUpdateUser }: MainAppProps
             />
             <MapViewScreen
               user={user}
-              business={business}
               posts={posts}
               places={places}
               onPinClick={handlePinClick}

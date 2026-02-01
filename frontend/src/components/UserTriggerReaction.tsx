@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { Reaction } from '../types';
 import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface UserTriggerReactionProps {
   postId: Reaction['postId'];
@@ -39,11 +40,6 @@ export function UserTriggerReaction({
         toast.error('認証情報がありません。再度ログインしてください。');
         return;
       }
-      const API_BASE_URL =
-        import.meta.env.VITE_API_URL ||
-        import.meta.env.VITE_API_BASE_URL ||
-        'http://localhost:8080';
-
       const response = await fetch(`${API_BASE_URL}/api/posts/reaction`, {
         method: method,
         headers: {

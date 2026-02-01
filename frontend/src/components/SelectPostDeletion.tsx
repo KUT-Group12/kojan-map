@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { getStoredJWT } from '../lib/auth';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 import { Trash2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface SelectPostDeletionProps {
   postId: number;
@@ -34,9 +32,9 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
         return;
       }
 
-      // 2. バックエンドAPI呼び出し (仕様書: PUT /api/posts/anonymize)
-      const response = await fetch(`${API_BASE_URL}/api/posts/anonymize`, {
-        method: 'PUT',
+      // 2. バックエンドAPI呼び出し
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -50,9 +48,8 @@ export function SelectPostDeletion({ postId, onDelete, onClose }: SelectPostDele
         throw new Error('削除処理に失敗しました');
       }
 
-      // レスポンス: { "message": "post anonymized" }
+      // レスポンス: { "message": "post deleted" }
       const data = await response.json();
-      console.log(data);
 
       // 3. 成功時の処理
       toast.success('投稿を削除しました');

@@ -1,12 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
+import { Button } from './ui/button';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 import { getStoredJWT } from '../lib/auth';
 import { User, Block } from '../types';
 import { UserX, Loader2 } from 'lucide-react';
 import { DisplayUserSetting } from './DisplayUserSetting';
 import { SelectUnlock } from './SelectUnlock';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface UserWithBlocked extends User {
   id: string;
@@ -48,7 +47,6 @@ export function UserBlockViewScreen({ user, onUpdateUser }: UserBlockViewScreenP
         }
 
         const data = await response.json();
-        console.log(data);
 
         // 2. レスポンス形式: { "blocks": [{ "id": 1, "userId": "...", "blockerId": "..." }, ...] }
         // APIから返ってきたデータの中から、自分がブロックしている相手(userId)のIDだけを抽出

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { cn } from './ui/utils';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
@@ -7,9 +9,6 @@ import { Post, User } from '../types';
 // 不要になった GENRE_MAP, genreColors, genreLabels のインポートを削除
 // もし検索条件のプルダウンを作るために genreLabels が必要な場合は残しますが、
 // ここでは「投稿に含まれるDBデータ」を優先する形に書き換えます。
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface SidebarProps {
   user: User;

@@ -5,9 +5,7 @@ import { DisplayPostHistory } from './DisplayPostHistory';
 import { SelectPostDeletion } from './SelectPostDeletion';
 import { Loader2 } from 'lucide-react';
 import { getStoredJWT } from '../lib/auth';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 
 interface SelectPostHistoryProps {
   user: User;
@@ -109,7 +107,7 @@ export function SelectPostHistory({
             <SelectPostDeletion
               postId={post.postId}
               onDelete={handleRemoveFromList}
-              onClose={() => {}}
+              onClose={() => { }}
             />
           }
         />

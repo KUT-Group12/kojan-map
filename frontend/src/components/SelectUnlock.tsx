@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { User } from '../types';
 import { Button } from './ui/button';
+import { API_BASE_URL } from '../lib/apiBaseUrl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStoredJWT } from '../lib/auth';
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8080';
 
 interface UserWithBlocked extends User {
   id: string;
@@ -50,7 +48,6 @@ export function SelectUnlock({ userId, user, onUpdateUser }: SelectUnlockProps) 
       }
 
       const data = await response.json();
-      console.log(data);
 
       // 2. フロントエンド側の状態を更新
       // 現在のブロックリストから削除したユーザーを除外する

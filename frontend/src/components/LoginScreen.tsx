@@ -36,9 +36,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         }
         const userInfo = await userInfoRes.json();
 
-            // 2. バックエンド認証 (初期ロールは 'user' 固定)
-            console.log('[DEBUG] exchangeGoogleTokenForJWT google_token:', tokenResponse.access_token, 'role:', 'user');
-            const data = await exchangeGoogleTokenForJWT(tokenResponse.access_token, 'user');
+        const data = await exchangeGoogleTokenForJWT(tokenResponse.access_token, 'user');
 
         // 3. 保存 & 遷移
         storeJWT(data.jwt_token);
@@ -54,10 +52,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         } else if (data.session && data.session.id) {
           sessionIdToStore = data.session.id;
         }
-        console.log('[Login] 保存するsessionId:', sessionIdToStore);
         if (sessionIdToStore) {
           localStorage.setItem('kojanmap_sessionId', sessionIdToStore);
-          console.log('[Login] sessionIdをlocalStorageに保存しました:', sessionIdToStore);
         } else {
           console.warn('[Login] sessionIdが取得できませんでした。APIレスポンス:', data);
         }

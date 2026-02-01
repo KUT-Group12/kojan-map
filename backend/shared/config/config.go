@@ -16,7 +16,8 @@ type Config struct {
 	JWTSecret      string
 	GoogleClientID string
 	AppEnv         string
-	FrontendURL    string // ←追加確認済み
+	FrontendURL    string
+	AllowedOrigins []string // ←追加
 }
 
 // Load loads configuration from environment variables with defaults
@@ -37,8 +38,33 @@ func Load() *Config {
 		JWTSecret:      jwtSecret,
 		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
 		AppEnv:         getEnv("APP_ENV", "dev"),
-		FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:5173"), // ←追加確認済み
+		FrontendURL:    getEnv("FRONTEND_URL", "http://localhost:5173"),
+		AllowedOrigins: getAllowedOrigins(),
 	}
+}
+
+func getAllowedOrigins() []string {
+	originsStr := os.Getenv("ALLOWED_ORIGINS")
+	if originsStr == "" {
+		return []string{"http://localhost:5173"}
+	}
+	// カンマ区切りでパース
+	var origins []string
+	current := ""
+	for _, r := range originsStr {
+		if r == ',' {
+			if current != "" {
+				origins = append(origins, current)
+			}
+			current = ""
+		} else {
+			current += string(r)
+		}
+	}
+	if current != "" {
+		origins = append(origins, current)
+	}
+	return origins
 }
 
 func (c *Config) GetJWTSecret() string {

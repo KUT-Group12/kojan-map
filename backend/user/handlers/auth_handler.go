@@ -78,18 +78,18 @@ func (ah *AuthHandler) Register(c *gin.Context) {
 // @Failure 500 {object} object{error=string} "サーバーエラー"
 // @Router /api/auth/logout [put]
 func (ah *AuthHandler) Logout(c *gin.Context) {
-		var req struct {
-			SessionID string `json:"sessionId"`
-		}
-		_ = c.ShouldBindJSON(&req)
-		sessionID := req.SessionID
-		if sessionID == "" {
-			sessionID = c.GetString("sessionId")
-		}
-		if sessionID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "session id required"})
-			return
-		}
+	var req struct {
+		SessionID string `json:"sessionId"`
+	}
+	_ = c.ShouldBindJSON(&req)
+	sessionID := req.SessionID
+	if sessionID == "" {
+		sessionID = c.GetString("sessionId")
+	}
+	if sessionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "session id required"})
+		return
+	}
 
 	if err := ah.userService.Logout(sessionID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -112,11 +112,10 @@ func (ah *AuthHandler) Logout(c *gin.Context) {
 // @Failure 500 {object} object{error=string} "サーバーエラー"
 // @Router /api/auth/withdrawal [put]
 func (ah *AuthHandler) Withdrawal(c *gin.Context) {
-	// 退会API呼び出し時に必ずログ出力
 	googleID := c.GetString("googleId")
-	log.Printf("[Withdrawal] called. googleId: %s, Authorization: %s", googleID, c.GetHeader("Authorization"))
+	log.Printf("[Withdrawal] called for a user")
 	if googleID == "" {
-		log.Printf("[Withdrawal] googleIdが空です。認証失敗。Authorizationヘッダー: %s", c.GetHeader("Authorization"))
+		log.Printf("[Withdrawal] googleId is empty. Unauthorized access attempt.")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
@@ -127,7 +126,7 @@ func (ah *AuthHandler) Withdrawal(c *gin.Context) {
 		return
 	}
 
-	log.Printf("[Withdrawal] ユーザー削除成功: %s", googleID)
+	log.Printf("[Withdrawal] user deleted successfully")
 	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
 }
 
@@ -159,7 +158,7 @@ func (ah *AuthHandler) ExchangeToken(c *gin.Context) {
 	googleResp, err := ah.authService.VerifyGoogleToken(req.GoogleToken)
 	if err != nil {
 		c.Error(err)
-		log.Printf("[ExchangeToken] error: %v, google_token: %s, role: %s", err, req.GoogleToken, req.Role)
+		log.Printf("[ExchangeToken] error: %v, role: %s", err, req.Role)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
@@ -194,7 +193,7 @@ func (ah *AuthHandler) ExchangeToken(c *gin.Context) {
 	// 5. レスポンス
 	c.JSON(http.StatusOK, gin.H{
 		"jwt_token": jwttoken,
-		"user": user,
+		"user":      user,
 		"sessionId": session.SessionID,
 	})
 }

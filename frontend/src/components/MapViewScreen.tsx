@@ -24,9 +24,6 @@ interface PinSizesResponse {
 
 export function MapViewScreen(props: MapViewProps) {
   const { user, posts, places, onPinClick, onMapDoubleClick, isOverlayOpen } = props;
-  // デバッグ: posts/placesのprops受け渡しを確認
-  console.log('[DEBUG] MapViewScreen posts:', posts);
-  console.log('[DEBUG] MapViewScreen places:', places);
   const [hoveredPostId, setHoveredPostId] = useState<number | null>(null);
   const [pinSizes, setPinSizes] = useState<Record<number, number>>({});
 

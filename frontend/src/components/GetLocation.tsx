@@ -26,7 +26,6 @@ export function GetLocation({ onLocationSelected, enabled }: GetLocationProps) {
       const roundedLat = roundCoord(e.latlng.lat);
       const roundedLng = roundCoord(e.latlng.lng);
 
-      console.log(`Rounded Location: ${roundedLat}, ${roundedLng}`);
 
       onLocationSelected(roundedLat, roundedLng);
     },
