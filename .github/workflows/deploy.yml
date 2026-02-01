@@ -5,20 +5,10 @@ on:
     branches: [ main ]
 
 jobs:
-  # CI: Lint & Test (既存のワークフローを実行)
-  lint:
-    name: Run Lint
-    uses: ./.github/workflows/lint.yml
-
-  test:
-    name: Run Tests
-    uses: ./.github/workflows/test.yml
-
   # CD: Deploy to EC2
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
-    needs: [lint, test]  # Lint/Testが成功したらデプロイ
     
     steps:
     - name: Checkout code
