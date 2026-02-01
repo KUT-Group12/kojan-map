@@ -65,6 +65,7 @@ export default defineConfig({
     port: 5173,
     open: false,
     hmr: false,
+    allowedHosts: ['3.92.98.19.nip.io'],
     // hmr: {
     //   clientPort: 5173,
     // },

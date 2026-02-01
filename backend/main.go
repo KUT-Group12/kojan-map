@@ -2,7 +2,6 @@ package main
 
 import (
 	"context" // ★追加
-	"fmt"
 	"log"
 	"net/http"  // ★追加
 	"os"        // ★追加
@@ -127,7 +126,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Start server
-	addr := fmt.Sprintf(":%s", cfg.ServerPort)
+	addr := "0.0.0.0:8080"
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: r,
