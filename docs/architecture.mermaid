@@ -1,0 +1,68 @@
+graph TD
+    %% Style Definitions
+    classDef client fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#01579b;
+    classDef frontend fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
+    classDef backend fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef database fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100;
+    classDef external fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#212121;
+    classDef env fill:#fff9c4,stroke:#fbc02d,stroke-dasharray: 5 5;
+
+    subgraph SG_Clients ["Clients Layer"]
+        User[User Browser]:::client
+        Admin[Admin Browser]:::client
+        Business[Business Browser]:::client
+    end
+
+    subgraph SG_Infra ["Docker Infrastructure"]
+        subgraph SG_Frontend ["Frontend Container"]
+            UI[React / Radix UI]:::frontend
+            Map[react-leaflet]:::frontend
+            Axios[Axios Client]:::frontend
+        end
+
+        subgraph SG_Backend ["Backend Container"]
+            Gin[Gin Web Framework]:::backend
+            AuthM[JWT Middleware]:::backend
+            Handlers[API Handlers]:::backend
+            GORM[GORM / Database]:::backend
+        end
+
+        subgraph SG_Database ["Data Storage"]
+            MySQL[(MySQL 8.0)]:::database
+            Tables["Users, Posts, Places,<br/>Genres, Reactions"]:::database
+        end
+    end
+
+    subgraph SG_External ["External Integration"]
+        Google[Google OAuth2 API]:::external
+    end
+
+    %% Communication Flows
+    User & Admin & Business -->|HTTP :5173| UI
+    UI --> Map
+    UI --> Axios
+    
+    Axios -->|REST API :8080| Gin
+    
+    Gin --> AuthM
+    AuthM --> Handlers
+    Handlers --> GORM
+    
+    GORM -->|SQL :3306| MySQL
+    MySQL --- Tables
+
+    Handlers -.->|OAuth Flow| Google
+    Google -.->|Verify Token| Handlers
+
+    %% Environment Config
+    Env[".env Config<br/>JWT_SECRET<br/>GOOGLE_CLIENT_ID"]:::env
+    Env -.-> SG_Backend
+    Env -.-> SG_Frontend
+
+    %% Subgraph Styling using IDs
+    style SG_Clients fill:#f1faff,stroke:#01579b,stroke-width:1px
+    style SG_Infra fill:#ffffff,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
+    style SG_Frontend fill:#f1f8e9,stroke:#2e7d32,stroke-width:1px
+    style SG_Backend fill:#f9f4fb,stroke:#7b1fa2,stroke-width:1px
+    style SG_Database fill:#fffaf0,stroke:#ef6c00,stroke-width:1px
+    style SG_External fill:#fafafa,stroke:#616161,stroke-width:1px
